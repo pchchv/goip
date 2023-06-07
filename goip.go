@@ -49,3 +49,14 @@ func (version IPVersion) IsIndeterminate() bool {
 	}
 	return true
 }
+
+// Equal returns true if the given version matches this version.
+// Two indeterminate versions always match, even if their associated strings do not.
+func (version IPVersion) Equal(other IPVersion) bool {
+	return strings.EqualFold(string(version), string(other)) || (version.IsIndeterminate() && other.IsIndeterminate())
+}
+
+// String returns "IPv4", "IPv6" or the nil-value ("") representing an indeterminate version.
+func (version IPVersion) String() string {
+	return string(version)
+}
