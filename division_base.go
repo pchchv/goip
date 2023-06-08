@@ -1,5 +1,7 @@
 package goip
 
+import "math/big"
+
 type divCache struct {
 	cachedString,
 	cachedWildcardString,
@@ -7,4 +9,30 @@ type divCache struct {
 	cachedHexString,
 	cachedNormalizedString *string
 	isSinglePrefBlock *bool
+}
+
+// divisionValuesBase provides an interface for divisions of any size.
+// It is common for standard and large divisions.
+// All methods can be called for any division.
+type divisionValuesBase interface {
+	getBitCount() BitCount
+	getByteCount() int
+	// getDivisionPrefixLength provides the prefix length,
+	// if the alignment is true and the prefix is not nil,
+	// all subsequent divisions in the same grouping have a zero length prefix
+	getDivisionPrefixLength() PrefixLen
+	// getValue gets the lower value as a BigDivInt
+	getValue() *BigDivInt
+	// getValue gets the upper value as a BigDivInt
+	getUpperValue() *BigDivInt
+	includesZero() bool
+	includesMax() bool
+	isMultiple() bool
+	getCount() *big.Int
+	// convert lower and upper values to byte arrays
+	calcBytesInternal() (bytes, upperBytes []byte)
+	bytesInternal(upper bool) (bytes []byte)
+	// getCache returns a divCache for those divisions which cache their values, or nil otherwise
+	getCache() *divCache
+	getAddrType() addressType
 }
