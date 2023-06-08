@@ -33,3 +33,9 @@ type HostNameError interface {
 	// GetAddrError returns the underlying address error, or nil if none.
 	GetAddrError() AddressError
 }
+
+// SizeMismatchError is an error that occurs when trying to perform an operation
+// that requires address elements of the same size when the provided arguments are not equal in size.
+type SizeMismatchError interface {
+	IncompatibleAddressError
+}
