@@ -23,3 +23,12 @@ type AddressComponent interface { //AddressSegment and above, AddressSegmentSeri
 	// all address components of the same type and version.
 	ToNormalizedString() string
 }
+
+type BitItem interface {
+	// GetByteCount returns the number of bytes needed
+	// for each value that makes up the given address element,
+	// rounded up if the number of bits is not a multiple of 8.
+	GetByteCount() int
+	// GetBitCount returns the number of bits in each value comprising this address item.
+	GetBitCount() BitCount
+}
