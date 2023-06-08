@@ -30,3 +30,17 @@ type macStringCache struct {
 	dottedString,
 	spaceDelimitedString *string
 }
+
+type stringCache struct {
+	canonicalString,
+	octalString,
+	octalStringPrefixed,
+	binaryString,
+	binaryStringPrefixed,
+	hexString,
+	hexStringPrefixed *string
+	*ipv6StringCache
+	*ipv4StringCache
+	*ipStringCache
+	*macStringCache
+}
