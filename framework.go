@@ -1,6 +1,11 @@
 package goip
 
-import "github.com/pchchv/goip/address_error"
+import (
+	"fmt"
+	"math/big"
+
+	"github.com/pchchv/goip/address_error"
+)
 
 // AddressComponent represents all addresses, address sections and address segments.
 type AddressComponent interface { //AddressSegment and above, AddressSegmentSeries and above
@@ -22,6 +27,83 @@ type AddressComponent interface { //AddressSegment and above, AddressSegmentSeri
 	// ToNormalizedString creates a string that is consistent for
 	// all address components of the same type and version.
 	ToNormalizedString() string
+}
+
+// AddressItem represents all addresses, division groups,
+// divisions and consecutive ranges.
+// Any address item can be compared to any other.
+type AddressItem interface {
+	BitItem
+	// GetValue returns the smallest individual address element in the range of address elements as an integer value.
+	GetValue() *big.Int
+	// GetUpperValue returns the topmost individual address element in the range of address elements as an integer value.
+	GetUpperValue() *big.Int
+	// CopyBytes copies the value of the smallest single address element in that address element range to a byte fragment.
+	// If the value can fit in a given fragment,
+	// the value is copied to that fragment and a length-adjusted subfragment is returned.
+	// Otherwise a new fragment is created and returned with the value.
+	CopyBytes(bytes []byte) []byte
+	// CopyUpperBytes copies the value of the oldest single address element in that address element range to a byte fragment.
+	// If the value can fit in a given fragment,
+	// the value is copied to that fragment and a length-adjusted subfragment is returned.
+	// Otherwise a new fragment is created and returned with the value.
+	CopyUpperBytes(bytes []byte) []byte
+	// Bytes returns the smallest single address element in the range of address elements as a byte fragment.
+	Bytes() []byte
+	// UpperBytes returns the topmost individual address element in the range of address elements as a byte slice.
+	UpperBytes() []byte
+	// GetCount provides the number of address items represented by the AddressItem, such as subnet size for IP addresses.
+	GetCount() *big.Int
+	// IsMultiple returns whether the given element represents multiple values (a count greater than 1).
+	IsMultiple() bool
+	// IsFullRange returns whether the given address element represents
+	// all possible values reachable by an address element of that type.
+	// This is true if and only if both IncludesZero and IncludesMax return true.
+	IsFullRange() bool
+	// IncludesZero returns whether the item includes a value of zero in its range.
+	IncludesZero() bool
+	// IncludesMax returns whether the item includes the maximum value,
+	// a value whose bits are all one, in its range.
+	IncludesMax() bool
+	// IsZero returns whether the given address element is exactly zero.
+	IsZero() bool
+	// IsMax returns whether the given address element corresponds exactly to the maximum possible value - a value whose bits are all one.
+	IsMax() bool
+	// ContainsPrefixBlock returns whether the values of a given element contain a prefix block for a given prefix length.
+	// Unlike ContainsSinglePrefixBlock, the presence of multiple prefix values for a given prefix length is irrelevant.
+	ContainsPrefixBlock(BitCount) bool
+	// ContainsSinglePrefixBlock returns whether the values of this series contain a single prefix block for a given prefix length.
+	// This means that this element has only one prefix of a given length,
+	// and this element contains a prefix block for that prefix, all elements with the same prefix.
+	ContainsSinglePrefixBlock(BitCount) bool
+	// GetPrefixLenForSingleBlock returns the prefix length for which there is only one prefix of that length in the given element,
+	// and the range of that element matches the block of all values for that prefix.
+	// If the whole range can be described this way, this method returns the same value as GetMinPrefixLenForBlock.
+	// If no such prefix length exists, it returns nil.
+	// If this element represents a single value, the number of bits is returned.
+	GetPrefixLenForSingleBlock() PrefixLen
+	// GetMinPrefixLenForBlock returns the smallest possible prefix length such that this element includes a block of all values for that prefix length.
+	// If the entire range can be defined in this way, this method returns the same value as GetPrefixLenForSingleBlock.
+	// This item can have a single prefix or multiple possible prefix values for the returned prefix length.
+	// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values. If this element represents a single value, the number of bits is returned.
+	GetMinPrefixLenForBlock() BitCount
+	// GetPrefixCountLen returns the count of the number of distinct values within the prefix part of the range of values for this item
+	GetPrefixCountLen(BitCount) *big.Int
+	// Compare returns a negative integer, zero, or a positive integer if the given address element is less than,
+	// equal to, or greater than the given element.
+	// Any address element is comparable to any other address element.
+	// All address elements use CountComparator for comparison.
+	Compare(AddressItem) int
+	// CompareSize compares the number of two address elements, whether they are addresses in a subnet or address range,
+	// whether they are individual sections in a collection of sections, whether they are individual segments in a segment range.
+	// It compares the number of individual elements within each.
+	// Instead of counting the number with GetCount,
+	// it can use more efficient ways to determine whether one element represents more individual addresses than another.
+	// CompareSize returns a positive integer if the given element has a larger count than the given one,
+	// zero if they are the same, or a negative integer if the other element has a larger count.
+	CompareSize(AddressItem) int
+	fmt.Stringer
+	fmt.Formatter
 }
 
 type BitItem interface {
