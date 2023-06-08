@@ -114,3 +114,22 @@ type BitItem interface {
 	// GetBitCount returns the number of bits in each value comprising this address item.
 	GetBitCount() BitCount
 }
+
+type Prefixed interface {
+	// IsPrefixed returns whether the given element has a prefix length associated with it.
+	IsPrefixed() bool
+	// GetPrefixLen returns the prefix length, or nil if there is no prefix length.
+	// The prefix length indicates the number of bits in the initial part (the most significant bits) of the series that make up the prefix.
+	// A prefix is a portion of a series that is not specific to that series but is common to the group, such as a subnet of a CIDR prefix block.
+	GetPrefixLen() PrefixLen
+	// IsPrefixBlock returns whether the given element has a prefix length and whether it includes the block associated with that prefix length.
+	// If the prefix length is the same as the number of bits, true is returned.
+	// This method differs from ContainsPrefixBlock in that it returns false if
+	// the given element has no prefix length or has a prefix length different from
+	// the prefix length for which ContainsPrefixBlock returns true.
+	IsPrefixBlock() bool
+	// IsSinglePrefixBlock returns whether the value range matches one subnet block for the prefix length.
+	// This method differs from ContainsSinglePrefixBlock in that it returns false if the given series
+	// has no prefix length or a different prefix length than the prefix length for which ContainsSinglePrefixBlock returns true.
+	IsSinglePrefixBlock() bool
+}
