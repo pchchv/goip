@@ -50,3 +50,10 @@ type divisionValues interface {
 	segderiver
 	segmentValues
 }
+
+// addressDivisionBase is a division of any bit size.
+// It is common for standard and large division types.
+// Large divisions should not use divisionValues methods and only use methods in divisionValuesBase.
+type addressDivisionBase struct {
+	divisionValues
+}
