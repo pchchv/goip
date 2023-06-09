@@ -13,3 +13,10 @@ type segderiver interface {
 	// deriveNew produces a new segment with the same bit count as the old
 	deriveNewSeg(val SegInt, prefLen PrefixLen) divisionValues
 }
+
+type segmentValues interface {
+	// getSegmentValue gets the lower value for a segment
+	getSegmentValue() SegInt
+	// getUpperSegmentValue gets the upper value for a segment
+	getUpperSegmentValue() SegInt
+}
