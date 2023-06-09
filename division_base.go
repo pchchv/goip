@@ -36,3 +36,17 @@ type divisionValuesBase interface {
 	getCache() *divCache
 	getAddrType() addressType
 }
+
+// divisionValues provides methods to provide the values from divisions,
+// and to create new divisions from values.
+// Values may be truncated if the stored values in the interface implementation
+// have larger bit-size than the return values.
+// Similarly, values may be truncated if the supplied values have greater bit-size
+// than the returned types.
+type divisionValues interface {
+	divisionValuesBase
+	divIntVals
+	divderiver
+	segderiver
+	segmentValues
+}
