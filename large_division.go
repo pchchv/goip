@@ -15,3 +15,14 @@ type addressLargeDivInternal struct {
 	addressDivisionBase
 	defaultRadix *BigDivInt
 }
+
+// IsMultiple returns true if the given division represents a consecutive range of values or a single value.
+func (div *IPAddressLargeDivision) IsMultiple() bool {
+	return div != nil && div.isMultiple()
+}
+
+// IsPrefixed returns whether the given division has a prefix length associated with it.
+// If so, the prefix length is given by GetDivisionPrefixLen()
+func (div *IPAddressLargeDivision) IsPrefixed() bool {
+	return div.GetDivisionPrefixLen() != nil
+}
