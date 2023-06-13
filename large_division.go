@@ -130,3 +130,14 @@ func (div *largeDivValues) includesMax() bool {
 func (div *largeDivValues) isMultiple() bool {
 	return div.isMult
 }
+
+func (div *largeDivValues) calcBytesInternal() ([]byte, []byte) {
+	return div.value.Bytes(), div.upperValue.Bytes()
+}
+
+func (div *largeDivValues) bytesInternal(upper bool) []byte {
+	if upper {
+		return div.upperValue.Bytes()
+	}
+	return div.value.Bytes()
+}
