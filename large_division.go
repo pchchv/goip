@@ -165,3 +165,12 @@ func (div *largeDivValues) getUpperSegmentValue() SegInt {
 func (div *largeDivValues) getAddrType() addressType {
 	return zeroType
 }
+
+func (div *largeDivValues) includesZero() bool {
+	return bigIsZero(div.value)
+}
+
+func (div *largeDivValues) getCount() *big.Int {
+	var res big.Int
+	return res.Sub(div.upperValue, div.value).Add(&res, bigOneConst())
+}
