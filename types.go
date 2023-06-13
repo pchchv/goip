@@ -15,3 +15,7 @@ type PrefixBitCount uint8
 // PrefixLen indicates the prefix length for an address, section, division group, segment or division.
 // A value of zero, i.e. nil, indicates that there is no prefix length.
 type PrefixLen = *PrefixBitCount
+
+func bigIsZero(val *BigDivInt) bool {
+	return len(val.Bits()) == 0 // slightly faster than div.value.BitLen() == 0
+}
