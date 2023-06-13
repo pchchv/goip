@@ -2,7 +2,10 @@ package goip
 
 import "math/big"
 
-var one = bigOne()
+var (
+	one  = bigOne()
+	zero = bigZero()
+)
 
 // BitCount is a bit count of an address, section, grouping, segment or division.
 // Using signed integers simplifies arithmetic by avoiding errors.
@@ -30,4 +33,12 @@ func bigOne() *big.Int {
 
 func bigOneConst() *big.Int {
 	return one
+}
+
+func bigZero() *big.Int {
+	return new(big.Int)
+}
+
+func bigZeroConst() *big.Int {
+	return zero
 }
