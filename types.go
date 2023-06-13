@@ -1,6 +1,9 @@
 package goip
 
-import "math/big"
+const (
+	maxBitCountInternal = math.MaxUint8
+	minBitCountInternal = 0
+)
 
 var (
 	one      = bigOne()
@@ -46,4 +49,10 @@ func bigZeroConst() *big.Int {
 
 func bigMinusOneConst() *big.Int {
 	return minusOne
+}
+
+// ToPrefixLen converts the given int to a prefix length
+func ToPrefixLen(i int) PrefixLen {
+	res := PrefixBitCount(i)
+	return &res
 }
