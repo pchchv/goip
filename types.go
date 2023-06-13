@@ -27,6 +27,24 @@ type PrefixBitCount uint8
 // A value of zero, i.e. nil, indicates that there is no prefix length.
 type PrefixLen = *PrefixBitCount
 
+// Len returns the length of the prefix.  If the receiver is nil, representing the absence of a prefix length, returns 0.
+// It will also return 0 if the receiver is a prefix with length of 0.  To distinguish the two, compare the receiver with nil.
+func (prefixBitCount *PrefixBitCount) Len() BitCount {
+	if prefixBitCount == nil {
+		return 0
+	}
+	return prefixBitCount.bitCount()
+}
+
+// IsNil returns true if this is nil, meaning it represents having no prefix length, or the absence of a prefix length
+func (prefixBitCount *PrefixBitCount) IsNil() bool {
+	return prefixBitCount == nil
+}
+
+func (prefixBitCount *PrefixBitCount) bitCount() BitCount {
+	return BitCount(*prefixBitCount)
+}
+
 func bigIsZero(val *BigDivInt) bool {
 	return len(val.Bits()) == 0 // slightly faster than div.value.BitLen() == 0
 }
