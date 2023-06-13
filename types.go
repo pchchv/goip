@@ -3,8 +3,9 @@ package goip
 import "math/big"
 
 var (
-	one  = bigOne()
-	zero = bigZero()
+	one      = bigOne()
+	zero     = bigZero()
+	minusOne = big.NewInt(-1)
 )
 
 // BitCount is a bit count of an address, section, grouping, segment or division.
@@ -41,4 +42,8 @@ func bigZero() *big.Int {
 
 func bigZeroConst() *big.Int {
 	return zero
+}
+
+func bigMinusOneConst() *big.Int {
+	return minusOne
 }
