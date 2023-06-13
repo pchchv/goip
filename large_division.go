@@ -9,6 +9,17 @@ type addressLargeDivInternal struct {
 	defaultRadix *BigDivInt
 }
 
+func (div *addressLargeDivInternal) getDefaultRadix() int {
+	rad := div.defaultRadix
+	if rad == nil {
+		return 16 // use same default as other divisions when zero div
+	}
+	return int(rad.Int64())
+}
+
+func (div *addressLargeDivInternal) toLargeAddressDivision() *IPAddressLargeDivision {
+	return (*IPAddressLargeDivision)(unsafe.Pointer(div))
+}
 // IPAddressLargeDivision represents an arbitrary bit size division in an address or address division grouping.
 // It can contain a single value or a range of consecutive values and has an assigned bit length.
 // Like all address components, it is immutable.
