@@ -122,3 +122,11 @@ func (div *largeDivValues) getValue() *BigDivInt {
 func (div *largeDivValues) getUpperValue() *BigDivInt {
 	return div.upperValue
 }
+
+func (div *largeDivValues) includesMax() bool {
+	return div.upperValue.Cmp(div.maxValue) == 0
+}
+
+func (div *largeDivValues) isMultiple() bool {
+	return div.isMult
+}
