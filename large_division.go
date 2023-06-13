@@ -153,3 +153,11 @@ func (div *largeDivValues) getDivisionValue() DivInt {
 func (div *largeDivValues) getUpperDivisionValue() DivInt {
 	return DivInt(div.upperValue.Uint64())
 }
+
+func (div *largeDivValues) getSegmentValue() SegInt {
+	return SegInt(div.value.Uint64())
+}
+
+func (div *largeDivValues) getUpperSegmentValue() SegInt {
+	return SegInt(div.upperValue.Uint64())
+}
