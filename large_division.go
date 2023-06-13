@@ -141,3 +141,15 @@ func (div *largeDivValues) bytesInternal(upper bool) []byte {
 	}
 	return div.value.Bytes()
 }
+
+func (div *largeDivValues) getCache() *divCache {
+	return &div.cache
+}
+
+func (div *largeDivValues) getDivisionValue() DivInt {
+	return DivInt(div.value.Uint64())
+}
+
+func (div *largeDivValues) getUpperDivisionValue() DivInt {
+	return DivInt(div.upperValue.Uint64())
+}
