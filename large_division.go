@@ -174,3 +174,18 @@ func (div *largeDivValues) getCount() *big.Int {
 	var res big.Int
 	return res.Sub(div.upperValue, div.value).Add(&res, bigOneConst())
 }
+
+func testBigRangeMasks(lowerValue, upperValue, finalUpperValue, networkMask, hostMask *BigDivInt) bool {
+	var one, two big.Int
+	return lowerValue.CmpAbs(one.And(lowerValue, networkMask)) == 0 &&
+		finalUpperValue.CmpAbs(two.Or(upperValue, hostMask)) == 0
+}
+
+func testBigRange(lowerValue, upperValue, finalUpperValue *BigDivInt, bitCount, divisionPrefixLen BitCount) bool {
+	var networkMask, hostMask big.Int
+
+	networkMask.Lsh(bigMinusOneConst(), uint(bitCount-divisionPrefixLen))
+	hostMask.Not(&networkMask)
+
+	return testBigRangeMasks(lowerValue, upperValue, finalUpperValue, &networkMask, &hostMask)
+}
