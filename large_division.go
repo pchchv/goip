@@ -1,6 +1,9 @@
 package goip
 
-import "math/big"
+import (
+	"math/big"
+	"unsafe"
+)
 
 type BigDivInt = big.Int
 
@@ -20,16 +23,19 @@ func (div *addressLargeDivInternal) getDefaultRadix() int {
 func (div *addressLargeDivInternal) toLargeAddressDivision() *IPAddressLargeDivision {
 	return (*IPAddressLargeDivision)(unsafe.Pointer(div))
 }
+
+// getDefaultTextualRadix returns the default radix for textual representations of divisions.
+func (div *addressLargeDivInternal) getDefaultTextualRadix() int {
+	if div.divisionValues == nil || div.defaultRadix == nil {
+		return 16 // use same default as other divisions when zero div
+	}
+	return int(div.defaultRadix.Int64())
+}
 // IPAddressLargeDivision represents an arbitrary bit size division in an address or address division grouping.
 // It can contain a single value or a range of consecutive values and has an assigned bit length.
 // Like all address components, it is immutable.
 type IPAddressLargeDivision struct {
 	addressLargeDivInternal
-}
-
-type addressLargeDivInternal struct {
-	addressDivisionBase
-	defaultRadix *BigDivInt
 }
 
 // IsMultiple returns true if the given division represents a consecutive range of values or a single value.
