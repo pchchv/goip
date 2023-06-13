@@ -161,3 +161,7 @@ func (div *largeDivValues) getSegmentValue() SegInt {
 func (div *largeDivValues) getUpperSegmentValue() SegInt {
 	return SegInt(div.upperValue.Uint64())
 }
+
+func (div *largeDivValues) getAddrType() addressType {
+	return zeroType
+}
