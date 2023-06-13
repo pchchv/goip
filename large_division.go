@@ -96,3 +96,15 @@ type largeDivValues struct {
 	prefLen          PrefixLen
 	cache            divCache
 }
+
+func (div *largeDivValues) getBitCount() BitCount {
+	return div.bitCount
+}
+
+func (div *largeDivValues) getByteCount() int {
+	return (int(div.getBitCount()) + 7) >> 3
+}
+
+func (div *largeDivValues) getDivisionPrefixLength() PrefixLen {
+	return div.prefLen
+}
