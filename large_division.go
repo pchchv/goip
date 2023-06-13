@@ -84,3 +84,15 @@ func (div *IPAddressLargeDivision) GetPrefixLen() PrefixLen {
 func (div *IPAddressLargeDivision) isNil() bool {
 	return div == nil
 }
+
+type largeDivValues struct {
+	bitCount         BitCount
+	value            *BigDivInt
+	upperValue       *BigDivInt // always points to value when single-valued
+	maxValue         *BigDivInt
+	upperValueMasked *BigDivInt
+	isPrefixBlock    bool // note that isSinglePrefBlock is in the divCache
+	isMult           bool
+	prefLen          PrefixLen
+	cache            divCache
+}
