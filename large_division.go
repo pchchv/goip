@@ -108,3 +108,17 @@ func (div *largeDivValues) getByteCount() int {
 func (div *largeDivValues) getDivisionPrefixLength() PrefixLen {
 	return div.prefLen
 }
+
+// For internal use.
+// Returns a cached value, so it cannot be changed or returned to external callers.
+// The only place to clone is the GetValue() and GetUpperValue() methods, which return elsewhere
+func (div *largeDivValues) getValue() *BigDivInt {
+	return div.value
+}
+
+// For internal use.
+// Returns a cached value, so it cannot be changed or returned to external callers.
+// The only place to clone is the GetValue() and GetUpperValue() methods, which return elsewhere
+func (div *largeDivValues) getUpperValue() *BigDivInt {
+	return div.upperValue
+}
