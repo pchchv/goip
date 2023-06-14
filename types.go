@@ -68,6 +68,21 @@ func (prefixBitCount *PrefixBitCount) String() string {
 	return strconv.Itoa(prefixBitCount.bitCount())
 }
 
+// Compare compares PrefixLen values, returning -1, 0, or 1 if this prefix length is less than, equal to, or greater than the given prefix length.
+// This method is intended for the PrefixLen type.
+// BitCount values should be compared with ==, >, <, >= and <= operators.
+func (prefixBitCount *PrefixBitCount) Compare(other PrefixLen) int {
+	if prefixBitCount == nil {
+		if other == nil {
+			return 0
+		}
+		return 1
+	} else if other == nil {
+		return -1
+	}
+	return prefixBitCount.bitCount() - other.bitCount()
+}
+
 func (prefixBitCount *PrefixBitCount) bitCount() BitCount {
 	return BitCount(*prefixBitCount)
 }
