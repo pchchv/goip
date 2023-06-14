@@ -5,6 +5,8 @@ import (
 	"unsafe"
 )
 
+var _ divisionValues = &largeDivValues{}
+
 type BigDivInt = big.Int
 
 type addressLargeDivInternal struct {
@@ -173,6 +175,22 @@ func (div *largeDivValues) includesZero() bool {
 func (div *largeDivValues) getCount() *big.Int {
 	var res big.Int
 	return res.Sub(div.upperValue, div.value).Add(&res, bigOneConst())
+}
+
+func (div *largeDivValues) derivePrefixed(prefLen PrefixLen) divisionValues {
+	return newLargeDivValuesUnchecked(div.value, div.upperValue, div.maxValue, div.isMult, prefLen, div.bitCount)
+}
+
+func (div *largeDivValues) deriveNewMultiSeg(val, upperVal SegInt, prefLen PrefixLen) divisionValues {
+	return newLargeDivValuesDivIntUnchecked(DivInt(val), DivInt(upperVal), prefLen, div.bitCount)
+}
+
+func (div *largeDivValues) deriveNew(val, upperVal DivInt, prefLen PrefixLen) divisionValues {
+	return newLargeDivValuesDivIntUnchecked(val, upperVal, prefLen, div.bitCount)
+}
+
+func (div *largeDivValues) deriveNewSeg(val SegInt, prefLen PrefixLen) divisionValues {
+	return newLargeDivValuesDivIntUnchecked(DivInt(val), DivInt(val), prefLen, div.bitCount)
 }
 
 func newLargeDivValuesUnchecked(value, upperValue, maxValue *BigDivInt, isMult bool, prefLen PrefixLen, bitCount BitCount) *largeDivValues {
