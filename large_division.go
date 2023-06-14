@@ -42,6 +42,13 @@ func (div *addressLargeDivInternal) getLargeDivValues() *largeDivValues {
 	return vals.(*largeDivValues)
 }
 
+// getBigDefaultTextualRadix returns the default radix for textual representations of divisions.
+func (div *addressLargeDivInternal) getBigDefaultTextualRadix() *big.Int {
+	if div.divisionValues == nil || div.defaultRadix == nil {
+		return bigSixteen() // use same default as other divisions when zero div
+	}
+	return div.defaultRadix
+}
 // IPAddressLargeDivision represents an arbitrary bit size division in an address or address division grouping.
 // It can contain a single value or a range of consecutive values and has an assigned bit length.
 // Like all address components, it is immutable.
