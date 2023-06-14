@@ -189,3 +189,16 @@ func testBigRange(lowerValue, upperValue, finalUpperValue *BigDivInt, bitCount, 
 
 	return testBigRangeMasks(lowerValue, upperValue, finalUpperValue, &networkMask, &hostMask)
 }
+
+func setUpperValueMasked(value, upperValue *BigDivInt, prefLen PrefixLen, bitCount BitCount) *BigDivInt {
+	var networkMask big.Int
+	networkMask.Lsh(bigMinusOneConst(), uint(bitCount-prefLen.Len())).And(upperValue, &networkMask)
+
+	if networkMask.Cmp(upperValue) == 0 {
+		return upperValue
+	} else if networkMask.Cmp(value) == 0 {
+		return value
+	}
+
+	return &networkMask
+}
