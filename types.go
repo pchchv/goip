@@ -123,6 +123,10 @@ func bigMinusOneConst() *big.Int {
 	return minusOne
 }
 
+func bigSixteen() *big.Int {
+	return big.NewInt(16)
+}
+
 // ToPrefixLen converts the given int to a prefix length
 func ToPrefixLen(i int) PrefixLen {
 	res := PrefixBitCount(i)
