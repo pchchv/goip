@@ -3,6 +3,7 @@ package goip
 import (
 	"math"
 	"math/big"
+	"strconv"
 )
 
 const (
@@ -57,6 +58,14 @@ func (prefixBitCount *PrefixBitCount) Equal(other PrefixLen) bool {
 		return other == nil
 	}
 	return other != nil && prefixBitCount.bitCount() == other.bitCount()
+}
+
+// String returns the bit count as a base-10 positive integer string, or "<nil>" if the receiver is a nil pointer.
+func (prefixBitCount *PrefixBitCount) String() string {
+	if prefixBitCount == nil {
+		return nilString()
+	}
+	return strconv.Itoa(prefixBitCount.bitCount())
 }
 
 func (prefixBitCount *PrefixBitCount) bitCount() BitCount {
