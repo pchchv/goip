@@ -1,5 +1,10 @@
 package goip
 
+import (
+	"math"
+	"math/big"
+)
+
 const (
 	maxBitCountInternal = math.MaxUint8
 	minBitCountInternal = 0
@@ -43,6 +48,29 @@ func (prefixBitCount *PrefixBitCount) IsNil() bool {
 
 func (prefixBitCount *PrefixBitCount) bitCount() BitCount {
 	return BitCount(*prefixBitCount)
+}
+
+// Matches compares a PrefixLen value with a bit count
+func (prefixBitCount *PrefixBitCount) Matches(other BitCount) bool {
+	return prefixBitCount != nil && prefixBitCount.bitCount() == other
+}
+
+func (prefixBitCount *PrefixBitCount) copy() PrefixLen {
+	if prefixBitCount == nil {
+		return nil
+	}
+
+	res := *prefixBitCount
+
+	return &res
+}
+
+// Equal compares two PrefixLen values for equality.  This method is intended for the PrefixLen type.  BitCount values should be compared with the == operator.
+func (prefixBitCount *PrefixBitCount) Equal(other PrefixLen) bool {
+	if prefixBitCount == nil {
+		return other == nil
+	}
+	return other != nil && prefixBitCount.bitCount() == other.bitCount()
 }
 
 func bigIsZero(val *BigDivInt) bool {
