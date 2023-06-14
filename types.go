@@ -46,13 +46,21 @@ func (prefixBitCount *PrefixBitCount) IsNil() bool {
 	return prefixBitCount == nil
 }
 
-func (prefixBitCount *PrefixBitCount) bitCount() BitCount {
-	return BitCount(*prefixBitCount)
-}
-
 // Matches compares a PrefixLen value with a bit count
 func (prefixBitCount *PrefixBitCount) Matches(other BitCount) bool {
 	return prefixBitCount != nil && prefixBitCount.bitCount() == other
+}
+
+// Equal compares two PrefixLen values for equality.  This method is intended for the PrefixLen type.  BitCount values should be compared with the == operator.
+func (prefixBitCount *PrefixBitCount) Equal(other PrefixLen) bool {
+	if prefixBitCount == nil {
+		return other == nil
+	}
+	return other != nil && prefixBitCount.bitCount() == other.bitCount()
+}
+
+func (prefixBitCount *PrefixBitCount) bitCount() BitCount {
+	return BitCount(*prefixBitCount)
 }
 
 func (prefixBitCount *PrefixBitCount) copy() PrefixLen {
@@ -63,14 +71,6 @@ func (prefixBitCount *PrefixBitCount) copy() PrefixLen {
 	res := *prefixBitCount
 
 	return &res
-}
-
-// Equal compares two PrefixLen values for equality.  This method is intended for the PrefixLen type.  BitCount values should be compared with the == operator.
-func (prefixBitCount *PrefixBitCount) Equal(other PrefixLen) bool {
-	if prefixBitCount == nil {
-		return other == nil
-	}
-	return other != nil && prefixBitCount.bitCount() == other.bitCount()
 }
 
 func bigIsZero(val *BigDivInt) bool {
