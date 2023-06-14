@@ -230,3 +230,14 @@ func testBigRange(lowerValue, upperValue, finalUpperValue *BigDivInt, bitCount, 
 
 	return testBigRangeMasks(lowerValue, upperValue, finalUpperValue, &networkMask, &hostMask)
 }
+
+func setMax(assignedUpper *BigDivInt, bitCount BitCount) (max *BigDivInt) {
+	var maxVal big.Int
+	max = maxVal.Lsh(bigOneConst(), uint(bitCount)).Sub(&maxVal, bigOneConst())
+
+	if max.CmpAbs(assignedUpper) == 0 {
+		max = assignedUpper
+	}
+
+	return max
+}

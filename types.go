@@ -15,6 +15,8 @@ var (
 	one      = bigOne()
 	zero     = bigZero()
 	minusOne = big.NewInt(-1)
+	falseVal = false
+	trueVal  = true
 )
 
 // BitCount is a bit count of an address, section, grouping, segment or division.
