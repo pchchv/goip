@@ -197,6 +197,34 @@ func newLargeDivValuesUnchecked(value, upperValue, maxValue *BigDivInt, isMult b
 	return result
 }
 
+func newLargeDivValuesDivIntUnchecked(value, upperValue DivInt, prefLen PrefixLen, bitCount BitCount) *largeDivValues {
+	result := &largeDivValues{
+		prefLen:  prefLen,
+		bitCount: bitCount,
+	}
+	val := new(big.Int).SetUint64(uint64(value))
+
+	if value == upperValue {
+		result.value, result.upperValue = val, val
+	} else {
+		result.isMult = true
+		result.value, result.upperValue = val, new(big.Int).SetUint64(uint64(upperValue))
+	}
+
+	var isSinglePrefBlock bool
+	result.maxValue = setMax(result.upperValue, bitCount)
+	result.isPrefixBlock, isSinglePrefBlock, result.upperValueMasked =
+		setCachedPrefixValues(result.value, result.upperValue, result.maxValue, prefLen, bitCount)
+
+	if isSinglePrefBlock {
+		result.cache.isSinglePrefBlock = &trueVal
+	} else {
+		result.cache.isSinglePrefBlock = &falseVal
+	}
+
+	return result
+}
+
 func setCachedPrefixValues(value, upperValue, maxValue *BigDivInt, prefLen PrefixLen, bitCount BitCount) (isPrefixBlock, isSinglePrefBlock bool, upperValueMasked *BigDivInt) {
 	if prefLen != nil {
 		if prefLen.Len() == bitCount {
