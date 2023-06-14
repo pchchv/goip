@@ -175,19 +175,32 @@ func (div *largeDivValues) getCount() *big.Int {
 	return res.Sub(div.upperValue, div.value).Add(&res, bigOneConst())
 }
 
-func testBigRangeMasks(lowerValue, upperValue, finalUpperValue, networkMask, hostMask *BigDivInt) bool {
-	var one, two big.Int
-	return lowerValue.CmpAbs(one.And(lowerValue, networkMask)) == 0 &&
-		finalUpperValue.CmpAbs(two.Or(upperValue, hostMask)) == 0
-}
-
-func testBigRange(lowerValue, upperValue, finalUpperValue *BigDivInt, bitCount, divisionPrefixLen BitCount) bool {
-	var networkMask, hostMask big.Int
-
-	networkMask.Lsh(bigMinusOneConst(), uint(bitCount-divisionPrefixLen))
-	hostMask.Not(&networkMask)
-
-	return testBigRangeMasks(lowerValue, upperValue, finalUpperValue, &networkMask, &hostMask)
+func setCachedPrefixValues(value, upperValue, maxValue *BigDivInt, prefLen PrefixLen, bitCount BitCount) (isPrefixBlock, isSinglePrefBlock bool, upperValueMasked *BigDivInt) {
+	if prefLen != nil {
+		if prefLen.Len() == bitCount {
+			isPrefixBlock = true
+			isSinglePrefBlock = value == upperValue
+			upperValueMasked = upperValue
+		} else if prefLen.Len() == 0 {
+			valIsZero := bigIsZero(value)
+			isFullRange := valIsZero && upperValue == maxValue
+			isPrefixBlock = isFullRange
+			isSinglePrefBlock = isFullRange
+			if valIsZero {
+				upperValueMasked = value
+			} else {
+				upperValueMasked = bigZeroConst()
+			}
+		} else {
+			prefixLen := prefLen.Len()
+			isPrefixBlock = testBigRange(value, upperValue, upperValue, bitCount, prefixLen)
+			isSinglePrefBlock = testBigRange(value, value, upperValue, bitCount, prefixLen)
+			upperValueMasked = setUpperValueMasked(value, upperValue, prefLen, bitCount)
+		}
+	} else {
+		upperValueMasked = upperValue
+	}
+	return
 }
 
 func setUpperValueMasked(value, upperValue *BigDivInt, prefLen PrefixLen, bitCount BitCount) *BigDivInt {
@@ -201,4 +214,19 @@ func setUpperValueMasked(value, upperValue *BigDivInt, prefLen PrefixLen, bitCou
 	}
 
 	return &networkMask
+}
+
+func testBigRangeMasks(lowerValue, upperValue, finalUpperValue, networkMask, hostMask *BigDivInt) bool {
+	var one, two big.Int
+	return lowerValue.CmpAbs(one.And(lowerValue, networkMask)) == 0 &&
+		finalUpperValue.CmpAbs(two.Or(upperValue, hostMask)) == 0
+}
+
+func testBigRange(lowerValue, upperValue, finalUpperValue *BigDivInt, bitCount, divisionPrefixLen BitCount) bool {
+	var networkMask, hostMask big.Int
+
+	networkMask.Lsh(bigMinusOneConst(), uint(bitCount-divisionPrefixLen))
+	hostMask.Not(&networkMask)
+
+	return testBigRangeMasks(lowerValue, upperValue, finalUpperValue, &networkMask, &hostMask)
 }
