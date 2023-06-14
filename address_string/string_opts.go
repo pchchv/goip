@@ -13,3 +13,15 @@ package address_string
 type wildcards struct {
 	rangeSeparator, wildcard, singleWildcard string //rangeSeparator cannot be empty, the other two can
 }
+
+// Wildcards determines the wildcards to use when constructing an address string.
+// WildcardsBuilder can be used to create a Wildcards instance.
+type Wildcards interface {
+	// GetRangeSeparator returns the wildcard used to separate the lower and upper bound (inclusive) of a range of values.
+	// If it is not specified, it defaults to RangeSeparatorStr, which is a hyphen '-'.
+	GetRangeSeparator() string
+	// GetWildcard returns the wildcard used to represent any legitimate value, which by default is an asterisk '*'.
+	GetWildcard() string
+	// GetSingleWildcard returns the wildcard used to represent any single digit, which by default is the underscore character '_'.
+	GetSingleWildcard() string
+}
