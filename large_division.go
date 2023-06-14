@@ -175,6 +175,28 @@ func (div *largeDivValues) getCount() *big.Int {
 	return res.Sub(div.upperValue, div.value).Add(&res, bigOneConst())
 }
 
+func newLargeDivValuesUnchecked(value, upperValue, maxValue *BigDivInt, isMult bool, prefLen PrefixLen, bitCount BitCount) *largeDivValues {
+	var isSinglePrefBlock bool
+	result := &largeDivValues{
+		prefLen:    prefLen,
+		bitCount:   bitCount,
+		value:      value,
+		upperValue: upperValue,
+		maxValue:   maxValue,
+		isMult:     isMult,
+	}
+	result.isPrefixBlock, isSinglePrefBlock, result.upperValueMasked =
+		setCachedPrefixValues(result.value, result.upperValue, result.maxValue, prefLen, bitCount)
+
+	if isSinglePrefBlock {
+		result.cache.isSinglePrefBlock = &trueVal
+	} else {
+		result.cache.isSinglePrefBlock = &falseVal
+	}
+
+	return result
+}
+
 func setCachedPrefixValues(value, upperValue, maxValue *BigDivInt, prefLen PrefixLen, bitCount BitCount) (isPrefixBlock, isSinglePrefBlock bool, upperValueMasked *BigDivInt) {
 	if prefLen != nil {
 		if prefLen.Len() == bitCount {
