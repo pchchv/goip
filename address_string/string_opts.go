@@ -191,3 +191,19 @@ func (opts *stringOptions) GetSegmentStrPrefix() string {
 type StringOptionsBuilder struct {
 	stringOptions
 }
+
+func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
+	if radix == 0 {
+		radix = 16
+	}
+
+	if wildcards == nil {
+		wildcards = DefaultWildcards
+	}
+
+	if separator == 0 {
+		separator = ' '
+	}
+
+	return radix, wildcards, separator
+}
