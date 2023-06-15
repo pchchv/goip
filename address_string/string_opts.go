@@ -10,6 +10,8 @@
 // Each instance created by the builder is immutable.
 package address_string
 
+var _ StringOptions = &stringOptions{}
+
 // Wildcards determines the wildcards to use when constructing an address string.
 // WildcardsBuilder can be used to create a Wildcards instance.
 type Wildcards interface {
@@ -148,4 +150,14 @@ func (opts *stringOptions) HasSeparator() bool {
 		return false
 	}
 	return *opts.hasSeparator
+}
+
+// GetAddressLabel returns a string to add to the entire address string, such as an octal, hexadecimal or binary prefix.
+func (opts *stringOptions) GetAddressLabel() string {
+	return opts.addrLabel
+}
+
+// GetSegmentStrPrefix returns a string prefix (if any) to add to each segment value, such as an octal, hexadecimal, or binary prefix.
+func (opts *stringOptions) GetSegmentStrPrefix() string {
+	return opts.segmentStrPrefix
 }
