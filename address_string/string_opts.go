@@ -10,7 +10,22 @@
 // Each instance created by the builder is immutable.
 package address_string
 
-var _ StringOptions = &stringOptions{}
+const (
+	ipv6SegmentSeparator     = ':'
+	ipv6ZoneSeparatorStr     = "%"
+	ipv4SegmentSeparator     = '.'
+	macColonSegmentSeparator = ':'
+	rangeSeparatorStr        = "-"
+	segmentWildcardStr       = "*"
+)
+
+var (
+	// DefaultWildcards is the default Wildcards instance, using '-' and '*' as range separator and wildcard.
+	DefaultWildcards Wildcards     = &wildcards{rangeSeparator: rangeSeparatorStr, wildcard: segmentWildcardStr}
+	_                StringOptions = &stringOptions{}
+	falseVal                       = false
+	trueVal                        = true
+)
 
 // Wildcards determines the wildcards to use when constructing an address string.
 // WildcardsBuilder can be used to create a Wildcards instance.
@@ -66,6 +81,16 @@ func (wildcards *WildcardsBuilder) SetWildcard(str string) *WildcardsBuilder {
 func (wildcards *WildcardsBuilder) SetSingleWildcard(str string) *WildcardsBuilder {
 	wildcards.singleWildcard = str
 	return wildcards
+}
+
+// ToWildcards returns an immutable Wildcards instance built by this builder.
+func (wildcards *WildcardsBuilder) ToWildcards() Wildcards {
+	res := wildcards.wildcards
+	if res.rangeSeparator == "" {
+		//rangeSeparator cannot be empty
+		res.rangeSeparator = rangeSeparatorStr
+	}
+	return &res
 }
 
 // StringOptions represents a clear way to create a specific type of string.
