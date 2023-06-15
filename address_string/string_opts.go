@@ -128,3 +128,15 @@ func (opts *stringOptions) IsUppercase() bool {
 func (opts *stringOptions) IsExpandedSegments() bool {
 	return opts.expandSegments
 }
+
+// GetRadix returns the radix used.
+// The default is hexadecimal, unless the IPv4 option builder is used, in which case decimal is the default.
+func (opts *stringOptions) GetRadix() int {
+	return opts.base
+}
+
+// GetSeparator returns a separator that separates address sections, usually ':' or '.'.  HasSeparator specifies whether to call this method.
+// By default, there is no separator unless the MAC, IPv6, or IPv4 option builder is used, in which case the separator is ':' for MAC and IPv6 and '.' for IPv4.
+func (opts *stringOptions) GetSeparator() byte {
+	return opts.separator
+}
