@@ -84,7 +84,7 @@ type StringOptions interface {
 	// By default, there is no separator unless the MAC, IPv6, or IPv4 option builder is used, in which case the separator is ':' for MAC and IPv6 and '.' for IPv4
 	GetSeparator() byte
 	// HasSeparator indicates whether there is a separator.
-	// The default is false, with no separator, unless using the MAC, IPv6 or IPv4 option builder, in which case there is a separator by default.
+	// The default is false, with no separator, unless using the MAC, IPv6 or IPv4 option builder, in which case there is a separator by default
 	HasSeparator() bool
 	// GetAddressLabel returns a string to add to the entire address string, such as an octal, hexadecimal or binary prefix
 	GetAddressLabel() string
@@ -139,4 +139,13 @@ func (opts *stringOptions) GetRadix() int {
 // By default, there is no separator unless the MAC, IPv6, or IPv4 option builder is used, in which case the separator is ':' for MAC and IPv6 and '.' for IPv4.
 func (opts *stringOptions) GetSeparator() byte {
 	return opts.separator
+}
+
+// HasSeparator indicates whether there is a separator.
+// The default is false, with no separator, unless using the MAC, IPv6 or IPv4 option builder, in which case there is a separator by default.
+func (opts *stringOptions) HasSeparator() bool {
+	if opts.hasSeparator == nil {
+		return false
+	}
+	return *opts.hasSeparator
 }
