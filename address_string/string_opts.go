@@ -31,3 +31,13 @@ type wildcards struct {
 func (wildcards *wildcards) GetRangeSeparator() string {
 	return wildcards.rangeSeparator
 }
+
+// GetWildcard returns the wildcard used to represent any legitimate value, which by default is an asterisk '*'.
+func (wildcards *wildcards) GetWildcard() string {
+	return wildcards.wildcard
+}
+
+// GetSingleWildcard returns the wildcard used to represent any single digit, which by default is the underscore character '_'.
+func (wildcards *wildcards) GetSingleWildcard() string {
+	return wildcards.singleWildcard
+}
