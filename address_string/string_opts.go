@@ -59,3 +59,9 @@ func (wildcards *WildcardsBuilder) SetWildcard(str string) *WildcardsBuilder {
 	wildcards.wildcard = str
 	return wildcards
 }
+
+// SetSingleWildcard sets the wildcard used to represent any single digit, which by default is the underscore character '_'.
+func (wildcards *WildcardsBuilder) SetSingleWildcard(str string) *WildcardsBuilder {
+	wildcards.singleWildcard = str
+	return wildcards
+}
