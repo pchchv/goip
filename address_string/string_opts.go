@@ -192,6 +192,18 @@ type StringOptionsBuilder struct {
 	stringOptions
 }
 
+// SetWildcards defines wildcards to be used in the string.
+func (builder *StringOptionsBuilder) SetWildcards(wildcards Wildcards) *StringOptionsBuilder {
+	builder.wildcards = wildcards
+	return builder
+}
+
+// SetReverse determines whether to print the line segments in reverse order from the normal order, with the normal order being the order from largest to smallest value.
+func (builder *StringOptionsBuilder) SetReverse(reverse bool) *StringOptionsBuilder {
+	builder.reverse = reverse
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
