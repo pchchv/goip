@@ -118,3 +118,13 @@ func (opts *stringOptions) GetWildcards() Wildcards {
 func (opts *stringOptions) IsReverse() bool {
 	return opts.reverse
 }
+
+// IsUppercase specifies whether to use uppercase for hexadecimal or other radians with alphabetic characters.
+func (opts *stringOptions) IsUppercase() bool {
+	return opts.uppercase
+}
+
+// IsExpandedSegments returns whether segments should be expanded to their maximum width, usually with leading zeros.
+func (opts *stringOptions) IsExpandedSegments() bool {
+	return opts.expandSegments
+}
