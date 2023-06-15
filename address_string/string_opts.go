@@ -65,3 +65,29 @@ func (wildcards *WildcardsBuilder) SetSingleWildcard(str string) *WildcardsBuild
 	wildcards.singleWildcard = str
 	return wildcards
 }
+
+// StringOptions represents a clear way to create a specific type of string.
+type StringOptions interface {
+	// GetWildcards returns wildcards specified for use in the string
+	GetWildcards() Wildcards
+	// IsReverse indicates whether the string segments should be printed in reverse from the usual order,
+	// the usual order being most to least significant
+	IsReverse() bool
+	// IsUppercase specifies whether to use uppercase for hexadecimal or other radians with alphabetic characters
+	IsUppercase() bool
+	// IsExpandedSegments returns whether segments should be expanded to their maximum width, usually with leading zeros
+	IsExpandedSegments() bool
+	// GetRadix returns the radix used.
+	// The default is hexadecimal, unless the IPv4 option builder is used, in which case decimal is the default
+	GetRadix() int
+	// GetSeparator returns a separator that separates address sections, usually ':' or '.'.  HasSeparator specifies whether to call this method.
+	// By default, there is no separator unless the MAC, IPv6, or IPv4 option builder is used, in which case the separator is ':' for MAC and IPv6 and '.' for IPv4
+	GetSeparator() byte
+	// HasSeparator indicates whether there is a separator.
+	// The default is false, with no separator, unless using the MAC, IPv6 or IPv4 option builder, in which case there is a separator by default.
+	HasSeparator() bool
+	// GetAddressLabel returns a string to add to the entire address string, such as an octal, hexadecimal or binary prefix
+	GetAddressLabel() string
+	// GetSegmentStrPrefix returns a string prefix (if any) to add to each segment value, such as an octal, hexadecimal, or binary prefix
+	GetSegmentStrPrefix() string
+}
