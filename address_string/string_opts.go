@@ -91,3 +91,19 @@ type StringOptions interface {
 	// GetSegmentStrPrefix returns a string prefix (if any) to add to each segment value, such as an octal, hexadecimal, or binary prefix
 	GetSegmentStrPrefix() string
 }
+
+type stringOptions struct {
+	wildcards Wildcards
+	// default is hex
+	base int
+	// segment separator, and in the case of separated digits the default digit separator is ' ',
+	// but usually it is either '.' or ':'
+	separator byte
+	segmentStrPrefix,
+	addrLabel string
+	expandSegments,
+	reverse,
+	uppercase bool
+	// if not set, defaults to false, no delimiter
+	hasSeparator *bool
+}
