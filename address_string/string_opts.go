@@ -46,3 +46,16 @@ func (wildcards *wildcards) GetSingleWildcard() string {
 type WildcardsBuilder struct {
 	wildcards
 }
+
+// SetRangeSeparator sets the wildcard used to separate the lower and upper bound (inclusive) of a range of values.
+// If not set, it defaults to RangeSeparatorStr, which is a hyphen '-'.
+func (wildcards *WildcardsBuilder) SetRangeSeparator(str string) *WildcardsBuilder {
+	wildcards.rangeSeparator = str
+	return wildcards
+}
+
+// SetWildcard sets the wildcard used to represent any legitimate value, the default is an asterisk '*'.
+func (wildcards *WildcardsBuilder) SetWildcard(str string) *WildcardsBuilder {
+	wildcards.wildcard = str
+	return wildcards
+}
