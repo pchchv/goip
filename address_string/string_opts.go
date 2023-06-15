@@ -107,3 +107,14 @@ type stringOptions struct {
 	// if not set, defaults to false, no delimiter
 	hasSeparator *bool
 }
+
+// GetWildcards returns wildcards specified for use in the string.
+func (opts *stringOptions) GetWildcards() Wildcards {
+	return opts.wildcards
+}
+
+// IsReverse indicates whether the string segments should be printed in reverse from the usual order,
+// the usual order being most to least significant.
+func (opts *stringOptions) IsReverse() bool {
+	return opts.reverse
+}
