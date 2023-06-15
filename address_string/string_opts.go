@@ -41,3 +41,8 @@ func (wildcards *wildcards) GetWildcard() string {
 func (wildcards *wildcards) GetSingleWildcard() string {
 	return wildcards.singleWildcard
 }
+
+// WildcardsBuilder builds an instance of Wildcards.
+type WildcardsBuilder struct {
+	wildcards
+}
