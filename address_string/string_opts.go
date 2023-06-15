@@ -186,3 +186,8 @@ func (opts *stringOptions) GetAddressLabel() string {
 func (opts *stringOptions) GetSegmentStrPrefix() string {
 	return opts.segmentStrPrefix
 }
+
+// StringOptionsBuilder is used to create an immutable StringOptions instance.
+type StringOptionsBuilder struct {
+	stringOptions
+}
