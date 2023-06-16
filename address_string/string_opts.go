@@ -342,6 +342,11 @@ func (builder *MACStringOptionsBuilder) ToOptions() StringOptions {
 	return builder.StringOptionsBuilder.ToOptions()
 }
 
+type wildcardOptions struct {
+	wildcardOption WildcardOption
+	wildcards      Wildcards
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
