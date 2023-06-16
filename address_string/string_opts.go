@@ -235,6 +235,24 @@ func (builder *StringOptionsBuilder) SetSeparator(separator byte) *StringOptions
 	return builder
 }
 
+// SetRadix sets the radix in use.
+func (builder *StringOptionsBuilder) SetRadix(base int) *StringOptionsBuilder {
+	builder.base = base
+	return builder
+}
+
+// SetAddressLabel dictates a string to add to the entire address string, such as an octal, hexadecimal or binary prefix.
+func (builder *StringOptionsBuilder) SetAddressLabel(label string) *StringOptionsBuilder {
+	builder.addrLabel = label
+	return builder
+}
+
+// SetSegmentStrPrefix dictates a string prefix to add to each segment value, such as an octal, hexadecimal, or binary prefix.
+func (builder *StringOptionsBuilder) SetSegmentStrPrefix(prefix string) *StringOptionsBuilder {
+	builder.segmentStrPrefix = prefix
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
