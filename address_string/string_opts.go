@@ -204,6 +204,18 @@ func (builder *StringOptionsBuilder) SetReverse(reverse bool) *StringOptionsBuil
 	return builder
 }
 
+// SetUppercase determines whether to use uppercase for hexadecimal or other alphabetic radians.
+func (builder *StringOptionsBuilder) SetUppercase(uppercase bool) *StringOptionsBuilder {
+	builder.uppercase = uppercase
+	return builder
+}
+
+// SetExpandedSegments determines whether segments should be expanded to their maximum width, usually with leading zeros.
+func (builder *StringOptionsBuilder) SetExpandedSegments(expandSegments bool) *StringOptionsBuilder {
+	builder.expandSegments = expandSegments
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
