@@ -302,6 +302,19 @@ func (builder *MACStringOptionsBuilder) SetHasSeparator(has bool) *MACStringOpti
 	return builder
 }
 
+// SetSeparator specifies the separator for address partitions, for MAC the default is ':'.
+// HasSeparator specifies whether to use this separator or not.
+func (builder *MACStringOptionsBuilder) SetSeparator(separator byte) *MACStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetSeparator(separator)
+	return builder
+}
+
+// SetAddressLabel dictates a string to add to the entire address string, such as an octal, hexadecimal or binary prefix.
+func (builder *MACStringOptionsBuilder) SetAddressLabel(label string) *MACStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetAddressLabel(label)
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
