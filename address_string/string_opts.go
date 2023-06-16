@@ -253,6 +253,13 @@ func (builder *StringOptionsBuilder) SetSegmentStrPrefix(prefix string) *StringO
 	return builder
 }
 
+// ToOptions returns an immutable StringOptions instance built by this constructor.
+func (builder *StringOptionsBuilder) ToOptions() StringOptions {
+	res := builder.stringOptions
+	res.base, res.wildcards, res.separator = getDefaults(res.base, res.wildcards, res.separator)
+	return &res
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
