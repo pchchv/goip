@@ -47,6 +47,12 @@ type Wildcards interface {
 // WildcardOption specifies parameters that specify when and where to use wildcards.
 type WildcardOption string
 
+// WildcardOptions specifies parameters that specify when and where to use wildcards, and which wildcards to use.
+type WildcardOptions interface {
+	GetWildcardOption() WildcardOption // returns the used WildcardOption parameter
+	GetWildcards() Wildcards           // returns the wildcard characters to be used.
+}
+
 type wildcards struct {
 	rangeSeparator, wildcard, singleWildcard string //rangeSeparator cannot be empty, the other two can
 }
