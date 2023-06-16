@@ -26,10 +26,11 @@ const (
 
 var (
 	// DefaultWildcards is the default Wildcards instance, using '-' and '*' as range separator and wildcard.
-	DefaultWildcards Wildcards     = &wildcards{rangeSeparator: rangeSeparatorStr, wildcard: segmentWildcardStr}
-	_                StringOptions = &stringOptions{}
-	falseVal                       = false
-	trueVal                        = true
+	DefaultWildcards Wildcards       = &wildcards{rangeSeparator: rangeSeparatorStr, wildcard: segmentWildcardStr}
+	_                StringOptions   = &stringOptions{}
+	_                WildcardOptions = &wildcardOptions{}
+	falseVal                         = false
+	trueVal                          = true
 )
 
 // Wildcards determines the wildcards to use when constructing an address string.
@@ -345,6 +346,16 @@ func (builder *MACStringOptionsBuilder) ToOptions() StringOptions {
 type wildcardOptions struct {
 	wildcardOption WildcardOption
 	wildcards      Wildcards
+}
+
+// GetWildcards returns the wildcards to be used.
+func (opts *wildcardOptions) GetWildcards() Wildcards {
+	return opts.wildcards
+}
+
+// GetWildcardOption returns the WildcardOption parameter used.
+func (opts *wildcardOptions) GetWildcardOption() WildcardOption {
+	return opts.wildcardOption
 }
 
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
