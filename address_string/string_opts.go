@@ -289,6 +289,19 @@ func (builder *MACStringOptionsBuilder) SetExpandedSegments(expandSegments bool)
 	return builder
 }
 
+// SetRadix sets the radix in use.
+func (builder *MACStringOptionsBuilder) SetRadix(base int) *MACStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetRadix(base)
+	return builder
+}
+
+// SetHasSeparator determines whether there is a separator.
+// The default for MAC is true.
+func (builder *MACStringOptionsBuilder) SetHasSeparator(has bool) *MACStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetHasSeparator(has)
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
