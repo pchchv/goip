@@ -315,6 +315,12 @@ func (builder *MACStringOptionsBuilder) SetAddressLabel(label string) *MACString
 	return builder
 }
 
+// SetSegmentStrPrefix dictates a string prefix to add to each segment value, such as an octal, hexadecimal, or binary prefix.
+func (builder *MACStringOptionsBuilder) SetSegmentStrPrefix(prefix string) *MACStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetSegmentStrPrefix(prefix)
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
