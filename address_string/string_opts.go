@@ -265,6 +265,18 @@ type MACStringOptionsBuilder struct {
 	StringOptionsBuilder
 }
 
+// SetWildcards defines wildcards to be used in the string.
+func (builder *MACStringOptionsBuilder) SetWildcards(wildcards Wildcards) *MACStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetWildcards(wildcards)
+	return builder
+}
+
+// SetReverse determines whether to print line segments in reverse order from the normal order, with the normal order being from largest to smallest value.
+func (builder *MACStringOptionsBuilder) SetReverse(reverse bool) *MACStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetReverse(reverse)
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
