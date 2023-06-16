@@ -216,6 +216,25 @@ func (builder *StringOptionsBuilder) SetExpandedSegments(expandSegments bool) *S
 	return builder
 }
 
+// SetHasSeparator determines whether the separator is present.
+// The default is false, with no separator, unless the MAC, IPv6 or IPv4 option builder is used, in which case the separator is present by default.
+func (builder *StringOptionsBuilder) SetHasSeparator(has bool) *StringOptionsBuilder {
+	if has {
+		builder.hasSeparator = &trueVal
+	} else {
+		builder.hasSeparator = &falseVal
+	}
+	return builder
+}
+
+// SetSeparator defines a separator to separate address partitions, usually ':' or '.'.
+// HasSeparator specifies whether this separator should be used or not.
+func (builder *StringOptionsBuilder) SetSeparator(separator byte) *StringOptionsBuilder {
+	builder.separator = separator
+	builder.SetHasSeparator(true)
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
