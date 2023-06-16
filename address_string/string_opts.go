@@ -336,3 +336,15 @@ func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards
 
 	return radix, wildcards, separator
 }
+
+func getMACDefaults(hasSeparator *bool, separator byte) (*bool, byte) {
+	if hasSeparator == nil {
+		hasSeparator = &trueVal
+	}
+
+	if separator == 0 {
+		separator = macColonSegmentSeparator
+	}
+
+	return hasSeparator, separator
+}
