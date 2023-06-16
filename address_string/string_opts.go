@@ -260,6 +260,11 @@ func (builder *StringOptionsBuilder) ToOptions() StringOptions {
 	return &res
 }
 
+// MACStringOptionsBuilder creates an immutable StringOptions instance for MAC address strings.
+type MACStringOptionsBuilder struct {
+	StringOptionsBuilder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
