@@ -277,6 +277,18 @@ func (builder *MACStringOptionsBuilder) SetReverse(reverse bool) *MACStringOptio
 	return builder
 }
 
+// SetUppercase determines whether to use uppercase for hexadecimal or other alphabetic radians.
+func (builder *MACStringOptionsBuilder) SetUppercase(uppercase bool) *MACStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetUppercase(uppercase)
+	return builder
+}
+
+// SetExpandedSegments determines whether segments should be expanded to their maximum width, usually with leading zeros.
+func (builder *MACStringOptionsBuilder) SetExpandedSegments(expandSegments bool) *MACStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetExpandedSegments(expandSegments)
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
