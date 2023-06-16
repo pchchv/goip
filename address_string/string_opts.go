@@ -17,6 +17,11 @@ const (
 	macColonSegmentSeparator = ':'
 	rangeSeparatorStr        = "-"
 	segmentWildcardStr       = "*"
+	// WildcardsNetworkOnly prints wildcards that are part of the network
+	// (only possible when using subnet address notation, otherwise this option is ignored).
+	WildcardsNetworkOnly WildcardOption = ""
+	// WildcardsAll prints wildcards for any visible (uncompressed) segments.
+	WildcardsAll WildcardOption = "allType"
 )
 
 var (
@@ -38,6 +43,9 @@ type Wildcards interface {
 	// GetSingleWildcard returns the wildcard used to represent any single digit, which by default is the underscore character '_'.
 	GetSingleWildcard() string
 }
+
+// WildcardOption specifies parameters that specify when and where to use wildcards.
+type WildcardOption string
 
 type wildcards struct {
 	rangeSeparator, wildcard, singleWildcard string //rangeSeparator cannot be empty, the other two can
