@@ -321,6 +321,13 @@ func (builder *MACStringOptionsBuilder) SetSegmentStrPrefix(prefix string) *MACS
 	return builder
 }
 
+// ToOptions returns an immutable StringOptions instance built by this constructor.
+func (builder *MACStringOptionsBuilder) ToOptions() StringOptions {
+	b := &builder.StringOptionsBuilder
+	b.hasSeparator, b.separator = getMACDefaults(b.hasSeparator, b.separator)
+	return builder.StringOptionsBuilder.ToOptions()
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
