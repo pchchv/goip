@@ -442,3 +442,28 @@ func getIPDefaults(zoneSeparator string) string {
 
 	return zoneSeparator
 }
+
+func getIPv4Defaults(hasSeparator *bool, separator byte, radix int) (*bool, byte, int) {
+	if hasSeparator == nil {
+		hasSeparator = &trueVal
+	}
+	if radix == 0 {
+		radix = 10
+	}
+	if separator == 0 {
+		separator = ipv4SegmentSeparator
+	}
+
+	return hasSeparator, separator, radix
+}
+
+func getIPv6Defaults(hasSeparator *bool, separator byte) (*bool, byte) {
+	if hasSeparator == nil {
+		hasSeparator = &trueVal
+	}
+	if separator == 0 {
+		separator = ipv6SegmentSeparator
+	}
+
+	return hasSeparator, separator
+}
