@@ -377,6 +377,21 @@ type ipStringOptions struct {
 	zoneSeparator  string         // default is IPv6ZoneSeparator
 }
 
+// GetAddressSuffix returns a suffix to be appended to the string.
+// .in-addr.arpa, .ip6.arpa, .ipv6-literal.net are examples of suffixes tacked onto the end of address strings.
+func (opts *ipStringOptions) GetAddressSuffix() string {
+	return opts.addrSuffix
+}
+
+// GetWildcardOptions returns the WildcardOptions to use.
+func (opts *ipStringOptions) GetWildcardOptions() WildcardOptions {
+	options := &wildcardOptions{
+		opts.wildcardOption,
+		opts.GetWildcards(),
+	}
+	return options
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
