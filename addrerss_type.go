@@ -19,3 +19,15 @@ func (a addressType) isIPv4() bool {
 func (a addressType) isIPv6() bool {
 	return a == ipv6Type
 }
+
+func (a addressType) isIPv6v4Mixed() bool {
+	return a == ipv6v4MixedType
+}
+
+func (a addressType) isIP() bool {
+	return a.isIPv4() || a.isIPv6()
+}
+
+func (a addressType) isMAC() bool {
+	return a == macType
+}
