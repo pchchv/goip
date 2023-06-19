@@ -370,6 +370,13 @@ type IPStringOptions interface {
 	GetZoneSeparator() string
 }
 
+type ipStringOptions struct {
+	stringOptions
+	addrSuffix     string
+	wildcardOption WildcardOption // default is WildcardsNetworkOnly
+	zoneSeparator  string         // default is IPv6ZoneSeparator
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
