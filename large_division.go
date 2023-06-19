@@ -49,6 +49,7 @@ func (div *addressLargeDivInternal) getBigDefaultTextualRadix() *big.Int {
 	}
 	return div.defaultRadix
 }
+
 // IPAddressLargeDivision represents an arbitrary bit size division in an address or address division grouping.
 // It can contain a single value or a range of consecutive values and has an assigned bit length.
 // Like all address components, it is immutable.
@@ -180,7 +181,7 @@ func (div *largeDivValues) getUpperSegmentValue() SegInt {
 	return SegInt(div.upperValue.Uint64())
 }
 
-func (div *largeDivValues) getAddrType() addressType {
+func (div *largeDivValues) getAddrType() addrType {
 	return zeroType
 }
 

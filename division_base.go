@@ -34,7 +34,7 @@ type divisionValuesBase interface {
 	bytesInternal(upper bool) (bytes []byte)
 	// getCache returns a divCache for those divisions which cache their values, or nil otherwise
 	getCache() *divCache
-	getAddrType() addressType
+	getAddrType() addrType
 }
 
 // divisionValues provides methods to provide the values from divisions,

@@ -3,7 +3,7 @@ package goip
 // DivisionType serves as a common interface to all divisions
 type DivisionType interface {
 	AddressItem
-	getAddrType() addressType
+	getAddrType() addrType
 	// getStringAsLower caches the string from getDefaultLowerString
 	getStringAsLower() string
 	// GetString produces a string that avoids wildcards when a prefix length is part of the string.
