@@ -410,6 +410,21 @@ type IPStringOptionsBuilder struct {
 	ipStringOptions ipStringOptions
 }
 
+// SetAddressSuffix dictates a suffix to be appended to the string.
+// .in-addr.arpa, .ip6.arpa, .ipv6-literal.net are examples of suffixes tacked onto the end of address strings.
+func (builder *IPStringOptionsBuilder) SetAddressSuffix(suffix string) *IPStringOptionsBuilder {
+	builder.ipStringOptions.addrSuffix = suffix
+	return builder
+}
+
+// SetWildcardOptions is a convenient method for simultaneously setting both WildcardOption and Wildcards.
+// It overrides previous calls to SetWildcardOption and SetWildcards,
+// and is overridden by subsequent calls to these methods.
+func (builder *IPStringOptionsBuilder) SetWildcardOptions(wildcardOptions WildcardOptions) *IPStringOptionsBuilder {
+	builder.SetWildcards(wildcardOptions.GetWildcards())
+	return builder.SetWildcardOption(wildcardOptions.GetWildcardOption())
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
