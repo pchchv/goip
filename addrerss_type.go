@@ -31,3 +31,7 @@ func (a addressType) isIP() bool {
 func (a addressType) isMAC() bool {
 	return a == macType
 }
+
+func (a addressType) isZeroSegments() bool {
+	return a == zeroType
+}
