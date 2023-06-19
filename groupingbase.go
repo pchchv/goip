@@ -1,5 +1,7 @@
 package goip
 
+import "fmt"
+
 type ipStringCache struct {
 	normalizedWildcardString,
 	fullString,
@@ -43,4 +45,11 @@ type stringCache struct {
 	*ipv4StringCache
 	*ipStringCache
 	*macStringCache
+}
+
+type divArray interface {
+	getDivision(index int) *addressDivisionBase
+	getGenericDivision(index int) DivisionType
+	getDivisionCount() int
+	fmt.Stringer
 }
