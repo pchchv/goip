@@ -58,3 +58,8 @@ type maskLenSetting struct {
 	networkMaskLen PrefixLen
 	hostMaskLen    PrefixLen
 }
+
+type bytesCache struct {
+	lowerBytes []byte
+	upperBytes []byte
+}
