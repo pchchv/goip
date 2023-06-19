@@ -414,11 +414,9 @@ func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards
 	if radix == 0 {
 		radix = 16
 	}
-
 	if wildcards == nil {
 		wildcards = DefaultWildcards
 	}
-
 	if separator == 0 {
 		separator = ' '
 	}
@@ -430,10 +428,17 @@ func getMACDefaults(hasSeparator *bool, separator byte) (*bool, byte) {
 	if hasSeparator == nil {
 		hasSeparator = &trueVal
 	}
-
 	if separator == 0 {
 		separator = macColonSegmentSeparator
 	}
 
 	return hasSeparator, separator
+}
+
+func getIPDefaults(zoneSeparator string) string {
+	if len(zoneSeparator) == 0 {
+		zoneSeparator = ipv6ZoneSeparatorStr
+	}
+
+	return zoneSeparator
 }
