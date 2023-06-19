@@ -358,6 +358,18 @@ func (opts *wildcardOptions) GetWildcardOption() WildcardOption {
 	return opts.wildcardOption
 }
 
+// IPStringOptions is an illustrative way to create a specific type of IP address or subnet string.
+type IPStringOptions interface {
+	StringOptions
+	// GetAddressSuffix returns a suffix to be appended to the string.
+	// .in-addr.arpa, .ip6.arpa, .ipv6-literal.net are examples of suffixes tacked onto the end of address strings.
+	GetAddressSuffix() string
+	// GetWildcardOption returns the WildcardOption to use.
+	GetWildcardOption() WildcardOption
+	// GetZoneSeparator specifies the separator that separates the zone from the address, the default is '%'.
+	GetZoneSeparator() string
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
