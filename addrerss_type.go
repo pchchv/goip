@@ -11,3 +11,11 @@ const (
 	ipv6v4MixedType addressType = 3 // ipv6-v4 mixed segments
 	macType         addressType = 4 // mac segments
 )
+
+func (a addressType) isIPv4() bool {
+	return a == ipv4Type
+}
+
+func (a addressType) isIPv6() bool {
+	return a == ipv6Type
+}
