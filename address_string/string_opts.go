@@ -29,6 +29,7 @@ var (
 	DefaultWildcards Wildcards       = &wildcards{rangeSeparator: rangeSeparatorStr, wildcard: segmentWildcardStr}
 	_                StringOptions   = &stringOptions{}
 	_                WildcardOptions = &wildcardOptions{}
+	_                IPStringOptions = &ipStringOptions{}
 	falseVal                         = false
 	trueVal                          = true
 )
@@ -390,6 +391,17 @@ func (opts *ipStringOptions) GetWildcardOptions() WildcardOptions {
 		opts.GetWildcards(),
 	}
 	return options
+}
+
+// GetWildcardOption returns the WildcardOption to use.
+func (opts *ipStringOptions) GetWildcardOption() WildcardOption {
+	return opts.wildcardOption
+
+}
+
+// GetZoneSeparator returns the delimiter that separates the address from the zone, the default being '%'.
+func (opts *ipStringOptions) GetZoneSeparator() string {
+	return opts.zoneSeparator
 }
 
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
