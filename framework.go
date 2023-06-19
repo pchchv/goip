@@ -133,3 +133,12 @@ type Prefixed interface {
 	// has no prefix length or a different prefix length than the prefix length for which ContainsSinglePrefixBlock returns true.
 	IsSinglePrefixBlock() bool
 }
+
+// HostIdentifierString represents a string that is used to identify a host.
+type HostIdentifierString interface {
+	ToNormalizedString() string     // ToNormalizedString provides a normalized String representation for the host identified by this HostIdentifierString instance
+	IsValid() bool                  // IsValid returns whether the wrapped string is a valid identifier for the host
+	Wrap() ExtendedIdentifierString // Wrap wraps an identifier string into an extended type that is polymorphic to other identifier strings
+	fmt.Stringer
+	fmt.Formatter
+}
