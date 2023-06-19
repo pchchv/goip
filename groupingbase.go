@@ -53,3 +53,8 @@ type divArray interface {
 	getDivisionCount() int
 	fmt.Stringer
 }
+
+type maskLenSetting struct {
+	networkMaskLen PrefixLen
+	hostMaskLen    PrefixLen
+}
