@@ -404,6 +404,12 @@ func (opts *ipStringOptions) GetZoneSeparator() string {
 	return opts.zoneSeparator
 }
 
+// IPStringOptionsBuilder is used to create an immutable IPStringOptions instance for IP address strings.
+type IPStringOptionsBuilder struct {
+	StringOptionsBuilder
+	ipStringOptions ipStringOptions
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
