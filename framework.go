@@ -142,3 +142,29 @@ type HostIdentifierString interface {
 	fmt.Stringer
 	fmt.Formatter
 }
+
+// AddressDivisionSeries serves as a common interface for all division groups, address sections and addresses.
+type AddressDivisionSeries interface {
+	AddressItem
+	GetDivisionCount() int                    // GetDivisionCount returns the number of divisions
+	GetBlockCount(divisionCount int) *big.Int // GetBlockCount returns the count of distinct values in the given number of initial (more significant) segments
+	// GetPrefixCount returns the count of prefixes in this series for its prefix length, or the total count if it has no prefix length
+	GetPrefixCount() *big.Int
+	// GetSequentialBlockCount provides a count of elements from the sequential block iterator,
+	// the minimum number of sequential address division series that constitute a given division series.
+	GetSequentialBlockCount() *big.Int
+	// GetSequentialBlockIndex gets the minimum division index for which all subsequent divisions are full-range blocks.
+	// A division by this index is not a full-range block if all divisions are not full-range.
+	// A division by this index and all subsequent divisions form a consecutive row.
+	// For a full range to be consecutive, the preceding divisions must be single-valued.
+	GetSequentialBlockIndex() int
+	// IsSequential returns whether the series represents a range of values that are consistent.
+	// Generally, this means that any division spanning a range of values must be followed by divisions that are complete, covering all values.
+	IsSequential() bool
+	Prefixed
+	// GetGenericDivision returns the division by the given index as DivisionType.
+	// The first division is at index 0.
+	// GetGenericDivision panics when the index is negative or an index greater than the number of divisions.
+	// Useful for comparisons.
+	GetGenericDivision(index int) DivisionType
+}
