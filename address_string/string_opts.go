@@ -702,6 +702,13 @@ func (builder *IPv6StringOptionsBuilder) SetCompressOptions(compressOptions Comp
 	return builder
 }
 
+// SetSplitDigits determines whether to separate each digit from each other with separators.
+// When mixed, this parameter is ignored.
+func (builder *IPv6StringOptionsBuilder) SetSplitDigits(splitDigits bool) *IPv6StringOptionsBuilder {
+	builder.opts.splitDigits = splitDigits
+	return builder
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
