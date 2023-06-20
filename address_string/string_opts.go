@@ -681,6 +681,16 @@ type IPv6StringOptionsBuilder struct {
 	makeMixed bool
 }
 
+// IsMixed specifies whether the last two segments of the IPv6 address should be printed as IPv4 address, resulting in a mixed IPv6/v4 string.
+func (builder *IPv6StringOptionsBuilder) IsMixed() bool {
+	return builder.makeMixed
+}
+
+// GetIPv4Opts returns the IPv4 string options to be used in the IPv4 address section of a mixed IPv6/v4 string.
+func (builder *IPv6StringOptionsBuilder) GetIPv4Opts() IPStringOptions {
+	return builder.opts.ipv4Opts
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
