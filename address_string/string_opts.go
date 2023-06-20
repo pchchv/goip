@@ -664,6 +664,16 @@ func (opts *ipv6StringOptions) GetIPv4Opts() IPStringOptions {
 	return opts.ipv4Opts
 }
 
+// GetCompressOptions returns CompressOptions parameters that specify how to compress null segments in an IPv6 address string or subnet.
+func (opts *ipv6StringOptions) GetCompressOptions() CompressOptions {
+	return opts.compressOptions
+}
+
+// IsMixed specifies that the last two segments of the IPv6 address should be printed as IPv4 address, resulting in a mixed IPv6/v4 string.
+func (opts *ipv6StringOptions) IsMixed() bool {
+	return opts.ipv4Opts != nil
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
