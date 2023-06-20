@@ -782,6 +782,25 @@ func (builder *IPv6StringOptionsBuilder) SetAddressSuffix(suffix string) *IPv6St
 	return builder
 }
 
+// SetSegmentStrPrefix dictates a string prefix to add to each segment value, such as an octal, hexadecimal, or binary prefix.
+func (builder *IPv6StringOptionsBuilder) SetSegmentStrPrefix(prefix string) *IPv6StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetSegmentStrPrefix(prefix)
+	return builder
+}
+
+// SetReverse determines whether to print the line segments in reverse order from the normal order,
+// with the normal order being the order from largest to smallest value.
+func (builder *IPv6StringOptionsBuilder) SetReverse(reverse bool) *IPv6StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetReverse(reverse)
+	return builder
+}
+
+// SetUppercase determines whether to use uppercase for hexadecimal or other alphabetic radians.
+func (builder *IPv6StringOptionsBuilder) SetUppercase(upper bool) *IPv6StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetUppercase(upper)
+	return builder
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
