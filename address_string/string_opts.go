@@ -754,6 +754,20 @@ func (builder *IPv6StringOptionsBuilder) SetRadix(base int) *IPv6StringOptionsBu
 	return builder
 }
 
+// SetHasSeparator determines whether there is a separator.
+// The default for IPv6 is true.
+func (builder *IPv6StringOptionsBuilder) SetHasSeparator(has bool) *IPv6StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetHasSeparator(has)
+	return builder
+}
+
+// SetSeparator defines a separator to separate parts of the address, for IPv6 the default is ':'.
+// HasSeparator specifies whether to use this separator or not.
+func (builder *IPv6StringOptionsBuilder) SetSeparator(separator byte) *IPv6StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetSeparator(separator)
+	return builder
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
