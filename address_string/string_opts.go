@@ -674,6 +674,18 @@ type CompressOptionsBuilder struct {
 	compressOptions
 }
 
+// SetCompressSingle determines whether one zero segment should compress itself if there are no other segments to compress.
+func (builder *CompressOptionsBuilder) SetCompressSingle(compressSingle bool) *CompressOptionsBuilder {
+	builder.compressSingle = compressSingle
+	return builder
+}
+
+// SetCompressionChoiceOptions sets the CompressionChoiceOptions that determine which null segments should be compressed.
+func (builder *CompressOptionsBuilder) SetCompressionChoiceOptions(rangeSelection CompressionChoiceOptions) *CompressOptionsBuilder {
+	builder.rangeSelection = rangeSelection
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
