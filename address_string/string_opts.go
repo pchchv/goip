@@ -376,6 +376,12 @@ type WildcardOptionsBuilder struct {
 	wildcardOptions
 }
 
+// SetWildcardOptions defines the WildcardOption to use.
+func (builder *WildcardOptionsBuilder) SetWildcardOptions(wildcardOption WildcardOption) *WildcardOptionsBuilder {
+	builder.wildcardOption = wildcardOption
+	return builder
+}
+
 type ipStringOptions struct {
 	stringOptions
 	addrSuffix     string
