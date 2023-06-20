@@ -1,5 +1,14 @@
 package goip
 
+import "github.com/pchchv/goip/address_string"
+
+var (
+	// Wildcards are different, here we only use the range, since the div size is not implicit.
+	octalParamsDiv   = new(address_string.IPStringOptionsBuilder).SetRadix(8).SetSegmentStrPrefix(OctalPrefix).SetWildcards(rangeWildcard).ToOptions()
+	hexParamsDiv     = new(address_string.IPStringOptionsBuilder).SetRadix(16).SetSegmentStrPrefix(HexPrefix).SetWildcards(rangeWildcard).ToOptions()
+	decimalParamsDiv = new(address_string.IPStringOptionsBuilder).SetRadix(10).SetWildcards(rangeWildcard).ToOptions()
+)
+
 // DivInt is an integer type for holding generic division values,
 // which can be larger than segment values.
 type DivInt = uint64
@@ -18,4 +27,8 @@ type divderiver interface {
 	// derivePrefixed produces a new division with the same bit count and values as the old,
 	// but with the new prefix length
 	derivePrefixed(prefLen PrefixLen) divisionValues
+}
+
+type addressDivisionInternal struct {
+	addressDivisionBase
 }
