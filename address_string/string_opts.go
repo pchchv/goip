@@ -628,6 +628,24 @@ func (builder *IPv4StringOptionsBuilder) ToOptions() IPStringOptions {
 	return builder.IPStringOptionsBuilder.ToOptions()
 }
 
+// IPv6StringOptions provides a clear way to create a specific type of IPv6 address string.
+type IPv6StringOptions interface {
+	IPStringOptions
+	// GetIPv4Opts returns the parameters used to create an embedded IPv4 address string in a mixed IPv6 address,
+	// which is taken from the last 32 bits of the IPv6 address.
+	// For example: "a:b:c:d:e:f:1.2.3.4".
+	GetIPv4Opts() IPStringOptions
+	// GetCompressOptions returns CompressOptions parameters that specify how to compress null segments in an IPv6 address string or subnet.
+	GetCompressOptions() CompressOptions
+	// IsSplitDigits specifies whether each digit is separated from each other by separators.
+	// If separated, this parameter is ignored.
+	// Can produce address_error.IncompatibleAddressError for ranged series.
+	IsSplitDigits() bool
+	// IsMixed specifies that the last two segments of the IPv6 address should be printed as IPv4 address, resulting in a mixed IPv6/v4 string.
+	// Can produce address_error.IncompatibleAddressError for ranges in the IPv4 part of the series.
+	IsMixed() bool
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
