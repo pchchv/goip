@@ -483,6 +483,29 @@ func (builder *IPStringOptionsBuilder) SetSeparator(separator byte) *IPStringOpt
 	return builder
 }
 
+// SetAddressLabel dictates a string to add to the entire address string,
+// such as an octal, hexadecimal or binary prefix.
+func (builder *IPStringOptionsBuilder) SetAddressLabel(label string) *IPStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetAddressLabel(label)
+	return builder
+}
+
+// ToOptions returns an immutable instance of IPStringOptions constructed by this constructor.
+func (builder *IPStringOptionsBuilder) ToOptions() IPStringOptions {
+	builder.ipStringOptions.zoneSeparator = getIPDefaults(builder.ipStringOptions.zoneSeparator)
+	res := builder.ipStringOptions
+	res.stringOptions = *builder.StringOptionsBuilder.ToOptions().(*stringOptions)
+
+	return &res
+}
+
+// SetSegmentStrPrefix dictates a string prefix to add to each segment value,
+// such as an octal, hexadecimal, or binary prefix.
+func (builder *IPStringOptionsBuilder) SetSegmentStrPrefix(prefix string) *IPStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetSegmentStrPrefix(prefix)
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
