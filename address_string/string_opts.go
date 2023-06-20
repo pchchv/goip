@@ -638,6 +638,16 @@ func (choice CompressionChoiceOptions) CompressHost() bool {
 // MixedCompressionOptions specify which null segments should be compressed in mixed IPv6/v4 strings.
 type MixedCompressionOptions string
 
+// CompressOptions specifies how to compress zero-segments in the address or subnet string.
+type CompressOptions interface {
+	// GetCompressionChoiceOptions provides CompressionChoiceOptions that determine which null segments should be compressed.
+	GetCompressionChoiceOptions() CompressionChoiceOptions
+	// GetMixedCompressionOptions provides MixedCompressionOptions options that specify which null segments should be compressed in mixed IPv6/v4 strings.
+	GetMixedCompressionOptions() MixedCompressionOptions
+	// CompressSingle specifies whether one zero segment should compress itself if there are no other segments to compress.
+	CompressSingle() bool
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
