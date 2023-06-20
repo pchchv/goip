@@ -585,6 +585,20 @@ func (builder *IPv4StringOptionsBuilder) SetAddressLabel(label string) *IPv4Stri
 	return builder
 }
 
+// SetSegmentStrPrefix dictates a string prefix to add to each segment value,
+// such as an octal, hexadecimal, or binary prefix.
+func (builder *IPv4StringOptionsBuilder) SetSegmentStrPrefix(prefix string) *IPv4StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetSegmentStrPrefix(prefix)
+	return builder
+}
+
+// ToOptions returns an immutable IPStringOptions instance built by this builder.
+func (builder *IPv4StringOptionsBuilder) ToOptions() IPStringOptions {
+	b := &builder.StringOptionsBuilder
+	b.hasSeparator, b.separator, b.base = getIPv4Defaults(b.hasSeparator, b.separator, b.base)
+	return builder.IPStringOptionsBuilder.ToOptions()
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
