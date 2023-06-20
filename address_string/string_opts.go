@@ -659,6 +659,16 @@ func (opts *compressOptions) GetCompressionChoiceOptions() CompressionChoiceOpti
 	return opts.rangeSelection
 }
 
+// GetMixedCompressionOptions provides MixedCompressionOptions options that specify which null segments should be compressed in mixed IPv6/v4 strings.
+func (opts *compressOptions) GetMixedCompressionOptions() MixedCompressionOptions {
+	return opts.compressMixedOptions
+}
+
+// CompressSingle specifies whether one zero segment should compress itself if there are no other segments to compress.
+func (opts *compressOptions) CompressSingle() bool {
+	return opts.compressSingle
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
