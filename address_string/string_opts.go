@@ -625,6 +625,9 @@ func (builder *IPv4StringOptionsBuilder) ToOptions() IPStringOptions {
 	return builder.IPStringOptionsBuilder.ToOptions()
 }
 
+// CompressionChoiceOptions specify which null segments are to be compressed.
+type CompressionChoiceOptions string
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
