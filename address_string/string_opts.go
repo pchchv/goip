@@ -24,17 +24,32 @@ const (
 	WildcardsAll WildcardOption = "allType"
 	// ZerosCompression - compress the largest range of zero-segments.
 	ZerosCompression CompressionChoiceOptions = "zeros"
+	// HostPreferred - if there is a host section, compress the host along with any adjoining zero-segments, otherwise compress a range of zero-segments.
+	HostPreferred CompressionChoiceOptions = "host preferred"
+	// MixedPreferred - if there is a mixed section that is compressible according to the MixedCompressionOptions, compress the mixed section along with any adjoining zero-segments, otherwise compress a range of zero-segments.
+	MixedPreferred CompressionChoiceOptions = "mixed preferred"
+	// ZerosOrHost - compress the largest range of zero or host segments.
+	ZerosOrHost CompressionChoiceOptions = ""
+	// NoMixedCompression - do not allow compression of an IPv4 section.
+	NoMixedCompression MixedCompressionOptions = "no mixed compression"
+	// MixedCompressionNoHost - allow compression of the IPv4 section when there is no host of the prefixed address.
+	MixedCompressionNoHost MixedCompressionOptions = "no host"
+	// MixedCompressionCoveredByHost - compress the IPv4 section if it is part of the host of the prefixed address.
+	MixedCompressionCoveredByHost MixedCompressionOptions = "covered by host"
+	// AllowMixedCompression - allow compression of a the IPv4 section.
+	AllowMixedCompression MixedCompressionOptions = ""
 )
 
 var (
 	// DefaultWildcards is the default Wildcards instance, using '-' and '*' as range separator and wildcard.
-	DefaultWildcards Wildcards       = &wildcards{rangeSeparator: rangeSeparatorStr, wildcard: segmentWildcardStr}
-	_                StringOptions   = &stringOptions{}
-	_                WildcardOptions = &wildcardOptions{}
-	_                IPStringOptions = &ipStringOptions{}
-	_                CompressOptions = &compressOptions{}
-	falseVal                         = false
-	trueVal                          = true
+	DefaultWildcards Wildcards         = &wildcards{rangeSeparator: rangeSeparatorStr, wildcard: segmentWildcardStr}
+	_                StringOptions     = &stringOptions{}
+	_                WildcardOptions   = &wildcardOptions{}
+	_                IPStringOptions   = &ipStringOptions{}
+	_                CompressOptions   = &compressOptions{}
+	_                IPv6StringOptions = &ipv6StringOptions{}
+	falseVal                           = false
+	trueVal                            = true
 )
 
 // Wildcards determines the wildcards to use when constructing an address string.
@@ -799,6 +814,24 @@ func (builder *IPv6StringOptionsBuilder) SetReverse(reverse bool) *IPv6StringOpt
 func (builder *IPv6StringOptionsBuilder) SetUppercase(upper bool) *IPv6StringOptionsBuilder {
 	builder.IPStringOptionsBuilder.SetUppercase(upper)
 	return builder
+}
+
+// ToOptions returns an immutable instance of IPv6StringOptions constructed by this constructor.
+func (builder *IPv6StringOptionsBuilder) ToOptions() IPv6StringOptions {
+	if builder.makeMixed {
+		if builder.opts.ipv4Opts == nil {
+			builder.opts.ipv4Opts = new(IPv4StringOptionsBuilder).SetExpandedSegments(builder.expandSegments).
+				SetWildcardOption(builder.ipStringOptions.wildcardOption).
+				SetWildcards(builder.wildcards).ToOptions()
+		}
+	} else {
+		builder.opts.ipv4Opts = nil
+	}
+	b := &builder.IPStringOptionsBuilder.StringOptionsBuilder
+	b.hasSeparator, b.separator = getIPv6Defaults(b.hasSeparator, b.separator)
+	res := builder.opts
+	res.ipStringOptions = *builder.IPStringOptionsBuilder.ToOptions().(*ipStringOptions)
+	return &res
 }
 
 // CompressionChoiceOptions specify which null segments are to be compressed.
