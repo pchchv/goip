@@ -22,6 +22,8 @@ const (
 	WildcardsNetworkOnly WildcardOption = ""
 	// WildcardsAll prints wildcards for any visible (uncompressed) segments.
 	WildcardsAll WildcardOption = "allType"
+	// ZerosCompression - compress the largest range of zero-segments.
+	ZerosCompression CompressionChoiceOptions = "zeros"
 )
 
 var (
@@ -627,6 +629,11 @@ func (builder *IPv4StringOptionsBuilder) ToOptions() IPStringOptions {
 
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
+
+// CompressHost specifies whether to compress the host with the prefix address.
+func (choice CompressionChoiceOptions) CompressHost() bool {
+	return choice != ZerosCompression
+}
 
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
