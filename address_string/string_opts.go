@@ -506,6 +506,11 @@ func (builder *IPStringOptionsBuilder) SetSegmentStrPrefix(prefix string) *IPStr
 	return builder
 }
 
+// The IPv4StringOptionsBuilder is used to create an immutable IPStringOptions instance for IPv4 address strings.
+type IPv4StringOptionsBuilder struct {
+	IPStringOptionsBuilder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
