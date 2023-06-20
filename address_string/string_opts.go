@@ -648,6 +648,12 @@ type CompressOptions interface {
 	CompressSingle() bool
 }
 
+type compressOptions struct {
+	compressSingle       bool
+	rangeSelection       CompressionChoiceOptions
+	compressMixedOptions MixedCompressionOptions // params for addresses with an ipv4 section
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
