@@ -450,6 +450,24 @@ func (builder *IPStringOptionsBuilder) SetExpandedSegments(expandSegments bool) 
 	return builder
 }
 
+// SetReverse determines whether to print the line segments in reverse order from the normal order,
+// with the normal order being the order from largest to smallest value.
+func (builder *IPStringOptionsBuilder) SetReverse(reverse bool) *IPStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetReverse(reverse)
+	return builder
+}
+
+// SetUppercase determines whether to use uppercase for hexadecimal or other alphabetic radians.
+func (builder *IPStringOptionsBuilder) SetUppercase(uppercase bool) *IPStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetUppercase(uppercase)
+	return builder
+}
+
+// SetRadix sets the radix to be used.
+func (builder *IPStringOptionsBuilder) SetRadix(base int) *IPStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetRadix(base)
+	return builder
+}
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
