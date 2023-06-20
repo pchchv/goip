@@ -742,6 +742,18 @@ func (builder *IPv6StringOptionsBuilder) SetWildcards(wildcards Wildcards) *IPv6
 	return builder
 }
 
+// SetExpandedSegments determines whether segments should be expanded to their maximum width, usually with leading zeros.
+func (builder *IPv6StringOptionsBuilder) SetExpandedSegments(expandSegments bool) *IPv6StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetExpandedSegments(expandSegments)
+	return builder
+}
+
+// SetRadix sets the radix to be used.
+func (builder *IPv6StringOptionsBuilder) SetRadix(base int) *IPv6StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetRadix(base)
+	return builder
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
