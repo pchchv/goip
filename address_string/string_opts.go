@@ -654,6 +654,11 @@ type compressOptions struct {
 	compressMixedOptions MixedCompressionOptions // params for addresses with an ipv4 section
 }
 
+// GetCompressionChoiceOptions provides CompressionChoiceOptions that determine which null segments should be compressed.
+func (opts *compressOptions) GetCompressionChoiceOptions() CompressionChoiceOptions {
+	return opts.rangeSelection
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
