@@ -768,6 +768,20 @@ func (builder *IPv6StringOptionsBuilder) SetSeparator(separator byte) *IPv6Strin
 	return builder
 }
 
+// SetZoneSeparator determines the separator to separate the zone from the address, the default is '%'.
+func (builder *IPv6StringOptionsBuilder) SetZoneSeparator(separator string) *IPv6StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetZoneSeparator(separator)
+	return builder
+}
+
+// SetAddressSuffix determines the suffix to be added to the string.
+// .in-addr.arpa, .ip6.arpa, .ipv6-literal.net are examples of
+// suffixes added to the end of address strings.
+func (builder *IPv6StringOptionsBuilder) SetAddressSuffix(suffix string) *IPv6StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetAddressSuffix(suffix)
+	return builder
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
