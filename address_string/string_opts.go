@@ -437,6 +437,19 @@ func (builder *IPStringOptionsBuilder) SetWildcards(wildcards Wildcards) *IPStri
 	return builder
 }
 
+// SetZoneSeparator determines the separator to separate the zone from the address, the default is '%'.
+// Zones only apply to IPv6 addresses, not IPv4 addresses.
+func (builder *IPStringOptionsBuilder) SetZoneSeparator(separator string) *IPStringOptionsBuilder {
+	builder.ipStringOptions.zoneSeparator = separator
+	return builder
+}
+
+// SetExpandedSegments dictates whether segments should be expanded to maximal width, typically by using leading zeros.
+func (builder *IPStringOptionsBuilder) SetExpandedSegments(expandSegments bool) *IPStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetExpandedSegments(expandSegments)
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
