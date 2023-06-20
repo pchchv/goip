@@ -570,6 +570,21 @@ func (builder *IPv4StringOptionsBuilder) SetHasSeparator(has bool) *IPv4StringOp
 	builder.IPStringOptionsBuilder.SetHasSeparator(has)
 	return builder
 }
+
+// SetSeparator defines a separator to separate parts of the address, for IPv4 the default is '.'.
+// HasSeparator specifies whether to use this separator or not.
+func (builder *IPv4StringOptionsBuilder) SetSeparator(separator byte) *IPv4StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetSeparator(separator)
+	return builder
+}
+
+// SetAddressLabel dictates a string to add to the entire address string,
+// such as an octal, hexadecimal or binary prefix.
+func (builder *IPv4StringOptionsBuilder) SetAddressLabel(label string) *IPv4StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetAddressLabel(label)
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
