@@ -723,6 +723,25 @@ func (builder *IPv6StringOptionsBuilder) SetMixedOptions(ipv4Options IPStringOpt
 	return builder
 }
 
+// SetWildcardOptions is a convenient method for simultaneously setting WildcardOption and Wildcards.
+// It overrides previous calls to SetWildcardOption and SetWildcards and is overridden by subsequent calls to these methods.
+func (builder *IPv6StringOptionsBuilder) SetWildcardOptions(wildcardOptions WildcardOptions) *IPv6StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetWildcardOptions(wildcardOptions)
+	return builder
+}
+
+// SetWildcardOption sets the WildcardOption parameter for use in the string.
+func (builder *IPv6StringOptionsBuilder) SetWildcardOption(wildcardOption WildcardOption) *IPv6StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetWildcardOption(wildcardOption)
+	return builder
+}
+
+// SetWildcards defines wildcards to be used in the string.
+func (builder *IPv6StringOptionsBuilder) SetWildcards(wildcards Wildcards) *IPv6StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetWildcards(wildcards)
+	return builder
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
