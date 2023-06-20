@@ -709,6 +709,20 @@ func (builder *IPv6StringOptionsBuilder) SetSplitDigits(splitDigits bool) *IPv6S
 	return builder
 }
 
+// SetMixed determines whether the string should be a mixed IPv6/v4 string in which the last two segments of the IPv6 address should be printed as an IPv4 address.
+func (builder *IPv6StringOptionsBuilder) SetMixed(makeMixed bool) *IPv6StringOptionsBuilder {
+	builder.makeMixed = makeMixed
+	return builder
+}
+
+// SetMixedOptions provides the IPv4 options to be used in the IPv4 mixed string section.
+// Calling this method sets the string as an IPv6/v4 mixed string.
+func (builder *IPv6StringOptionsBuilder) SetMixedOptions(ipv4Options IPStringOptions) *IPv6StringOptionsBuilder {
+	builder.makeMixed = true
+	builder.opts.ipv4Opts = ipv4Options
+	return builder
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
