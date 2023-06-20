@@ -691,6 +691,17 @@ func (builder *IPv6StringOptionsBuilder) GetIPv4Opts() IPStringOptions {
 	return builder.opts.ipv4Opts
 }
 
+// GetCompressOptions returns CompressOptions parameters that specify how to compress null segments in an IPv6 address string or subnet.
+func (builder *IPv6StringOptionsBuilder) GetCompressOptions() CompressOptions {
+	return builder.opts.compressOptions
+}
+
+// SetCompressOptions sets the CompressOptions parameters, which determine how to compress null segments in the IPv6 address string or subnet.
+func (builder *IPv6StringOptionsBuilder) SetCompressOptions(compressOptions CompressOptions) *IPv6StringOptionsBuilder {
+	builder.opts.compressOptions = compressOptions
+	return builder
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
