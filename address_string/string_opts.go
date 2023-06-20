@@ -646,6 +646,13 @@ type IPv6StringOptions interface {
 	IsMixed() bool
 }
 
+type ipv6StringOptions struct {
+	ipStringOptions
+	ipv4Opts        IPStringOptions
+	compressOptions CompressOptions // can be nil, which means no compression
+	splitDigits     bool
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
