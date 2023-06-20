@@ -653,6 +653,17 @@ type ipv6StringOptions struct {
 	splitDigits     bool
 }
 
+// IsSplitDigits indicates whether each digit is separated from each other by separators.
+// If mixed, this option is ignored.
+func (opts *ipv6StringOptions) IsSplitDigits() bool {
+	return opts.splitDigits
+}
+
+// GetIPv4Opts returns the IPv4 string options to be used in the IPv4 address section of a mixed IPv6/v4 string.
+func (opts *ipv6StringOptions) GetIPv4Opts() IPStringOptions {
+	return opts.ipv4Opts
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
