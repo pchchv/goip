@@ -669,6 +669,11 @@ func (opts *compressOptions) CompressSingle() bool {
 	return opts.compressSingle
 }
 
+// The CompressOptionsBuilder is used to create an immutable CompressOptions instance for IPv6 address strings.
+type CompressOptionsBuilder struct {
+	compressOptions
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
