@@ -557,6 +557,19 @@ func (builder *IPv4StringOptionsBuilder) SetRadix(base int) *IPv4StringOptionsBu
 	return builder
 }
 
+// SetExpandedSegments determines whether segments should be expanded to their maximum width,
+// usually with leading zeros.
+func (builder *IPv4StringOptionsBuilder) SetExpandedSegments(expandSegments bool) *IPv4StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetExpandedSegments(expandSegments)
+	return builder
+}
+
+// SetHasSeparator dictates whether there is a separator.
+// The default for IPv4 is true.
+func (builder *IPv4StringOptionsBuilder) SetHasSeparator(has bool) *IPv4StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetHasSeparator(has)
+	return builder
+}
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
