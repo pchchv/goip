@@ -674,6 +674,13 @@ func (opts *ipv6StringOptions) IsMixed() bool {
 	return opts.ipv4Opts != nil
 }
 
+// IPv6StringOptionsBuilder is used to create an immutable IPv6StringOptions instance for IPv6 address strings.
+type IPv6StringOptionsBuilder struct {
+	opts ipv6StringOptions
+	IPStringOptionsBuilder
+	makeMixed bool
+}
+
 // CompressionChoiceOptions specify which null segments are to be compressed.
 type CompressionChoiceOptions string
 
