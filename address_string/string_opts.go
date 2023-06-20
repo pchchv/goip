@@ -468,6 +468,21 @@ func (builder *IPStringOptionsBuilder) SetRadix(base int) *IPStringOptionsBuilde
 	builder.StringOptionsBuilder.SetRadix(base)
 	return builder
 }
+
+// SetHasSeparator determines whether there is a separator.
+// By default the IPStringOptionsBuilder is set to false.
+func (builder *IPStringOptionsBuilder) SetHasSeparator(has bool) *IPStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetHasSeparator(has)
+	return builder
+}
+
+// SetSeparator specifies the separator to separate address partitions.
+// HasSeparator specifies whether this separator should be used or not.
+func (builder *IPStringOptionsBuilder) SetSeparator(separator byte) *IPStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetSeparator(separator)
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
