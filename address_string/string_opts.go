@@ -32,6 +32,7 @@ var (
 	_                StringOptions   = &stringOptions{}
 	_                WildcardOptions = &wildcardOptions{}
 	_                IPStringOptions = &ipStringOptions{}
+	_                CompressOptions = &compressOptions{}
 	falseVal                         = false
 	trueVal                          = true
 )
@@ -684,6 +685,19 @@ func (builder *CompressOptionsBuilder) SetCompressSingle(compressSingle bool) *C
 func (builder *CompressOptionsBuilder) SetCompressionChoiceOptions(rangeSelection CompressionChoiceOptions) *CompressOptionsBuilder {
 	builder.rangeSelection = rangeSelection
 	return builder
+}
+
+// SetMixedCompressionOptions sets the MixedCompressionOptions parameters that determine
+// which null segments should be compressed in mixed IPv6/v4 strings.
+func (builder *CompressOptionsBuilder) SetMixedCompressionOptions(compressMixedOptions MixedCompressionOptions) *CompressOptionsBuilder {
+	builder.compressMixedOptions = compressMixedOptions
+	return builder
+}
+
+// ToOptions returns an immutable instance of CompressOptions.
+func (builder *CompressOptionsBuilder) ToOptions() CompressOptions {
+	res := builder.compressOptions
+	return &res
 }
 
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
