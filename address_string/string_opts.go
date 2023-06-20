@@ -382,6 +382,21 @@ func (builder *WildcardOptionsBuilder) SetWildcardOptions(wildcardOption Wildcar
 	return builder
 }
 
+// SetWildcards dictates the wildcards to use.
+func (builder *WildcardOptionsBuilder) SetWildcards(wildcards Wildcards) *WildcardOptionsBuilder {
+	builder.wildcards = wildcards
+	return builder
+}
+
+// ToOptions returns an immutable instance of WildcardOptions constructed by this constructor.
+func (builder *WildcardOptionsBuilder) ToOptions() WildcardOptions {
+	cpy := builder.wildcardOptions
+	if builder.wildcards == nil {
+		builder.wildcards = DefaultWildcards
+	}
+	return &cpy
+}
+
 type ipStringOptions struct {
 	stringOptions
 	addrSuffix     string
