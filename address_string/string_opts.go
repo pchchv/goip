@@ -371,6 +371,11 @@ type IPStringOptions interface {
 	GetZoneSeparator() string
 }
 
+// WildcardOptionsBuilder is used to create an immutable WildcardOptions instance for address strings.
+type WildcardOptionsBuilder struct {
+	wildcardOptions
+}
+
 type ipStringOptions struct {
 	stringOptions
 	addrSuffix     string
