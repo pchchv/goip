@@ -538,6 +538,25 @@ func (builder *IPv4StringOptionsBuilder) SetWildcards(wildcards Wildcards) *IPv4
 	return builder
 }
 
+// SetReverse determines whether to print the line segments in reverse order from the normal order,
+// with the normal order being the order from largest to smallest value.
+func (builder *IPv4StringOptionsBuilder) SetReverse(reverse bool) *IPv4StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetReverse(reverse)
+	return builder
+}
+
+// SetUppercase determines whether to use uppercase for hexadecimal or other alphabetic radians.
+func (builder *IPv4StringOptionsBuilder) SetUppercase(uppercase bool) *IPv4StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetUppercase(uppercase)
+	return builder
+}
+
+// SetRadix sets the radix to be used.
+func (builder *IPv4StringOptionsBuilder) SetRadix(base int) *IPv4StringOptionsBuilder {
+	builder.IPStringOptionsBuilder.SetRadix(base)
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
