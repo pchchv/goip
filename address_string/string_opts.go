@@ -425,6 +425,18 @@ func (builder *IPStringOptionsBuilder) SetWildcardOptions(wildcardOptions Wildca
 	return builder.SetWildcardOption(wildcardOptions.GetWildcardOption())
 }
 
+// SetWildcardOption sets the WildcardOption parameter for use in the string.
+func (builder *IPStringOptionsBuilder) SetWildcardOption(wildcardOption WildcardOption) *IPStringOptionsBuilder {
+	builder.ipStringOptions.wildcardOption = wildcardOption
+	return builder
+}
+
+// SetWildcards defines wildcards to be used in the string.
+func (builder *IPStringOptionsBuilder) SetWildcards(wildcards Wildcards) *IPStringOptionsBuilder {
+	builder.StringOptionsBuilder.SetWildcards(wildcards)
+	return builder
+}
+
 func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards, byte) {
 	if radix == 0 {
 		radix = 16
