@@ -84,3 +84,13 @@ func (div *addressDivisionInternal) matchesIPv4Segment() bool {
 	// init() methods ensure that even segments with zero IPv4 (IPv4Segment{}) have an IPv4 address type
 	return div.divisionValues != nil && div.getAddrType().isIPv4()
 }
+
+func (div *addressDivisionInternal) matchesIPv6Segment() bool {
+	// init() methods ensure that even zero IPv6 segments (IPv6Segment{}) are of IPv6 address type
+	return div.divisionValues != nil && div.getAddrType().isIPv6()
+}
+
+func (div *addressDivisionInternal) matchesMACSegment() bool {
+	// init() methods ensure that even zero MAC segments (MACSegment{}) are of the addr MAC type
+	return div.divisionValues != nil && div.getAddrType().isMAC()
+}
