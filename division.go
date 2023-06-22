@@ -150,3 +150,15 @@ func (div *AddressDivision) Matches(value DivInt) bool {
 func (div *AddressDivision) MatchesWithMask(value, mask DivInt) bool {
 	return div.matchesWithMask(value, mask)
 }
+
+// IsIP returns true if this division occurred as an IPv4 or IPv6 segment, or an implicitly zero-valued IP segment.
+// If so, use ToIP to convert back to IP-specific type.
+func (div *AddressDivision) IsIP() bool {
+	return div != nil && div.matchesIPSegment()
+}
+
+// IsIPv4 returns true if this division originated as an IPv4 segment.
+// If so, use ToIPv4 to convert back to IPv4-specific type.
+func (div *AddressDivision) IsIPv4() bool {
+	return div != nil && div.matchesIPv4Segment()
+}
