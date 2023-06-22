@@ -75,3 +75,12 @@ func (div *addressDivisionInternal) matchesWithMask(value, mask DivInt) bool {
 	}
 	return value == (div.getDivisionValue() & mask)
 }
+
+func (div *addressDivisionInternal) matchesIPSegment() bool {
+	return div.divisionValues == nil || div.getAddrType().isIP()
+}
+
+func (div *addressDivisionInternal) matchesIPv4Segment() bool {
+	// init() methods ensure that even segments with zero IPv4 (IPv4Segment{}) have an IPv4 address type
+	return div.divisionValues != nil && div.getAddrType().isIPv4()
+}
