@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"math/big"
 	"math/bits"
 
 	"github.com/pchchv/goip/address_string"
@@ -121,4 +122,20 @@ func (div *AddressDivision) GetDivisionValue() DivInt {
 // GetUpperDivisionValue returns the upper division value in the range.
 func (div *AddressDivision) GetUpperDivisionValue() DivInt {
 	return div.getUpperDivisionValue()
+}
+
+// IsMultiple returns whether the given division represents a sequential range of values rather than a single value.
+func (div *AddressDivision) IsMultiple() bool {
+	return div != nil && div.isMultiple()
+}
+
+// GetCount returns a count of possible distinct values for this division.
+// If no multiple values are represented, the counter is 1.
+// For instance, a division with a value range of 3-7 has a count 5.
+// Use IsMultiple if you just want to know if the counter is greater than 1.
+func (div *AddressDivision) GetCount() *big.Int {
+	if div == nil {
+		return bigZero()
+	}
+	return div.getCount()
 }
