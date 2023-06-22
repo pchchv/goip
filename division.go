@@ -32,3 +32,15 @@ type divderiver interface {
 type addressDivisionInternal struct {
 	addressDivisionBase
 }
+
+func (div *addressDivisionInternal) isPrefixed() bool {
+	return div.getDivisionPrefixLength() != nil
+}
+
+func (div *addressDivisionInternal) getDivisionValue() DivInt {
+	vals := div.divisionValues
+	if vals == nil {
+		return 0
+	}
+	return vals.getDivisionValue()
+}
