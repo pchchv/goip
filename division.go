@@ -112,3 +112,13 @@ func (div *addressDivisionInternal) getDefaultRangeSeparatorString() string {
 type AddressDivision struct {
 	addressDivisionInternal
 }
+
+// GetDivisionValue returns the lower division value in the range.
+func (div *AddressDivision) GetDivisionValue() DivInt {
+	return div.getDivisionValue()
+}
+
+// GetUpperDivisionValue returns the upper division value in the range.
+func (div *AddressDivision) GetUpperDivisionValue() DivInt {
+	return div.getUpperDivisionValue()
+}
