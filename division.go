@@ -44,3 +44,15 @@ func (div *addressDivisionInternal) getDivisionValue() DivInt {
 	}
 	return vals.getDivisionValue()
 }
+
+func (div *addressDivisionInternal) getUpperDivisionValue() DivInt {
+	vals := div.divisionValues
+	if vals == nil {
+		return 0
+	}
+	return vals.getUpperDivisionValue()
+}
+
+func (div *addressDivisionInternal) matches(value DivInt) bool {
+	return !div.isMultiple() && value == div.getDivisionValue()
+}
