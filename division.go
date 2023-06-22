@@ -94,3 +94,12 @@ func (div *addressDivisionInternal) matchesMACSegment() bool {
 	// init() methods ensure that even zero MAC segments (MACSegment{}) are of the addr MAC type
 	return div.divisionValues != nil && div.getAddrType().isMAC()
 }
+
+// getDefaultRangeSeparatorString() is a wildcard string that will be used when producing default strings with getString() or getWildcardString().
+// Since no parameters are provided for the string, default settings are used, but they must match the address.
+// For example, generally '-' is used as a range separator, but in some cases this character is used to segment separator.
+// Note that this only applies to the 'default' settings, there are additional string methods that allow to specify these delimiter characters.
+// These methods must be aware of the default settings, to know when they can defer to the defaults and when they cannot.
+func (div *addressDivisionInternal) getDefaultRangeSeparatorString() string {
+	return "-"
+}
