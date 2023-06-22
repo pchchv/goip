@@ -1,6 +1,10 @@
 package goip
 
-import "github.com/pchchv/goip/address_string"
+import (
+	"math/bits"
+
+	"github.com/pchchv/goip/address_string"
+)
 
 var (
 	// Wildcards are different, here we only use the range, since the div size is not implicit.
@@ -55,4 +59,19 @@ func (div *addressDivisionInternal) getUpperDivisionValue() DivInt {
 
 func (div *addressDivisionInternal) matches(value DivInt) bool {
 	return !div.isMultiple() && value == div.getDivisionValue()
+}
+
+func (div *addressDivisionInternal) matchesWithMask(value, mask DivInt) bool {
+	if div.isMultiple() {
+		// make sure that any of the bits that can change from value to upperValue are masked out (zeroed) by the mask
+		// in other words, when masking, it is necessary that all values represented by this segment to become just a single value
+		diffBits := div.getDivisionValue() ^ div.getUpperDivisionValue()
+		leadingZeros := bits.LeadingZeros64(diffBits)
+		// bits that can be changed are all bits following the first leadingZero bits, all subsequent bits must be zeroed by the mask
+		fullMask := ^DivInt(0) >> uint(leadingZeros)
+		if (fullMask & mask) != 0 {
+			return false
+		} // else know that the mask zeros out all bits that can change from value to upperValue, so now just compare with either one
+	}
+	return value == (div.getDivisionValue() & mask)
 }
