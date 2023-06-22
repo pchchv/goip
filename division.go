@@ -139,3 +139,14 @@ func (div *AddressDivision) GetCount() *big.Int {
 	}
 	return div.getCount()
 }
+
+// Matches returns true if the division range matches the given single value.
+func (div *AddressDivision) Matches(value DivInt) bool {
+	return div.matches(value)
+}
+
+// MatchesWithMask applies a mask to a this division and then compares the result to the given value,
+// returning true if the range of the resulting division matches that single value.
+func (div *AddressDivision) MatchesWithMask(value, mask DivInt) bool {
+	return div.matchesWithMask(value, mask)
+}
