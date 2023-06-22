@@ -103,3 +103,12 @@ func (div *addressDivisionInternal) matchesMACSegment() bool {
 func (div *addressDivisionInternal) getDefaultRangeSeparatorString() string {
 	return "-"
 }
+
+// AddressDivision represents an arbitrary division in an address or grouping of address divisions.
+// It can contain a single value or a range of sequential values and has an assigned bit length.
+// Like all address components, it is immutable.
+// Divisions that have been converted from IPv4, IPv6, or MAC segments can be converted back to segments of the same type and version.
+// Divisions that have not been converted from IPv4, IPv6 or MAC cannot be converted to segments.
+type AddressDivision struct {
+	addressDivisionInternal
+}
