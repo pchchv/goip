@@ -174,3 +174,10 @@ func (div *AddressDivision) IsIPv6() bool {
 func (div *AddressDivision) IsMAC() bool {
 	return div != nil && div.matchesMACSegment()
 }
+
+// ToDiv is an identity method.
+// ToDiv can be called with a nil receiver, which allows this method to be
+// used in a chain with methods that can return a nil pointer.
+func (div *AddressDivision) ToDiv() *AddressDivision {
+	return div
+}
