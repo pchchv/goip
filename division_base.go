@@ -57,3 +57,20 @@ type divisionValues interface {
 type addressDivisionBase struct {
 	divisionValues
 }
+
+func (div *addressDivisionBase) getDivisionPrefixLength() PrefixLen {
+	vals := div.divisionValues
+	if vals == nil {
+		return nil
+	}
+	return vals.getDivisionPrefixLength()
+}
+
+// GetBitCount returns the number of bits in each value comprising this address item.
+func (div *addressDivisionBase) GetBitCount() BitCount {
+	vals := div.divisionValues
+	if vals == nil {
+		return 0
+	}
+	return vals.getBitCount()
+}
