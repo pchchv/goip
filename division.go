@@ -162,3 +162,15 @@ func (div *AddressDivision) IsIP() bool {
 func (div *AddressDivision) IsIPv4() bool {
 	return div != nil && div.matchesIPv4Segment()
 }
+
+// IsIPv6 returns true if this division occurred as an IPv6 segment.
+// If so, use ToIPv6 to convert back to IPv6-specific type.
+func (div *AddressDivision) IsIPv6() bool {
+	return div != nil && div.matchesIPv6Segment()
+}
+
+// IsMAC returns true if this division originated as a MAC segment.
+// If so, use ToMAC to convert back to the MAC-specific type.
+func (div *AddressDivision) IsMAC() bool {
+	return div != nil && div.matchesMACSegment()
+}
