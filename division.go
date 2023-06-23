@@ -3,6 +3,7 @@ package goip
 import (
 	"math/big"
 	"math/bits"
+	"unsafe"
 
 	"github.com/pchchv/goip/address_string"
 )
@@ -103,6 +104,10 @@ func (div *addressDivisionInternal) matchesMACSegment() bool {
 // These methods must be aware of the default settings, to know when they can defer to the defaults and when they cannot.
 func (div *addressDivisionInternal) getDefaultRangeSeparatorString() string {
 	return "-"
+}
+
+func (div *addressDivisionInternal) toAddressDivision() *AddressDivision {
+	return (*AddressDivision)(unsafe.Pointer(div))
 }
 
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
