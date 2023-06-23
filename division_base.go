@@ -94,3 +94,16 @@ func (div *addressDivisionBase) GetValue() *BigDivInt {
 	}
 	return vals.getValue()
 }
+
+// GetUpperValue returns the highest value in the address division range as a big integer.
+func (div *addressDivisionBase) GetUpperValue() *BigDivInt {
+	vals := div.divisionValues
+	if vals == nil {
+		return bigZero()
+	}
+	return vals.getUpperValue()
+}
+
+func (div *addressDivisionBase) getBytes() (bytes []byte) {
+	return div.bytesInternal(false)
+}
