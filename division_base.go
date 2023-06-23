@@ -107,3 +107,16 @@ func (div *addressDivisionBase) GetUpperValue() *BigDivInt {
 func (div *addressDivisionBase) getBytes() (bytes []byte) {
 	return div.bytesInternal(false)
 }
+
+func (div *addressDivisionBase) getUpperBytes() (bytes []byte) {
+	return div.bytesInternal(true)
+}
+
+// Bytes returns the lowest value in the address division range as a byte slice.
+func (div *addressDivisionBase) Bytes() []byte {
+	if div.divisionValues == nil {
+		return emptyBytes
+	}
+	return div.getBytes()
+}
+
