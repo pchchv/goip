@@ -74,3 +74,23 @@ func (div *addressDivisionBase) GetBitCount() BitCount {
 	}
 	return vals.getBitCount()
 }
+
+// GetByteCount returns the number of bytes needed for
+// each value that makes up the given address element,
+// rounded up if the number of bits is not a multiple of 8.
+func (div *addressDivisionBase) GetByteCount() int {
+	vals := div.divisionValues
+	if vals == nil {
+		return 0
+	}
+	return vals.getByteCount()
+}
+
+// GetValue returns the smallest value in the address division range as a large integer.
+func (div *addressDivisionBase) GetValue() *BigDivInt {
+	vals := div.divisionValues
+	if vals == nil {
+		return bigZero()
+	}
+	return vals.getValue()
+}
