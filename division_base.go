@@ -201,6 +201,20 @@ func (div *addressDivisionBase) IsZero() bool {
 	return !div.isMultiple() && div.IncludesZero()
 }
 
+// IncludesMax returns whether the given division includes the maximum value, a value whose bits are all one, in its range.
+func (div *addressDivisionBase) IncludesMax() bool {
+	vals := div.divisionValues
+	if vals == nil {
+		return false
+	}
+	return vals.includesMax()
+}
+
+// IsMax returns whether the given address matches the maximum possible value, a value whose bits are all one.
+func (div *addressDivisionBase) IsMax() bool {
+	return !div.isMultiple() && div.includesMax()
+}
+
 // IncludesZero returns whether the item includes a value of zero in its range.
 func (div *addressDivisionBase) IncludesZero() bool {
 	vals := div.divisionValues
