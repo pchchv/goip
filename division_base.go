@@ -237,3 +237,12 @@ func (div *addressDivisionBase) IncludesZero() bool {
 func (div *addressDivisionBase) IsFullRange() bool {
 	return div.includesZero() && div.includesMax()
 }
+
+func (div *addressDivisionBase) matchesStructure(other DivisionType) (res bool, addrType addrType) {
+	addrType = div.getAddrType()
+	if addrType != other.getAddrType() || (addrType.isZeroSegments() && (div.GetBitCount() != other.GetBitCount())) {
+		return
+	}
+	res = true
+	return
+}
