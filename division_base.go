@@ -195,3 +195,19 @@ func (div *addressDivisionBase) CopyUpperBytes(bytes []byte) []byte {
 
 	return getBytesCopy(bytes, cached)
 }
+
+// IsZero returns whether the given division is exactly zero.
+func (div *addressDivisionBase) IsZero() bool {
+	return !div.isMultiple() && div.IncludesZero()
+}
+
+// IncludesZero returns whether the item includes a value of zero in its range.
+func (div *addressDivisionBase) IncludesZero() bool {
+	vals := div.divisionValues
+
+	if vals == nil {
+		return true
+	}
+
+	return vals.includesZero()
+}
