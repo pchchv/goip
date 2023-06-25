@@ -163,3 +163,35 @@ func (div *addressDivisionBase) GetPrefixCountLen(prefixLength BitCount) *big.In
 
 	return upper
 }
+
+// CopyBytes copies the lowest value in the address division range to a byte slice.
+// If the value can fit in a given slice, it is copied to that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (div *addressDivisionBase) CopyBytes(bytes []byte) []byte {
+	if div.divisionValues == nil {
+		if bytes != nil {
+			return bytes
+		}
+		return emptyBytes
+	}
+
+	cached := div.getBytes()
+
+	return getBytesCopy(bytes, cached)
+}
+
+// CopyUpperBytes copies the highest value in the address division range to a byte slice.
+// If the value can fit in a given slice, it is copied to that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (div *addressDivisionBase) CopyUpperBytes(bytes []byte) []byte {
+	if div.divisionValues == nil {
+		if bytes != nil {
+			return bytes
+		}
+		return emptyBytes
+	}
+
+	cached := div.getUpperBytes()
+
+	return getBytesCopy(bytes, cached)
+}
