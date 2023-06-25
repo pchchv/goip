@@ -13,3 +13,14 @@ func nilSection() string {
 func cloneBytes(orig []byte) []byte {
 	return append(make([]byte, 0, len(orig)), orig...)
 }
+
+// getBytesCopy copies cached into bytes, unless bytes is too small, in which case cached is cloned.
+func getBytesCopy(bytes, cached []byte) []byte {
+	if bytes == nil || len(bytes) < len(cached) {
+		return cloneBytes(cached)
+	}
+
+	copy(bytes, cached)
+
+	return bytes[:len(cached)]
+}
