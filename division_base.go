@@ -134,3 +134,32 @@ func (div *addressDivisionBase) getCount() *big.Int {
 	}
 	return div.divisionValues.getCount()
 }
+
+func (div *addressDivisionBase) isMultiple() bool {
+	vals := div.divisionValues
+	if vals == nil {
+		return false
+	}
+	return vals.isMultiple()
+}
+
+// GetPrefixCountLen returns a count of the number of distinct values in the prefix part of the address item, the bits that appear within the prefix length.
+func (div *addressDivisionBase) GetPrefixCountLen(prefixLength BitCount) *big.Int {
+	if prefixLength < 0 {
+		return bigOne()
+	}
+
+	bitCount := div.GetBitCount()
+	if prefixLength >= bitCount {
+		return div.getCount()
+	}
+
+	ushiftAdjustment := uint(bitCount - prefixLength)
+	lower := div.GetValue()
+	upper := div.GetUpperValue()
+	upper.Rsh(upper, ushiftAdjustment)
+	lower.Rsh(lower, ushiftAdjustment)
+	upper.Sub(upper, lower).Add(upper, bigOneConst())
+
+	return upper
+}
