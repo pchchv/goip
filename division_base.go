@@ -215,13 +215,25 @@ func (div *addressDivisionBase) IsMax() bool {
 	return !div.isMultiple() && div.includesMax()
 }
 
+func (div *addressDivisionBase) getAddrType() addrType {
+	vals := div.divisionValues
+	if vals == nil {
+		return zeroType
+	}
+	return vals.getAddrType()
+}
+
 // IncludesZero returns whether the item includes a value of zero in its range.
 func (div *addressDivisionBase) IncludesZero() bool {
 	vals := div.divisionValues
-
 	if vals == nil {
 		return true
 	}
-
 	return vals.includesZero()
+}
+
+// IsFullRange returns whether the division range includes all possible values for its bit length.
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (div *addressDivisionBase) IsFullRange() bool {
+	return div.includesZero() && div.includesMax()
 }
