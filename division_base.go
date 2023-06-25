@@ -120,3 +120,17 @@ func (div *addressDivisionBase) Bytes() []byte {
 	return div.getBytes()
 }
 
+// UpperBytes returns the highest value in the address division range as a byte slice.
+func (div *addressDivisionBase) UpperBytes() []byte {
+	if div.divisionValues == nil {
+		return emptyBytes
+	}
+	return div.getUpperBytes()
+}
+
+func (div *addressDivisionBase) getCount() *big.Int {
+	if !div.isMultiple() {
+		return bigOne()
+	}
+	return div.divisionValues.getCount()
+}
