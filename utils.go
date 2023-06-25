@@ -9,3 +9,7 @@ func nilString() string {
 func nilSection() string {
 	return ""
 }
+
+func cloneBytes(orig []byte) []byte {
+	return append(make([]byte, 0, len(orig)), orig...)
+}
