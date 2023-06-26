@@ -87,3 +87,15 @@ func (params *addressStringParams) isUppercase() bool {
 func (params *addressStringParams) isSplitDigits() bool {
 	return params.splitDigits
 }
+
+func (params *addressStringParams) hasSeparator() bool {
+	return params.hasSep
+}
+
+func (params *addressStringParams) getSplitDigitSeparator() byte {
+	return params.separator
+}
+
+func (params *addressStringParams) isReverseSplitDigits() bool {
+	return params.reverse
+}
