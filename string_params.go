@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string"
 )
 
 type divStringProvider interface {
@@ -39,4 +40,18 @@ type divStringProvider interface {
 	// Note that this only applies to the 'default' settings, there are additional string methods that allows to specify these delimiter characters.
 	// These methods also need to be aware of the default settings, so that they know when they can fall back on them and when they cannot.
 	getDefaultRangeSeparatorString() string
+}
+
+type addressStringParams struct {
+	wildcards        address_string.Wildcards
+	expandSegments   bool   // whether to expand 1 to 001 for IPv4 or 0001 for IPv6
+	segmentStrPrefix string // eg for inet_aton style there is 0x for hex, 0 for octal
+	radix            int
+	separator        byte // segment separator, and in the case of split digits - the digit separator, default is ' '
+	hasSep           bool // whether there is a separator at all
+	uppercase        bool // whether to print A or a
+	reverse          bool // print the segments in reverse, and in the case of splitDigits, print the digits in reverse as well
+	splitDigits      bool // in each segment split the digits with a separator so that 123.456.1.1 becomes 1.2.3.4.5.6.1.1
+	addressLabel     string
+	zoneSeparator    string
 }
