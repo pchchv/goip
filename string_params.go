@@ -71,3 +71,19 @@ func (params *addressStringParams) getLeadingZeros(_ int) int {
 	}
 	return 0
 }
+
+func (params *addressStringParams) getSegmentStrPrefix() string {
+	return params.segmentStrPrefix
+}
+
+func (params *addressStringParams) getRadix() int {
+	return params.radix
+}
+
+func (params *addressStringParams) isUppercase() bool {
+	return params.uppercase
+}
+
+func (params *addressStringParams) isSplitDigits() bool {
+	return params.splitDigits
+}
