@@ -55,3 +55,19 @@ type addressStringParams struct {
 	addressLabel     string
 	zoneSeparator    string
 }
+
+func (params *addressStringParams) getWildcards() address_string.Wildcards {
+	return params.wildcards
+}
+
+func (params *addressStringParams) preferWildcards() bool {
+	return true
+}
+
+// getLeadingZeros returns -1 to expand
+func (params *addressStringParams) getLeadingZeros(_ int) int {
+	if params.expandSegments {
+		return -1
+	}
+	return 0
+}
