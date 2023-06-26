@@ -99,3 +99,7 @@ func (params *addressStringParams) getSplitDigitSeparator() byte {
 func (params *addressStringParams) isReverseSplitDigits() bool {
 	return params.reverse
 }
+
+type stringWriter struct {
+	DivisionType
+}
