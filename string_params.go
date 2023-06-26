@@ -140,3 +140,20 @@ func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix s
 func getSplitLeadingZeros(leadingZeroCount int, splitDigitSeparator byte, stringPrefix string, builder *strings.Builder) {
 	getSplitChar(leadingZeroCount, splitDigitSeparator, '0', stringPrefix, builder)
 }
+
+func getSplitCharStr(count int, splitDigitSeparator byte, characters string, stringPrefix string, builder *strings.Builder) {
+	prefLen := len(stringPrefix)
+	if count > 0 {
+		for {
+			if prefLen > 0 {
+				builder.WriteString(stringPrefix)
+			}
+			builder.WriteString(characters)
+			count--
+			if count <= 0 {
+				break
+			}
+			builder.WriteByte(splitDigitSeparator)
+		}
+	}
+}
