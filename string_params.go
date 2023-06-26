@@ -42,6 +42,22 @@ type divStringProvider interface {
 	getDefaultRangeSeparatorString() string
 }
 
+// Each segment parameters has settings to write only one type of IP address part of a string segment.
+type addressSegmentParams interface {
+	getWildcards() address_string.Wildcards
+	preferWildcards() bool
+	// returns -1 for the number of leading zeros needed to write the max number of characters in the segment,
+	// or 0, 1, 2, 3 to indicate the number of leading zeros
+	getLeadingZeros(segmentIndex int) int
+	getSegmentStrPrefix() string
+	getRadix() int
+	isUppercase() bool
+	isSplitDigits() bool
+	hasSeparator() bool
+	getSplitDigitSeparator() byte
+	isReverseSplitDigits() bool
+}
+
 type addressStringParams struct {
 	wildcards        address_string.Wildcards
 	expandSegments   bool   // whether to expand 1 to 001 for IPv4 or 0001 for IPv6
