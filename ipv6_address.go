@@ -1,5 +1,7 @@
 package goip
 
+const NoZone = ""
+
 // Zone represents an IPv6 address zone or scope.
 type Zone string
 
