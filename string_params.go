@@ -172,6 +172,18 @@ func (params *addressStringParams) appendSegments(builder *strings.Builder, part
 	return builder
 }
 
+func (params *addressStringParams) appendLabel(builder *strings.Builder) *strings.Builder {
+	str := params.addressLabel
+	if str != "" {
+		builder.WriteString(str)
+	}
+	return builder
+}
+
+func (params *addressStringParams) getAddressLabelLength() int {
+	return len(params.addressLabel)
+}
+
 type stringWriter struct {
 	DivisionType
 }
