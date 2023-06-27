@@ -118,6 +118,20 @@ func (params *addressStringParams) isReverseSplitDigits() bool {
 	return params.reverse
 }
 
+func (params *addressStringParams) appendSegment(segmentIndex int, builder *strings.Builder, part AddressDivisionSeries) int {
+	div := part.GetGenericDivision(segmentIndex)
+	writer := stringWriter{div}
+	res, _ := writer.getStandardString(segmentIndex, params, builder)
+	return res
+}
+
+func (params *addressStringParams) getZoneLength(zone Zone, sep string) int {
+	if zone != NoZone {
+		return len(zone) + len(sep) // zone separator is one char
+	}
+	return 0
+}
+
 type stringWriter struct {
 	DivisionType
 }
