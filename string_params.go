@@ -512,6 +512,82 @@ func (writer stringWriter) getPrefixAdjustedRangeString(segmentIndex int, params
 	return writer.getRangeStringWithCounts(segmentIndex, params, lowerLeadingZeroCount, upperLeadingZeroCount, true, appendable)
 }
 
+// getStandardString creates a string to represent the segment using wildcards and range characters.
+// Use this function instead of getWildcardString() if you have a customized wildcard or range separator or if you have a non-zero leadingZeroCount value.
+func (writer stringWriter) getStandardString(segmentIndex int, params addressSegmentParams, appendable *strings.Builder) (digitCount int, err address_error.IncompatibleAddressError) {
+	if !writer.IsMultiple() {
+		splitDigits := params.isSplitDigits()
+		if splitDigits {
+			radix := params.getRadix()
+			leadingZeroCount := params.getLeadingZeros(segmentIndex)
+			leadingZeroCount = writer.adjustLowerLeadingZeroCount(leadingZeroCount, radix)
+			stringPrefix := params.getSegmentStrPrefix()
+			prefLen := len(stringPrefix)
+			if appendable == nil {
+				var length int
+				if leadingZeroCount != 0 {
+					if leadingZeroCount < 0 {
+						length = writer.getMaxDigitCountRadix(radix)
+					} else {
+						length = writer.getLowerStringLength(radix) + leadingZeroCount
+					}
+				} else {
+					length = writer.getLowerStringLength(radix)
+				}
+				count := (length << 1) - 1
+				if prefLen > 0 {
+					count += length * prefLen
+				}
+				return count, nil
+			} else {
+				var splitDigitSeparator byte = ' '
+				if params.hasSeparator() {
+					splitDigitSeparator = params.getSplitDigitSeparator()
+				}
+				reverseSplitDigits := params.isReverseSplitDigits()
+				uppercase := params.isUppercase()
+				if reverseSplitDigits {
+					writer.getSplitLowerString(radix, 0, uppercase, splitDigitSeparator, reverseSplitDigits, stringPrefix, appendable)
+					if leadingZeroCount != 0 {
+						appendable.WriteByte(splitDigitSeparator)
+						getSplitLeadingZeros(leadingZeroCount, splitDigitSeparator, stringPrefix, appendable)
+					}
+				} else {
+					if leadingZeroCount != 0 {
+						getSplitLeadingZeros(leadingZeroCount, splitDigitSeparator, stringPrefix, appendable)
+						appendable.WriteByte(splitDigitSeparator)
+					}
+					writer.getSplitLowerString(radix, 0, uppercase, splitDigitSeparator, reverseSplitDigits, stringPrefix, appendable)
+				}
+				return
+			}
+		}
+		return writer.getLowerStandardString(segmentIndex, params, appendable), nil
+	} else if writer.IsFullRange() {
+		wildcard := params.getWildcards().GetWildcard()
+		if len(wildcard) > 0 {
+			splitDigits := params.isSplitDigits()
+			if splitDigits {
+				radix := params.getRadix()
+				if appendable == nil {
+					length := writer.getMaxDigitCountRadix(radix)
+					count := length*(len(wildcard)+1) - 1
+					return count, nil
+				}
+				var splitDigitSeparator byte = ' '
+				if params.hasSeparator() {
+					splitDigitSeparator = params.getSplitDigitSeparator()
+				}
+				dg := writer.getMaxDigitCountRadix(radix)
+				getSplitCharStr(dg, splitDigitSeparator, wildcard, "", appendable)
+				return
+			}
+			return getFullRangeString(wildcard, appendable), nil
+		}
+	}
+	return writer.getRangeString(segmentIndex, params, appendable)
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
