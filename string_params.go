@@ -7,6 +7,8 @@ import (
 	"github.com/pchchv/goip/address_string"
 )
 
+const zeros = "00000000000000000000"
+
 type divStringProvider interface {
 	getLowerStringLength(radix int) int
 	getUpperStringLength(radix int) int
@@ -155,5 +157,27 @@ func getSplitCharStr(count int, splitDigitSeparator byte, characters string, str
 			}
 			builder.WriteByte(splitDigitSeparator)
 		}
+	}
+}
+
+func getFullRangeString(wildcard string, appendable *strings.Builder) int {
+	if appendable == nil {
+		return len(wildcard)
+	}
+	appendable.WriteString(wildcard)
+	return 0
+}
+
+func getLeadingZeros(leadingZeroCount int, builder *strings.Builder) {
+	if leadingZeroCount > 0 {
+		stringArray := zeros
+		increment := len(stringArray)
+		if leadingZeroCount > increment {
+			for leadingZeroCount > increment {
+				builder.WriteString(stringArray)
+				leadingZeroCount -= increment
+			}
+		}
+		builder.WriteString(stringArray[:leadingZeroCount])
 	}
 }
