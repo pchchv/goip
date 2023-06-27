@@ -421,6 +421,97 @@ func (writer stringWriter) getRangeString(
 	return writer.getRangeStringWithCounts(segmentIndex, params, lowerLeadingZeroCount, upperLeadingZeroCount, false, appendable), nil
 }
 
+func (writer stringWriter) getPrefixAdjustedRangeString(segmentIndex int, params addressSegmentParams, appendable *strings.Builder) int {
+	leadingZeroCount := params.getLeadingZeros(segmentIndex)
+	radix := params.getRadix()
+	lowerLeadingZeroCount := writer.adjustLowerLeadingZeroCount(leadingZeroCount, radix)
+	upperLeadingZeroCount := writer.adjustUpperLeadingZeroCount(leadingZeroCount, radix)
+
+	// if the wildcards are the same as those used by getString() and there is no character prefix, let's defer getString() so that it is cached
+	wildcards := params.getWildcards()
+	rangeSeparator := wildcards.GetRangeSeparator()
+	rangeDigitCount := 0
+	if len(wildcards.GetSingleWildcard()) != 0 {
+		rangeDigitCount = writer.getRangeDigitCount(radix)
+	}
+	// If we can, we reuse the standard string to build this string (it must have the same radix and no chopped digits).
+	// We can insert leading zeros, a string prefix and different separator string if necessary.
+	// Nor can we in the case of a full range (in which case we are here only because we don't need '*').
+	if rangeDigitCount == 0 && radix == writer.getDefaultTextualRadix() && !writer.IsFullRange() {
+		// call getString() to cache the result,
+		// and we call getString instead of getWildcardString() because it will also mask the length of the segment prefix
+		str := writer.GetString()
+		rangeSep := writer.getDefaultRangeSeparatorString()
+		stringPrefix := params.getSegmentStrPrefix()
+		prefLen := len(stringPrefix)
+		if lowerLeadingZeroCount == 0 && upperLeadingZeroCount == 0 && rangeSep == rangeSeparator && prefLen == 0 {
+			if appendable == nil {
+				return len(str)
+			} else {
+				if params.isUppercase() {
+					appendUppercase(str, radix, appendable)
+				} else {
+					appendable.WriteString(str)
+				}
+				return 0
+			}
+		} else {
+			if appendable == nil {
+				count := len(str) + (len(rangeSeparator) - len(rangeSep)) +
+					lowerLeadingZeroCount + upperLeadingZeroCount
+				if prefLen > 0 {
+					count += prefLen << 1
+				}
+				return count
+			} else {
+				firstEnd := strings.Index(str, rangeSep)
+				if prefLen > 0 {
+					appendable.WriteString(stringPrefix)
+				}
+				if lowerLeadingZeroCount > 0 {
+					getLeadingZeros(lowerLeadingZeroCount, appendable)
+				}
+				appendable.WriteString(str[0:firstEnd])
+				appendable.WriteString(rangeSeparator)
+				if prefLen > 0 {
+					appendable.WriteString(stringPrefix)
+				}
+				if upperLeadingZeroCount > 0 {
+					getLeadingZeros(upperLeadingZeroCount, appendable)
+				}
+				appendable.WriteString(str[firstEnd+len(rangeSep):])
+				return 0
+			}
+		}
+	}
+
+	rangeDigitCount = writer.adjustRangeDigits(rangeDigitCount)
+	if leadingZeroCount < 0 && appendable == nil {
+		charLength := writer.getMaxDigitCountRadix(radix)
+		stringPrefix := params.getSegmentStrPrefix()
+		prefLen := len(stringPrefix)
+		if rangeDigitCount != 0 {
+			count := charLength
+			if prefLen > 0 {
+				count += prefLen
+			}
+			return count
+		}
+		count := charLength << 1
+		if prefLen > 0 {
+			count += prefLen << 1
+		}
+		count += len(rangeSeparator)
+		return count
+	}
+
+	if rangeDigitCount != 0 {
+		return writer.getRangeDigitString(segmentIndex, params, appendable)
+	}
+
+	return writer.getRangeStringWithCounts(segmentIndex, params, lowerLeadingZeroCount, upperLeadingZeroCount, true, appendable)
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
