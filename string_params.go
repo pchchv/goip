@@ -306,6 +306,21 @@ func (writer stringWriter) writeSplitRangeString(
 	return 0, nil
 }
 
+func (writer stringWriter) getRangeStringWithCounts(
+	segmentIndex int,
+	params addressSegmentParams,
+	lowerLeadingZerosCount int,
+	upperLeadingZerosCount int,
+	maskUpper bool,
+	appendable *strings.Builder) int {
+	_ = segmentIndex
+	stringPrefix := params.getSegmentStrPrefix()
+	radix := params.getRadix()
+	rangeSeparator := params.getWildcards().GetRangeSeparator()
+	uppercase := params.isUppercase()
+	return getRangeString(writer.DivisionType, rangeSeparator, lowerLeadingZerosCount, upperLeadingZerosCount, stringPrefix, radix, uppercase, maskUpper, appendable)
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
