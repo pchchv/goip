@@ -321,6 +321,106 @@ func (writer stringWriter) getRangeStringWithCounts(
 	return getRangeString(writer.DivisionType, rangeSeparator, lowerLeadingZerosCount, upperLeadingZerosCount, stringPrefix, radix, uppercase, maskUpper, appendable)
 }
 
+func (writer stringWriter) getRangeString(
+	segmentIndex int, params addressSegmentParams, appendable *strings.Builder) (digitCount int, err address_error.IncompatibleAddressError) {
+	splitDigits := params.isSplitDigits()
+	radix := params.getRadix()
+	leadingZeroCount := params.getLeadingZeros(segmentIndex)
+	wildcards := params.getWildcards()
+	rangeSeparator := wildcards.GetRangeSeparator()
+	singleWC := wildcards.GetSingleWildcard()
+	rangeDigitCount := 0
+	if singleWC != "" {
+		rangeDigitCount = writer.getRangeDigitCount(radix)
+	}
+	lowerLeadingZeroCount := writer.adjustLowerLeadingZeroCount(leadingZeroCount, radix)
+	upperLeadingZeroCount := writer.adjustUpperLeadingZeroCount(leadingZeroCount, radix)
+	// check the case where we can use the result of getWildcardString, which is cached.
+	// It must have the same radix and no chopped digits, and no splitting or reversal of digits.
+	// We can insert leading zeros, a string prefix, and different separator string if necessary.
+	// Neither can we in the case of a full range (in which case we are here only because we don't need '*')
+	if rangeDigitCount == 0 &&
+		radix == writer.getDefaultTextualRadix() &&
+		!splitDigits &&
+		!writer.IsFullRange() {
+		str := writer.GetWildcardString()
+		rangeSep := writer.getDefaultRangeSeparatorString()
+		stringPrefix := params.getSegmentStrPrefix()
+		prefLen := len(stringPrefix)
+		if lowerLeadingZeroCount == 0 && upperLeadingZeroCount == 0 &&
+			prefLen == 0 &&
+			rangeSeparator == rangeSep {
+			if appendable == nil {
+				return len(str), nil
+			}
+			appendable.WriteString(str)
+			return
+		} else {
+			if appendable == nil {
+				count := len(str) + (len(rangeSeparator) - len(rangeSep)) + lowerLeadingZeroCount + upperLeadingZeroCount
+				if prefLen > 0 {
+					count += prefLen << 1
+				}
+				return count, nil
+			} else {
+				firstEnd := strings.Index(str, rangeSep)
+				if prefLen > 0 {
+					appendable.WriteString(stringPrefix)
+				}
+				if lowerLeadingZeroCount > 0 {
+					getLeadingZeros(lowerLeadingZeroCount, appendable)
+				}
+				appendable.WriteString(str[0:firstEnd])
+				appendable.WriteString(rangeSeparator)
+				if prefLen > 0 {
+					appendable.WriteString(stringPrefix)
+				}
+				if upperLeadingZeroCount > 0 {
+					getLeadingZeros(upperLeadingZeroCount, appendable)
+				}
+				appendable.WriteString(str[firstEnd+len(rangeSep):])
+				return
+			}
+		}
+	}
+	// Split digits that result to ranges of digits * are similar to the range of range digits,
+	// e.g., f00-fff is both f__ and f.*.*
+	// The difference is that for a decimal fraction the last digit of the range is 0-5 (i.e. 255), and for split we only check the full range (0-9),
+	// e.g., 200-255 is 2__ but not 2.*.*
+	// Another difference: when calculating range digits, the count is 0 if the entire range cannot be written as range digits,
+	// e.g., f10-fff has no range digits, but is f.1- f.*.
+	if !splitDigits && leadingZeroCount < 0 && appendable == nil {
+		stringPrefix := params.getSegmentStrPrefix()
+		prefLen := len(stringPrefix)
+		charLength := writer.getMaxDigitCountRadix(radix)
+		if rangeDigitCount != 0 {
+			count := charLength
+			if prefLen > 0 {
+				count += prefLen
+			}
+			return count, nil
+		}
+		count := charLength << 1
+		if prefLen > 0 {
+			count += prefLen << 1
+		}
+		count += len(rangeSeparator)
+		return count, nil
+	}
+	rangeDigitCount = writer.adjustRangeDigits(rangeDigitCount)
+	if rangeDigitCount != 0 { // wildcards like _
+		if splitDigits {
+			return writer.getSplitRangeDigitString(segmentIndex, params, appendable), nil
+		} else {
+			return writer.getRangeDigitString(segmentIndex, params, appendable), nil
+		}
+	}
+	if splitDigits {
+		return writer.writeSplitRangeString(segmentIndex, params, appendable)
+	}
+	return writer.getRangeStringWithCounts(segmentIndex, params, lowerLeadingZeroCount, upperLeadingZeroCount, false, appendable), nil
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
