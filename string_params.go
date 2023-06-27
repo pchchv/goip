@@ -122,6 +122,53 @@ type stringWriter struct {
 	DivisionType
 }
 
+func (writer stringWriter) getLowerStandardString(segmentIndex int, params addressSegmentParams, appendable *strings.Builder) int {
+	count := 0
+	stringPrefix := params.getSegmentStrPrefix()
+	prefLen := len(stringPrefix)
+	if prefLen > 0 {
+		if appendable == nil {
+			count += prefLen
+		} else {
+			appendable.WriteString(stringPrefix)
+		}
+	}
+	radix := params.getRadix()
+	leadingZeroCount := params.getLeadingZeros(segmentIndex)
+	if leadingZeroCount != 0 {
+		if appendable == nil {
+			if leadingZeroCount < 0 {
+				return count + writer.getMaxDigitCountRadix(radix)
+			} else {
+				count += leadingZeroCount
+			}
+		} else {
+			leadingZeroCount = writer.adjustLowerLeadingZeroCount(leadingZeroCount, radix)
+			getLeadingZeros(leadingZeroCount, appendable)
+		}
+	}
+	uppercase := params.isUppercase()
+	if radix == writer.getDefaultTextualRadix() {
+		// Equivalent to GetString for ip addresses but not GetWildcardString.
+		// For other addresses, equivalent to either one.
+		str := writer.getStringAsLower()
+		if appendable == nil {
+			return count + len(str)
+		} else if uppercase {
+			appendUppercase(str, radix, appendable)
+		} else {
+			appendable.WriteString(str)
+		}
+	} else {
+		if appendable == nil {
+			return count + writer.getLowerStringLength(radix)
+		} else {
+			writer.getLowerString(radix, uppercase, appendable)
+		}
+	}
+	return 0
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
