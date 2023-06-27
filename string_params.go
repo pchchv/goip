@@ -181,3 +181,17 @@ func getLeadingZeros(leadingZeroCount int, builder *strings.Builder) {
 		builder.WriteString(stringArray[:leadingZeroCount])
 	}
 }
+
+func appendUppercase(str string, radix int, appendable *strings.Builder) {
+	if radix > 10 {
+		for i := 0; i < len(str); i++ {
+			c := str[i]
+			if c >= 'a' && c <= 'z' {
+				c -= byte('a') - byte('A')
+			}
+			appendable.WriteByte(c)
+		}
+	} else {
+		appendable.WriteString(str)
+	}
+}
