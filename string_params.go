@@ -209,6 +209,50 @@ func (writer stringWriter) getRangeDigitString(segmentIndex int, params addressS
 	return 0
 }
 
+func (writer stringWriter) getSplitRangeDigitString(segmentIndex int, params addressSegmentParams, appendable *strings.Builder) int {
+	radix := params.getRadix()
+	leadingZerosCount := params.getLeadingZeros(segmentIndex)
+	leadingZerosCount = writer.adjustLowerLeadingZeroCount(leadingZerosCount, radix)
+	stringPrefix := params.getSegmentStrPrefix()
+	if appendable != nil {
+		wildcards := params.getWildcards()
+		dc := writer.getRangeDigitCount(radix)
+		rangeDigits := writer.adjustRangeDigits(dc)
+		var splitDigitSeparator byte = ' '
+		if params.hasSeparator() {
+			splitDigitSeparator = params.getSplitDigitSeparator()
+		}
+		reverseSplitDigits := params.isReverseSplitDigits()
+		uppercase := params.isUppercase()
+		if reverseSplitDigits {
+			getSplitCharStr(rangeDigits, splitDigitSeparator, wildcards.GetSingleWildcard(), stringPrefix, appendable)
+			appendable.WriteByte(splitDigitSeparator)
+			writer.getSplitLowerString(radix, rangeDigits, uppercase, splitDigitSeparator, reverseSplitDigits, stringPrefix, appendable)
+			if leadingZerosCount > 0 {
+				appendable.WriteByte(splitDigitSeparator)
+				getSplitLeadingZeros(leadingZerosCount, splitDigitSeparator, stringPrefix, appendable)
+			}
+		} else {
+			if leadingZerosCount != 0 {
+				getSplitLeadingZeros(leadingZerosCount, splitDigitSeparator, stringPrefix, appendable)
+				appendable.WriteByte(splitDigitSeparator)
+			}
+			writer.getSplitLowerString(radix, rangeDigits, uppercase, splitDigitSeparator, reverseSplitDigits, stringPrefix, appendable)
+			appendable.WriteByte(splitDigitSeparator)
+			getSplitCharStr(rangeDigits, splitDigitSeparator, wildcards.GetSingleWildcard(), stringPrefix, appendable)
+		}
+	} else {
+		length := writer.getLowerStringLength(radix) + leadingZerosCount
+		count := (length << 1) - 1
+		prefLen := len(stringPrefix)
+		if prefLen > 0 {
+			count += length * prefLen
+		}
+		return count
+	}
+	return 0
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
