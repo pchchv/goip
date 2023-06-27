@@ -253,6 +253,59 @@ func (writer stringWriter) getSplitRangeDigitString(segmentIndex int, params add
 	return 0
 }
 
+func (writer stringWriter) writeSplitRangeString(
+	segmentIndex int,
+	params addressSegmentParams,
+	appendable *strings.Builder) (int, address_error.IncompatibleAddressError) {
+	var splitDigitSeparator byte = ' '
+	stringPrefix := params.getSegmentStrPrefix()
+	radix := params.getRadix()
+	leadingZeroCount := params.getLeadingZeros(segmentIndex)
+	// for split ranges, it is the leading zeros of the upper value that matters
+	leadingZeroCount = writer.adjustUpperLeadingZeroCount(leadingZeroCount, radix)
+	wildcards := params.getWildcards()
+	uppercase := params.isUppercase()
+	if params.hasSeparator() {
+		splitDigitSeparator = params.getSplitDigitSeparator()
+	}
+	reverseSplitDigits := params.isReverseSplitDigits()
+	rangeSeparator := wildcards.GetRangeSeparator()
+	if appendable != nil {
+		hasLeadingZeros := leadingZeroCount != 0
+		if hasLeadingZeros && !reverseSplitDigits {
+			getSplitLeadingZeros(leadingZeroCount, splitDigitSeparator, stringPrefix, appendable)
+			appendable.WriteByte(splitDigitSeparator)
+			hasLeadingZeros = false
+		}
+		if err := writer.getSplitRangeString(
+			rangeSeparator,
+			wildcards.GetWildcard(),
+			radix,
+			uppercase,
+			splitDigitSeparator,
+			reverseSplitDigits,
+			stringPrefix,
+			appendable); err != nil {
+			return 0, err
+		}
+		if hasLeadingZeros {
+			appendable.WriteByte(splitDigitSeparator)
+			getSplitLeadingZeros(leadingZeroCount, splitDigitSeparator, stringPrefix, appendable)
+		}
+	} else {
+		return writer.getSplitRangeStringLength(
+			rangeSeparator,
+			wildcards.GetWildcard(),
+			leadingZeroCount,
+			radix,
+			uppercase,
+			splitDigitSeparator,
+			reverseSplitDigits,
+			stringPrefix), nil
+	}
+	return 0, nil
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
