@@ -169,6 +169,46 @@ func (writer stringWriter) getLowerStandardString(segmentIndex int, params addre
 	return 0
 }
 
+func (writer stringWriter) adjustRangeDigits(rangeDigits int) int {
+	if rangeDigits != 0 {
+		// Note: Ranges of type ___ intended to represent 0-fff do not work because the range does not include two-digit or one-digit numbers.
+		// It only does if the lower value is 0 and there are more than 1 digits of the range.
+		// This is because in this case you can omit all leading zeros.
+		// Ranges of type f___ representing f000-ffffff work fine.
+		if !writer.IncludesZero() || rangeDigits == 1 {
+			return rangeDigits
+		}
+	}
+	return 0
+}
+
+func (writer stringWriter) getRangeDigitString(segmentIndex int, params addressSegmentParams, appendable *strings.Builder) int {
+	radix := params.getRadix()
+	leadingZerosCount := params.getLeadingZeros(segmentIndex)
+	leadingZerosCount = writer.adjustLowerLeadingZeroCount(leadingZerosCount, radix)
+	stringPrefix := params.getSegmentStrPrefix()
+	prefLen := len(stringPrefix)
+	wildcards := params.getWildcards()
+	dc := writer.getRangeDigitCount(radix)
+	rangeDigits := writer.adjustRangeDigits(dc)
+	if appendable == nil {
+		return writer.getLowerStringLength(radix) + leadingZerosCount + prefLen
+	} else {
+		if prefLen > 0 {
+			appendable.WriteString(stringPrefix)
+		}
+		if leadingZerosCount > 0 {
+			getLeadingZeros(leadingZerosCount, appendable)
+		}
+		uppercase := params.isUppercase()
+		writer.getLowerStringChopped(radix, rangeDigits, uppercase, appendable)
+		for i := 0; i < rangeDigits; i++ {
+			appendable.WriteString(wildcards.GetSingleWildcard())
+		}
+	}
+	return 0
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
