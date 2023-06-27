@@ -132,6 +132,46 @@ func (params *addressStringParams) getZoneLength(zone Zone, sep string) int {
 	return 0
 }
 
+func (params *addressStringParams) getSegmentsStringLength(part AddressDivisionSeries) int {
+	count := 0
+	divCount := part.GetDivisionCount()
+	if divCount != 0 {
+		for i := 0; i < divCount; i++ {
+			count += params.appendSegment(i, nil, part)
+		}
+		// Character separator = getSeparator()
+		if params.hasSep {
+			count += divCount - 1 // the number of separators
+		}
+	}
+	return count
+}
+
+func (params *addressStringParams) appendSegments(builder *strings.Builder, part AddressDivisionSeries) *strings.Builder {
+	divCount := part.GetDivisionCount()
+	if divCount != 0 {
+		reverse := params.reverse
+		i := 0
+		hasSeparator := params.hasSep
+		separator := params.separator
+		for {
+			segIndex := i
+			if reverse {
+				segIndex = divCount - i - 1
+			}
+			params.appendSegment(segIndex, builder, part)
+			i++
+			if i == divCount {
+				break
+			}
+			if hasSeparator {
+				builder.WriteByte(separator)
+			}
+		}
+	}
+	return builder
+}
+
 type stringWriter struct {
 	DivisionType
 }
