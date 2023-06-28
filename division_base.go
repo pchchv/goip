@@ -1,6 +1,11 @@
 package goip
 
-import "math/big"
+import (
+	"math/big"
+	"strings"
+
+	"github.com/pchchv/goip/address_string"
+)
 
 type divCache struct {
 	cachedString,
@@ -246,3 +251,32 @@ func (div *addressDivisionBase) matchesStructure(other DivisionType) (res bool, 
 	res = true
 	return
 }
+
+// toString produces a string that is useful when a division string is provided with no context.
+// It uses a string prefix for octal or hex ("0" or "0x"), and does not use the wildcard '*', because division size is variable, so '*' is ambiguous.
+// GetWildcardString() is more appropriate in context with other segments or divisions.  It does not use a string prefix and uses '*' for full-range segments.
+// GetString() is more appropriate in context with prefix lengths, it uses zeros instead of wildcards for prefix block ranges.
+func toString(div DivisionType) string { // this can be moved to addressDivisionBase when we have ContainsPrefixBlock and similar methods implemented for big.Int in the base.
+	radix := div.getDefaultTextualRadix()
+	var opts address_string.IPStringOptions
+	switch radix {
+	case 16:
+		opts = hexParamsDiv
+	case 10:
+		opts = decimalParamsDiv
+	case 8:
+		opts = octalParamsDiv
+	default:
+		opts = new(address_string.IPStringOptionsBuilder).SetRadix(radix).SetWildcards(rangeWildcard).ToOptions()
+	}
+	return toStringOpts(opts, div)
+}
+
+func toStringOpts(opts address_string.StringOptions, div DivisionType) string {
+	builder := strings.Builder{}
+	params := toParams(opts)
+	builder.Grow(params.getDivisionStringLength(div))
+	params.appendDivision(&builder, div)
+	return builder.String()
+}
+
