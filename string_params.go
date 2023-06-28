@@ -244,6 +244,11 @@ func (params *addressStringParams) append(builder *strings.Builder, addr Address
 	return params.appendZoned(builder, addr, NoZone)
 }
 
+func (params *addressStringParams) clone() *addressStringParams {
+	result := *params
+	return &result
+}
+
 type stringWriter struct {
 	DivisionType
 }
