@@ -280,3 +280,15 @@ func toStringOpts(opts address_string.StringOptions, div DivisionType) string {
 	return builder.String()
 }
 
+func bigDivsSame(onePref, twoPref PrefixLen, oneVal, twoVal, oneUpperVal, twoUpperVal *BigDivInt) bool {
+	return onePref.Equal(twoPref) &&
+		oneVal.CmpAbs(twoVal) == 0 && oneUpperVal.CmpAbs(twoUpperVal) == 0
+}
+
+func bigDivValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal *BigDivInt) bool {
+	return oneVal.CmpAbs(twoVal) == 0 && oneUpperVal.CmpAbs(twoUpperVal) == 0
+}
+
+func bigDivValSame(oneVal, twoVal *big.Int) bool {
+	return oneVal.CmpAbs(twoVal) == 0
+}
