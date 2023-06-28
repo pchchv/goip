@@ -249,6 +249,24 @@ func (params *addressStringParams) clone() *addressStringParams {
 	return &result
 }
 
+func (params *addressStringParams) toString(addr AddressDivisionSeries) string {
+	length := params.getStringLength(addr)
+	builder := &strings.Builder{}
+	builder.Grow(length)
+	params.append(builder, addr)
+	checkLengths(length, builder)
+	return builder.String()
+}
+
+func (params *addressStringParams) toZonedString(addr AddressDivisionSeries, zone Zone) string {
+	length := params.getZonedStringLength(addr, zone)
+	builder := &strings.Builder{}
+	builder.Grow(length)
+	params.appendZoned(builder, addr, zone)
+	checkLengths(length, builder)
+	return builder.String()
+}
+
 type stringWriter struct {
 	DivisionType
 }
@@ -791,4 +809,13 @@ func appendUppercase(str string, radix int, appendable *strings.Builder) {
 	} else {
 		appendable.WriteString(str)
 	}
+}
+
+func checkLengths(length int, builder *strings.Builder) {
+	//Note: reactivate during development
+	//calcMatch := length == builder.Len()
+	//capMatch := length == builder.Cap()
+	//if !calcMatch || !capMatch {
+	//	panic(fmt.Sprintf("length is %d, capacity is %d, expected length is %d", builder.Len(), builder.Cap(), length))
+	//}
 }
