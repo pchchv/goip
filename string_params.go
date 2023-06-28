@@ -184,6 +184,25 @@ func (params *addressStringParams) getAddressLabelLength() int {
 	return len(params.addressLabel)
 }
 
+func (params *addressStringParams) appendSingleDivision(seg DivisionType, builder *strings.Builder) int {
+	writer := stringWriter{seg}
+	if builder == nil {
+		result, _ := writer.getStandardString(0, params, nil)
+		return result + params.getAddressLabelLength()
+	}
+
+	params.appendLabel(builder)
+	_, _ = writer.getStandardString(0, params, builder)
+	return 0
+}
+
+func (params *addressStringParams) getStringLength(addr AddressDivisionSeries) int {
+	if addr.GetDivisionCount() > 0 {
+		return params.getAddressLabelLength() + params.getSegmentsStringLength(addr)
+	}
+	return 0
+}
+
 type stringWriter struct {
 	DivisionType
 }
