@@ -819,3 +819,19 @@ func checkLengths(length int, builder *strings.Builder) {
 	//	panic(fmt.Sprintf("length is %d, capacity is %d, expected length is %d", builder.Len(), builder.Cap(), length))
 	//}
 }
+
+func toParams(opts address_string.StringOptions) *addressStringParams {
+	return &addressStringParams{
+		radix:            opts.GetRadix(),
+		separator:        opts.GetSeparator(),
+		hasSep:           opts.HasSeparator(),
+		uppercase:        opts.IsUppercase(),
+		expandSegments:   opts.IsExpandedSegments(),
+		wildcards:        opts.GetWildcards(),
+		segmentStrPrefix: opts.GetSegmentStrPrefix(),
+		addressLabel:     opts.GetAddressLabel(),
+		reverse:          opts.IsReverse(),
+		// the options don't provide a zone separator (only IPStringOptions do), so we must specify what it is
+		zoneSeparator: IPv6ZoneSeparatorStr,
+	}
+}
