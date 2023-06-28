@@ -203,6 +203,15 @@ func (params *addressStringParams) getStringLength(addr AddressDivisionSeries) i
 	return 0
 }
 
+func (params *addressStringParams) getDivisionStringLength(seg DivisionType) int {
+	return params.appendSingleDivision(seg, nil)
+}
+
+func (params *addressStringParams) appendDivision(builder *strings.Builder, seg DivisionType) *strings.Builder {
+	params.appendSingleDivision(seg, builder)
+	return builder
+}
+
 type stringWriter struct {
 	DivisionType
 }
