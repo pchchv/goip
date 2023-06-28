@@ -231,6 +231,19 @@ func (params *addressStringParams) appendZone(builder *strings.Builder, zone Zon
 	return builder
 }
 
+func (params *addressStringParams) appendZoned(builder *strings.Builder, addr AddressDivisionSeries, zone Zone) *strings.Builder {
+	if addr.GetDivisionCount() > 0 {
+		params.appendLabel(builder)
+		params.appendSegments(builder, addr)
+		params.appendZone(builder, zone)
+	}
+	return builder
+}
+
+func (params *addressStringParams) append(builder *strings.Builder, addr AddressDivisionSeries) *strings.Builder {
+	return params.appendZoned(builder, addr, NoZone)
+}
+
 type stringWriter struct {
 	DivisionType
 }
