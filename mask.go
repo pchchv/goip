@@ -83,3 +83,9 @@ func (masker bitwiseOrerBase) GetOredUpper(upperValue, maskValue uint64) uint64 
 func (masker bitwiseOrerBase) IsSequential() bool {
 	return masker.isSequentialVal
 }
+
+type specificValueMasker struct {
+	maskerBase
+	lower uint64
+	upper uint64
+}
