@@ -125,6 +125,38 @@ func (div *addressDivisionInternal) ContainsPrefixBlock(prefixLen BitCount) bool
 	return div.isPrefixBlockVals(div.getDivisionValue(), div.getUpperDivisionValue(), prefixLen)
 }
 
+func (div *addressDivisionInternal) toNetworkDivision(divPrefixLength PrefixLen, withPrefixLength bool) *AddressDivision {
+	vals := div.divisionValues
+	if vals == nil {
+		return div.toAddressDivision()
+	}
+	lower := div.getDivisionValue()
+	upper := div.getUpperDivisionValue()
+	var newLower, newUpper DivInt
+	hasPrefLen := divPrefixLength != nil
+	if hasPrefLen {
+		prefBits := divPrefixLength.bitCount()
+		bitCount := div.GetBitCount()
+		prefBits = checkBitCount(prefBits, bitCount)
+		mask := ^DivInt(0) << uint(bitCount-prefBits)
+		newLower = lower & mask
+		newUpper = upper | ^mask
+		if !withPrefixLength {
+			divPrefixLength = nil
+		}
+		if divsSame(divPrefixLength, div.getDivisionPrefixLength(), newLower, lower, newUpper, upper) {
+			return div.toAddressDivision()
+		}
+	} else {
+		divPrefixLength = nil
+		if div.getDivisionPrefixLength() == nil {
+			return div.toAddressDivision()
+		}
+	}
+	newVals := div.deriveNew(newLower, newUpper, divPrefixLength)
+	return createAddressDivision(newVals)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
