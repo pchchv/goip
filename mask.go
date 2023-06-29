@@ -59,3 +59,7 @@ func (masker extendedMaskerBase) GetExtendedMaskedLower(extendedValue, extendedM
 func (masker extendedMaskerBase) GetExtendedMaskedUpper(extendedUpperValue, extendedMaskValue uint64) uint64 {
 	return extendedUpperValue & extendedMaskValue
 }
+
+type bitwiseOrerBase struct {
+	isSequentialVal bool
+}
