@@ -227,3 +227,16 @@ func isPrefixBlockVals(divisionValue, upperValue DivInt, divisionPrefixLen, divi
 		divisionPrefixMask&divisionBitMask,
 		divisionNonPrefixMask)
 }
+
+func divsSame(onePref, twoPref PrefixLen, oneVal, twoVal, oneUpperVal, twoUpperVal DivInt) bool {
+	return onePref.Equal(twoPref) &&
+		oneVal == twoVal && oneUpperVal == twoUpperVal
+}
+
+func divValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal DivInt) bool {
+	return oneVal == twoVal && oneUpperVal == twoUpperVal
+}
+
+func divValSame(oneVal, twoVal DivInt) bool {
+	return oneVal == twoVal
+}
