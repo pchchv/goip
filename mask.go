@@ -9,3 +9,7 @@ type Masker interface {
 	// IsSequential returns whether masking all values in a range results in a consistent set of values.
 	IsSequential() bool
 }
+
+type maskerBase struct {
+	isSequentialVal bool
+}
