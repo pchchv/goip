@@ -1,5 +1,12 @@
 package goip
 
+var (
+	defaultMasker                = extendedMaskerBase{maskerBase{true}}
+	defaultNonSequentialMasker   = extendedMaskerBase{}
+	defaultOrMasker              = bitwiseOrerBase{true}
+	defaultNonSequentialOrMasker = bitwiseOrerBase{}
+)
+
 // Masker is used to mask (apply a bitwise combination) the division and segment values.
 type Masker interface {
 	// GetMaskedLower provides the smallest masked value, which is not necessarily the smallest masked value.
@@ -62,4 +69,17 @@ func (masker extendedMaskerBase) GetExtendedMaskedUpper(extendedUpperValue, exte
 
 type bitwiseOrerBase struct {
 	isSequentialVal bool
+}
+
+func (masker bitwiseOrerBase) GetOredLower(value, maskValue uint64) uint64 {
+	return value | maskValue
+}
+
+func (masker bitwiseOrerBase) GetOredUpper(upperValue, maskValue uint64) uint64 {
+	return upperValue | maskValue
+}
+
+// IsSequential returns whether masking all values in a range results in a consistent set of values.
+func (masker bitwiseOrerBase) IsSequential() bool {
+	return masker.isSequentialVal
 }
