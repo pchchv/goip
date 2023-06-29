@@ -45,3 +45,7 @@ func (masker fullRangeMasker) GetMaskedLower(value, maskValue uint64) uint64 {
 func (masker fullRangeMasker) GetMaskedUpper(upperValue, maskValue uint64) uint64 {
 	return masker.maskerBase.GetMaskedUpper(upperValue|masker.upperMask, maskValue)
 }
+
+type extendedMaskerBase struct {
+	maskerBase
+}
