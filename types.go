@@ -132,3 +132,20 @@ func ToPrefixLen(i int) PrefixLen {
 	res := PrefixBitCount(i)
 	return &res
 }
+
+func checkSubnet(item BitItem, prefixLength BitCount) BitCount {
+	return checkBitCount(prefixLength, item.GetBitCount())
+}
+
+func checkDiv(div DivisionType, prefixLength BitCount) BitCount {
+	return checkBitCount(prefixLength, div.GetBitCount())
+}
+
+func checkBitCount(prefixLength, max BitCount) BitCount {
+	if prefixLength > max {
+		return max
+	} else if prefixLength < 0 {
+		return 0
+	}
+	return prefixLength
+}
