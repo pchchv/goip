@@ -28,3 +28,10 @@ func (masker maskerBase) GetMaskedUpper(upperValue, maskValue uint64) uint64 {
 func (masker maskerBase) IsSequential() bool {
 	return masker.isSequentialVal
 }
+
+// These can be cached by the int used to construct
+type fullRangeMasker struct {
+	maskerBase
+	upperMask    uint64 // upperMask = ~0L >>> fullRangeBit;
+	fullRangeBit int
+}
