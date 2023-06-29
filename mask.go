@@ -49,3 +49,13 @@ func (masker fullRangeMasker) GetMaskedUpper(upperValue, maskValue uint64) uint6
 type extendedMaskerBase struct {
 	maskerBase
 }
+
+// GetExtendedMaskedLower provides the smallest masked value, which is not necessarily the smallest masked value.
+func (masker extendedMaskerBase) GetExtendedMaskedLower(extendedValue, extendedMaskValue uint64) uint64 {
+	return extendedValue & extendedMaskValue
+}
+
+// GetExtendedMaskedUpper provides the largest masked value, which is not necessarily the largest masked value.
+func (masker extendedMaskerBase) GetExtendedMaskedUpper(extendedUpperValue, extendedMaskValue uint64) uint64 {
+	return extendedUpperValue & extendedMaskValue
+}
