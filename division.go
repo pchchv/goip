@@ -191,3 +191,29 @@ func (div *AddressDivision) IsMAC() bool {
 func (div *AddressDivision) ToDiv() *AddressDivision {
 	return div
 }
+
+func testRange(lowerValue, upperValue, finalUpperValue, networkMask, hostMask DivInt) bool {
+	return lowerValue == (lowerValue&networkMask) && finalUpperValue == (upperValue|hostMask)
+}
+
+func isPrefixBlockVals(divisionValue, upperValue DivInt, divisionPrefixLen, divisionBitCount BitCount) bool {
+	if divisionPrefixLen <= 0 {
+		if divisionValue != 0 {
+			return false
+		}
+		maxValue := ^(^DivInt(0) << uint(divisionBitCount))
+		return upperValue == maxValue
+	}
+	if divisionPrefixLen >= divisionBitCount {
+		return true
+	}
+	var ones = ^DivInt(0)
+	divisionBitMask := ^(ones << uint(divisionBitCount))
+	divisionPrefixMask := ones << uint(divisionBitCount-divisionPrefixLen)
+	var divisionNonPrefixMask = ^divisionPrefixMask
+	return testRange(divisionValue,
+		upperValue,
+		upperValue,
+		divisionPrefixMask&divisionBitMask,
+		divisionNonPrefixMask)
+}
