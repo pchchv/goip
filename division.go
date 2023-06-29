@@ -115,6 +115,16 @@ func (div *addressDivisionInternal) GetBitCount() BitCount {
 	return div.addressDivisionBase.GetBitCount()
 }
 
+// Returns whether the division range includes the block of values for its prefix length.
+func (div *addressDivisionInternal) isPrefixBlockVals(divisionValue, upperValue DivInt, divisionPrefixLen BitCount) bool {
+	return isPrefixBlockVals(divisionValue, upperValue, divisionPrefixLen, div.GetBitCount())
+}
+
+// ContainsPrefixBlock returns whether the division range includes the block of values for the given prefix length.
+func (div *addressDivisionInternal) ContainsPrefixBlock(prefixLen BitCount) bool {
+	return div.isPrefixBlockVals(div.getDivisionValue(), div.getUpperDivisionValue(), prefixLen)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
