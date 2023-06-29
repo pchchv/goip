@@ -240,3 +240,11 @@ func divValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal DivInt) bool {
 func divValSame(oneVal, twoVal DivInt) bool {
 	return oneVal == twoVal
 }
+
+func createAddressDivision(vals divisionValues) *AddressDivision {
+	return &AddressDivision{
+		addressDivisionInternal{
+			addressDivisionBase: addressDivisionBase{vals},
+		},
+	}
+}
