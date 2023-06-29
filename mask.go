@@ -89,3 +89,13 @@ type specificValueMasker struct {
 	lower uint64
 	upper uint64
 }
+
+// GetMaskedLower provides the smallest masked value, which is not necessarily the smallest masked value.
+func (masker specificValueMasker) GetMaskedLower(value, maskValue uint64) uint64 {
+	return masker.maskerBase.GetMaskedLower(value, maskValue)
+}
+
+// GetMaskedUpper provides the largest masked value, which is not necessarily the largest masked value.
+func (masker specificValueMasker) GetMaskedUpper(upperValue, maskValue uint64) uint64 {
+	return masker.maskerBase.GetMaskedUpper(upperValue, maskValue)
+}
