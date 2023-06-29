@@ -35,3 +35,13 @@ type fullRangeMasker struct {
 	upperMask    uint64 // upperMask = ~0L >>> fullRangeBit;
 	fullRangeBit int
 }
+
+// GetMaskedLower provides the smallest masked value, which is not necessarily the smallest masked value.
+func (masker fullRangeMasker) GetMaskedLower(value, maskValue uint64) uint64 {
+	return masker.maskerBase.GetMaskedLower(value & ^masker.upperMask, maskValue)
+}
+
+// GetMaskedUpper provides the largest masked value, which is not necessarily the largest masked value.
+func (masker fullRangeMasker) GetMaskedUpper(upperValue, maskValue uint64) uint64 {
+	return masker.maskerBase.GetMaskedUpper(upperValue|masker.upperMask, maskValue)
+}
