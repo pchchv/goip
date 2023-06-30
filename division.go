@@ -230,6 +230,19 @@ func (div *addressDivisionInternal) getMaxDigitCount() int {
 	return div.getMaxDigitCountRadix(div.getDefaultTextualRadix())
 }
 
+// isSinglePrefix returns whether the given range from divisionValue to upperValue is equivalent to the segmentValue range with the divisionPrefixLen prefix.
+func (div *addressDivisionInternal) isSinglePrefix(divisionValue, upperValue DivInt, divisionPrefixLen BitCount) bool {
+	bitCount := div.GetBitCount()
+	divisionPrefixLen = checkBitCount(divisionPrefixLen, bitCount)
+	shift := uint(bitCount - divisionPrefixLen)
+	return (divisionValue >> shift) == (upperValue >> shift)
+}
+
+// IsSinglePrefix returns true if the division value range covers only single prefix value for a given prefix length.
+func (div *addressDivisionInternal) IsSinglePrefix(divisionPrefixLength BitCount) bool {
+	return div.isSinglePrefix(div.getDivisionValue(), div.getUpperDivisionValue(), divisionPrefixLength)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
