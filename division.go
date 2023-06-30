@@ -265,6 +265,21 @@ func (div *addressDivisionInternal) adjustUpperLeadingZeroCount(leadingZeroCount
 	return div.adjustLeadingZeroCount(leadingZeroCount, div.getUpperDivisionValue(), radix)
 }
 
+// isSinglePrefixBlock returns whether the given range from divisionValue to upperValue is equivalent to the segmentValue range with the divisionPrefixLen prefix.
+func (div *addressDivisionInternal) isSinglePrefixBlock(divisionValue, upperValue DivInt, divisionPrefixLen BitCount) bool {
+	if divisionPrefixLen == 0 {
+		return divisionValue == 0 && upperValue == div.getMaxValue()
+	}
+
+	bitCount := div.GetBitCount()
+	ones := ^DivInt(0)
+	divisionBitMask := ^(ones << uint(bitCount))
+	divisionPrefixMask := ones << uint(bitCount-divisionPrefixLen)
+	divisionHostMask := ^divisionPrefixMask
+
+	return testRange(divisionValue, divisionValue, upperValue, divisionPrefixMask&divisionBitMask, divisionHostMask)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
