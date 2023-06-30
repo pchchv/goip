@@ -322,6 +322,17 @@ func (div *addressDivisionInternal) toPrefixedDivision(divPrefixLength PrefixLen
 	return createAddressDivision(newVals)
 }
 
+func (div *addressDivisionInternal) getCount() *big.Int {
+	if !div.isMultiple() {
+		return bigOne()
+	}
+	if div.IsFullRange() {
+		res := bigZero()
+		return res.SetUint64(0xffffffffffffffff).Add(res, bigOneConst())
+	}
+	return bigZero().SetUint64((div.getUpperDivisionValue() - div.getDivisionValue()) + 1)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
