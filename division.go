@@ -208,6 +208,15 @@ func (div *addressDivisionInternal) toPrefixedHostDivision(divPrefixLength Prefi
 	return div.toHostDivision(divPrefixLength, true)
 }
 
+// getDefaultTextualRadix returns the default radix for text address representations (10 for IPv4, 16 for IPv6, MAC and others)
+func (div *addressDivisionInternal) getDefaultTextualRadix() int {
+	addrType := div.getAddrType()
+	if addrType.isIPv4() {
+		return IPv4DefaultTextualRadix
+	}
+	return 16
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
