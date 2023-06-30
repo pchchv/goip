@@ -45,3 +45,46 @@ func getRangeString(
 	}
 	return 0
 }
+
+func getDigitCount(value uint64, radix int) int {
+	result := 1
+	if radix == 16 {
+		for {
+			value >>= 4
+			if value == 0 {
+				break
+			}
+			result++
+		}
+	} else {
+		if radix == 10 {
+			if value < 10 {
+				return 1
+			} else if value < 100 {
+				return 2
+			} else if value < 1000 {
+				return 3
+			}
+			value /= 1000
+			result = 3 // start with 3 in the loop below
+		} else if radix == 8 {
+			for {
+				value >>= 3
+				if value == 0 {
+					break
+				}
+				result++
+			}
+			return result
+		}
+		rad64 := uint64(radix)
+		for {
+			value /= rad64
+			if value == 0 {
+				break
+			}
+			result++
+		}
+	}
+	return result
+}
