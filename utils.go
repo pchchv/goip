@@ -1,5 +1,10 @@
 package goip
 
+import (
+	"sync/atomic"
+	"unsafe"
+)
+
 func nilString() string {
 	return "<nil>"
 }
@@ -23,4 +28,12 @@ func getBytesCopy(bytes, cached []byte) []byte {
 	copy(bytes, cached)
 
 	return bytes[:len(cached)]
+}
+
+func atomicLoadPointer(dataLoc *unsafe.Pointer) unsafe.Pointer {
+	return atomic.LoadPointer(dataLoc)
+}
+
+func atomicStorePointer(dataLoc *unsafe.Pointer, val unsafe.Pointer) {
+	atomic.StorePointer(dataLoc, val)
 }
