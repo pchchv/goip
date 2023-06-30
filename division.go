@@ -255,6 +255,16 @@ func (div *addressDivisionInternal) adjustLeadingZeroCount(leadingZeroCount int,
 	return leadingZeroCount
 }
 
+// If leadingZeroCount is -1, returns the number of leading zeros for the maximum width, based on the width of the value.
+func (div *addressDivisionInternal) adjustLowerLeadingZeroCount(leadingZeroCount int, radix int) int {
+	return div.adjustLeadingZeroCount(leadingZeroCount, div.getDivisionValue(), radix)
+}
+
+// If leadingZeroCount is -1, returns the number of leading zeros for the maximum width, based on the width of the value.
+func (div *addressDivisionInternal) adjustUpperLeadingZeroCount(leadingZeroCount int, radix int) int {
+	return div.adjustLeadingZeroCount(leadingZeroCount, div.getUpperDivisionValue(), radix)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
