@@ -333,6 +333,19 @@ func (div *addressDivisionInternal) getCount() *big.Int {
 	return bigZero().SetUint64((div.getUpperDivisionValue() - div.getDivisionValue()) + 1)
 }
 
+// GetPrefixCountLen returns the number of distinct prefixes in the division value range for a given prefix length.
+func (div *addressDivisionInternal) GetPrefixCountLen(divisionPrefixLength BitCount) *big.Int {
+	if div.IsFullRange() {
+		return bigZero().Add(bigOneConst(), bigZero().SetUint64(div.getMaxValue()))
+	}
+
+	bitCount := div.GetBitCount()
+	divisionPrefixLength = checkBitCount(divisionPrefixLength, bitCount)
+	shiftAdjustment := bitCount - divisionPrefixLength
+	count := ((div.getUpperDivisionValue() >> uint(shiftAdjustment)) - (div.getDivisionValue() >> uint(shiftAdjustment))) + 1
+	return bigZero().SetUint64(count)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
