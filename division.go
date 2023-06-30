@@ -173,6 +173,41 @@ func (div *addressDivisionInternal) isPrefixBlock() bool {
 	return prefLen != nil && div.containsPrefixBlock(prefLen.bitCount())
 }
 
+func (div *addressDivisionInternal) toHostDivision(divPrefixLength PrefixLen, withPrefixLength bool) *AddressDivision {
+	var mask SegInt
+	vals := div.divisionValues
+	if vals == nil {
+		return div.toAddressDivision()
+	}
+	lower := div.getDivisionValue()
+	upper := div.getUpperDivisionValue()
+	hasPrefLen := divPrefixLength != nil
+	if hasPrefLen {
+		prefBits := divPrefixLength.bitCount()
+		bitCount := div.GetBitCount()
+		prefBits = checkBitCount(prefBits, bitCount)
+		mask = ^(^SegInt(0) << uint(bitCount-prefBits))
+	}
+	divMask := uint64(mask)
+	maxVal := uint64(^SegInt(0))
+	masker := MaskRange(lower, upper, divMask, maxVal)
+	newLower, newUpper := masker.GetMaskedLower(lower, divMask), masker.GetMaskedUpper(upper, divMask)
+
+	if !withPrefixLength {
+		divPrefixLength = nil
+	}
+
+	if divsSame(divPrefixLength, div.getDivisionPrefixLength(), newLower, lower, newUpper, upper) {
+		return div.toAddressDivision()
+	}
+	newVals := div.deriveNew(newLower, newUpper, divPrefixLength)
+	return createAddressDivision(newVals)
+}
+
+func (div *addressDivisionInternal) toPrefixedHostDivision(divPrefixLength PrefixLen) *AddressDivision {
+	return div.toHostDivision(divPrefixLength, true)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
