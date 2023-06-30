@@ -217,6 +217,19 @@ func (div *addressDivisionInternal) getDefaultTextualRadix() int {
 	return 16
 }
 
+func (div *addressDivisionInternal) getMaxValue() DivInt {
+	return ^(^DivInt(0) << uint(div.GetBitCount()))
+}
+
+func (div *addressDivisionInternal) getMaxDigitCountRadix(radix int) int {
+	return getMaxDigitCount(radix, div.GetBitCount(), div.getMaxValue())
+}
+
+// getMaxDigitCount returns the number of digits for the maximum possible value of the division when using the default radix
+func (div *addressDivisionInternal) getMaxDigitCount() int {
+	return div.getMaxDigitCountRadix(div.getDefaultTextualRadix())
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
