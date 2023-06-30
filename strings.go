@@ -1,6 +1,9 @@
 package goip
 
-import "strings"
+import (
+	"strings"
+	"unsafe"
+)
 
 var maxDigitMap = createDigitMap()
 
@@ -94,4 +97,27 @@ func getDigitCount(value uint64, radix int) int {
 func createDigitMap() *map[uint64]int {
 	res := make(map[uint64]int)
 	return &res
+}
+
+func getMaxDigitCountCalc(radix int, bitCount BitCount, calc func() int) int {
+	rad64 := uint64(radix)
+	key := (rad64 << 32) | uint64(bitCount)
+	theMapPtr := (*map[uint64]int)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&maxDigitMap))))
+	theMap := *theMapPtr
+	if digs, ok := theMap[key]; ok {
+		return digs
+	}
+	digs := calc()
+	newMaxDigitMap := createDigitMap()
+	theNewMap := *newMaxDigitMap
+
+	for k, val := range theMap {
+		theNewMap[k] = val
+	}
+
+	theNewMap[key] = digs
+	dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&maxDigitMap))
+	atomicStorePointer(dataLoc, unsafe.Pointer(newMaxDigitMap))
+
+	return digs
 }
