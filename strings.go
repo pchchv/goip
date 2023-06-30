@@ -121,3 +121,9 @@ func getMaxDigitCountCalc(radix int, bitCount BitCount, calc func() int) int {
 
 	return digs
 }
+
+func getMaxDigitCount(radix int, bitCount BitCount, maxValue uint64) int {
+	return getMaxDigitCountCalc(radix, bitCount, func() int {
+		return getDigitCount(maxValue, radix)
+	})
+}
