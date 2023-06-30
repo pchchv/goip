@@ -99,3 +99,15 @@ func (masker specificValueMasker) GetMaskedLower(value, maskValue uint64) uint64
 func (masker specificValueMasker) GetMaskedUpper(upperValue, maskValue uint64) uint64 {
 	return masker.maskerBase.GetMaskedUpper(upperValue, maskValue)
 }
+
+func newFullRangeMasker(fullRangeBit int, isSequential bool) Masker {
+	return fullRangeMasker{
+		fullRangeBit: fullRangeBit,
+		upperMask:    ^uint64(0) >> uint(fullRangeBit),
+		maskerBase:   maskerBase{isSequential},
+	}
+}
+
+func newSpecificValueMasker(lower, upper uint64) Masker {
+	return specificValueMasker{lower: lower, upper: upper}
+}
