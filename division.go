@@ -243,6 +243,18 @@ func (div *addressDivisionInternal) IsSinglePrefix(divisionPrefixLength BitCount
 	return div.isSinglePrefix(div.getDivisionValue(), div.getUpperDivisionValue(), divisionPrefixLength)
 }
 
+func (div *addressDivisionInternal) adjustLeadingZeroCount(leadingZeroCount int, value DivInt, radix int) int {
+	if leadingZeroCount < 0 {
+		width := getDigitCount(value, radix)
+		num := div.getMaxDigitCountRadix(radix) - width
+		if num < 0 {
+			return 0
+		}
+		return num
+	}
+	return leadingZeroCount
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
