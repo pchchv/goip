@@ -127,3 +127,10 @@ func getMaxDigitCount(radix int, bitCount BitCount, maxValue uint64) int {
 		return getDigitCount(maxValue, radix)
 	})
 }
+
+func buildDefaultRangeString(strProvider divStringProvider, radix int) string {
+	builder := strings.Builder{}
+	builder.Grow(20)
+	getRangeString(strProvider, RangeSeparatorStr, 0, 0, "", radix, false, false, &builder)
+	return builder.String()
+}
