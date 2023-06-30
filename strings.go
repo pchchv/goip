@@ -2,6 +2,8 @@ package goip
 
 import "strings"
 
+var maxDigitMap = createDigitMap()
+
 func getRangeString(
 	strProvider divStringProvider,
 	rangeSeparator string,
@@ -87,4 +89,9 @@ func getDigitCount(value uint64, radix int) int {
 		}
 	}
 	return result
+}
+
+func createDigitMap() *map[uint64]int {
+	res := make(map[uint64]int)
+	return &res
 }
