@@ -280,6 +280,48 @@ func (div *addressDivisionInternal) isSinglePrefixBlock(divisionValue, upperValu
 	return testRange(divisionValue, divisionValue, upperValue, divisionPrefixMask&divisionBitMask, divisionHostMask)
 }
 
+// matchesWithMask returns whether masking with a given mask results in a valid contiguous range for the given segment,
+// and if so, whether the result matches the range from lowerValue to upperValue.
+func (div *addressDivisionInternal) matchesValsWithMask(lowerValue, upperValue, mask DivInt) bool {
+	if lowerValue == upperValue {
+		return div.matchesWithMask(lowerValue, mask)
+	}
+
+	if !div.isMultiple() {
+		// the values to match, lowerValue and upperValue, do not match, so you cannot match these two values with the same value from this segment
+		return false
+	}
+
+	thisValue := div.getDivisionValue()
+	thisUpperValue := div.getUpperDivisionValue()
+	masker := MaskRange(thisValue, thisUpperValue, mask, div.getMaxValue())
+	if !masker.IsSequential() {
+		return false
+	}
+
+	return lowerValue == masker.GetMaskedLower(thisValue, mask) && upperValue == masker.GetMaskedUpper(thisUpperValue, mask)
+}
+
+func (div *addressDivisionInternal) toPrefixedDivision(divPrefixLength PrefixLen) *AddressDivision {
+	hasPrefLen := divPrefixLength != nil
+	bitCount := div.GetBitCount()
+
+	if hasPrefLen {
+		prefBits := divPrefixLength.bitCount()
+		prefBits = checkBitCount(prefBits, bitCount)
+		if div.isPrefixed() && prefBits == div.getDivisionPrefixLength().bitCount() {
+			return div.toAddressDivision()
+		}
+	} else {
+		return div.toAddressDivision()
+	}
+
+	lower := div.getDivisionValue()
+	upper := div.getUpperDivisionValue()
+	newVals := div.deriveNew(lower, upper, divPrefixLength)
+	return createAddressDivision(newVals)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
