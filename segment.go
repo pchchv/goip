@@ -61,6 +61,27 @@ func (seg *addressSegmentInternal) equal(other AddressSegmentType) bool {
 	return matches && segValSame(seg.GetSegmentValue(), otherDivision.GetSegmentValue())
 }
 
+// PrefixEqual returns whether the prefix bits of a given segment match the same bits of that segment.
+// Returns whether the two segments have the same range of prefix values for a given prefix length.
+func (seg *addressSegmentInternal) PrefixEqual(other AddressSegmentType, prefixLength BitCount) bool {
+	prefixLength = checkBitCount(prefixLength, seg.GetBitCount())
+	shift := seg.GetBitCount() - prefixLength
+	if shift <= 0 {
+		return seg.GetSegmentValue() == other.GetSegmentValue() && seg.GetUpperSegmentValue() == other.GetUpperSegmentValue()
+	}
+	return (other.GetSegmentValue()>>uint(shift)) == (seg.GetSegmentValue()>>uint(shift)) &&
+		(other.GetUpperSegmentValue()>>uint(shift)) == (seg.GetUpperSegmentValue()>>uint(shift))
+}
+
+// GetUpperSegmentValue returns the upper value of the range of segment values.
+func (seg *addressSegmentInternal) GetUpperSegmentValue() SegInt {
+	vals := seg.divisionValues
+	if vals == nil {
+		return 0
+	}
+	return vals.getUpperSegmentValue()
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
