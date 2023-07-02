@@ -122,6 +122,23 @@ func (seg *addressSegmentInternal) TestBit(n BitCount) bool {
 	return (value & (1 << uint(n))) != 0
 }
 
+// IsOneBit returns true if the bit in the lowest value of this segment by the given index is 1,
+// where index 0 refers to the most significant bit.
+// IsOneBit will cause a panic if bitIndex is less than zero,
+// or if it is larger than the number of bits of this item.
+func (seg *addressSegmentInternal) IsOneBit(segmentBitIndex BitCount) bool {
+	value := seg.GetSegmentValue()
+	bitCount := seg.GetBitCount()
+	if segmentBitIndex < 0 || segmentBitIndex > seg.GetBitCount() {
+		panic("invalid bit index")
+	}
+	return (value & (1 << uint(bitCount-(segmentBitIndex+1)))) != 0
+}
+
+func (seg *addressSegmentInternal) getDefaultSegmentWildcardString() string {
+	return SegmentWildcardStr
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
