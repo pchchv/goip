@@ -1,5 +1,7 @@
 package goip
 
+import "math/bits"
+
 const SegIntSize = 32 // must match the bit count of SegInt
 
 // SegInt is an integer type for holding generic address segment values.
@@ -137,6 +139,39 @@ func (seg *addressSegmentInternal) IsOneBit(segmentBitIndex BitCount) bool {
 
 func (seg *addressSegmentInternal) getDefaultSegmentWildcardString() string {
 	return SegmentWildcardStr
+}
+
+// GetLeadingBitCount returns the number of consecutive leading bits of one or zero.
+// If ones is true, returns the number of consecutive leading one bits.
+// Otherwise, returns the number of consecutive leading zero bits.
+// This method applies only to the lowest value of the range if that segment represents multiple values.
+func (seg *addressSegmentInternal) GetLeadingBitCount(ones bool) BitCount {
+	extraLeading := 32 - seg.GetBitCount()
+	val := seg.GetSegmentValue()
+
+	if ones {
+		//leading ones
+		return BitCount(bits.LeadingZeros32(uint32(^val&seg.GetMaxValue()))) - extraLeading
+	}
+	// leading zeros
+	return BitCount(bits.LeadingZeros32(uint32(val))) - extraLeading
+}
+
+// GetTrailingBitCount returns the number of consecutive trailing one or zero bits.
+// If ones is true, it returns the number of consecutive trailing zero bits.
+// Otherwise, it returns the number of consecutive trailing one bits.
+// This method applies only to the lowest value of the range if that segment represents multiple values.
+func (seg *addressSegmentInternal) GetTrailingBitCount(ones bool) BitCount {
+	val := seg.GetSegmentValue()
+
+	if ones {
+		// trailing ones
+		return BitCount(bits.TrailingZeros32(uint32(^val)))
+	}
+
+	//trailing zeros
+	bitCount := uint(seg.GetBitCount())
+	return BitCount(bits.TrailingZeros32(uint32(val | (1 << bitCount))))
 }
 
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
