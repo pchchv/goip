@@ -174,6 +174,22 @@ func (seg *addressSegmentInternal) GetTrailingBitCount(ones bool) BitCount {
 	return BitCount(bits.TrailingZeros32(uint32(val | (1 << bitCount))))
 }
 
+// GetSegmentNetworkMask returns a value comprising of the same number of total bits as the bit length of a given segment,
+// a value that represents all one-bits for a given number of bits followed by all zero-bits.
+func (seg *addressSegmentInternal) GetSegmentNetworkMask(networkBits BitCount) SegInt {
+	bitCount := seg.GetBitCount()
+	networkBits = checkBitCount(networkBits, bitCount)
+	return seg.GetMaxValue() & (^SegInt(0) << uint(bitCount-networkBits))
+}
+
+// GetSegmentHostMask returns a value comprising of the same number of total bits as the bit length of a given segment,
+// a value that represents all zero-bits for a given number of bits followed by all one-bits.
+func (seg *addressSegmentInternal) GetSegmentHostMask(networkBits BitCount) SegInt {
+	bitCount := seg.GetBitCount()
+	networkBits = checkBitCount(networkBits, bitCount)
+	return ^(^SegInt(0) << uint(bitCount-networkBits))
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
