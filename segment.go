@@ -99,6 +99,29 @@ func (seg *addressSegmentInternal) MatchesValsWithMask(lowerValue, upperValue, m
 	return seg.matchesValsWithMask(DivInt(lowerValue), DivInt(upperValue), DivInt(mask))
 }
 
+// GetValueCount returns the same value as GetCount as an integer.
+func (seg *addressSegmentInternal) GetValueCount() SegIntCount {
+	return uint64(seg.GetUpperSegmentValue()-seg.GetSegmentValue()) + 1
+}
+
+// GetMaxValue gets the maximum possible value for a given segment type or version, determined by the number of bits.
+// Use GetUpperSegmentValue to get the highest range value of that particular segment.
+func (seg *addressSegmentInternal) GetMaxValue() SegInt {
+	return ^(^SegInt(0) << uint(seg.GetBitCount()))
+}
+
+// TestBit returns true if the bit in the lowest value of this segment by the given index is 1,
+// where index 0 refers to the least significant bit.
+// In other words, it calculates (bits & (1 << n) != 0), using the lowest value of that section.
+// TestBit panics if n < 0, or if it matches or exceeds the number of bits of this item.
+func (seg *addressSegmentInternal) TestBit(n BitCount) bool {
+	value := seg.GetSegmentValue()
+	if n < 0 || n > seg.GetBitCount() {
+		panic("invalid bit index")
+	}
+	return (value & (1 << uint(n))) != 0
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
