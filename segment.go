@@ -1,5 +1,7 @@
 package goip
 
+const SegIntSize = 32 // must match the bit count of SegInt
+
 // SegInt is an integer type for holding generic address segment values.
 // It is at least as large as all address segment values: [IPv6SegInt], [IPv4SegInt], [MACSegInt].
 //

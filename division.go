@@ -346,6 +346,10 @@ func (div *addressDivisionInternal) GetPrefixCountLen(divisionPrefixLength BitCo
 	return bigZero().SetUint64(count)
 }
 
+func (div *addressDivisionInternal) matchesSegment() bool {
+	return div.GetBitCount() <= SegIntSize
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
