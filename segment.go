@@ -82,6 +82,23 @@ func (seg *addressSegmentInternal) GetUpperSegmentValue() SegInt {
 	return vals.getUpperSegmentValue()
 }
 
+// Matches returns true if the range of the segment matches the specified single value.
+func (seg *addressSegmentInternal) Matches(value SegInt) bool {
+	return seg.matches(DivInt(value))
+}
+
+// MatchesWithMask applies a mask to a given segment and then compares the result to the given value,
+// returning true if the range of the resulting segment matches that single value.
+func (seg *addressSegmentInternal) MatchesWithMask(value, mask SegInt) bool {
+	return seg.matchesWithMask(DivInt(value), DivInt(mask))
+}
+
+// MatchesValsWithMask applies a mask to a given segment and then compares the result to the given values,
+// returning true if the range of the resulting segment matches the given range.
+func (seg *addressSegmentInternal) MatchesValsWithMask(lowerValue, upperValue, mask SegInt) bool {
+	return seg.matchesValsWithMask(DivInt(lowerValue), DivInt(upperValue), DivInt(mask))
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
