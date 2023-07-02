@@ -28,3 +28,11 @@ type segmentValues interface {
 type addressSegmentInternal struct {
 	addressDivisionInternal
 }
+
+func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
+	return oneVal == twoVal && oneUpperVal == twoUpperVal
+}
+
+func segValSame(oneVal, twoVal SegInt) bool {
+	return oneVal == twoVal
+}
