@@ -24,3 +24,7 @@ type segmentValues interface {
 	// getUpperSegmentValue gets the upper value for a segment
 	getUpperSegmentValue() SegInt
 }
+
+type addressSegmentInternal struct {
+	addressDivisionInternal
+}
