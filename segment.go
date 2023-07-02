@@ -29,6 +29,38 @@ type addressSegmentInternal struct {
 	addressDivisionInternal
 }
 
+// GetSegmentValue returns the lower value of the range of segment values.
+func (seg *addressSegmentInternal) GetSegmentValue() SegInt {
+	vals := seg.divisionValues
+	if vals == nil {
+		return 0
+	}
+	return vals.getSegmentValue()
+}
+
+func (seg *addressSegmentInternal) equal(other AddressSegmentType) bool {
+	if other == nil || other.ToSegmentBase() == nil {
+		return false
+	}
+
+	if seg.isMultiple() {
+		if other.IsMultiple() {
+			matches, _ := seg.matchesStructure(other)
+			otherDivision := other.ToSegmentBase()
+			return matches && segValsSame(seg.getSegmentValue(), otherDivision.getSegmentValue(),
+				seg.getUpperSegmentValue(), otherDivision.getUpperSegmentValue())
+		} else {
+			return false
+		}
+	} else if other.IsMultiple() {
+		return false
+	}
+
+	matches, _ := seg.matchesStructure(other)
+	otherDivision := other.ToSegmentBase()
+	return matches && segValSame(seg.GetSegmentValue(), otherDivision.GetSegmentValue())
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
