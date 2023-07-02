@@ -9,6 +9,8 @@ const SegIntSize = 32 // must match the bit count of SegInt
 // IP address segment code uses bits.TrailingZeros32 and bits.LeadingZeros32, so it cannot be larger than 32.
 type SegInt = uint32
 
+type SegIntCount = uint64 // (max value of SegInt) + 1
+
 type segderiver interface {
 	// deriveNew produces a new segment with the same bit count as the old
 	deriveNewMultiSeg(val, upperVal SegInt, prefLen PrefixLen) divisionValues
