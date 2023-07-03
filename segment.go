@@ -329,6 +329,21 @@ func (seg *addressSegmentInternal) GetValue() *BigDivInt {
 	return seg.addressDivisionInternal.GetValue()
 }
 
+// GetUpperValue returns the highest value in the address segment range as a big integer.
+func (seg *addressSegmentInternal) GetUpperValue() *BigDivInt {
+	return seg.addressDivisionInternal.GetUpperValue()
+}
+
+// Bytes returns the lowest value in the address segment range as a byte slice.
+func (seg *addressSegmentInternal) Bytes() []byte {
+	return seg.addressDivisionInternal.Bytes()
+}
+
+// UpperBytes returns the highest value in the address segment range as a byte slice.
+func (seg *addressSegmentInternal) UpperBytes() []byte {
+	return seg.addressDivisionInternal.UpperBytes()
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
