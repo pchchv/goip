@@ -314,6 +314,21 @@ func (seg *addressSegmentInternal) isReversibleRange(perByte bool) (isReversible
 	return
 }
 
+// GetBitCount returns the number of bits in each value comprising this address item.
+func (seg *addressSegmentInternal) GetBitCount() BitCount {
+	return seg.addressDivisionInternal.GetBitCount()
+}
+
+// GetByteCount returns the number of bytes required for each value that makes up the given address element.
+func (seg *addressSegmentInternal) GetByteCount() int {
+	return seg.addressDivisionInternal.GetByteCount()
+}
+
+// GetValue returns the lowest value in the address segment range as a big integer.
+func (seg *addressSegmentInternal) GetValue() *BigDivInt {
+	return seg.addressDivisionInternal.GetValue()
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
