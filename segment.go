@@ -344,6 +344,25 @@ func (seg *addressSegmentInternal) UpperBytes() []byte {
 	return seg.addressDivisionInternal.UpperBytes()
 }
 
+// CopyBytes copies the lowest value in the address segment range to a byte slice.
+// If the value can fit in a given slice, it is copied to that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned along with the value.
+func (seg *addressSegmentInternal) CopyBytes(bytes []byte) []byte {
+	return seg.addressDivisionInternal.CopyBytes(bytes)
+}
+
+// CopyUpperBytes copies the highest value in the address segment range to a byte slice.
+// If the value can fit in a given slice, it is copied to that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned along with the value.
+func (seg *addressSegmentInternal) CopyUpperBytes(bytes []byte) []byte {
+	return seg.addressDivisionInternal.CopyUpperBytes(bytes)
+}
+
+// IsZero returns whether the segment is exactly zero.
+func (seg *addressSegmentInternal) IsZero() bool {
+	return seg.addressDivisionInternal.IsZero()
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
