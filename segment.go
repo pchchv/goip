@@ -395,6 +395,26 @@ func (seg *addressSegmentInternal) IsSinglePrefix(divisionPrefixLength BitCount)
 	return seg.addressDivisionInternal.IsSinglePrefix(divisionPrefixLength)
 }
 
+func (seg *addressSegmentInternal) sameTypeContains(otherSeg *AddressSegment) bool {
+	return otherSeg.GetSegmentValue() >= seg.GetSegmentValue() &&
+		otherSeg.GetUpperSegmentValue() <= seg.GetUpperSegmentValue()
+}
+
+func (seg *addressSegmentInternal) contains(other AddressSegmentType) bool {
+	if other == nil {
+		return true
+	}
+
+	otherSeg := other.ToSegmentBase()
+	if seg.toAddressSegment() == otherSeg || otherSeg == nil {
+		return true
+	} else if matchesStructure, _ := seg.matchesStructure(other); matchesStructure {
+		return seg.sameTypeContains(otherSeg)
+	}
+
+	return false
+}
+
 // AddressSegment represents a single address segment.
 // A segment contains a single value or range of sequential values and has an assigned bit length.
 // Segments are 1 byte for Ipv4, two bytes for Ipv6, and 1 byte for MAC addresses.
