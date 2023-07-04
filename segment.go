@@ -395,6 +395,24 @@ func (seg *addressSegmentInternal) IsSinglePrefix(divisionPrefixLength BitCount)
 	return seg.addressDivisionInternal.IsSinglePrefix(divisionPrefixLength)
 }
 
+// AddressSegment represents a single address segment.
+// A segment contains a single value or range of sequential values and has an assigned bit length.
+// Segments are 1 byte for Ipv4, two bytes for Ipv6, and 1 byte for MAC addresses.
+//
+// There are alternative forms of dividing addresses into segments, such as dotted representation for MAC like "1111.2222.3333",
+// embedded IPv4 representation for IPv6 like "f:f:f:f:f:f:f:1.2.3.4", inet_aton formats like "1.2" for IPv4, etc.
+//
+// The general rules are that segments are a whole number of bytes, and in a given address, all segments are the same length.
+//
+// When alternate forms do not follow the general rules for segments, [AddressDivision] can be used instead.
+// The restriction that address divisions have the same length and an integer number of bytes does not apply to divisions.
+// Divisions can be grouped using [AddressDivisionGrouping].
+//
+// AddressSegment objects are immutable and therefore concurrency-safe.
+type AddressSegment struct {
+	addressSegmentInternal
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
