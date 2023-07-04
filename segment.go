@@ -363,6 +363,21 @@ func (seg *addressSegmentInternal) IsZero() bool {
 	return seg.addressDivisionInternal.IsZero()
 }
 
+// IncludesZero returns whether the segment includes a value of zero in its range.
+func (seg *addressSegmentInternal) IncludesZero() bool {
+	return seg.addressDivisionInternal.IncludesZero()
+}
+
+// IsMax returns whether the segment exactly matches the maximum possible value - a value whose bits are all one.
+func (seg *addressSegmentInternal) IsMax() bool {
+	return seg.addressDivisionInternal.IsMax()
+}
+
+// IncludesMax returns whether the segment includes the maximum value, a value whose bits are all one, in its range.
+func (seg *addressSegmentInternal) IncludesMax() bool {
+	return seg.addressDivisionInternal.IncludesMax()
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
