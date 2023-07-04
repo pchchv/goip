@@ -389,6 +389,12 @@ func (seg *addressSegmentInternal) ContainsPrefixBlock(prefixLen BitCount) bool 
 	return seg.addressDivisionInternal.ContainsPrefixBlock(prefixLen)
 }
 
+// IsSinglePrefix determines whether a segment has a single prefix value for a given prefix length.
+// You can call GetPrefixCountLen to get the number of prefixes.
+func (seg *addressSegmentInternal) IsSinglePrefix(divisionPrefixLength BitCount) bool {
+	return seg.addressDivisionInternal.IsSinglePrefix(divisionPrefixLength)
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
