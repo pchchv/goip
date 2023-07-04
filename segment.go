@@ -1,6 +1,9 @@
 package goip
 
-import "math/bits"
+import (
+	"math/bits"
+	"unsafe"
+)
 
 const SegIntSize = 32 // must match the bit count of SegInt
 
@@ -413,6 +416,30 @@ func (seg *addressSegmentInternal) contains(other AddressSegmentType) bool {
 	}
 
 	return false
+}
+
+// PrefixContains returns whether the prefix values in this segment prefix are also prefix values in this segment.
+// Returns whether the prefix of this segment contains the prefix of given segment.
+func (seg *addressSegmentInternal) PrefixContains(other AddressSegmentType, prefixLength BitCount) bool {
+	prefixLength = checkBitCount(prefixLength, seg.GetBitCount())
+	shift := seg.GetBitCount() - prefixLength
+	if shift <= 0 {
+		return seg.contains(other)
+	}
+	return (other.GetSegmentValue()>>uint(shift)) >= (seg.GetSegmentValue()>>uint(shift)) &&
+		(other.GetUpperSegmentValue()>>uint(shift)) <= (seg.GetUpperSegmentValue()>>uint(shift))
+}
+
+func (seg *addressSegmentInternal) sameTypeEquals(other *AddressSegment) bool {
+	if seg.isMultiple() {
+		return other.isMultiple() && segValsSame(seg.getSegmentValue(), other.getSegmentValue(),
+			seg.getUpperSegmentValue(), other.getUpperSegmentValue())
+	}
+	return !other.isMultiple() && seg.getSegmentValue() == other.getSegmentValue()
+}
+
+func (seg *addressSegmentInternal) toAddressSegment() *AddressSegment {
+	return (*AddressSegment)(unsafe.Pointer(seg))
 }
 
 // AddressSegment represents a single address segment.
