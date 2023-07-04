@@ -378,6 +378,17 @@ func (seg *addressSegmentInternal) IncludesMax() bool {
 	return seg.addressDivisionInternal.IncludesMax()
 }
 
+// IsFullRange returns whether the segment range includes all possible values for its bit length.
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (seg *addressSegmentInternal) IsFullRange() bool {
+	return seg.addressDivisionInternal.IsFullRange()
+}
+
+// ContainsPrefixBlock returns whether the segment range includes a values block for a given prefix length.
+func (seg *addressSegmentInternal) ContainsPrefixBlock(prefixLen BitCount) bool {
+	return seg.addressDivisionInternal.ContainsPrefixBlock(prefixLen)
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
