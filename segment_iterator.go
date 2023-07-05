@@ -69,3 +69,10 @@ func (it *segmentPrefBlockIterator) Next() (res *AddressSegment) {
 	}
 	return
 }
+
+type segmentPrefIterator struct {
+	segmentPrefBlockIterator
+	originalLower SegInt
+	originalUpper SegInt
+	notFirst      bool
+}
