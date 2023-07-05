@@ -15,3 +15,11 @@ func (it *singleSegmentIterator) Next() (res *AddressSegment) {
 	}
 	return
 }
+
+type segmentIterator struct {
+	done                bool
+	current             SegInt
+	last                SegInt
+	creator             segderiver
+	segmentPrefixLength PrefixLen
+}
