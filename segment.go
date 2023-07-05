@@ -467,3 +467,15 @@ func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 func segValSame(oneVal, twoVal SegInt) bool {
 	return oneVal == twoVal
 }
+
+func createAddressSegment(vals divisionValues) *AddressSegment {
+	return &AddressSegment{
+		addressSegmentInternal{
+			addressDivisionInternal{
+				addressDivisionBase{
+					vals,
+				},
+			},
+		},
+	}
+}
