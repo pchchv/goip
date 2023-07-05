@@ -50,3 +50,22 @@ type segmentPrefBlockIterator struct {
 	upperShiftMask  SegInt
 	shiftAdjustment BitCount
 }
+
+func (it *segmentPrefBlockIterator) Next() (res *AddressSegment) {
+	if it.HasNext() {
+		cur := it.current
+		blockLow := cur << uint(it.shiftAdjustment)
+		res = createAddressSegment(
+			it.creator.deriveNewMultiSeg(
+				blockLow,
+				blockLow|it.upperShiftMask,
+				it.segmentPrefixLength))
+		cur++
+		if cur > it.last {
+			it.done = true
+		} else {
+			it.current = cur
+		}
+	}
+	return
+}
