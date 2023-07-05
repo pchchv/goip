@@ -109,3 +109,72 @@ func (it *segmentPrefIterator) Next() (res *AddressSegment) {
 	}
 	return
 }
+
+func segIterator(
+	original *addressSegmentInternal,
+	originalLower,
+	originalUpper SegInt,
+	bitCount BitCount,
+	creator segderiver,
+	segmentPrefixLength PrefixLen,
+	isPrefixIterator, isBlockIterator bool) Iterator[*AddressSegment] {
+	var shiftAdjustment BitCount
+	var shiftMask, upperShiftMask SegInt
+
+	if segmentPrefixLength == nil {
+		isPrefixIterator = false // prefixBlockIterator() in which seg has no prefix
+		isBlockIterator = false
+	}
+
+	if isPrefixIterator {
+		prefLen := segmentPrefixLength.bitCount()
+		prefLen = checkBitCount(bitCount, prefLen)
+		shiftAdjustment = bitCount - prefLen
+		shiftMask = ^SegInt(0) << uint(shiftAdjustment)
+		upperShiftMask = ^shiftMask
+	}
+
+	if original != nil && !original.isMultiple() {
+		seg := original.toAddressSegment()
+		if isBlockIterator {
+			seg = createAddressSegment(
+				creator.deriveNewMultiSeg(
+					originalLower&shiftMask,
+					originalUpper|upperShiftMask,
+					segmentPrefixLength))
+		}
+		return &singleSegmentIterator{original: seg}
+	}
+
+	if isPrefixIterator {
+		current := originalLower >> uint(shiftAdjustment)
+		last := originalUpper >> uint(shiftAdjustment)
+		segIterator := segmentIterator{
+			current:             current,
+			last:                last,
+			creator:             creator,
+			segmentPrefixLength: segmentPrefixLength,
+		}
+		prefBlockIterator := segmentPrefBlockIterator{
+			segmentIterator: segIterator,
+			upperShiftMask:  upperShiftMask,
+			shiftAdjustment: shiftAdjustment,
+		}
+
+		if isBlockIterator {
+			return &prefBlockIterator
+		}
+
+		return &segmentPrefIterator{
+			segmentPrefBlockIterator: prefBlockIterator,
+			originalLower:            originalLower,
+			originalUpper:            originalUpper,
+		}
+	}
+	return &segmentIterator{
+		current:             originalLower,
+		last:                originalUpper,
+		creator:             creator,
+		segmentPrefixLength: segmentPrefixLength,
+	}
+}
