@@ -76,3 +76,36 @@ type segmentPrefIterator struct {
 	originalUpper SegInt
 	notFirst      bool
 }
+
+func (it *segmentPrefIterator) Next() (res *AddressSegment) {
+	if it.HasNext() {
+		var low, high SegInt
+		cur := it.current
+		blockLow := cur << uint(it.shiftAdjustment)
+		blockHigh := blockLow | it.upperShiftMask
+		cur++
+		it.current = cur
+
+		if it.notFirst {
+			low = blockLow
+		} else {
+			low = it.originalLower
+			it.notFirst = true
+		}
+
+		if cur <= it.last {
+			high = blockHigh
+		} else {
+			high = it.originalUpper
+			it.done = true
+		}
+
+		res = createAddressSegment(
+			it.creator.deriveNewMultiSeg(
+				low,
+				high,
+				it.segmentPrefixLength))
+
+	}
+	return
+}
