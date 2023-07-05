@@ -44,3 +44,9 @@ func (it *segmentIterator) Next() (res *AddressSegment) {
 	}
 	return
 }
+
+type segmentPrefBlockIterator struct {
+	segmentIterator
+	upperShiftMask  SegInt
+	shiftAdjustment BitCount
+}
