@@ -23,3 +23,24 @@ type segmentIterator struct {
 	creator             segderiver
 	segmentPrefixLength PrefixLen
 }
+
+func (it *segmentIterator) HasNext() bool {
+	return !it.done
+}
+
+func (it *segmentIterator) Next() (res *AddressSegment) {
+	if it.HasNext() {
+		cur := it.current
+		res = createAddressSegment(
+			it.creator.deriveNewSeg(
+				cur,
+				it.segmentPrefixLength))
+		cur++
+		if cur > it.last {
+			it.done = true
+		} else {
+			it.current = cur
+		}
+	}
+	return
+}
