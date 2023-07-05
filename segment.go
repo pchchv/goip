@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"math/big"
 	"math/bits"
 	"unsafe"
 )
@@ -440,6 +441,16 @@ func (seg *addressSegmentInternal) sameTypeEquals(other *AddressSegment) bool {
 
 func (seg *addressSegmentInternal) toAddressSegment() *AddressSegment {
 	return (*AddressSegment)(unsafe.Pointer(seg))
+}
+
+// GetPrefixCountLen returns a count of the number of individual prefix values for a given prefix length in the value range of that segment.
+func (seg *addressSegmentInternal) GetPrefixCountLen(segmentPrefixLength BitCount) *big.Int {
+	return bigZero().SetUint64(seg.GetPrefixValueCountLen(segmentPrefixLength))
+}
+
+// GetPrefixValueCountLen returns the same value as GetPrefixCountLen as an integer.
+func (seg *addressSegmentInternal) GetPrefixValueCountLen(segmentPrefixLength BitCount) SegIntCount {
+	return getPrefixValueCount(seg.toAddressSegment(), segmentPrefixLength)
 }
 
 // AddressSegment represents a single address segment.
