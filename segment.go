@@ -479,3 +479,11 @@ func createAddressSegment(vals divisionValues) *AddressSegment {
 		},
 	}
 }
+
+func getPrefixValueCount(segment *AddressSegment, segmentPrefixLength BitCount) SegIntCount {
+	shiftAdjustment := segment.GetBitCount() - segmentPrefixLength
+	if shiftAdjustment <= 0 {
+		return SegIntCount(segment.GetUpperSegmentValue()) - SegIntCount(segment.GetSegmentValue()) + 1
+	}
+	return SegIntCount(segment.GetUpperSegmentValue()>>uint(shiftAdjustment)) - SegIntCount(segment.GetSegmentValue()>>uint(shiftAdjustment)) + 1
+}
