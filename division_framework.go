@@ -39,3 +39,12 @@ type AddressSegmentType interface {
 	// allowing this method to be used in a chain with methods that can return a nil pointer.
 	ToSegmentBase() *AddressSegment
 }
+
+// StandardDivisionType represents any standard address division that is a division of 64 bits or less.
+// They can all be converted to/from [AddressDivision].
+type StandardDivisionType interface {
+	DivisionType
+	// ToDiv converts to AddressDivision, a polymorphic type used with all address segments and divisions.
+	// ToDiv implementations can be called with a nil receiver, allowing this method to be used in a chain with methods that can return a nil pointer.
+	ToDiv() *AddressDivision
+}
