@@ -17,3 +17,25 @@ type DivisionType interface {
 	// methods for string generation used by the string params and string writer
 	divStringProvider
 }
+
+// AddressSegmentType serves as a common interface for all segments,
+// including [AddressSegment], [IPAddressSegment], [IPv6AddressSegment], [IPv4AddressSegment] and [MACAddressSegment].
+type AddressSegmentType interface {
+	AddressComponent
+	StandardDivisionType
+	// Equal returns whether the given segment is equal to the given segment. Two segments are equal if they are the same:
+	// - type/version (IPv4, IPv6, MAC)
+	// - range of values
+	// Prefix length is ignored.
+	Equal(AddressSegmentType) bool
+	// Contains returns whether the given segment is the same type and version as the given segment, and whether it contains all the values in the given segment.
+	Contains(AddressSegmentType) bool
+	// GetSegmentValue returns the lower value of the segment value range as a SegInt.
+	GetSegmentValue() SegInt
+	// GetUpperSegmentValue returns the upper value of the segment value range as a SegInt.
+	GetUpperSegmentValue() SegInt
+	// ToSegmentBase converts to AddressSegment, a polymorphic type used with all address segments.
+	// Implementations of ToSegmentBase can be called with a nil receiver,
+	// allowing this method to be used in a chain with methods that can return a nil pointer.
+	ToSegmentBase() *AddressSegment
+}
