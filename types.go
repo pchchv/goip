@@ -149,3 +149,15 @@ func checkBitCount(prefixLength, max BitCount) BitCount {
 	}
 	return prefixLength
 }
+
+func initPrefLens() ([]PrefixBitCount, []PrefixLen) {
+	cachedPrefBitcounts := make([]PrefixBitCount, maxBitCountInternal)
+	cachedPrefLens := make([]PrefixLen, maxBitCountInternal)
+
+	for i := 0; i <= IPv6BitCount; i++ {
+		cachedPrefBitcounts[i] = PrefixBitCount(i)
+		cachedPrefLens[i] = &cachedPrefBitcounts[i]
+	}
+
+	return cachedPrefBitcounts, cachedPrefLens
+}
