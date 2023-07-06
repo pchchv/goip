@@ -12,11 +12,12 @@ const (
 )
 
 var (
-	one      = bigOne()
-	zero     = bigZero()
-	minusOne = big.NewInt(-1)
-	falseVal = false
-	trueVal  = true
+	one                                     = bigOne()
+	zero                                    = bigZero()
+	minusOne                                = big.NewInt(-1)
+	falseVal                                = false
+	trueVal                                 = true
+	cachedPrefixBitCounts, cachedPrefixLens = initPrefLens()
 )
 
 // BitCount is a bit count of an address, section, grouping, segment or division.
@@ -160,4 +161,22 @@ func initPrefLens() ([]PrefixBitCount, []PrefixLen) {
 	}
 
 	return cachedPrefBitcounts, cachedPrefLens
+}
+
+func cacheBitCount(i BitCount) PrefixLen {
+	if i < minBitCountInternal {
+		i = minBitCountInternal
+	}
+
+	if i < len(cachedPrefixBitCounts) {
+		return &cachedPrefixBitCounts[i]
+	}
+
+	if i > maxBitCountInternal {
+		i = maxBitCountInternal
+	}
+
+	res := PrefixBitCount(i)
+
+	return &res
 }
