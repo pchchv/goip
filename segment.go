@@ -481,6 +481,30 @@ func (seg *addressSegmentInternal) getUpper() *AddressSegment {
 	return createAddressSegment(newVals)
 }
 
+func (seg *addressSegmentInternal) segmentIterator(segPrefLen PrefixLen, isPrefixIterator, isBlockIterator bool) Iterator[*AddressSegment] {
+	vals := seg.divisionValues
+	if vals == nil {
+		return segIterator(seg,
+			0,
+			0,
+			0,
+			nil,
+			nil,
+			false,
+			false,
+		)
+	}
+	return segIterator(seg,
+		seg.getSegmentValue(),
+		seg.getUpperSegmentValue(),
+		seg.getBitCount(),
+		vals,
+		segPrefLen,
+		isPrefixIterator,
+		isBlockIterator,
+	)
+}
+
 // AddressSegment represents a single address segment.
 // A segment contains a single value or range of sequential values and has an assigned bit length.
 // Segments are 1 byte for Ipv4, two bytes for Ipv6, and 1 byte for MAC addresses.
