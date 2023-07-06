@@ -521,6 +521,14 @@ func (seg *addressSegmentInternal) prefixIterator() Iterator[*AddressSegment] {
 	return seg.segmentIterator(seg.getDivisionPrefixLength(), true, false)
 }
 
+func (seg *addressSegmentInternal) prefixedBlockIterator(segPrefLen BitCount) Iterator[*AddressSegment] {
+	return seg.segmentIterator(cacheBitCount(segPrefLen), true, true)
+}
+
+func (seg *addressSegmentInternal) prefixedIterator(segPrefLen BitCount) Iterator[*AddressSegment] {
+	return seg.segmentIterator(cacheBitCount(segPrefLen), true, false)
+}
+
 // AddressSegment represents a single address segment.
 // A segment contains a single value or range of sequential values and has an assigned bit length.
 // Segments are 1 byte for Ipv4, two bytes for Ipv6, and 1 byte for MAC addresses.
