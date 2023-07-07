@@ -547,6 +547,28 @@ type AddressSegment struct {
 	addressSegmentInternal
 }
 
+// Contains returns whether the given segment is the same type and version as the given segment,
+// and whether it contains all the values in the given segment.
+func (seg *AddressSegment) Contains(other AddressSegmentType) bool {
+	if seg == nil {
+		return other == nil || other.ToSegmentBase() == nil
+	}
+	return seg.contains(other)
+}
+
+// Equal returns whether the given segment is equal to this segment.
+// Two segments are equal if they match:
+//   - type/version (IPv4, IPv6, MAC)
+//   - value range
+//
+// Prefix lengths are ignored.
+func (seg *AddressSegment) Equal(other AddressSegmentType) bool {
+	if seg == nil {
+		return other == nil || other.ToDiv() == nil
+	}
+	return seg.equal(other)
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
