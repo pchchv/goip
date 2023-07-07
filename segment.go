@@ -597,6 +597,30 @@ func (seg *AddressSegment) GetCount() *big.Int {
 	return seg.getCount()
 }
 
+// IsIP returns true if this segment originated as an IPv4 or IPv6 segment, or an implicitly zero-valued IP segment.
+// If so, use ToIP to convert back to an IP-specific type.
+func (seg *AddressSegment) IsIP() bool {
+	return seg != nil && seg.matchesIPSegment()
+}
+
+// IsIPv4 returns true if this segment was created as an IPv4 segment.
+// If so, use ToIPv4 to convert back to IPv4-specific type.
+func (seg *AddressSegment) IsIPv4() bool {
+	return seg != nil && seg.matchesIPv4Segment()
+}
+
+// IsIPv6 returns true if this segment was created as an IPv6 segment.
+// If so, use ToIPv6 to convert back to IPv6-specific type.
+func (seg *AddressSegment) IsIPv6() bool {
+	return seg != nil && seg.matchesIPv6Segment()
+}
+
+// IsMAC returns true if this segment was created as a MAC segment.
+// If so, use ToMAC to convert back to MAC-specific type.
+func (seg *AddressSegment) IsMAC() bool {
+	return seg != nil && seg.matchesMACSegment()
+}
+
 func segsSame(onePref, twoPref PrefixLen, oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return onePref.Equal(twoPref) &&
 		oneVal == twoVal && oneUpperVal == twoUpperVal
