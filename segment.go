@@ -569,6 +569,18 @@ func (seg *AddressSegment) Equal(other AddressSegmentType) bool {
 	return seg.equal(other)
 }
 
+// GetLower returns a segment representing only the lowest value in the range,
+// which would be the same segment if it represented a single value.
+func (seg *addressSegmentInternal) GetLower() *AddressSegment {
+	return seg.getLower()
+}
+
+// GetUpper returns a segment representing only the highest value in the range,
+// which would be the same segment if it represented a single value.
+func (seg *addressSegmentInternal) GetUpper() *AddressSegment {
+	return seg.getUpper()
+}
+
 func segsSame(onePref, twoPref PrefixLen, oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return onePref.Equal(twoPref) &&
 		oneVal == twoVal && oneUpperVal == twoUpperVal
