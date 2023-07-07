@@ -581,6 +581,22 @@ func (seg *addressSegmentInternal) GetUpper() *AddressSegment {
 	return seg.getUpper()
 }
 
+// IsMultiple returns whether this segment represents multiple values.
+func (seg *AddressSegment) IsMultiple() bool {
+	return seg != nil && seg.isMultiple()
+}
+
+// GetCount returns the number of possible different values for this item.
+// If no multiple values are represented, the count is 1.
+// For instance, a segment with a value range of 3-7 has a count of 5.
+// Use IsMultiple if you just want to know if the count is greater than 1.
+func (seg *AddressSegment) GetCount() *big.Int {
+	if seg == nil {
+		return bigZero()
+	}
+	return seg.getCount()
+}
+
 func segsSame(onePref, twoPref PrefixLen, oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return onePref.Equal(twoPref) &&
 		oneVal == twoVal && oneUpperVal == twoUpperVal
