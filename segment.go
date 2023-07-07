@@ -569,6 +569,11 @@ func (seg *AddressSegment) Equal(other AddressSegmentType) bool {
 	return seg.equal(other)
 }
 
+func segsSame(onePref, twoPref PrefixLen, oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
+	return onePref.Equal(twoPref) &&
+		oneVal == twoVal && oneUpperVal == twoUpperVal
+}
+
 func segValsSame(oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return oneVal == twoVal && oneUpperVal == twoUpperVal
 }
