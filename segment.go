@@ -621,6 +621,19 @@ func (seg *AddressSegment) IsMAC() bool {
 	return seg != nil && seg.matchesMACSegment()
 }
 
+// ToSegmentBase is an identity method that can be called with a nil receiver,
+// allowing this method to be used in a chain with methods that can return a nil pointer.
+func (seg *AddressSegment) ToSegmentBase() *AddressSegment {
+	return seg
+}
+
+// ToDiv converts to AddressDivision, a polymorphic type used with all address segments and divisions.
+// This can then be converted back with ToSegmentBase.
+// ToDiv can be called with a nil receiver, allowing this method to be used in a chain with methods that may return a nil pointer.
+func (seg *AddressSegment) ToDiv() *AddressDivision {
+	return (*AddressDivision)(unsafe.Pointer(seg))
+}
+
 func segsSame(onePref, twoPref PrefixLen, oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return onePref.Equal(twoPref) &&
 		oneVal == twoVal && oneUpperVal == twoUpperVal
