@@ -27,3 +27,7 @@ func getStr(str string) (res string) {
 	}
 	return
 }
+
+type incompatibleAddressError struct {
+	addressError
+}
