@@ -35,3 +35,8 @@ type incompatibleAddressError struct {
 type sizeMismatchError struct {
 	incompatibleAddressError
 }
+
+type addressValueError struct {
+	addressError
+	val int
+}
