@@ -16,3 +16,9 @@ const (
 	SegmentSqlSingleWildcard        = '_'
 	SegmentSqlSingleWildcardStr     = "_"
 )
+
+var segmentWildcardStr = SegmentWildcardStr
+
+// SegmentValueProvider provides values for segments.
+// Values that fall outside the segment value type range will be truncated using standard golang integer type conversions.
+type SegmentValueProvider func(segmentIndex int) SegInt
