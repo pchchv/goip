@@ -45,3 +45,9 @@ type addressCache struct {
 	stringCache   *stringCache // only used by IPv6 when there is a zone
 	identifierStr *identifierStr
 }
+
+type addressInternal struct {
+	section *AddressSection
+	zone    Zone
+	cache   *addressCache
+}
