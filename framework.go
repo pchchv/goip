@@ -184,3 +184,35 @@ type StandardDivGroupingType interface {
 	// Implementations of ToDivGrouping can be called with a nil receiver, allowing this method to be used in a chain with methods that can return a nil pointer.
 	ToDivGrouping() *AddressDivisionGrouping
 }
+
+// AddressSectionType represents any address section that can be converted to/from a basic AddressSection type,
+// including [AddressSection], [IPAddressSection], [IPv4AddressSection], [IPv6AddressSection] and [MACAddressSection].
+type AddressSectionType interface {
+	StandardDivGroupingType
+	// Equal returns whether the given address section is equal to this address section.
+	// Two address sections are equal if they represent the same set of sections.
+	// They must match:
+	//  - type/version (IPv4, IPv6, MAC, etc.)
+	//  - segment counts
+	//  - bits per segment
+	//  - segment value ranges
+	// Prefix lengths are ignored.
+	Equal(AddressSectionType) bool
+	// Contains returns whether the given address is the same type and version as the given address section,
+	// and whether it contains all the values in the given section.
+	// Sections must also have the same number of segments to be comparable, otherwise false is returned.
+	Contains(AddressSectionType) bool
+	// PrefixEqual determines whether the given section matches this section to the prefix length of that section.
+	// It returns whether the argument section has the same address section prefix values as this section.
+	// The entire prefix of a given section must be present in the other section for comparison.
+	PrefixEqual(AddressSectionType) bool
+	// PrefixContains returns whether the prefix values in a given address section are prefix values in that address section using the prefix length of that section.
+	// If this address section has no prefix length, the entire address is compared.
+	// Returns whether the prefix of a given address contains all values of the same prefix length in that address.
+	// All prefix bits of a given section must be present in the other section for comparison.
+	PrefixContains(AddressSectionType) bool
+	// ToSectionBase converts to AddressSection, a polymorphic type used with all address sections.
+	// Implementations of ToSectionBase can be called with a nil receiver,
+	// allowing this method to be used in a chain with methods that can return a nil pointer.
+	ToSectionBase() *AddressSection
+}
