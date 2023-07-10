@@ -34,3 +34,14 @@ type AddressValueProvider interface {
 type identifierStr struct {
 	idStr HostIdentifierString // MACAddressString or IPAddressString or HostName
 }
+
+type addrsCache struct {
+	lower *Address
+	upper *Address
+}
+
+type addressCache struct {
+	addrsCache    *addrsCache
+	stringCache   *stringCache // only used by IPv6 when there is a zone
+	identifierStr *identifierStr
+}
