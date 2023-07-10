@@ -22,3 +22,10 @@ var segmentWildcardStr = SegmentWildcardStr
 // SegmentValueProvider provides values for segments.
 // Values that fall outside the segment value type range will be truncated using standard golang integer type conversions.
 type SegmentValueProvider func(segmentIndex int) SegInt
+
+// AddressValueProvider provides values for addresses.
+type AddressValueProvider interface {
+	GetSegmentCount() int
+	GetValues() SegmentValueProvider
+	GetUpperValues() SegmentValueProvider
+}
