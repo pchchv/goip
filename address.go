@@ -29,3 +29,8 @@ type AddressValueProvider interface {
 	GetValues() SegmentValueProvider
 	GetUpperValues() SegmentValueProvider
 }
+
+// identifierStr is a string representation of an address or host name.
+type identifierStr struct {
+	idStr HostIdentifierString // MACAddressString or IPAddressString or HostName
+}
