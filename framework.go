@@ -168,3 +168,19 @@ type AddressDivisionSeries interface {
 	// Useful for comparisons.
 	GetGenericDivision(index int) DivisionType
 }
+
+// StandardDivGroupingType represents any standard division grouping
+// (division groupings or address sections where all divisions are 64 bits or less)
+// including [AddressSection], [IPAddressSection], [IPv4AddressSection], [IPv6AddressSection], [MACAddressSection] and [AddressDivisionGrouping].
+type StandardDivGroupingType interface {
+	AddressDivisionSeries
+	// IsAdaptiveZero returns true if the division grouping was originally created as an implicitly zero-valued division or grouping
+	// (e.g., IPv4AddressSection{}),
+	// that is, it was not constructed with the constructor function.
+	// Such a grouping with no divisions or segments is converted to an implicit zero-valued grouping of any type or version, be it IPv6, IPv4, MAC, or other.
+	// In other words, when a section or grouping is a zero-value, it is equivalent and convertible to the zero value of any other section or grouping.
+	IsAdaptiveZero() bool
+	// ToDivGrouping converts to AddressDivisionGrouping, a polymorphic type used with all address sections and division groupings.
+	// Implementations of ToDivGrouping can be called with a nil receiver, allowing this method to be used in a chain with methods that can return a nil pointer.
+	ToDivGrouping() *AddressDivisionGrouping
+}
