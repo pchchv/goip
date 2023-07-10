@@ -19,6 +19,17 @@ const (
 
 var segmentWildcardStr = SegmentWildcardStr
 
+func createAddress(section *AddressSection, zone Zone) *Address {
+	res := &Address{
+		addressInternal{
+			section: section,
+			zone:    zone,
+			cache:   &addressCache{},
+		},
+	}
+	return res
+}
+
 // SegmentValueProvider provides values for segments.
 // Values that fall outside the segment value type range will be truncated using standard golang integer type conversions.
 type SegmentValueProvider func(segmentIndex int) SegInt
