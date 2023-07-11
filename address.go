@@ -1,5 +1,7 @@
 package goip
 
+import "math/big"
+
 const (
 	HexPrefix                       = "0x"
 	OctalPrefix                     = "0"
@@ -81,6 +83,26 @@ func (addr *addressInternal) GetByteCount() int {
 		return 0
 	}
 	return section.GetByteCount()
+}
+
+// GetPrefixCount returns the number of prefixes in a given address or subnet.
+// The prefix length is given by GetPrefixLen.
+// If the prefix length is not nil, a count of the range of values in the prefix is returned.
+// If the prefix length is nil, the same value is returned as in GetCount.
+func (addr *addressInternal) GetPrefixCount() *big.Int {
+	section := addr.section
+	if section == nil {
+		return bigOne()
+	}
+	return section.GetPrefixCount()
+}
+
+func (addr *addressInternal) getCount() *big.Int {
+	section := addr.section
+	if section == nil {
+		return bigOne()
+	}
+	return section.GetCount()
 }
 
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
