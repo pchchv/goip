@@ -136,6 +136,22 @@ func (addr *addressInternal) GetPrefixLen() PrefixLen {
 	return addr.getPrefixLen().copy()
 }
 
+// IsSequential returns whether the given address or subnet represents a range of addresses that are sequential.
+//
+// In the general case for a subnet, this means that any segment that spans a range of values must be followed by segments that are full range and span all values.
+//
+// Individual addresses are sequential and CIDR prefix blocks are sequential.
+// The "1.2.3-4.5" subnet is not sequential because the two addresses it represents, "1.2.3.5" and "1.2.4.5", are not ("1.2.3.6" is in between but not part of the subnet).
+//
+// Given any subnet of IP addresses, you can use the SequentialBlockIterator to convert any subnet into a set of sequential subnets.
+func (addr *addressInternal) IsSequential() bool {
+	section := addr.section
+	if section == nil {
+		return true
+	}
+	return section.IsSequential()
+}
+
 func (addr *addressInternal) getCount() *big.Int {
 	section := addr.section
 	if section == nil {
