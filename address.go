@@ -97,6 +97,25 @@ func (addr *addressInternal) GetPrefixCount() *big.Int {
 	return section.GetPrefixCount()
 }
 
+// GetPrefixCountLen returns the number of prefixes in the given address or subnet for the given prefix length.
+// If it is not a subnet with multiple addresses or a subnet with a single prefix of the given prefix length, 1 is returned.
+func (addr *addressInternal) GetPrefixCountLen(prefixLen BitCount) *big.Int {
+	section := addr.section
+	if section == nil {
+		return bigOne()
+	}
+	return section.GetPrefixCountLen(prefixLen)
+}
+
+// GetBlockCount returns the count of distinct values in the given number of initial (more significant) segments.
+func (addr *addressInternal) GetBlockCount(segments int) *big.Int {
+	section := addr.section
+	if section == nil {
+		return bigOne()
+	}
+	return section.GetBlockCount(segments)
+}
+
 func (addr *addressInternal) getCount() *big.Int {
 	section := addr.section
 	if section == nil {
