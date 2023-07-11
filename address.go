@@ -63,6 +63,26 @@ type addressInternal struct {
 	cache   *addressCache
 }
 
+// GetBitCount returns the number of bits that make up a given address,
+// or each address in the range if a subnet.
+func (addr *addressInternal) GetBitCount() BitCount {
+	section := addr.section
+	if section == nil {
+		return 0
+	}
+	return section.GetBitCount()
+}
+
+// GetByteCount returns the number of bytes required for a given address,
+// or each address in the range if a subnet.
+func (addr *addressInternal) GetByteCount() int {
+	section := addr.section
+	if section == nil {
+		return 0
+	}
+	return section.GetByteCount()
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
