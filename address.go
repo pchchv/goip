@@ -151,6 +151,16 @@ func (addr *addressInternal) getPrefixLen() PrefixLen {
 	return addr.section.getPrefixLen()
 }
 
+// isMultiple returns true if this address represents more than single individual address, whether it is a subnet of multiple addresses.
+func (addr *addressInternal) isMultiple() bool {
+	return addr.section != nil && addr.section.isMultiple()
+}
+
+// isPrefixed returns whether the given address has an associated prefix length.
+func (addr *addressInternal) isPrefixed() bool {
+	return addr.section != nil && addr.section.IsPrefixed()
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
