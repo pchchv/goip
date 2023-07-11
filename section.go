@@ -16,3 +16,16 @@ type addressSectionInternal struct {
 type AddressSection struct {
 	addressSectionInternal
 }
+
+func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
+	stringCache := &section.cache.stringCache
+	if addrType.isIPv4() {
+		stringCache.ipStringCache = &ipStringCache{}
+		stringCache.ipv4StringCache = &ipv4StringCache{}
+	} else if addrType.isIPv6() {
+		stringCache.ipStringCache = &ipStringCache{}
+		stringCache.ipv6StringCache = &ipv6StringCache{}
+	} else if addrType.isMAC() {
+		stringCache.macStringCache = &macStringCache{}
+	}
+}
