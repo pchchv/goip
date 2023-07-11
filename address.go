@@ -116,12 +116,39 @@ func (addr *addressInternal) GetBlockCount(segments int) *big.Int {
 	return section.GetBlockCount(segments)
 }
 
+// GetPrefixLen returns the prefix length or nil if there is no prefix.
+//
+// A prefix length indicates the number of bits in the initial part (high significant bits) of the address that make up the prefix.
+//
+// A prefix is a part of the address that is not specific to that address but common amongst a group of addresses, such as a CIDR prefix block subnet.
+//
+// For IP addresses, the prefix is explicitly specified when the address is created.
+// For example, "1.2.0.0.0/16" has a prefix length of 16, and "1.2.*.*" has no prefix length,
+// although both represent the same set of addresses and are considered the same.
+// Prefixes may be considered variable for a given IP address and may depend on routing.
+//
+// The GetMinPrefixLenForBlock and GetPrefixLenForSingleBlock methods help you obtain or determine the length of a prefix if one does not already exist.
+// The ToPrefixBlockLen method allows you to create a subnet consisting of a block of addresses for any given prefix length.
+//
+// For MAC addresses, the prefix is initially derived from a range, so "1:2:3:*:*:*" has a prefix length of 24.
+// MAC addresses derived from an address with a prefix length can retain the prefix length regardless of their own range of values.
+func (addr *addressInternal) GetPrefixLen() PrefixLen {
+	return addr.getPrefixLen().copy()
+}
+
 func (addr *addressInternal) getCount() *big.Int {
 	section := addr.section
 	if section == nil {
 		return bigOne()
 	}
 	return section.GetCount()
+}
+
+func (addr *addressInternal) getPrefixLen() PrefixLen {
+	if addr.section == nil {
+		return nil
+	}
+	return addr.section.getPrefixLen()
 }
 
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
