@@ -1,5 +1,7 @@
 package goip
 
+import "unsafe"
+
 var zeroSection = createSection(zeroDivs, nil, zeroType)
 
 type addressSectionInternal struct {
@@ -27,6 +29,13 @@ func (section *AddressSection) IsMultiple() bool {
 // IsPrefixed returns whether this section has an associated prefix length.
 func (section *AddressSection) IsPrefixed() bool {
 	return section != nil && section.isPrefixed()
+}
+
+// ToDivGrouping converts to AddressDivisionGrouping, a polymorphic type used with all address sections and divisional groupings.
+// The conversion can then be reversed using ToSectionBase.
+// ToDivGrouping can be called with a nil receiver, allowing this method to be used in a chain with methods that can return a nil pointer.
+func (section *AddressSection) ToDivGrouping() *AddressDivisionGrouping {
+	return (*AddressDivisionGrouping)(unsafe.Pointer(section))
 }
 
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
