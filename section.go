@@ -38,6 +38,12 @@ func (section *AddressSection) ToDivGrouping() *AddressDivisionGrouping {
 	return (*AddressDivisionGrouping)(unsafe.Pointer(section))
 }
 
+// ToSectionBase is an identity method.
+// ToSectionBase can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (section *AddressSection) ToSectionBase() *AddressSection {
+	return section
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
