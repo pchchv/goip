@@ -5,3 +5,13 @@ package goip
 type IPv6v4MixedAddressGrouping struct {
 	addressDivisionGroupingInternal
 }
+
+// IsMultiple returns  whether this grouping represents multiple values.
+func (grouping *IPv6v4MixedAddressGrouping) IsMultiple() bool {
+	return grouping != nil && grouping.isMultiple()
+}
+
+// IsPrefixed returns whether this grouping has an associated prefix length.
+func (grouping *IPv6v4MixedAddressGrouping) IsPrefixed() bool {
+	return grouping != nil && grouping.isPrefixed()
+}
