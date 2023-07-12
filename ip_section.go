@@ -13,3 +13,18 @@ var (
 type ipAddressSectionInternal struct {
 	addressSectionInternal
 }
+
+func (section *ipAddressSectionInternal) getNetworkPrefixLen() PrefixLen {
+	return section.prefixLength
+}
+
+// GetNetworkPrefixLen returns the prefix length or nil if there is no prefix length.
+// This is equivalent to GetPrefixLen.
+//
+// A prefix length indicates the number of bits in the initial part of the address item that make up the prefix.
+//
+// A prefix is a part of an address item that is not specific to a given address,
+// but is common to a group of such items, such as the subnet of a CIDR prefix block.
+func (section *ipAddressSectionInternal) GetNetworkPrefixLen() PrefixLen {
+	return section.getNetworkPrefixLen().copy()
+}
