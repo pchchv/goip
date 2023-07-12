@@ -72,6 +72,11 @@ type bytesCache struct {
 	upperBytes []byte
 }
 
+type groupingCache struct {
+	lower *AddressSection
+	upper *AddressSection
+}
+
 type standardDivArray []*AddressDivision
 
 func (grouping standardDivArray) String() string {
