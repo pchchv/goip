@@ -1,6 +1,9 @@
 package goip
 
-import "fmt"
+import (
+	"fmt"
+	"unsafe"
+)
 
 type ipStringCache struct {
 	normalizedWildcardString,
@@ -65,3 +68,11 @@ type bytesCache struct {
 }
 
 type standardDivArray []*AddressDivision
+
+func (grouping standardDivArray) getDivisionCount() int {
+	return len(grouping)
+}
+
+func (grouping standardDivArray) getDivision(index int) *addressDivisionBase {
+	return (*addressDivisionBase)(unsafe.Pointer(grouping[index]))
+}
