@@ -1,5 +1,7 @@
 package goip
 
+var zeroSection = createSection(zeroDivs, nil, zeroType)
+
 type addressSectionInternal struct {
 	addressDivisionGroupingInternal
 }
@@ -15,6 +17,16 @@ type addressSectionInternal struct {
 // Most operations that can be performed on Address instances can also be performed on AddressSection instances, and vice versa.
 type AddressSection struct {
 	addressSectionInternal
+}
+
+// IsMultiple returns whether this section represents multiple values.
+func (section *AddressSection) IsMultiple() bool {
+	return section != nil && section.isMultiple()
+}
+
+// IsPrefixed returns whether this section has an associated prefix length.
+func (section *AddressSection) IsPrefixed() bool {
+	return section != nil && section.isPrefixed()
 }
 
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
