@@ -5,6 +5,11 @@ import (
 	"unsafe"
 )
 
+var (
+	zeroDivs             = make([]*AddressDivision, 0)
+	zeroStandardDivArray = standardDivArray(zeroDivs)
+)
+
 type ipStringCache struct {
 	normalizedWildcardString,
 	fullString,
@@ -83,4 +88,15 @@ func (grouping standardDivArray) copyDivisions(divs []*AddressDivision) (count i
 
 func (grouping standardDivArray) copySubDivisions(start, end int, divs []*AddressDivision) (count int) {
 	return copy(divs, grouping[start:end])
+}
+
+func (grouping standardDivArray) getSubDivisions(index, endIndex int) (divs []*AddressDivision) {
+	return grouping[index:endIndex]
+}
+
+func (grouping standardDivArray) init() standardDivArray {
+	if grouping == nil {
+		return zeroStandardDivArray
+	}
+	return grouping
 }
