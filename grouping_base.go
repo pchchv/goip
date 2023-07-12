@@ -74,6 +74,10 @@ type bytesCache struct {
 
 type standardDivArray []*AddressDivision
 
+func (grouping standardDivArray) String() string {
+	return fmt.Sprint([]*AddressDivision(grouping.init()))
+}
+
 func (grouping standardDivArray) getDivisionCount() int {
 	return len(grouping)
 }
@@ -99,4 +103,8 @@ func (grouping standardDivArray) init() standardDivArray {
 		return zeroStandardDivArray
 	}
 	return grouping
+}
+
+func (grouping standardDivArray) getGenericDivision(index int) DivisionType {
+	return grouping[index]
 }
