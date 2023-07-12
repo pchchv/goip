@@ -63,3 +63,5 @@ type bytesCache struct {
 	lowerBytes []byte
 	upperBytes []byte
 }
+
+type standardDivArray []*AddressDivision
