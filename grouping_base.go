@@ -76,3 +76,11 @@ func (grouping standardDivArray) getDivisionCount() int {
 func (grouping standardDivArray) getDivision(index int) *addressDivisionBase {
 	return (*addressDivisionBase)(unsafe.Pointer(grouping[index]))
 }
+
+func (grouping standardDivArray) copyDivisions(divs []*AddressDivision) (count int) {
+	return copy(divs, grouping)
+}
+
+func (grouping standardDivArray) copySubDivisions(start, end int, divs []*AddressDivision) (count int) {
+	return copy(divs, grouping[start:end])
+}
