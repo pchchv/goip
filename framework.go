@@ -3,6 +3,8 @@ package goip
 import (
 	"fmt"
 	"math/big"
+	"net"
+	"net/netip"
 
 	"github.com/pchchv/goip/address_error"
 )
@@ -215,4 +217,40 @@ type AddressSectionType interface {
 	// Implementations of ToSectionBase can be called with a nil receiver,
 	// allowing this method to be used in a chain with methods that can return a nil pointer.
 	ToSectionBase() *AddressSection
+}
+
+// IPAddressRange represents all instances of IPAddress and all instances of a sequential IPAddress range.
+type IPAddressRange interface {
+	// GetIPVersion returns the IP version of this IP address range
+	GetIPVersion() IPVersion
+	// GetLowerIPAddress returns the address in the subnet or address range with
+	// the lowest numeric value that will be the receiver if it represents a single address.
+	// For example, for "1.2-3.4.5-6", the series "1.2.4.5" is returned.
+	GetLowerIPAddress() *IPAddress
+	// GetUpperIPAddress returns the address in the subnet or address range with
+	// the largest numeric value that will be the receiver if it represents a single address.
+	// For example, for the subnet "1.2-3.4.5-6", the address "1.3.4.6" is returned.
+	GetUpperIPAddress() *IPAddress
+	// CopyNetIP copies the value of the lowest individual address in a subnet or address range into net.IP.
+	// If the value can fit into a given net.IP slice, the value is copied into that slice and a length-adjusted subslice is returned.
+	// Otherwise, a new slice is created and returned with the value.
+	CopyNetIP(bytes net.IP) net.IP
+	// CopyUpperNetIP copies the value of the highest individual address in a subnet or address range to net.IP.
+	// If the value can fit into a given net.IP slice, the value is copied into that slice and a length-adjusted subslice is returned.
+	// Otherwise, a new slice is created and returned with the value.
+	CopyUpperNetIP(bytes net.IP) net.IP
+	// GetNetIP returns the lowest address in a given subnet or address range in the form net.IP.
+	GetNetIP() net.IP
+	// GetUpperNetIP returns the highest address in a given subnet or address range in the form net.IP.
+	GetUpperNetIP() net.IP
+	// GetNetNetIPAddr returns the lowest address in a given subnet or address range as netip.Addr.
+	GetNetNetIPAddr() netip.Addr
+	// GetUpperNetNetIPAddr returns the highest address in a given subnet or address range as netip.Addr.
+	GetUpperNetNetIPAddr() netip.Addr
+	// IsSequential returns whether the address item represents a range of addresses that are sequential.
+	// Consecutive IP address ranges are sequential by definition.
+	// Generally, for a subnet, this means that any segment covering a range of values must be followed by segments that are a complete range covering all values.
+	// Individual addresses are sequential and CIDR prefix blocks are sequential.
+	// The "1.2.3-4.5" subnet is not sequential because the two addresses it represents, "1.2.3.5" and "1.2.4.5", are not sequential ("1.2.3.6" is in between, but not part of the subnet).
+	IsSequential() bool
 }
