@@ -254,3 +254,54 @@ type IPAddressRange interface {
 	// The "1.2.3-4.5" subnet is not sequential because the two addresses it represents, "1.2.3.5" and "1.2.4.5", are not sequential ("1.2.3.6" is in between, but not part of the subnet).
 	IsSequential() bool
 }
+
+// AddressSegmentSeries serves as a common interface for all address sections and addresses.
+type AddressSegmentSeries interface {
+	AddressComponent
+	AddressDivisionSeries
+	// GetMaxSegmentValue returns the maximum possible segment value for this type of series.
+	// Note this is not the maximum of the range of segment values in this specific series,
+	// this is the maximum value of any segment for this series type and version, determined by the number of bits per segment.
+	GetMaxSegmentValue() SegInt
+	// GetSegmentCount returns the number of segments, which is the same as the division count since the segments are also the divisions
+	GetSegmentCount() int
+	// GetBitsPerSegment returns the number of bits comprising each segment in this series.  Segments in the same series are equal length.
+	GetBitsPerSegment() BitCount
+	// GetBytesPerSegment returns the number of bytes comprising each segment in this series.  Segments in the same series are equal length.
+	GetBytesPerSegment() int
+	// ToCanonicalString produces a canonical string for the address series.
+	// For IPv4, the dotted octet format, also known as the dotted decimal format, is used.
+	// For IPv6, RFC 5952 describes a canonical string representation.
+	// For MAC, the canonical standardized representation of IEEE 802 MAC addresses in the form xx-xx-xx-xx-xx-xx is used.
+	// An example is "01-23-45-67-89-ab."
+	// The '|' character is used for range segments: '11-22-33|44-55-66'.
+	// Each address has a unique canonical string, not counting the prefix length.
+	// In the case of IP addresses and sections, the prefix length is included in the string,
+	// and the prefix length can cause two equal addresses to have different strings, such as "1.2.3.4/16" and "1.2.3.4".
+	// It can also cause two different addresses to have the same string, such as "1.2.0.0/16" for the individual address "1.2.0.0", and for the prefix block "1.2.*.*".
+	ToCanonicalString() string
+	// ToNormalizedWildcardString produces a string similar to the normalized string but avoids the CIDR prefix length in the case of IP addresses.
+	// Multiple-valued segments will be shown with wildcards and ranges (denoted by '*' and '-').
+	ToNormalizedWildcardString() string
+	// ToCompressedString produces a short representation of this series while remaining within the confines of standard representation(s) of the series.
+	// For IPv4, it is the same as the canonical string.
+	// For IPv6, it differs from the canonical string.
+	// It compresses the maximum number of zeros and/or host segments with the IPv6 compression notation '::'.
+	// For MAC, it differs from the canonical string.
+	// It produces a shorter string for the address that has no leading zeros.
+	ToCompressedString() string
+	// ToBinaryString writes this address series as a single binary value (possibly two values if a range that is not a prefixed block),
+	// the number of digits according to the bit count, with or without a preceding "0b" prefix.
+	// If a multiple-valued series cannot be written as a single prefix block or a range of two values, an error is returned.
+	ToBinaryString(with0bPrefix bool) (string, address_error.IncompatibleAddressError)
+	// ToOctalString writes this address series as a single octal value (possibly two values if a range that is not a prefixed block),
+	// the number of digits according to the bit count, with or without a preceding "0" prefix.
+	// If a multiple-valued series cannot be written as a single prefix block or a range of two values, an error is returned.
+	ToOctalString(withPrefix bool) (string, address_error.IncompatibleAddressError)
+	// GetSegmentStrings returns a slice with the string for each segment being the string that is normalized with wildcards.
+	GetSegmentStrings() []string
+	// GetGenericSegment returns the segment at the given index as an AddressSegmentType.
+	// The first segment is at index 0.
+	// GetGenericSegment will panic given a negative index or an index matching or larger than the segment count.
+	GetGenericSegment(index int) AddressSegmentType
+}
