@@ -16,3 +16,5 @@ type componentComparator interface {
 type AddressComparator struct {
 	componentComparator componentComparator
 }
+
+type countComparator struct{}
