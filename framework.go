@@ -305,3 +305,28 @@ type AddressSegmentSeries interface {
 	// GetGenericSegment will panic given a negative index or an index matching or larger than the segment count.
 	GetGenericSegment(index int) AddressSegmentType
 }
+
+// AddressType represents any address, all of which can be represented by the base type [Address].
+// This includes [IPAddress], [IPv4Address], [IPv6Address], and [MACAddress].
+// You must use the pointer types *Address, *IPAddress, *IPv4Address, *IPv6Address, and *MACAddress when implementing AddressType.
+// It can be useful as a parameter for functions to take any address type, while inside the function you can convert to [Address] using ToAddressBase.
+type AddressType interface {
+	AddressSegmentSeries
+	// Equal returns whether the given address or subnet is equal to this address or subnet.
+	// Two address instances are equal if they represent the same set of addresses.
+	Equal(AddressType) bool
+	// Contains returns whether this is same type and version as the given address or subnet and whether it contains all addresses in the given address or subnet.
+	Contains(AddressType) bool
+	// PrefixEqual determines if the given address matches this address up to the prefix length of this address.
+	// If this address has no prefix length, the entire address is compared.
+	// It returns whether the two addresses share the same range of prefix values.
+	PrefixEqual(AddressType) bool
+	// PrefixContains returns whether the prefix values in the given address or subnet
+	// are prefix values in this address or subnet, using the prefix length of this address or subnet.
+	// If this address has no prefix length, the entire address is compared.
+	// It returns whether the prefix of this address contains all values of the same prefix length in the given address.
+	PrefixContains(AddressType) bool
+	// ToAddressBase converts to an Address, a polymorphic type usable with all addresses and subnets.
+	// ToAddressBase implementations can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+	ToAddressBase() *Address
+}
