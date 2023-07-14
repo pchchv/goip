@@ -28,3 +28,14 @@ func (section *ipAddressSectionInternal) getNetworkPrefixLen() PrefixLen {
 func (section *ipAddressSectionInternal) GetNetworkPrefixLen() PrefixLen {
 	return section.getNetworkPrefixLen().copy()
 }
+
+// IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
+// It represents a sequence of individual address segments.
+// Each segment has the same bit length.
+// Behind each address is an address section containing all address segments.
+// IPAddressSection objects are immutable.
+// This also makes them concurrency-safe.
+// Most operations that can be performed on IPAddress instances can also be performed on IPAddressSection instances, and vice versa.
+type IPAddressSection struct {
+	ipAddressSectionInternal
+}
