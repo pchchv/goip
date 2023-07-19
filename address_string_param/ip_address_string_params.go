@@ -21,3 +21,12 @@ func (params *ipAddressStringFormatParameters) AllowsPrefixLenLeadingZeros() boo
 func (params *ipAddressStringFormatParameters) AllowsBinary() bool {
 	return !params.noBinary
 }
+
+type ipv4AddressStringParameters struct {
+	ipAddressStringFormatParameters
+	no_inet_aton_hex,
+	no_inet_aton_octal,
+	no_inet_aton_joinedSegments,
+	inet_aton_single_segment_mask,
+	no_inet_aton_leading_zeros bool
+}
