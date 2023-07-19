@@ -30,3 +30,14 @@ type ipv4AddressStringParameters struct {
 	inet_aton_single_segment_mask,
 	no_inet_aton_leading_zeros bool
 }
+
+// AllowsInetAtonHex allows IPv4 inet_aton hexadecimal format "0xa.0xb.0xc.0cd".
+func (params *ipv4AddressStringParameters) AllowsInetAtonHex() bool {
+	return !params.no_inet_aton_hex
+}
+
+// AllowsInetAtonOctal allows octal IPv4 inet_aton format, an example would be "04.05.06.07".
+// Can be overridden by the AllowLeadingZeros.
+func (params *ipv4AddressStringParameters) AllowsInetAtonOctal() bool {
+	return !params.no_inet_aton_octal
+}
