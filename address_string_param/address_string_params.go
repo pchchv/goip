@@ -158,3 +158,16 @@ type addressStringFormatParameters struct {
 	noLeadingZeros          bool
 	noUnlimitedLeadingZeros bool
 }
+
+// AllowsWildcardedSeparator controls whether the wildcard '*' or '%' can replace the segment delimiters '.' and ':'.
+// If so, addresses like *.* or *:* can be written.
+func (params *addressStringFormatParameters) AllowsWildcardedSeparator() bool {
+	return !params.noWildcardedSeparator
+}
+
+// AllowsLeadingZeros indicates whether to allow addresses with segments containing leading zeros, such as "001.2.3.004" or "1:000a::".
+// For IPV4, this option overrides inet_aton octal.
+// Single-segment addresses, which must have the required length for parsing, are not affected by this flag.
+func (params *addressStringFormatParameters) AllowsLeadingZeros() bool {
+	return !params.noLeadingZeros
+}
