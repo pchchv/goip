@@ -47,3 +47,13 @@ type AddressStringParams interface {
 type rangeParameters struct {
 	noWildcard, noValueRange, noReverseRange, noSingleWildcard, noInferredBoundary bool
 }
+
+// AllowsWildcard indicates whether '*' is allowed to denote segments covering all possible segment values.
+func (builder *rangeParameters) AllowsWildcard() bool {
+	return !builder.noWildcard
+}
+
+// AllowsRangeSeparator indicates whether '-' (or the expected range separator for the address) is allowed to denote a range from lower to higher, like 1-10.
+func (builder *rangeParameters) AllowsRangeSeparator() bool {
+	return !builder.noValueRange
+}
