@@ -57,3 +57,13 @@ func (builder *rangeParameters) AllowsWildcard() bool {
 func (builder *rangeParameters) AllowsRangeSeparator() bool {
 	return !builder.noValueRange
 }
+
+// AllowsReverseRange indicates whether '-' (or the expected range separator for the address) is allowed to denote a range from higher to lower, like 10-1.
+func (builder *rangeParameters) AllowsReverseRange() bool {
+	return !builder.noReverseRange
+}
+
+// AllowsInferredBoundary indicates whether a missing range value before or after a '-' is allowed to denote the mininum or maximum potential value.
+func (builder *rangeParameters) AllowsInferredBoundary() bool {
+	return !builder.noInferredBoundary
+}
