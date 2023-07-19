@@ -1,5 +1,21 @@
 package address_string_param
 
+var (
+	_                RangeParams = &rangeParameters{}
+	WildcardAndRange RangeParams = &rangeParameters{} // use this to support addresses supported by the default wildcard options and also addresses like "1.2-3.3.4" or "1:0-ff::".
+	NoRange          RangeParams = &rangeParameters{  // use no wildcards nor range separators
+		noWildcard:         true,
+		noValueRange:       true,
+		noReverseRange:     true,
+		noSingleWildcard:   true,
+		noInferredBoundary: true,
+	}
+	WildcardOnly RangeParams = &rangeParameters{ // use this to support addresses like "1.*.3.4" or "1::*:3" or "1.2_.3.4" or "1::a__:3"
+		noValueRange:   true,
+		noReverseRange: true,
+	}
+)
+
 // RangeParams indicates what wildcards and ranges are allowed in the string.
 type RangeParams interface {
 	// AllowsWildcard indicates whether '*' is allowed to denote segments covering all possible segment values
@@ -66,4 +82,9 @@ func (builder *rangeParameters) AllowsReverseRange() bool {
 // AllowsInferredBoundary indicates whether a missing range value before or after a '-' is allowed to denote the mininum or maximum potential value.
 func (builder *rangeParameters) AllowsInferredBoundary() bool {
 	return !builder.noInferredBoundary
+}
+
+// AllowsSingleWildcard indicates whether to allow a segment terminating with '_' characters, which represent any digit.
+func (builder *rangeParameters) AllowsSingleWildcard() bool {
+	return !builder.noSingleWildcard
 }
