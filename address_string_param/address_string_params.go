@@ -31,3 +31,15 @@ type AddressStringFormatParams interface {
 	// GetRangeParams returns the RangeParams describing whether ranges of values are allowed and what wildcards are allowed.
 	GetRangeParams() RangeParams
 }
+
+type AddressStringParams interface {
+	// AllowsEmpty indicates whether it allows zero-length address strings: ""
+	AllowsEmpty() bool
+	// AllowsSingleSegment allows the address to be specified as a single value, such as ffffffff,
+	// without the standard use of segments like "1.2.3.4" or "1:2:4:3:5:6:7:8".
+	AllowsSingleSegment() bool
+	// AllowsAll indicates whether we allow a string of just the wildcard "*" to represent all addresses of any version.
+	// If false, for IP addresses check the preferred version with GetPreferredVersion() and
+	// then check AllowsWildcardedSeparator to determine if the string represents all addresses of that version.
+	AllowsAll() bool
+}
