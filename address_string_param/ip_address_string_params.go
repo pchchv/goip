@@ -74,3 +74,15 @@ type EmptyStrOption string
 
 // AllStrOption - an option specifying how to convert an all address string, such as "*", to an address.
 type AllStrOption string
+
+// IPAddressStringFormatParams provides format parameters that apply to all IP addresses, but may be different for IPv4 or IPv6,
+// allowing you to account for cases where you need to allow something for one version and not the other.
+type IPAddressStringFormatParams interface {
+	AddressStringFormatParams
+	// AllowsPrefixesBeyondAddressSize allows prefix length values greater than 32 for IPv4 or greater than 128 for IPv6.
+	AllowsPrefixesBeyondAddressSize() bool
+	// AllowsPrefixLenLeadingZeros allows leading zeros in the prefix length like "1.2.3.4/016".
+	AllowsPrefixLenLeadingZeros() bool
+	// AllowsBinary allows binary addresses like "11111111.0.1.0" or "1111111111111111::".
+	AllowsBinary() bool
+}
