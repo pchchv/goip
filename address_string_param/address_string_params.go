@@ -43,3 +43,7 @@ type AddressStringParams interface {
 	// then check AllowsWildcardedSeparator to determine if the string represents all addresses of that version.
 	AllowsAll() bool
 }
+
+type rangeParameters struct {
+	noWildcard, noValueRange, noReverseRange, noSingleWildcard, noInferredBoundary bool
+}
