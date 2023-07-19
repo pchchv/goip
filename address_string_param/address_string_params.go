@@ -144,3 +144,9 @@ func (builder *RangeParamsBuilder) AllowInferredBoundary(allow bool) *RangeParam
 	builder.noInferredBoundary = !allow
 	return builder
 }
+
+// AllowSingleWildcard determines whether to allow a segment ending with '_' characters that represent any digit.
+func (builder *RangeParamsBuilder) AllowSingleWildcard(allow bool) *RangeParamsBuilder {
+	builder.noSingleWildcard = !allow
+	return builder
+}
