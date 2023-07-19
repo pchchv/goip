@@ -94,3 +94,24 @@ type RangeParamsBuilder struct {
 	rangeParameters
 	parent interface{}
 }
+
+// ToParams returns an immutable RangeParams instance built by this builder.
+func (builder *RangeParamsBuilder) ToParams() RangeParams {
+	return &builder.rangeParameters
+}
+
+// Set initializes builder with the values from the given RangeParams.
+func (builder *RangeParamsBuilder) Set(rangeParams RangeParams) *RangeParamsBuilder {
+	if rp, ok := rangeParams.(*rangeParameters); ok {
+		builder.rangeParameters = *rp
+	} else {
+		builder.rangeParameters = rangeParameters{
+			noWildcard:         !rangeParams.AllowsWildcard(),
+			noValueRange:       !rangeParams.AllowsRangeSeparator(),
+			noReverseRange:     !rangeParams.AllowsReverseRange(),
+			noSingleWildcard:   !rangeParams.AllowsSingleWildcard(),
+			noInferredBoundary: !rangeParams.AllowsInferredBoundary(),
+		}
+	}
+	return builder
+}
