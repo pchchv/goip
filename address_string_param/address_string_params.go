@@ -171,3 +171,17 @@ func (params *addressStringFormatParameters) AllowsWildcardedSeparator() bool {
 func (params *addressStringFormatParameters) AllowsLeadingZeros() bool {
 	return !params.noLeadingZeros
 }
+
+// AllowsUnlimitedLeadingZeros determines whether to allow leading zeros that
+// extend segments beyond the usual segment length of 3 for IPv4 dotted-decimal and 4 for IPv6.
+// However, this parameter is valid only if leading zeros are allowed, that is,
+// when AllowsLeadingZeros is true or the address is IPv4 and Allows_inet_aton_octal is true.
+// For example, this determines whether to allow "0001.0002.0003.0004".
+func (params *addressStringFormatParameters) AllowsUnlimitedLeadingZeros() bool {
+	return !params.noUnlimitedLeadingZeros
+}
+
+// GetRangeParams returns RangeParams parameters describing whether ranges of values are allowed and what wildcards are allowed.
+func (params *addressStringFormatParameters) GetRangeParams() RangeParams {
+	return &params.rangeParams
+}
