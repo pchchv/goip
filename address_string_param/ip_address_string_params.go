@@ -1,5 +1,11 @@
 package address_string_param
 
+const (
+	NoAddressOption   EmptyStrOption = "none"     // indicates that empty strings are not translated to addresses.
+	ZeroAddressOption EmptyStrOption = ""         // is used by default, empty strings are translated to null addresses.
+	LoopbackOption    EmptyStrOption = "loopback" // indicates that empty strings are translated to loopback addresses.
+)
+
 type ipAddressStringFormatParameters struct {
 	addressStringFormatParameters
 	allowPrefixesBeyondAddrSize,
@@ -60,3 +66,6 @@ func (params *ipv4AddressStringParameters) AllowsInetAtonSingleSegmentMask() boo
 func (params *ipv4AddressStringParameters) AllowsInetAtonLeadingZeros() bool {
 	return !params.no_inet_aton_leading_zeros
 }
+
+// EmptyStrOption - an option specifying how to convert an empty address string to an address.
+type EmptyStrOption string
