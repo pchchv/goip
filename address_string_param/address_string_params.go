@@ -115,3 +115,17 @@ func (builder *RangeParamsBuilder) Set(rangeParams RangeParams) *RangeParamsBuil
 	}
 	return builder
 }
+
+// AllowWildcard dictates whether '*' is allowed to denote segments covering all possible segment values.
+func (builder *RangeParamsBuilder) AllowWildcard(allow bool) *RangeParamsBuilder {
+	builder.noWildcard = !allow
+	return builder
+}
+
+// AllowRangeSeparator specifies whether '-'
+// (or the expected range separator for an address)
+// is allowed to indicate a range from smaller to larger, such as 1-10.
+func (builder *RangeParamsBuilder) AllowRangeSeparator(allow bool) *RangeParamsBuilder {
+	builder.noValueRange = !allow
+	return builder
+}
