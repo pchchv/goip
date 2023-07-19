@@ -129,3 +129,18 @@ func (builder *RangeParamsBuilder) AllowRangeSeparator(allow bool) *RangeParamsB
 	builder.noValueRange = !allow
 	return builder
 }
+
+// AllowReverseRange specifies whether '-'
+// (or the expected range separator for an address)
+// is allowed to be used to indicate a range from larger to smaller, such as 10-1.
+func (builder *RangeParamsBuilder) AllowReverseRange(allow bool) *RangeParamsBuilder {
+	builder.noReverseRange = !allow
+	return builder
+}
+
+// AllowInferredBoundary determines whether it is allowed to designate a missing range value before or
+// after the '-' sign to indicate a minimum or maximum potential value.
+func (builder *RangeParamsBuilder) AllowInferredBoundary(allow bool) *RangeParamsBuilder {
+	builder.noInferredBoundary = !allow
+	return builder
+}
