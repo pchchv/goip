@@ -150,3 +150,11 @@ func (builder *RangeParamsBuilder) AllowSingleWildcard(allow bool) *RangeParamsB
 	builder.noSingleWildcard = !allow
 	return builder
 }
+
+// addressStringFormatParams are parameters specific to a given address type or version that is supplied.
+type addressStringFormatParameters struct {
+	rangeParams             rangeParameters
+	noWildcardedSeparator   bool
+	noLeadingZeros          bool
+	noUnlimitedLeadingZeros bool
+}
