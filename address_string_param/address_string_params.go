@@ -88,3 +88,9 @@ func (builder *rangeParameters) AllowsInferredBoundary() bool {
 func (builder *rangeParameters) AllowsSingleWildcard() bool {
 	return !builder.noSingleWildcard
 }
+
+// RangeParamsBuilder is used to build an immutable RangeParams for parsing address strings.
+type RangeParamsBuilder struct {
+	rangeParameters
+	parent interface{}
+}
