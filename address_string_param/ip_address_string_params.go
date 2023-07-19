@@ -41,3 +41,15 @@ func (params *ipv4AddressStringParameters) AllowsInetAtonHex() bool {
 func (params *ipv4AddressStringParameters) AllowsInetAtonOctal() bool {
 	return !params.no_inet_aton_octal
 }
+
+// AllowsInetAtonJoinedSegments allows IPv4 joined segments like "1.2.3", "1.2', or just "1".
+// For the case of just 1 segment, the behaviour is controlled by allowSingleSegment
+func (params *ipv4AddressStringParameters) AllowsInetAtonJoinedSegments() bool {
+	return !params.no_inet_aton_joinedSegments
+}
+
+// AllowsInetAtonSingleSegmentMask specifies whether to allow
+// a mask that looks like the prefix length: "1.2.3.5/255" when resolving merged IPv4 segments.
+func (params *ipv4AddressStringParameters) AllowsInetAtonSingleSegmentMask() bool {
+	return params.inet_aton_single_segment_mask
+}
