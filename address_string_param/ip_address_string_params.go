@@ -53,3 +53,10 @@ func (params *ipv4AddressStringParameters) AllowsInetAtonJoinedSegments() bool {
 func (params *ipv4AddressStringParameters) AllowsInetAtonSingleSegmentMask() bool {
 	return params.inet_aton_single_segment_mask
 }
+
+// AllowsInetAtonLeadingZeros allows a hexadecimal or octal IPv4 inet_aton to have leading zeros, such as in the first two segments "0x0a.00b.c.d".
+// The first 0 is not considered a leading zero, it denotes either an octal or hexadecimal number depending on whether it is followed by an 'x'.
+// Zeros that appear afterwards are inet_aton leading zeros.
+func (params *ipv4AddressStringParameters) AllowsInetAtonLeadingZeros() bool {
+	return !params.no_inet_aton_leading_zeros
+}
