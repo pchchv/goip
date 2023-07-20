@@ -240,3 +240,14 @@ type ipAddressStringParameters struct {
 	noIPv6            bool
 	noIPv4            bool
 }
+
+// AllowsPrefix indicates whether addresses with prefix length like 1.2.0.0/16 are allowed.
+func (params *ipAddressStringParameters) AllowsPrefix() bool {
+	return !params.noPrefix
+}
+
+// EmptyStrParsedAs determines how a zero-length empty string is translated to an address.
+// If the option is ZeroAddressOption or LoopbackOption, then if defers to GetPreferredVersion() for the version.
+func (params *ipAddressStringParameters) EmptyStrParsedAs() EmptyStrOption {
+	return params.emptyStringOption
+}
