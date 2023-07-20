@@ -1,11 +1,15 @@
 package address_string_param
 
+import "strings"
+
 const (
 	NoAddressOption       EmptyStrOption = "none"      // indicates that empty strings are not translated to addresses
 	ZeroAddressOption     EmptyStrOption = ""          // is used by default, empty strings are translated to null addresses
 	LoopbackOption        EmptyStrOption = "loopback"  // indicates that empty strings are translated to loopback addresses
 	AllAddresses          AllStrOption   = ""          // default value, indicating that the all address string refers to all addresses of all IP versions
 	AllPreferredIPVersion AllStrOption   = "preferred" // indicates that the all address string refers to all addresses of the preferred IP version
+	IPv4                  IPVersion      = "IPv4"      // represents Internet Protocol version 4
+	IPv6                  IPVersion      = "IPv6"      // represents Internet Protocol version 6
 )
 
 var _ IPv4AddressStringParams = &ipv4AddressStringParameters{}
@@ -112,3 +116,13 @@ type IPv4AddressStringParams interface {
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
 type IPVersion string
+
+// IsIPv6 returns true if this represents version 6.
+func (version IPVersion) IsIPv6() bool {
+	return strings.EqualFold(string(version), string(IPv6))
+}
+
+// IsIPv4 returns true if this represents version 4.
+func (version IPVersion) IsIPv4() bool {
+	return strings.EqualFold(string(version), string(IPv4))
+}
