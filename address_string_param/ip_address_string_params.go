@@ -216,6 +216,16 @@ func (params *ipv6AddressStringParameters) AllowsZone() bool {
 	return !params.noZone
 }
 
+// AllowsEmptyZone allows the zone character % with no following zone'
+func (params *ipv6AddressStringParameters) AllowsEmptyZone() bool {
+	return !params.noEmptyZone
+}
+
+// AllowsBase85 allows IPv6 single-segment base 85 addresses
+func (params *ipv6AddressStringParameters) AllowsBase85() bool {
+	return !params.noBase85
+}
+
 // ipAddressStringParameters has parameters for parsing IP address strings.
 // They are immutable and can be constructed using an IPAddressStringParamsBuilder.
 type ipAddressStringParameters struct {
