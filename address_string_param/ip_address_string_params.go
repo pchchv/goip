@@ -130,6 +130,43 @@ type IPv6AddressStringParams interface {
 	GetEmbeddedIPv4AddressParams() IPv4AddressStringParams
 }
 
+// IPAddressStringParams provides parameters for parsing IP address strings,
+// specifying what to allow, what to disallow, and other options.
+// This allows to control the validation performed by IPAddressString.
+// IPAddressString uses the default permissive IPAddressStringParams instance if one is not specified.
+// If you want to use parameters other than the default, use this interface.
+// Immutable instances can be built using the IPAddressStringParamsBuilder.
+type IPAddressStringParams interface {
+	AddressStringParams
+	// AllowsPrefix indicates whether addresses with prefix length like 1.2.0.0/16 are allowed.
+	AllowsPrefix() bool
+	// EmptyStrParsedAs determines how a zero-length empty string is translated to an address.
+	// If the option is ZeroAddressOption or LoopbackOption, then if defers to GetPreferredVersion() for the version.
+	EmptyStrParsedAs() EmptyStrOption
+	// AllStrParsedAs determines how the "all" string "*" is translated to addresses.
+	// If the option is AllPreferredIPVersion, then it defers to GetPreferredVersion() for the version.
+	AllStrParsedAs() AllStrOption
+	// AllowsMask allows masks to follow valid addresses, such as 1.2.3.4/255.255.0.0 which has the mask 255.255.0.0
+	// If the mask is the mask for a network prefix length, this is interpreted as the subnet for that network prefix length.
+	// Otherwise the address is simply masked by the mask.
+	// For instance, 1.2.3.4/255.0.255.0 is 1.0.3.0, while 1.2.3.4/255.255.0.0 is 1.2.0.0/16.
+	AllowsMask() bool
+	// GetPreferredVersion indicates the version to use for ambiguous addresses strings,
+	// like prefix lengths less than 32 bits which are translated to masks,
+	// the "all" address or the "empty" address.
+	// The default is IPv6.
+	// If either of AllowsIPv4() or AllowsIPv6() returns false, then those settings take precedence over this setting.
+	GetPreferredVersion() IPVersion
+	// AllowsIPv4 allows IPv4 addresses and subnets.
+	AllowsIPv4() bool
+	// AllowsIPv6 allows IPv6 addresses and subnets.
+	AllowsIPv6() bool
+	// GetIPv4Params returns the parameters that apply specifically to IPv4 addresses and subnets.
+	GetIPv4Params() IPv4AddressStringParams
+	// GetIPv6Params returns the parameters that apply specifically to IPv6 addresses and subnets.
+	GetIPv6Params() IPv6AddressStringParams
+}
+
 // IPVersion is the version type used by IP string parameters.
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
