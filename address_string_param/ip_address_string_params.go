@@ -267,3 +267,16 @@ func (params *ipAddressStringParameters) AllStrParsedAs() AllStrOption {
 func (params *ipAddressStringParameters) GetPreferredVersion() IPVersion {
 	return params.preferredVersion
 }
+
+// AllowsMask allows masks to follow valid addresses, such as 1.2.3.4/255.255.0.0 which has the mask 255.255.0.0
+// If the mask is the mask for a network prefix length, this is interpreted as the subnet for that network prefix length.
+// Otherwise the address is simply masked by the mask.
+// For instance, 1.2.3.4/255.0.255.0 is 1.0.3.0, while 1.2.3.4/255.255.0.0 is 1.2.0.0/16.
+func (params *ipAddressStringParameters) AllowsMask() bool {
+	return !params.noMask
+}
+
+// AllowsIPv4 allows IPv4 addresses and subnets.
+func (params *ipAddressStringParameters) AllowsIPv4() bool {
+	return !params.noIPv4
+}
