@@ -206,6 +206,16 @@ type ipv6AddressStringParameters struct {
 	embeddedParams                         *ipAddressStringParameters
 }
 
+// AllowsMixed allows mixed-in embedded IPv4 like "a:b:c:d:e:f:1.2.3.4".
+func (params *ipv6AddressStringParameters) AllowsMixed() bool {
+	return !params.noMixed
+}
+
+// AllowsZone allows zones like "a:b:c:d:e:f:a:b%zone".
+func (params *ipv6AddressStringParameters) AllowsZone() bool {
+	return !params.noZone
+}
+
 // ipAddressStringParameters has parameters for parsing IP address strings.
 // They are immutable and can be constructed using an IPAddressStringParamsBuilder.
 type ipAddressStringParameters struct {
