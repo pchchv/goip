@@ -189,3 +189,13 @@ func (params *addressStringFormatParameters) GetRangeParams() RangeParams {
 type addressStringParameters struct {
 	noEmpty, noAll, noSingleSegment bool
 }
+
+// AllowsEmpty indicates whether it allows zero-length address strings: "".
+func (params *addressStringParameters) AllowsEmpty() bool {
+	return !params.noEmpty
+}
+
+// AllowsSingleSegment allows an address to be specified as a single value, eg ffffffff, without the standard use of segments like "1.2.3.4" or "1:2:4:3:5:6:7:8".
+func (params *addressStringParameters) AllowsSingleSegment() bool {
+	return !params.noSingleSegment
+}
