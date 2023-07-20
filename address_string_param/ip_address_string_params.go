@@ -14,6 +14,7 @@ const (
 )
 
 var (
+	_                     IPAddressStringParams   = &ipAddressStringParameters{}
 	_                     IPv6AddressStringParams = &ipv6AddressStringParameters{}
 	_                     IPv4AddressStringParams = &ipv4AddressStringParameters{}
 	defaultEmbeddedParams *ipAddressStringParameters
@@ -279,4 +280,19 @@ func (params *ipAddressStringParameters) AllowsMask() bool {
 // AllowsIPv4 allows IPv4 addresses and subnets.
 func (params *ipAddressStringParameters) AllowsIPv4() bool {
 	return !params.noIPv4
+}
+
+// AllowsIPv6 allows IPv6 addresses and subnets.
+func (params *ipAddressStringParameters) AllowsIPv6() bool {
+	return !params.noIPv6
+}
+
+// GetIPv4Params returns the parameters that apply specifically to IPv4 addresses and subnets.
+func (params *ipAddressStringParameters) GetIPv4Params() IPv4AddressStringParams {
+	return &params.ipv4Params
+}
+
+// GetIPv6Params returns the parameters that apply specifically to IPv6 addresses and subnets.
+func (params *ipAddressStringParameters) GetIPv6Params() IPv6AddressStringParams {
+	return &params.ipv6Params
 }
