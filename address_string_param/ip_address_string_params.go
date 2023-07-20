@@ -13,7 +13,11 @@ const (
 	IndeterminateIPVersion IPVersion      = ""          // represents an unspecified IP address version
 )
 
-var _ IPv4AddressStringParams = &ipv4AddressStringParameters{}
+var (
+	_                     IPv6AddressStringParams = &ipv6AddressStringParameters{}
+	_                     IPv4AddressStringParams = &ipv4AddressStringParameters{}
+	defaultEmbeddedParams *ipAddressStringParameters
+)
 
 type ipAddressStringFormatParameters struct {
 	addressStringFormatParameters
@@ -200,4 +204,19 @@ type ipv6AddressStringParameters struct {
 	ipAddressStringFormatParameters
 	noMixed, noZone, noBase85, noEmptyZone bool
 	embeddedParams                         *ipAddressStringParameters
+}
+
+// ipAddressStringParameters has parameters for parsing IP address strings.
+// They are immutable and can be constructed using an IPAddressStringParamsBuilder.
+type ipAddressStringParameters struct {
+	addressStringParameters
+	ipv4Params        ipv4AddressStringParameters
+	ipv6Params        ipv6AddressStringParameters
+	emptyStringOption EmptyStrOption
+	allStringOption   AllStrOption
+	preferredVersion  IPVersion
+	noPrefix          bool
+	noMask            bool
+	noIPv6            bool
+	noIPv4            bool
 }
