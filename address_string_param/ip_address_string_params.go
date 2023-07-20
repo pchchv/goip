@@ -251,3 +251,19 @@ func (params *ipAddressStringParameters) AllowsPrefix() bool {
 func (params *ipAddressStringParameters) EmptyStrParsedAs() EmptyStrOption {
 	return params.emptyStringOption
 }
+
+// AllStrParsedAs determines how the "all" string "*" is translated to addresses.
+// If the option is AllPreferredIPVersion, then it defers to GetPreferredVersion() for the version.
+func (params *ipAddressStringParameters) AllStrParsedAs() AllStrOption {
+	return params.allStringOption
+}
+
+// GetPreferredVersion indicates the version to use for ambiguous addresses strings,
+// like prefix lengths less than 32 bits which are translated to masks,
+// the "all" address or the "empty" address.
+// The default is IPv6.
+// If either of AllowsIPv4() or AllowsIPv6() returns false,
+// then those settings take precedence over this setting.
+func (params *ipAddressStringParameters) GetPreferredVersion() IPVersion {
+	return params.preferredVersion
+}
