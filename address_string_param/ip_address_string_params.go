@@ -227,6 +227,20 @@ func (params *ipv6AddressStringParameters) AllowsBase85() bool {
 	return !params.noBase85
 }
 
+// GetMixedParams provides the parameters that for parsing the embedded IPv4 section of a mixed IPv6/v4 address, if AllowsMixed is true'
+func (params *ipv6AddressStringParameters) GetMixedParams() IPAddressStringParams {
+	result := params.embeddedParams
+	if result == nil {
+		result = defaultEmbeddedParams
+	}
+	return result
+}
+
+// GetEmbeddedIPv4AddressParams returns the IPv4 parameters for parsing the embedded IPv4 section of a mixed IPv6/v4 address'
+func (params *ipv6AddressStringParameters) GetEmbeddedIPv4AddressParams() IPv4AddressStringParams {
+	return params.embeddedParams.GetIPv4Params()
+}
+
 // ipAddressStringParameters has parameters for parsing IP address strings.
 // They are immutable and can be constructed using an IPAddressStringParamsBuilder.
 type ipAddressStringParameters struct {
