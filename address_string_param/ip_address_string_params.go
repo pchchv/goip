@@ -195,3 +195,9 @@ func (version IPVersion) IsIndeterminate() bool {
 func (version IPVersion) String() string {
 	return string(version)
 }
+
+type ipv6AddressStringParameters struct {
+	ipAddressStringFormatParameters
+	noMixed, noZone, noBase85, noEmptyZone bool
+	embeddedParams                         *ipAddressStringParameters
+}
