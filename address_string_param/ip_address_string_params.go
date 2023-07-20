@@ -3,13 +3,14 @@ package address_string_param
 import "strings"
 
 const (
-	NoAddressOption       EmptyStrOption = "none"      // indicates that empty strings are not translated to addresses
-	ZeroAddressOption     EmptyStrOption = ""          // is used by default, empty strings are translated to null addresses
-	LoopbackOption        EmptyStrOption = "loopback"  // indicates that empty strings are translated to loopback addresses
-	AllAddresses          AllStrOption   = ""          // default value, indicating that the all address string refers to all addresses of all IP versions
-	AllPreferredIPVersion AllStrOption   = "preferred" // indicates that the all address string refers to all addresses of the preferred IP version
-	IPv4                  IPVersion      = "IPv4"      // represents Internet Protocol version 4
-	IPv6                  IPVersion      = "IPv6"      // represents Internet Protocol version 6
+	NoAddressOption        EmptyStrOption = "none"      // indicates that empty strings are not translated to addresses
+	ZeroAddressOption      EmptyStrOption = ""          // is used by default, empty strings are translated to null addresses
+	LoopbackOption         EmptyStrOption = "loopback"  // indicates that empty strings are translated to loopback addresses
+	AllAddresses           AllStrOption   = ""          // default value, indicating that the all address string refers to all addresses of all IP versions
+	AllPreferredIPVersion  AllStrOption   = "preferred" // indicates that the all address string refers to all addresses of the preferred IP version
+	IPv4                   IPVersion      = "IPv4"      // represents Internet Protocol version 4
+	IPv6                   IPVersion      = "IPv6"      // represents Internet Protocol version 6
+	IndeterminateIPVersion IPVersion      = ""          // represents an unspecified IP address version
 )
 
 var _ IPv4AddressStringParams = &ipv4AddressStringParameters{}
@@ -125,4 +126,18 @@ func (version IPVersion) IsIPv6() bool {
 // IsIPv4 returns true if this represents version 4.
 func (version IPVersion) IsIPv4() bool {
 	return strings.EqualFold(string(version), string(IPv4))
+}
+
+// IsIndeterminate returns true if this represents an unspecified IP address version.
+func (version IPVersion) IsIndeterminate() bool {
+	if len(version) == 4 {
+		dig := version[3]
+		return (dig != '4' && dig != '6') || !strings.EqualFold(string(version[:3]), "IPv")
+	}
+	return true
+}
+
+// String returns "IPv4", "IPv6", or the zero-value "" representing an indeterminate version.
+func (version IPVersion) String() string {
+	return string(version)
 }
