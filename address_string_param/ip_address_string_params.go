@@ -107,3 +107,8 @@ type IPv4AddressStringParams interface {
 	// Zeros that appear afterwards are inet_aton leading zeros.
 	AllowsInetAtonLeadingZeros() bool
 }
+
+// IPVersion is the version type used by IP string parameters.
+// It is interchangeable with ipaddr.Version,
+// a more generic version type used by the library as a whole.
+type IPVersion string
