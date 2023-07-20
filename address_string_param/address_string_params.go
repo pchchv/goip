@@ -1,9 +1,11 @@
 package address_string_param
 
 var (
-	_                RangeParams = &rangeParameters{}
-	WildcardAndRange RangeParams = &rangeParameters{} // use this to support addresses supported by the default wildcard options and also addresses like "1.2-3.3.4" or "1:0-ff::".
-	NoRange          RangeParams = &rangeParameters{  // use no wildcards nor range separators
+	_                AddressStringFormatParams = &addressStringFormatParameters{}
+	_                AddressStringParams       = &addressStringParameters{}
+	_                RangeParams               = &rangeParameters{}
+	WildcardAndRange RangeParams               = &rangeParameters{} // use this to support addresses supported by the default wildcard options and also addresses like "1.2-3.3.4" or "1:0-ff::".
+	NoRange          RangeParams               = &rangeParameters{  // use no wildcards nor range separators
 		noWildcard:         true,
 		noValueRange:       true,
 		noReverseRange:     true,
@@ -198,4 +200,11 @@ func (params *addressStringParameters) AllowsEmpty() bool {
 // AllowsSingleSegment allows an address to be specified as a single value, eg ffffffff, without the standard use of segments like "1.2.3.4" or "1:2:4:3:5:6:7:8".
 func (params *addressStringParameters) AllowsSingleSegment() bool {
 	return !params.noSingleSegment
+}
+
+// AllowsAll indicates if we allow the string of just the wildcard "*" to denote all addresses of all version.
+// If false, then for IP addresses we check the preferred version with GetPreferredVersion(), and then check AllowsWildcardedSeparator(),
+// to determine if the string represents all addresses of that version.
+func (params *addressStringParameters) AllowsAll() bool {
+	return !params.noAll
 }
