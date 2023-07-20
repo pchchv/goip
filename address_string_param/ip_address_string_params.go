@@ -113,6 +113,23 @@ type IPv4AddressStringParams interface {
 	AllowsInetAtonLeadingZeros() bool
 }
 
+// IPv6AddressStringParams provides parameters specific to IPv6 addresses and subnets.
+type IPv6AddressStringParams interface {
+	IPAddressStringFormatParams
+	// AllowsMixed allows mixed-in embedded IPv4 like "a:b:c:d:e:f:1.2.3.4".
+	AllowsMixed() bool
+	// AllowsZone allows zones like "a:b:c:d:e:f:a:b%zone".
+	AllowsZone() bool
+	// AllowsEmptyZone allows the zone character % with no following zone.
+	AllowsEmptyZone() bool
+	// AllowsBase85 allows IPv6 single-segment base 85 addresses.
+	AllowsBase85() bool
+	// GetMixedParams provides the IP parameters that for parsing the embedded IPv4 section of a mixed IPv6/v4 address, if AllowsMixed is true.
+	GetMixedParams() IPAddressStringParams
+	// GetEmbeddedIPv4AddressParams returns the IPv4 parameters for parsing the embedded IPv4 section of a mixed IPv6/v4 address.
+	GetEmbeddedIPv4AddressParams() IPv4AddressStringParams
+}
+
 // IPVersion is the version type used by IP string parameters.
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
