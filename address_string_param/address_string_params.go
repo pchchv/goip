@@ -185,3 +185,7 @@ func (params *addressStringFormatParameters) AllowsUnlimitedLeadingZeros() bool 
 func (params *addressStringFormatParameters) GetRangeParams() RangeParams {
 	return &params.rangeParams
 }
+
+type addressStringParameters struct {
+	noEmpty, noAll, noSingleSegment bool
+}
