@@ -176,3 +176,21 @@ func (builder *HostNameParamsBuilder) AllowBracketedIPv6(allow bool) *HostNamePa
 	builder.hostNameParameters.noBracketedIPv6 = !allow
 	return builder
 }
+
+// NormalizeToLowercase dictates whether to normalize the host name to lowercase characters when parsing.
+func (builder *HostNameParamsBuilder) NormalizeToLowercase(allow bool) *HostNameParamsBuilder {
+	builder.hostNameParameters.noNormalizeToLower = !allow
+	return builder
+}
+
+// AllowIPAddress dictates whether to allow a host name to specify an IP address or subnet.
+func (builder *HostNameParamsBuilder) AllowIPAddress(allow bool) *HostNameParamsBuilder {
+	builder.hostNameParameters.noIPAddress = !allow
+	return builder
+}
+
+// AllowPort dictates whether to allow a host name to specify a port.
+func (builder *HostNameParamsBuilder) AllowPort(allow bool) *HostNameParamsBuilder {
+	builder.hostNameParameters.noPort = !allow
+	return builder
+}
