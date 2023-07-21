@@ -179,6 +179,15 @@ type IPAddressStringFormatParamsBuilder struct {
 	parent   *IPAddressStringParamsBuilder
 }
 
+type IPv6AddressStringParamsBuilder struct {
+	// This is not anonymous since it clashes with IPAddressStringFormatParamsBuilder,
+	// both have ipAddressStringFormatParameters and AddressStringFormatParams
+	// and thee builder IPAddressStringFormatParamsBuilder takes precedence
+	params          ipv6AddressStringParameters
+	embeddedBuilder *IPAddressStringParamsBuilder
+	IPAddressStringFormatParamsBuilder
+}
+
 // IPVersion is the version type used by IP string parameters.
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
