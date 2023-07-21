@@ -208,3 +208,8 @@ func (params *addressStringParameters) AllowsSingleSegment() bool {
 func (params *addressStringParameters) AllowsAll() bool {
 	return !params.noAll
 }
+
+// AddressStringParamsBuilder builds an AddressStringParams.
+type AddressStringParamsBuilder struct {
+	addressStringParameters
+}
