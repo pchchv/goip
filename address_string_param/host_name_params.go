@@ -130,3 +130,23 @@ func (builder *HostNameParamsBuilder) SetIPAddressParams(params IPAddressStringP
 	builder.ipAddressBuilder.Set(params)
 	return builder
 }
+
+// Set populates this builder with the values from the given HostNameParams.
+func (builder *HostNameParamsBuilder) Set(params HostNameParams) *HostNameParamsBuilder {
+	if p, ok := params.(*hostNameParameters); ok {
+		builder.hostNameParameters = *p
+	} else {
+		builder.hostNameParameters = hostNameParameters{
+			preferredVersion:   params.GetPreferredVersion(),
+			noEmpty:            !params.AllowsEmpty(),
+			noBracketedIPv4:    !params.AllowsBracketedIPv4(),
+			noBracketedIPv6:    !params.AllowsBracketedIPv6(),
+			noNormalizeToLower: !params.NormalizesToLowercase(),
+			noIPAddress:        !params.AllowsIPAddress(),
+			noPort:             !params.AllowsPort(),
+			noService:          !params.AllowsService(),
+			expectPort:         params.ExpectsPort(),
+		}
+	}
+	return builder.SetIPAddressParams(params.GetIPAddressParams())
+}
