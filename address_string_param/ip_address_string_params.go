@@ -333,3 +333,12 @@ func (params *ipAddressStringParameters) GetIPv4Params() IPv4AddressStringParams
 func (params *ipAddressStringParameters) GetIPv6Params() IPv6AddressStringParams {
 	return &params.ipv6Params
 }
+
+// IPAddressStringParamsBuilder builds an immutable IPAddressStringParameters for controlling parsing of IP address strings.
+type IPAddressStringParamsBuilder struct {
+	params ipAddressStringParameters
+	AddressStringParamsBuilder
+	ipv4Builder IPv4AddressStringParamsBuilder
+	ipv6Builder IPv6AddressStringParamsBuilder
+	parent *HostNameParamsBuilder
+}
