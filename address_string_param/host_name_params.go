@@ -1,5 +1,36 @@
 package address_string_param
 
+// HostNameParams provides parameters for parsing host name strings.
+// This allows the validation performed by HostName to be checked.
+// HostName uses a default permissive HostNameParams object when one is not specified.
+// If you want to use parameters other than the defaults, use this interface.
+// Immutable instances can be constructed with HostNameParamsBuilder.
+type HostNameParams interface {
+	// AllowsEmpty determines whether an empty host string is considered valid.
+	// If the nested IPAddressStringParams parameters allow it, the empty address will be parsed first.
+	// Otherwise, it will be considered an empty host if this value returns true, or an invalid host if it returns false.
+	AllowsEmpty() bool
+	// GetPreferredVersion indicates the version to prefer when resolving host names.
+	GetPreferredVersion() IPVersion
+	// AllowsBracketedIPv4 allows bracketed IPv4 addresses like "[1.2.3.4]".
+	AllowsBracketedIPv4() bool
+	// AllowsBracketedIPv6 allows bracketed IPv6 addresses like "[1::2]".
+	AllowsBracketedIPv6() bool
+	// NormalizesToLowercase indicates whether to normalize the host name to lowercase characters when parsing.
+	NormalizesToLowercase() bool
+	// AllowsIPAddress allows a host name to specify an IP address or subnet.
+	AllowsIPAddress() bool
+	// AllowsPort allows a host name to specify a port.
+	AllowsPort() bool
+	// AllowsService allows a host name to specify a service, which typically maps to a port.
+	AllowsService() bool
+	// ExpectsPort indicates whether a port should be inferred from a host like 1:2:3:4::80 that is ambiguous if a port might have been appended.
+	// The final segment would normally be considered part of the address, but can be interpreted as a port instead.
+	ExpectsPort() bool
+	// GetIPAddressParams returns the parameters that apply specifically to IP addresses and subnets, whenever a host name specifies an IP addresses or subnet.
+	GetIPAddressParams() IPAddressStringParams
+}
+
 // hostNameParameters has parameters for parsing host name strings.
 // They are immutable and can be constructed using an HostNameParamsBuilder.
 type hostNameParameters struct {
