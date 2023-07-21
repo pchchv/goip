@@ -26,3 +26,13 @@ func (params *hostNameParameters) AllowsEmpty() bool {
 func (params *hostNameParameters) GetPreferredVersion() IPVersion {
 	return params.preferredVersion
 }
+
+// AllowsBracketedIPv4 allows bracketed IPv4 addresses like "[1.2.3.4]".
+func (params *hostNameParameters) AllowsBracketedIPv4() bool {
+	return !params.noBracketedIPv4
+}
+
+// AllowsBracketedIPv6 allows bracketed IPv6 addresses like "[1::2]".
+func (params *hostNameParameters) AllowsBracketedIPv6() bool {
+	return !params.noBracketedIPv6
+}
