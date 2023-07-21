@@ -56,3 +56,16 @@ func (params *hostNameParameters) AllowsPort() bool {
 func (params *hostNameParameters) AllowsService() bool {
 	return !params.noService
 }
+
+// ExpectsPort indicates whether a port should be inferred from a host like 1:2:3:4::80
+// that is ambiguous if a port might have been appended.
+// The final segment would normally be considered part of the address,
+// but can be interpreted as a port instead.
+func (params *hostNameParameters) ExpectsPort() bool {
+	return params.expectPort
+}
+
+// GetIPAddressParams returns the parameters that apply specifically to IP addresses and subnets, whenever a host name specifies an IP addresses or subnet.
+func (params *hostNameParameters) GetIPAddressParams() IPAddressStringParams {
+	return &params.ipParams
+}
