@@ -213,3 +213,15 @@ func (params *addressStringParameters) AllowsAll() bool {
 type AddressStringParamsBuilder struct {
 	addressStringParameters
 }
+
+func (builder *AddressStringParamsBuilder) set(params AddressStringParams) {
+	if p, ok := params.(*addressStringParameters); ok {
+		builder.addressStringParameters = *p
+	} else {
+		builder.addressStringParameters = addressStringParameters{
+			noEmpty:         !params.AllowsEmpty(),
+			noAll:           !params.AllowsAll(),
+			noSingleSegment: !params.AllowsSingleSegment(),
+		}
+	}
+}
