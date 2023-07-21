@@ -150,3 +150,17 @@ func (builder *HostNameParamsBuilder) Set(params HostNameParams) *HostNameParams
 	}
 	return builder.SetIPAddressParams(params.GetIPAddressParams())
 }
+
+// AllowEmpty dictates whether an empty host string is considered valid.
+// The parser will first parse as an empty address, if allowed by the nested IPAddressStringParams.
+// Otherwise, this setting dictates whether it will be considered an invalid host.
+func (builder *HostNameParamsBuilder) AllowEmpty(allow bool) *HostNameParamsBuilder {
+	builder.hostNameParameters.noEmpty = !allow
+	return builder
+}
+
+// SetPreferredVersion dictates the version to prefer when resolving host names.
+func (builder *HostNameParamsBuilder) SetPreferredVersion(version IPVersion) *HostNameParamsBuilder {
+	builder.hostNameParameters.preferredVersion = version
+	return builder
+}
