@@ -172,6 +172,13 @@ type IPAddressStringParams interface {
 	GetIPv6Params() IPv6AddressStringParams
 }
 
+// IPAddressStringFormatParamsBuilder builds an immutable IPAddressStringFormatParams for controlling parsing of IP address strings.
+type IPAddressStringFormatParamsBuilder struct {
+	AddressStringFormatParamsBuilder
+	ipParams ipAddressStringFormatParameters
+	parent   *IPAddressStringParamsBuilder
+}
+
 // IPVersion is the version type used by IP string parameters.
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
