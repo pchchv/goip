@@ -238,3 +238,7 @@ func (builder *AddressStringParamsBuilder) allowEmpty(allow bool) {
 func (builder *AddressStringParamsBuilder) allowAll(allow bool) {
 	builder.noAll = !allow
 }
+
+func (builder *AddressStringParamsBuilder) allowSingleSegment(allow bool) {
+	builder.noSingleSegment = !allow
+}
