@@ -242,3 +242,9 @@ func (builder *AddressStringParamsBuilder) allowAll(allow bool) {
 func (builder *AddressStringParamsBuilder) allowSingleSegment(allow bool) {
 	builder.noSingleSegment = !allow
 }
+
+// AddressStringFormatParamsBuilder creates parameters for parsing a specific address type or address version.
+type AddressStringFormatParamsBuilder struct {
+	addressStringFormatParameters
+	rangeParamsBuilder RangeParamsBuilder
+}
