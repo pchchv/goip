@@ -116,3 +116,17 @@ func (builder *HostNameParamsBuilder) ToParams() HostNameParams {
 	result.ipParams = *builder.ipAddressBuilder.ToParams().(*ipAddressStringParameters)
 	return &result
 }
+
+// GetIPAddressParamsBuilder returns a builder that builds
+// the IPAddressStringParams for the HostNameParams being built by this builder.
+func (builder *HostNameParamsBuilder) GetIPAddressParamsBuilder() (result *IPAddressStringParamsBuilder) {
+	result = &builder.ipAddressBuilder
+	result.parent = builder
+	return
+}
+
+// SetIPAddressParams populates this builder with the values from the given IPAddressStringParams.
+func (builder *HostNameParamsBuilder) SetIPAddressParams(params IPAddressStringParams) *HostNameParamsBuilder {
+	builder.ipAddressBuilder.Set(params)
+	return builder
+}
