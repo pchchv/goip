@@ -46,3 +46,13 @@ func (params *hostNameParameters) NormalizesToLowercase() bool {
 func (params *hostNameParameters) AllowsIPAddress() bool {
 	return !params.noIPAddress
 }
+
+// AllowsPort allows a host name to specify a port.
+func (params *hostNameParameters) AllowsPort() bool {
+	return !params.noPort
+}
+
+// AllowsService allows a host name to specify a service, which typically maps to a port.
+func (params *hostNameParameters) AllowsService() bool {
+	return !params.noService
+}
