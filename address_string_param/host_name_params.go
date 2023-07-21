@@ -164,3 +164,15 @@ func (builder *HostNameParamsBuilder) SetPreferredVersion(version IPVersion) *Ho
 	builder.hostNameParameters.preferredVersion = version
 	return builder
 }
+
+// AllowBracketedIPv4 dictates whether to allow bracketed IPv4 addresses like "[1.2.3.4]".
+func (builder *HostNameParamsBuilder) AllowBracketedIPv4(allow bool) *HostNameParamsBuilder {
+	builder.hostNameParameters.noBracketedIPv4 = !allow
+	return builder
+}
+
+// AllowBracketedIPv6 dictates whether to allow bracketed IPv6 addresses like "[1::2]".
+func (builder *HostNameParamsBuilder) AllowBracketedIPv6(allow bool) *HostNameParamsBuilder {
+	builder.hostNameParameters.noBracketedIPv6 = !allow
+	return builder
+}
