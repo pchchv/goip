@@ -277,3 +277,15 @@ func (builder *AddressStringFormatParamsBuilder) setRangeParameters(rangeParams 
 func (builder *AddressStringFormatParamsBuilder) GetRangeParamsBuilder() RangeParams {
 	return &builder.rangeParamsBuilder
 }
+
+func (builder *AddressStringFormatParamsBuilder) allowWildcardedSeparator(allow bool) {
+	builder.noWildcardedSeparator = !allow
+}
+
+func (builder *AddressStringFormatParamsBuilder) allowLeadingZeros(allow bool) {
+	builder.noLeadingZeros = !allow
+}
+
+func (builder *AddressStringFormatParamsBuilder) allowUnlimitedLeadingZeros(allow bool) {
+	builder.noUnlimitedLeadingZeros = !allow
+}
