@@ -36,3 +36,13 @@ func (params *hostNameParameters) AllowsBracketedIPv4() bool {
 func (params *hostNameParameters) AllowsBracketedIPv6() bool {
 	return !params.noBracketedIPv6
 }
+
+// NormalizesToLowercase indicates whether to normalize the host name to lowercase characters when parsing.
+func (params *hostNameParameters) NormalizesToLowercase() bool {
+	return !params.noNormalizeToLower
+}
+
+// AllowsIPAddress allows a host name to specify an IP address or subnet.
+func (params *hostNameParameters) AllowsIPAddress() bool {
+	return !params.noIPAddress
+}
