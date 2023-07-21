@@ -225,3 +225,16 @@ func (builder *AddressStringParamsBuilder) set(params AddressStringParams) {
 		}
 	}
 }
+
+// ToParams returns an immutable AddressStringParams instance built by this builder.
+func (builder *AddressStringParamsBuilder) ToParams() AddressStringParams {
+	return &builder.addressStringParameters
+}
+
+func (builder *AddressStringParamsBuilder) allowEmpty(allow bool) {
+	builder.noEmpty = !allow
+}
+
+func (builder *AddressStringParamsBuilder) allowAll(allow bool) {
+	builder.noAll = !allow
+}
