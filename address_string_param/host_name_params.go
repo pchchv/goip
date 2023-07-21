@@ -194,3 +194,16 @@ func (builder *HostNameParamsBuilder) AllowPort(allow bool) *HostNameParamsBuild
 	builder.hostNameParameters.noPort = !allow
 	return builder
 }
+
+// AllowService dictates whether to allow a host name to specify a service, which typically maps to a port.
+func (builder *HostNameParamsBuilder) AllowService(allow bool) *HostNameParamsBuilder {
+	builder.hostNameParameters.noService = !allow
+	return builder
+}
+
+// ExpectPort dictates whether a port should be inferred from a host like 1:2:3:4::80 that is ambiguous if a port might have been appended.
+// The final segment would normally be considered part of the address, but can be interpreted as a port instead.
+func (builder *HostNameParamsBuilder) ExpectPort(expect bool) *HostNameParamsBuilder {
+	builder.hostNameParameters.expectPort = expect
+	return builder
+}
