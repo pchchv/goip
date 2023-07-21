@@ -100,3 +100,9 @@ func (params *hostNameParameters) ExpectsPort() bool {
 func (params *hostNameParameters) GetIPAddressParams() IPAddressStringParams {
 	return &params.ipParams
 }
+
+// HostNameParamsBuilder builds an immutable HostNameParams for controlling parsing of host names.
+type HostNameParamsBuilder struct {
+	hostNameParameters
+	ipAddressBuilder IPAddressStringParamsBuilder
+}
