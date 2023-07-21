@@ -14,3 +14,15 @@ type hostNameParameters struct {
 	noEmpty            bool
 	noPort             bool
 }
+
+// AllowsEmpty determines if an empty host string is considered valid.
+// The parser will first parse as an empty address, if allowed by the nested IPAddressStringParams.
+// Otherwise, it will be considered an empty host if this returns true, or an invalid host if it returns false.
+func (params *hostNameParameters) AllowsEmpty() bool {
+	return !params.noEmpty
+}
+
+// GetPreferredVersion indicates the version to prefer when resolving host names.
+func (params *hostNameParameters) GetPreferredVersion() IPVersion {
+	return params.preferredVersion
+}
