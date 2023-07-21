@@ -268,3 +268,12 @@ func (builder *AddressStringFormatParamsBuilder) set(parms AddressStringFormatPa
 	}
 	builder.rangeParamsBuilder.Set(parms.GetRangeParams())
 }
+
+func (builder *AddressStringFormatParamsBuilder) setRangeParameters(rangeParams RangeParams) {
+	builder.rangeParamsBuilder.Set(rangeParams)
+}
+
+// GetRangeParamsBuilder returns a builder that builds the range parameters for these address string format parameters.
+func (builder *AddressStringFormatParamsBuilder) GetRangeParamsBuilder() RangeParams {
+	return &builder.rangeParamsBuilder
+}
