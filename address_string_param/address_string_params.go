@@ -248,3 +248,23 @@ type AddressStringFormatParamsBuilder struct {
 	addressStringFormatParameters
 	rangeParamsBuilder RangeParamsBuilder
 }
+
+// ToParams returns an immutable AddressStringFormatParams instance built by this builder.
+func (builder *AddressStringFormatParamsBuilder) ToParams() AddressStringFormatParams {
+	result := &builder.addressStringFormatParameters
+	result.rangeParams = *builder.rangeParamsBuilder.ToParams().(*rangeParameters)
+	return result
+}
+
+func (builder *AddressStringFormatParamsBuilder) set(parms AddressStringFormatParams) {
+	if p, ok := parms.(*addressStringFormatParameters); ok {
+		builder.addressStringFormatParameters = *p
+	} else {
+		builder.addressStringFormatParameters = addressStringFormatParameters{
+			noWildcardedSeparator:   !parms.AllowsWildcardedSeparator(),
+			noLeadingZeros:          !parms.AllowsLeadingZeros(),
+			noUnlimitedLeadingZeros: !parms.AllowsUnlimitedLeadingZeros(),
+		}
+	}
+	builder.rangeParamsBuilder.Set(parms.GetRangeParams())
+}
