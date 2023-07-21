@@ -188,6 +188,13 @@ type IPv6AddressStringParamsBuilder struct {
 	IPAddressStringFormatParamsBuilder
 }
 
+// IPv4AddressStringParamsBuilder builds an immutable IPv4AddressStringParams for controlling parsing of IPv4 address strings.
+type IPv4AddressStringParamsBuilder struct {
+	IPAddressStringFormatParamsBuilder
+	params      ipv4AddressStringParameters
+	mixedParent *IPv6AddressStringParamsBuilder
+}
+
 // IPVersion is the version type used by IP string parameters.
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
