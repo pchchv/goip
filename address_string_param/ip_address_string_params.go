@@ -294,6 +294,19 @@ func (builder *IPv6AddressStringParamsBuilder) AllowMixed(allow bool) *IPv6Addre
 	return builder
 }
 
+// AllowPrefixesBeyondAddressSize dictates whether to allow
+// prefix length values greater than 32 for IPv4 or greater than 128 for IPv6.
+func (builder *IPv6AddressStringParamsBuilder) AllowPrefixesBeyondAddressSize(allow bool) *IPv6AddressStringParamsBuilder {
+	builder.allowPrefixesBeyondAddressSize(allow)
+	return builder
+}
+
+// AllowPrefixLenLeadingZeros dictates whether to allow leading zeros in the prefix length like "1.2.3.4/016".
+func (builder *IPv6AddressStringParamsBuilder) AllowPrefixLenLeadingZeros(allow bool) *IPv6AddressStringParamsBuilder {
+	builder.allowPrefixLengthLeadingZeros(allow)
+	return builder
+}
+
 // IPv4AddressStringParamsBuilder builds an immutable IPv4AddressStringParams for controlling parsing of IPv4 address strings.
 type IPv4AddressStringParamsBuilder struct {
 	IPAddressStringFormatParamsBuilder
