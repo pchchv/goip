@@ -396,6 +396,22 @@ func (builder *IPv4AddressStringParamsBuilder) AllowInetAtonSingleSegmentMask(al
 	return builder
 }
 
+// AllowWildcardedSeparator dictates whether the wildcard '*' or
+// '%' can replace the segment separators '.' and ':'.
+// If so, then you can write addresses like *.* or *:*
+func (builder *IPv4AddressStringParamsBuilder) AllowWildcardedSeparator(allow bool) *IPv4AddressStringParamsBuilder {
+	builder.allowWildcardedSeparator(allow)
+	return builder
+}
+
+// AllowLeadingZeros dictates whether to allow addresses with segments that have leasing zeros like "001.2.3.004" or "1:000a::".
+// For IPV4, this option overrides inet_aton octal.
+// Single segment addresses that must have the requisite length to be parsed are not affected by this flag.
+func (builder *IPv4AddressStringParamsBuilder) AllowLeadingZeros(allow bool) *IPv4AddressStringParamsBuilder {
+	builder.allowLeadingZeros(allow)
+	return builder
+}
+
 // IPVersion is the version type used by IP string parameters.
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
