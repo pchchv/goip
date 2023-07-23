@@ -207,3 +207,12 @@ func (builder *HostNameParamsBuilder) ExpectPort(expect bool) *HostNameParamsBui
 	builder.hostNameParameters.expectPort = expect
 	return builder
 }
+
+// CopyHostNameParams produces an immutable copy of the original HostNameParams.
+// Copying a HostNameParams created by a HostNameParamsBuilder is unnecessary since it is already immutable.
+func CopyHostNameParams(orig HostNameParams) HostNameParams {
+	if p, ok := orig.(*hostNameParameters); ok {
+		return p
+	}
+	return new(HostNameParamsBuilder).Set(orig).ToParams()
+}
