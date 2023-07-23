@@ -205,6 +205,16 @@ func (builder *IPAddressStringFormatParamsBuilder) set(params IPAddressStringFor
 	builder.AddressStringFormatParamsBuilder.set(params)
 }
 
+// AllowsPrefixesBeyondAddressSize allows prefix length values greater than 32 for IPv4 or greater than 128 for IPv6.
+func (builder *IPAddressStringFormatParamsBuilder) AllowsPrefixesBeyondAddressSize() bool {
+	return builder.ipParams.AllowsPrefixesBeyondAddressSize()
+}
+
+// AllowsPrefixLenLeadingZeros allows leading zeros in the prefix length like "1.2.3.4/016".
+func (builder *IPAddressStringFormatParamsBuilder) AllowsPrefixLenLeadingZeros() bool {
+	return builder.ipParams.AllowsPrefixLenLeadingZeros()
+}
+
 type IPv6AddressStringParamsBuilder struct {
 	// This is not anonymous since it clashes with IPAddressStringFormatParamsBuilder,
 	// both have ipAddressStringFormatParameters and AddressStringFormatParams
