@@ -14,10 +14,11 @@ const (
 )
 
 var (
-	_                     IPAddressStringParams   = &ipAddressStringParameters{}
-	_                     IPv6AddressStringParams = &ipv6AddressStringParameters{}
-	_                     IPv4AddressStringParams = &ipv4AddressStringParameters{}
-	defaultEmbeddedParams *ipAddressStringParameters
+	_                      IPAddressStringParams   = &ipAddressStringParameters{}
+	_                      IPv6AddressStringParams = &ipv6AddressStringParameters{}
+	_                      IPv4AddressStringParams = &ipv4AddressStringParameters{}
+	defaultEmbeddedParams  *ipAddressStringParameters
+	defaultEmbeddedBuilder IPAddressStringParamsBuilder
 )
 
 type ipAddressStringFormatParameters struct {
@@ -222,6 +223,14 @@ func (builder *IPAddressStringFormatParamsBuilder) AllowsBinary() bool {
 
 func (builder *IPAddressStringFormatParamsBuilder) allowBinary(allow bool) {
 	builder.ipParams.noBinary = !allow
+}
+
+func (builder *IPAddressStringFormatParamsBuilder) allowPrefixesBeyondAddressSize(allow bool) {
+	builder.ipParams.allowPrefixesBeyondAddrSize = allow
+}
+
+func (builder *IPAddressStringFormatParamsBuilder) allowPrefixLengthLeadingZeros(allow bool) {
+	builder.ipParams.noPrefixLengthLeadingZeros = !allow
 }
 
 type IPv6AddressStringParamsBuilder struct {
