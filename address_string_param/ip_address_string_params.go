@@ -609,3 +609,20 @@ func (builder *IPAddressStringParamsBuilder) GetIPv6AddressParamsBuilder() (resu
 	result.parent = builder
 	return
 }
+
+// ToParams returns an immutable IPAddressStringParams instance built by this builder.
+func (builder *IPAddressStringParamsBuilder) ToParams() IPAddressStringParams {
+	result := builder.params
+	result.addressStringParameters = *builder.AddressStringParamsBuilder.ToParams().(*addressStringParameters)
+	result.ipv4Params = *builder.ipv4Builder.ToParams().(*ipv4AddressStringParameters)
+	result.ipv6Params = *builder.ipv6Builder.ToParams().(*ipv6AddressStringParameters)
+	return &result
+}
+
+// GetIPv4AddressParamsBuilder returns a builder that builds the
+// IPv4AddressStringParams for the IPAddressStringParams being built by this builder.
+func (builder *IPAddressStringParamsBuilder) GetIPv4AddressParamsBuilder() (result *IPv4AddressStringParamsBuilder) {
+	result = &builder.ipv4Builder
+	result.parent = builder
+	return
+}
