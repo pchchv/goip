@@ -272,6 +272,16 @@ func (builder *IPv6AddressStringParamsBuilder) AllowsZone() bool {
 	return builder.params.AllowsZone()
 }
 
+// AllowsEmptyZone allows the zone character % with no following zone.
+func (builder *IPv6AddressStringParamsBuilder) AllowsEmptyZone() bool {
+	return builder.params.AllowsEmptyZone()
+}
+
+// AllowsBase85 allows IPv6 single-segment base 85 addresses.
+func (builder *IPv6AddressStringParamsBuilder) AllowsBase85() bool {
+	return builder.params.AllowsBase85()
+}
+
 // IPv4AddressStringParamsBuilder builds an immutable IPv4AddressStringParams for controlling parsing of IPv4 address strings.
 type IPv4AddressStringParamsBuilder struct {
 	IPAddressStringFormatParamsBuilder
