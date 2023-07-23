@@ -673,3 +673,32 @@ func (builder *IPAddressStringParamsBuilder) SetPreferredVersion(version IPVersi
 	builder.params.preferredVersion = version
 	return builder
 }
+
+// AllowPrefix dictates whether to allow addresses with prefix length like "1.2.0.0/16" are allowed.
+func (builder *IPAddressStringParamsBuilder) AllowPrefix(allow bool) *IPAddressStringParamsBuilder {
+	builder.params.noPrefix = !allow
+	return builder
+}
+
+// AllowMask dictates whether to allow masks to follow valid addresses,
+// such as "1.2.3.4/255.255.0.0" which has the mask "255.255.0.0".
+// If the mask is the mask for a network prefix length,
+// this is interpreted as the subnet for that network prefix length.
+// Otherwise the address is simply masked by the mask.
+// For instance, "1.2.3.4/255.0.255.0" is "1.0.3.0", while "1.2.3.4/255.255.0.0" is "1.2.0.0/16".
+func (builder *IPAddressStringParamsBuilder) AllowMask(allow bool) *IPAddressStringParamsBuilder {
+	builder.params.noMask = !allow
+	return builder
+}
+
+// AllowIPv4 dictates whether to allow IPv4 addresses and subnets
+func (builder *IPAddressStringParamsBuilder) AllowIPv4(allow bool) *IPAddressStringParamsBuilder {
+	builder.params.noIPv4 = !allow
+	return builder
+}
+
+// AllowIPv6 dictates whether to allow IPv6 addresses and subnets
+func (builder *IPAddressStringParamsBuilder) AllowIPv6(allow bool) *IPAddressStringParamsBuilder {
+	builder.params.noIPv6 = !allow
+	return builder
+}
