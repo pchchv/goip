@@ -429,6 +429,25 @@ func (builder *IPv4AddressStringParamsBuilder) SetRangeParams(rangeParams RangeP
 	return builder
 }
 
+// AllowPrefixesBeyondAddressSize dictates whether to
+// allow prefix length values greater than 32 for IPv4 or greater than 128 for IPv6.
+func (builder *IPv4AddressStringParamsBuilder) AllowPrefixesBeyondAddressSize(allow bool) *IPv4AddressStringParamsBuilder {
+	builder.allowPrefixesBeyondAddressSize(allow)
+	return builder
+}
+
+// AllowPrefixLenLeadingZeros dictates whether to allow leading zeros in the prefix length like "1.2.3.4/016".
+func (builder *IPv4AddressStringParamsBuilder) AllowPrefixLenLeadingZeros(allow bool) *IPv4AddressStringParamsBuilder {
+	builder.allowPrefixLengthLeadingZeros(allow)
+	return builder
+}
+
+// AllowBinary dictates whether to allow binary addresses like "11111111.0.1.0" or "1111111111111111::".
+func (builder *IPv4AddressStringParamsBuilder) AllowBinary(allow bool) *IPv4AddressStringParamsBuilder {
+	builder.allowBinary(allow)
+	return builder
+}
+
 // IPVersion is the version type used by IP string parameters.
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
