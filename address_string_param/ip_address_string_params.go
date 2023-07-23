@@ -383,6 +383,19 @@ func (builder *IPv4AddressStringParamsBuilder) AllowInetAtonLeadingZeros(allow b
 	return builder
 }
 
+// AllowInetAtonJoinedSegments dictates whether to allow IPv4 joined segments like "1.2.3", "1.2", or just "1".
+// For the case of just 1 segment, the behaviour is controlled by AllowSingleSegment.
+func (builder *IPv4AddressStringParamsBuilder) AllowInetAtonJoinedSegments(allow bool) *IPv4AddressStringParamsBuilder {
+	builder.params.no_inet_aton_joinedSegments = !allow
+	return builder
+}
+
+// AllowInetAtonSingleSegmentMask dictates whether to allow a mask that looks like a prefix length when you allow IPv4 joined segments: "1.2.3.5/255".
+func (builder *IPv4AddressStringParamsBuilder) AllowInetAtonSingleSegmentMask(allow bool) *IPv4AddressStringParamsBuilder {
+	builder.params.inet_aton_single_segment_mask = allow
+	return builder
+}
+
 // IPVersion is the version type used by IP string parameters.
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
