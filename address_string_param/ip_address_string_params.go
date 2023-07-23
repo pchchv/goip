@@ -647,3 +647,29 @@ func (builder *IPAddressStringParamsBuilder) AllowAll(allow bool) *IPAddressStri
 	builder.allowAll(allow)
 	return builder
 }
+
+// ParseEmptyStrAs dictates how a zero-length empty string is translated to an address.
+// If the option is ZeroAddressOption or LoopbackOption, then if defers to GetPreferredVersion for the version.
+func (builder *IPAddressStringParamsBuilder) ParseEmptyStrAs(option EmptyStrOption) *IPAddressStringParamsBuilder {
+	builder.params.emptyStringOption = option
+	builder.AllowEmpty(true)
+	return builder
+}
+
+// ParseAllStrAs dictates how the "all" string "*" is translated to addresses.
+// If the option is AllPreferredIPVersion, then it defers to GetPreferredVersion for the version.
+func (builder *IPAddressStringParamsBuilder) ParseAllStrAs(option AllStrOption) *IPAddressStringParamsBuilder {
+	builder.params.allStringOption = option
+	return builder
+}
+
+// SetPreferredVersion dictates the version to use for ambiguous addresses strings,
+// like prefix lengths less than 32 bits which are translated to masks,
+// the "all" address or the "empty" address.
+// The default is IPv6.
+// If either of AllowsIPv4 or AllowsIPv6 returns false,
+// then those settings take precedence over this setting.
+func (builder *IPAddressStringParamsBuilder) SetPreferredVersion(version IPVersion) *IPAddressStringParamsBuilder {
+	builder.params.preferredVersion = version
+	return builder
+}
