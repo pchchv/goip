@@ -314,6 +314,19 @@ type IPv4AddressStringParamsBuilder struct {
 	mixedParent *IPv6AddressStringParamsBuilder
 }
 
+// ToParams returns an immutable IPv4AddressStringParams instance built by this builder.
+func (builder *IPv4AddressStringParamsBuilder) ToParams() IPv4AddressStringParams {
+	result := &builder.params
+	result.ipAddressStringFormatParameters = *builder.IPAddressStringFormatParamsBuilder.ToParams().(*ipAddressStringFormatParameters)
+	return result
+}
+
+// GetEmbeddedIPv4AddressParentBuilder the parent IPv6AddressStringParamsBuilder,
+// if this builder was obtained by a call to getEmbeddedIPv4ParamsBuilder() from IPv6AddressStringParamsBuilder.
+func (builder *IPv4AddressStringParamsBuilder) GetEmbeddedIPv4AddressParentBuilder() *IPv6AddressStringParamsBuilder {
+	return builder.mixedParent
+}
+
 // IPVersion is the version type used by IP string parameters.
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
