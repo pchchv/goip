@@ -282,6 +282,18 @@ func (builder *IPv6AddressStringParamsBuilder) AllowsBase85() bool {
 	return builder.params.AllowsBase85()
 }
 
+// AllowBase85 dictates whether to allow IPv6 single-segment base 85 addresses.
+func (builder *IPv6AddressStringParamsBuilder) AllowBase85(allow bool) *IPv6AddressStringParamsBuilder {
+	builder.params.noBase85 = !allow
+	return builder
+}
+
+// AllowMixed dictates whether to allow mixed-in embedded IPv4 like "a:b:c:d:e:f:1.2.3.4".
+func (builder *IPv6AddressStringParamsBuilder) AllowMixed(allow bool) *IPv6AddressStringParamsBuilder {
+	builder.params.noMixed = !allow
+	return builder
+}
+
 // IPv4AddressStringParamsBuilder builds an immutable IPv4AddressStringParams for controlling parsing of IPv4 address strings.
 type IPv4AddressStringParamsBuilder struct {
 	IPAddressStringFormatParamsBuilder
