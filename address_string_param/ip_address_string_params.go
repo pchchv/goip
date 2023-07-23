@@ -179,6 +179,19 @@ type IPAddressStringFormatParamsBuilder struct {
 	parent   *IPAddressStringParamsBuilder
 }
 
+// GetParentBuilder returns the original IPAddressStringParamsBuilder builder that this was obtained from,
+// if this builder was obtained from a IPAddressStringParamsBuilder.
+func (builder *IPAddressStringFormatParamsBuilder) GetParentBuilder() *IPAddressStringParamsBuilder {
+	return builder.parent
+}
+
+// ToParams returns an immutable IPAddressStringFormatParams instance built by this builder
+func (builder *IPAddressStringFormatParamsBuilder) ToParams() IPAddressStringFormatParams {
+	result := &builder.ipParams
+	result.addressStringFormatParameters = *builder.AddressStringFormatParamsBuilder.ToParams().(*addressStringFormatParameters)
+	return result
+}
+
 type IPv6AddressStringParamsBuilder struct {
 	// This is not anonymous since it clashes with IPAddressStringFormatParamsBuilder,
 	// both have ipAddressStringFormatParameters and AddressStringFormatParams
