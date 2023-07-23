@@ -233,6 +233,7 @@ func (builder *IPAddressStringFormatParamsBuilder) allowPrefixLengthLeadingZeros
 	builder.ipParams.noPrefixLengthLeadingZeros = !allow
 }
 
+// IPv6AddressStringParamsBuilder builds an immutable IPv6AddressStringParams for controlling parsing of IPv6 address strings'
 type IPv6AddressStringParamsBuilder struct {
 	// This is not anonymous since it clashes with IPAddressStringFormatParamsBuilder,
 	// both have ipAddressStringFormatParameters and AddressStringFormatParams
