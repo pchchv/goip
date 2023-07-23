@@ -192,6 +192,19 @@ func (builder *IPAddressStringFormatParamsBuilder) ToParams() IPAddressStringFor
 	return result
 }
 
+func (builder *IPAddressStringFormatParamsBuilder) set(params IPAddressStringFormatParams) {
+	if p, ok := params.(*ipAddressStringFormatParameters); ok {
+		builder.ipParams = *p
+	} else {
+		builder.ipParams = ipAddressStringFormatParameters{
+			allowPrefixesBeyondAddrSize: params.AllowsPrefixesBeyondAddressSize(),
+			noPrefixLengthLeadingZeros:  !params.AllowsPrefixLenLeadingZeros(),
+			noBinary:                    !params.AllowsBinary(),
+		}
+	}
+	builder.AddressStringFormatParamsBuilder.set(params)
+}
+
 type IPv6AddressStringParamsBuilder struct {
 	// This is not anonymous since it clashes with IPAddressStringFormatParamsBuilder,
 	// both have ipAddressStringFormatParameters and AddressStringFormatParams
