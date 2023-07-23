@@ -262,6 +262,16 @@ func (builder *IPv6AddressStringParamsBuilder) GetRangeParamsBuilder() *RangePar
 	return result
 }
 
+// AllowsMixed allows mixed-in embedded IPv4 like "a:b:c:d:e:f:1.2.3.4".
+func (builder *IPv6AddressStringParamsBuilder) AllowsMixed() bool {
+	return builder.params.AllowsMixed()
+}
+
+// AllowsZone allows zones like "a:b:c:d:e:f:a:b%zone".
+func (builder *IPv6AddressStringParamsBuilder) AllowsZone() bool {
+	return builder.params.AllowsZone()
+}
+
 // IPv4AddressStringParamsBuilder builds an immutable IPv4AddressStringParams for controlling parsing of IPv4 address strings.
 type IPv4AddressStringParamsBuilder struct {
 	IPAddressStringFormatParamsBuilder
