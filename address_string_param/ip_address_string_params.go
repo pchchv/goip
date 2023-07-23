@@ -367,6 +367,22 @@ func (builder *IPv4AddressStringParamsBuilder) AllowInetAtonHex(allow bool) *IPv
 	return builder
 }
 
+// AllowInetAtonOctal dictates whether to allow IPv4 inet_aton octal format, "04.05.06.07" being an example.
+func (builder *IPv4AddressStringParamsBuilder) AllowInetAtonOctal(allow bool) *IPv4AddressStringParamsBuilder {
+	builder.params.no_inet_aton_octal = !allow
+	return builder
+}
+
+// AllowInetAtonLeadingZeros dictates whether to allow a hexadecimal or octal IPv4 inet_aton to have leading zeros,
+// such as in the first two segments "0x0a.00b.c.d".
+// The first 0 is not considered a leading zero,
+// it denotes either an octal or hexadecimal number depending on whether it is followed by an 'x'.
+// Zeros appearing after it are inet_aton master zeros.
+func (builder *IPv4AddressStringParamsBuilder) AllowInetAtonLeadingZeros(allow bool) *IPv4AddressStringParamsBuilder {
+	builder.params.no_inet_aton_leading_zeros = !allow
+	return builder
+}
+
 // IPVersion is the version type used by IP string parameters.
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
