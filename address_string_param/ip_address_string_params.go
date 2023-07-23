@@ -412,6 +412,23 @@ func (builder *IPv4AddressStringParamsBuilder) AllowLeadingZeros(allow bool) *IP
 	return builder
 }
 
+// AllowUnlimitedLeadingZeros dictates whether to
+// allow leading zeros that extend segments beyond the usual segment length,
+// which is 3 for IPv4 dotted-decimal and 4 for IPv6.
+// However, this only takes effect if leading zeros are allowed,
+// which is when AllowsLeadingZeros is true or the address is IPv4 and AllowsInetAtonOctal is true.
+// For example, this determines whether you allow "0001.0002.0003.0004">
+func (builder *IPv4AddressStringParamsBuilder) AllowUnlimitedLeadingZeros(allow bool) *IPv4AddressStringParamsBuilder {
+	builder.allowUnlimitedLeadingZeros(allow)
+	return builder
+}
+
+// SetRangeParams populates this builder with the values from the given RangeParams.
+func (builder *IPv4AddressStringParamsBuilder) SetRangeParams(rangeParams RangeParams) *IPv4AddressStringParamsBuilder {
+	builder.setRangeParameters(rangeParams)
+	return builder
+}
+
 // IPVersion is the version type used by IP string parameters.
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
