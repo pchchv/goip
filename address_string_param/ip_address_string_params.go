@@ -595,3 +595,17 @@ type IPAddressStringParamsBuilder struct {
 	ipv6Builder IPv6AddressStringParamsBuilder
 	parent      *HostNameParamsBuilder
 }
+
+// GetParentBuilder returns the original HostNameParamsBuilder builder that this was obtained from,
+// if this builder was obtained from a HostNameParamsBuilder.
+func (builder *IPAddressStringParamsBuilder) GetParentBuilder() *HostNameParamsBuilder {
+	return builder.parent
+}
+
+// GetIPv6AddressParamsBuilder returns a builder that builds the
+// IPv6AddressStringParams for the IPAddressStringParams being built by this builder.
+func (builder *IPAddressStringParamsBuilder) GetIPv6AddressParamsBuilder() (result *IPv6AddressStringParamsBuilder) {
+	result = &builder.ipv6Builder
+	result.parent = builder
+	return
+}
