@@ -215,6 +215,15 @@ func (builder *IPAddressStringFormatParamsBuilder) AllowsPrefixLenLeadingZeros()
 	return builder.ipParams.AllowsPrefixLenLeadingZeros()
 }
 
+// AllowsBinary allows binary addresses like 11111111.0.1.0 or 1111111111111111::
+func (builder *IPAddressStringFormatParamsBuilder) AllowsBinary() bool {
+	return builder.ipParams.AllowsBinary()
+}
+
+func (builder *IPAddressStringFormatParamsBuilder) allowBinary(allow bool) {
+	builder.ipParams.noBinary = !allow
+}
+
 type IPv6AddressStringParamsBuilder struct {
 	// This is not anonymous since it clashes with IPAddressStringFormatParamsBuilder,
 	// both have ipAddressStringFormatParameters and AddressStringFormatParams
