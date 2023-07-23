@@ -243,6 +243,25 @@ type IPv6AddressStringParamsBuilder struct {
 	IPAddressStringFormatParamsBuilder
 }
 
+// ToParams returns an immutable IPv6AddressStringParams instance built by this builder'
+func (builder *IPv6AddressStringParamsBuilder) ToParams() IPv6AddressStringParams {
+	result := &builder.params
+	result.ipAddressStringFormatParameters = *builder.IPAddressStringFormatParamsBuilder.ToParams().(*ipAddressStringFormatParameters)
+	if emb := builder.embeddedBuilder; emb == nil {
+		result.embeddedParams = defaultEmbeddedParams
+	} else {
+		result.embeddedParams = emb.ToParams().(*ipAddressStringParameters)
+	}
+	return result
+}
+
+// GetRangeParamsBuilder returns a builder that builds the range parameters for these IPv6 address string parameters.
+func (builder *IPv6AddressStringParamsBuilder) GetRangeParamsBuilder() *RangeParamsBuilder {
+	result := &builder.rangeParamsBuilder
+	result.parent = builder
+	return result
+}
+
 // IPv4AddressStringParamsBuilder builds an immutable IPv4AddressStringParams for controlling parsing of IPv4 address strings.
 type IPv4AddressStringParamsBuilder struct {
 	IPAddressStringFormatParamsBuilder
