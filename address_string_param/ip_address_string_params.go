@@ -626,3 +626,24 @@ func (builder *IPAddressStringParamsBuilder) GetIPv4AddressParamsBuilder() (resu
 	result.parent = builder
 	return
 }
+
+// AllowEmpty dictates whether to allow empty zero-length address strings.
+func (builder *IPAddressStringParamsBuilder) AllowEmpty(allow bool) *IPAddressStringParamsBuilder {
+	builder.allowEmpty(allow)
+	return builder
+}
+
+// AllowSingleSegment dictates whether to allow an address to be specified as a single value, eg "ffffffff",
+// without the standard use of segments like "1.2.3.4" or "1:2:4:3:5:6:7:8".
+func (builder *IPAddressStringParamsBuilder) AllowSingleSegment(allow bool) *IPAddressStringParamsBuilder {
+	builder.allowSingleSegment(allow)
+	return builder
+}
+
+// AllowAll dictates whether to alloww the string of just the wildcard "*" to denote all addresses of all version.
+// If false, then for IP addresses we check the preferred version with GetPreferredVersion, and then check AllowsWildcardedSeparator,
+// to determine if the string represents all addresses of that version.
+func (builder *IPAddressStringParamsBuilder) AllowAll(allow bool) *IPAddressStringParamsBuilder {
+	builder.allowAll(allow)
+	return builder
+}
