@@ -327,6 +327,31 @@ func (builder *IPv4AddressStringParamsBuilder) GetEmbeddedIPv4AddressParentBuild
 	return builder.mixedParent
 }
 
+// GetRangeParamsBuilder returns a builder that builds the range parameters for these IPv4 address string parameters.
+func (builder *IPv4AddressStringParamsBuilder) GetRangeParamsBuilder() *RangeParamsBuilder {
+	result := &builder.rangeParamsBuilder
+	result.parent = builder
+	return result
+}
+
+// Set populates this builder with the values from the given IPv4AddressStringParams.
+func (builder *IPv4AddressStringParamsBuilder) Set(params IPv4AddressStringParams) *IPv4AddressStringParamsBuilder {
+	if p, ok := params.(*ipv4AddressStringParameters); ok {
+		builder.params = *p
+	} else {
+		builder.params = ipv4AddressStringParameters{
+			no_inet_aton_hex:              !params.AllowsInetAtonHex(),
+			no_inet_aton_octal:            !params.AllowsInetAtonOctal(),
+			no_inet_aton_joinedSegments:   !params.AllowsInetAtonJoinedSegments(),
+			inet_aton_single_segment_mask: params.AllowsInetAtonSingleSegmentMask(),
+			no_inet_aton_leading_zeros:    !params.AllowsInetAtonLeadingZeros(),
+		}
+	}
+
+	builder.IPAddressStringFormatParamsBuilder.set(params)
+	return builder
+}
+
 // IPVersion is the version type used by IP string parameters.
 // It is interchangeable with ipaddr.Version,
 // a more generic version type used by the library as a whole.
