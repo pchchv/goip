@@ -49,3 +49,16 @@ type macAddressStringFormatParameters struct {
 func (params *macAddressStringFormatParameters) AllowsShortSegments() bool {
 	return !params.noShortSegments
 }
+
+// macAddressStringParameters has parameters for parsing MAC address strings.
+// They are immutable and must be constructed using an IPAddressStringParamsBuilder.
+type macAddressStringParameters struct {
+	addressStringParameters
+	formatParams          macAddressStringFormatParameters
+	noAllowDashed         bool
+	noAllowSingleDashed   bool
+	noAllowColonDelimited bool
+	noAllowDotted         bool
+	noAllowSpaceDelimited bool
+	allAddresses          MACAddressLen
+}
