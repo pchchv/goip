@@ -92,3 +92,8 @@ func (params *macAddressStringParameters) AllowsDotted() bool {
 func (params *macAddressStringParameters) AllowsSpaceDelimited() bool {
 	return !params.noAllowSpaceDelimited
 }
+
+// GetFormatParams returns the parameters that apply to formatting of the address segments.
+func (params *macAddressStringParameters) GetFormatParams() MACAddressStringFormatParams {
+	return &params.formatParams
+}
