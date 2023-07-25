@@ -8,3 +8,11 @@ const (
 
 // MACAddressLen is an option indicating a MAC address length.
 type MACAddressLen string
+
+// MACAddressStringFormatParams provides format parameters for MAC addresses,
+// indicating what formatting is allowed.
+type MACAddressStringFormatParams interface {
+	AddressStringFormatParams
+	// AllowsShortSegments allows segments that are just a single hex digit and not two.
+	AllowsShortSegments() bool
+}
