@@ -72,3 +72,13 @@ func (params *macAddressStringParameters) GetPreferredLen() MACAddressLen {
 func (params *macAddressStringParameters) AllowsDashed() bool {
 	return !params.noAllowDashed
 }
+
+// AllowsSingleDashed allows addresses like "aabbcc-ddeeff".
+func (params *macAddressStringParameters) AllowsSingleDashed() bool {
+	return !params.noAllowSingleDashed
+}
+
+// AllowsColonDelimited allows addresses like "aa:bb:cc:dd:ee:ff".
+func (params *macAddressStringParameters) AllowsColonDelimited() bool {
+	return !params.noAllowColonDelimited
+}
