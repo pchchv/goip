@@ -82,3 +82,13 @@ func (params *macAddressStringParameters) AllowsSingleDashed() bool {
 func (params *macAddressStringParameters) AllowsColonDelimited() bool {
 	return !params.noAllowColonDelimited
 }
+
+// AllowsDotted allows addresses like "aaa.bbb.ccc.ddd".
+func (params *macAddressStringParameters) AllowsDotted() bool {
+	return !params.noAllowDotted
+}
+
+// AllowsSpaceDelimited allows addresses like "aa bb cc dd ee ff".
+func (params *macAddressStringParameters) AllowsSpaceDelimited() bool {
+	return !params.noAllowSpaceDelimited
+}
