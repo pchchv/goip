@@ -62,3 +62,13 @@ type macAddressStringParameters struct {
 	noAllowSpaceDelimited bool
 	allAddresses          MACAddressLen
 }
+
+// GetPreferredLen indicates whether an ambiguous address like * is considered to be MAC 6 bytes, EUI-64 8 bytes, or either one.
+func (params *macAddressStringParameters) GetPreferredLen() MACAddressLen {
+	return params.allAddresses
+}
+
+// AllowsDashed allows addresses like "aa-bb-cc-dd-ee-ff".
+func (params *macAddressStringParameters) AllowsDashed() bool {
+	return !params.noAllowDashed
+}
