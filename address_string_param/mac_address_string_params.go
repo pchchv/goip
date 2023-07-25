@@ -39,3 +39,8 @@ type MACAddressStringParams interface {
 	// GetFormatParams returns the parameters that apply to formatting of the address segments.
 	GetFormatParams() MACAddressStringFormatParams
 }
+
+type macAddressStringFormatParameters struct {
+	addressStringFormatParameters
+	noShortSegments bool
+}
