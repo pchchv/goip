@@ -44,3 +44,8 @@ type macAddressStringFormatParameters struct {
 	addressStringFormatParameters
 	noShortSegments bool
 }
+
+// AllowsShortSegments allows segments that are just a single hex digit and not two.
+func (params *macAddressStringFormatParameters) AllowsShortSegments() bool {
+	return !params.noShortSegments
+}
