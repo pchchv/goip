@@ -153,6 +153,26 @@ func (builder *RangeParamsBuilder) AllowSingleWildcard(allow bool) *RangeParamsB
 	return builder
 }
 
+// GetIPv4ParentBuilder returns the IPv4AddressStringParamsBuilder
+// if this builder was obtained by a call to IPv4AddressStringParamsBuilder.GetRangeParamsBuilder.
+func (builder *RangeParamsBuilder) GetIPv4ParentBuilder() *IPv4AddressStringParamsBuilder {
+	parent := builder.parent
+	if p, ok := parent.(*IPv4AddressStringParamsBuilder); ok {
+		return p
+	}
+	return nil
+}
+
+// GetIPv6ParentBuilder returns the IPv6AddressStringParamsBuilder
+// if this builder was obtained by a call to IPv6AddressStringParamsBuilder.GetRangeParamsBuilder.
+func (builder *RangeParamsBuilder) GetIPv6ParentBuilder() *IPv6AddressStringParamsBuilder {
+	parent := builder.parent
+	if p, ok := parent.(*IPv6AddressStringParamsBuilder); ok {
+		return p
+	}
+	return nil
+}
+
 // addressStringFormatParams are parameters specific to a given address type or version that is supplied.
 type addressStringFormatParameters struct {
 	rangeParams             rangeParameters
