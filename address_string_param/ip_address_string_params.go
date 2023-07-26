@@ -806,3 +806,28 @@ func (builder *IPAddressStringParamsBuilder) AllowIPv6(allow bool) *IPAddressStr
 	builder.params.noIPv6 = !allow
 	return builder
 }
+
+func (builder *IPAddressStringParamsBuilder) set(params IPAddressStringParams, isMixed bool) *IPAddressStringParamsBuilder {
+	if p, ok := params.(*ipAddressStringParameters); ok {
+		builder.params = *p
+	} else {
+		builder.params = ipAddressStringParameters{
+			preferredVersion:  params.GetPreferredVersion(),
+			emptyStringOption: params.EmptyStrParsedAs(),
+			allStringOption:   params.AllStrParsedAs(),
+			noPrefix:          !params.AllowsPrefix(),
+			noMask:            !params.AllowsMask(),
+			noIPv6:            !params.AllowsIPv6(),
+			noIPv4:            !params.AllowsIPv4(),
+		}
+	}
+	builder.AddressStringParamsBuilder.set(params)
+	builder.ipv4Builder.Set(params.GetIPv4Params())
+	builder.ipv6Builder.set(params.GetIPv6Params(), isMixed)
+	return builder
+}
+
+// Set populates this builder with the values from the given IPAddressStringParams.
+func (builder *IPAddressStringParamsBuilder) Set(params IPAddressStringParams) *IPAddressStringParamsBuilder {
+	return builder.set(params, false)
+}
