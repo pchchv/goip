@@ -335,6 +335,24 @@ func (builder *IPv6AddressStringParamsBuilder) AllowLeadingZeros(allow bool) *IP
 	return builder
 }
 
+// AllowUnlimitedLeadingZeros dictates whether to allow leading zeros that extend segments
+// beyond the usual segment length, which is 3 for IPv4 dotted-decimal and 4 for IPv6.
+// However, this only takes effect if leading zeros are allowed, which is when
+// AllowsLeadingZeros is true or the address is IPv4 and AllowsInetAtonOctal is true.
+// For example, this determines whether you allow 0001.0002.0003.0004
+func (builder *IPv6AddressStringParamsBuilder) AllowUnlimitedLeadingZeros(allow bool) *IPv6AddressStringParamsBuilder {
+	builder.GetEmbeddedIPv4AddressParamsBuilder().AllowUnlimitedLeadingZeros(allow)
+	builder.allowUnlimitedLeadingZeros(allow)
+	return builder
+}
+
+// SetRangeParams populates this builder with the values from the given RangeParams.
+func (builder *IPv6AddressStringParamsBuilder) SetRangeParams(rangeParams RangeParams) *IPv6AddressStringParamsBuilder {
+	builder.GetEmbeddedIPv4AddressParamsBuilder().SetRangeParams(rangeParams)
+	builder.setRangeParameters(rangeParams)
+	return builder
+}
+
 // IPv4AddressStringParamsBuilder builds an immutable IPv4AddressStringParams for controlling parsing of IPv4 address strings.
 type IPv4AddressStringParamsBuilder struct {
 	IPAddressStringFormatParamsBuilder
