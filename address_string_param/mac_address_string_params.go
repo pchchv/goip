@@ -181,6 +181,18 @@ func (builder *MACAddressStringParamsBuilder) AllowDashed(allow bool) *MACAddres
 	return builder
 }
 
+// AllowSingleDashed dictates whether to allow addresses like "aabbcc-ddeeff".
+func (builder *MACAddressStringParamsBuilder) AllowSingleDashed(allow bool) *MACAddressStringParamsBuilder {
+	builder.params.noAllowSingleDashed = !allow
+	return builder
+}
+
+// AllowColonDelimited dictates whether to allow addresses like "aa:bb:cc:dd:ee:ff".
+func (builder *MACAddressStringParamsBuilder) AllowColonDelimited(allow bool) *MACAddressStringParamsBuilder {
+	builder.params.noAllowColonDelimited = !allow
+	return builder
+}
+
 // MACAddressStringFormatParamsBuilder builds an immutable MACAddressStringFormatParams for controlling parsing of MAC address strings.
 type MACAddressStringFormatParamsBuilder struct {
 	params macAddressStringFormatParameters
