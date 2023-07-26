@@ -839,3 +839,17 @@ func (builder *IPAddressStringParamsBuilder) AllowWildcardedSeparator(allow bool
 	builder.GetIPv6AddressParamsBuilder().AllowWildcardedSeparator(allow)
 	return builder
 }
+
+// SetRangeParams populates this builder with the values from the given RangeParams.
+func (builder *IPAddressStringParamsBuilder) SetRangeParams(rangeParams RangeParams) *IPAddressStringParamsBuilder {
+	builder.GetIPv4AddressParamsBuilder().SetRangeParams(rangeParams)
+	builder.GetIPv6AddressParamsBuilder().SetRangeParams(rangeParams)
+	return builder
+}
+
+// AllowInetAton dictates whether to allow any IPv4 inet_aton format, whether hex, octal, or joined segments.
+func (builder *IPAddressStringParamsBuilder) AllowInetAton(allow bool) *IPAddressStringParamsBuilder {
+	builder.GetIPv4AddressParamsBuilder().AllowInetAton(allow)
+	builder.GetIPv6AddressParamsBuilder().AllowMixedInetAton(allow)
+	return builder
+}
