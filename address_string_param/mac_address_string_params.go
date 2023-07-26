@@ -224,3 +224,16 @@ func (builder *MACAddressStringFormatParamsBuilder) Set(parms MACAddressStringFo
 	builder.AddressStringFormatParamsBuilder.set(parms)
 	return builder
 }
+
+// GetParentBuilder returns the original MACAddressStringParamsBuilder builder that this was obtained from,
+// if this builder was obtained from a MACAddressStringParamsBuilder.
+func (builder *MACAddressStringFormatParamsBuilder) GetParentBuilder() *MACAddressStringParamsBuilder {
+	return builder.parent
+}
+
+// ToParams returns an immutable MACAddressStringFormatParams instance built by this builder.
+func (builder *MACAddressStringFormatParamsBuilder) ToParams() MACAddressStringFormatParams {
+	result := &builder.params
+	result.addressStringFormatParameters = *builder.AddressStringFormatParamsBuilder.ToParams().(*addressStringFormatParameters)
+	return result
+}
