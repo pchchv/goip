@@ -307,6 +307,20 @@ func (builder *IPv6AddressStringParamsBuilder) AllowPrefixLenLeadingZeros(allow 
 	return builder
 }
 
+func (builder *IPv6AddressStringParamsBuilder) getEmbeddedIPv4ParametersBuilder() (result *IPAddressStringParamsBuilder) {
+	if builder == &defaultEmbeddedBuilder.ipv6Builder {
+		return nil
+	}
+	if result = builder.embeddedBuilder; result == nil {
+		result = &IPAddressStringParamsBuilder{}
+		// copy in proper default values for embedded IPv4 addresses, which differ from defaults for typical ipv4AddrType addresses
+		*result = defaultEmbeddedBuilder
+		builder.embeddedBuilder = result
+	}
+	result.GetIPv4AddressParamsBuilder().mixedParent = builder
+	return
+}
+
 // IPv4AddressStringParamsBuilder builds an immutable IPv4AddressStringParams for controlling parsing of IPv4 address strings.
 type IPv4AddressStringParamsBuilder struct {
 	IPAddressStringFormatParamsBuilder
