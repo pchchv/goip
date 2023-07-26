@@ -109,3 +109,10 @@ type MACAddressStringParamsBuilder struct {
 	AddressStringParamsBuilder
 	formatBuilder MACAddressStringFormatParamsBuilder
 }
+
+// MACAddressStringFormatParamsBuilder builds an immutable MACAddressStringFormatParams for controlling parsing of MAC address strings.
+type MACAddressStringFormatParamsBuilder struct {
+	params macAddressStringFormatParameters
+	AddressStringFormatParamsBuilder
+	parent *MACAddressStringParamsBuilder
+}
