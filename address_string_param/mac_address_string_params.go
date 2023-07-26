@@ -123,6 +123,25 @@ func (builder *MACAddressStringParamsBuilder) ToParams() MACAddressStringParams 
 	return &result
 }
 
+// Set populates this builder with the values from the given MACAddressStringParams.
+func (builder *MACAddressStringParamsBuilder) Set(params MACAddressStringParams) *MACAddressStringParamsBuilder {
+	if p, ok := params.(*macAddressStringParameters); ok {
+		builder.params = *p
+	} else {
+		builder.params = macAddressStringParameters{
+			noAllowDashed:         !params.AllowsDashed(),
+			noAllowSingleDashed:   !params.AllowsSingleDashed(),
+			noAllowColonDelimited: !params.AllowsColonDelimited(),
+			noAllowDotted:         !params.AllowsDotted(),
+			noAllowSpaceDelimited: !params.AllowsSpaceDelimited(),
+			allAddresses:          params.GetPreferredLen(),
+		}
+	}
+	builder.AddressStringParamsBuilder.set(params)
+	builder.formatBuilder.Set(params.GetFormatParams())
+	return builder
+}
+
 // MACAddressStringFormatParamsBuilder builds an immutable MACAddressStringFormatParams for controlling parsing of MAC address strings.
 type MACAddressStringFormatParamsBuilder struct {
 	params macAddressStringFormatParameters
