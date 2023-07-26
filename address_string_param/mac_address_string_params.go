@@ -252,3 +252,19 @@ func (builder *MACAddressStringFormatParamsBuilder) AllowWildcardedSeparator(all
 	builder.allowWildcardedSeparator(allow)
 	return builder
 }
+
+// AllowLeadingZeros dictates whether to allow addresses with segments that have leasing zeros like "01:02:03:04:05:06".
+// Single segment addresses that must have the requisite length to be parsed are not affected by this flag.
+func (builder *MACAddressStringFormatParamsBuilder) AllowLeadingZeros(allow bool) *MACAddressStringFormatParamsBuilder {
+	builder.allowLeadingZeros(allow)
+	return builder
+}
+
+// AllowUnlimitedLeadingZeros dictates whether to allow leading zeros
+// that extend segments beyond the usual segment length of 2 hex digits.
+// However, this only takes effect if leading zeros are allowed,
+// which is when AllowsLeadingZeros is true.
+func (builder *MACAddressStringFormatParamsBuilder) AllowUnlimitedLeadingZeros(allow bool) *MACAddressStringFormatParamsBuilder {
+	builder.allowUnlimitedLeadingZeros(allow)
+	return builder
+}
