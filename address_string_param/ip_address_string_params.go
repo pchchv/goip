@@ -853,3 +853,12 @@ func (builder *IPAddressStringParamsBuilder) AllowInetAton(allow bool) *IPAddres
 	builder.GetIPv6AddressParamsBuilder().AllowMixedInetAton(allow)
 	return builder
 }
+
+// CopyIPAddressStringParams produces an immutable copy of the original IPAddressStringParams.
+// Copying an IPAddressStringParams created by an IPAddressStringParamsBuilder is unnecessary since it is already immutable.
+func CopyIPAddressStringParams(orig IPAddressStringParams) IPAddressStringParams {
+	if p, ok := orig.(*ipAddressStringParameters); ok {
+		return p
+	}
+	return new(IPAddressStringParamsBuilder).Set(orig).ToParams()
+}
