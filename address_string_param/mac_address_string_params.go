@@ -142,6 +142,19 @@ func (builder *MACAddressStringParamsBuilder) Set(params MACAddressStringParams)
 	return builder
 }
 
+// GetFormatParamsBuilder returns a builder that builds the MACAddressStringFormatParams for the MACAddressStringParams being built by this builder.
+func (builder *MACAddressStringParamsBuilder) GetFormatParamsBuilder() (result *MACAddressStringFormatParamsBuilder) {
+	result = &builder.formatBuilder
+	result.parent = builder
+	return
+}
+
+// AllowEmpty dictates whether to allow empty zero-length address strings.
+func (builder *MACAddressStringParamsBuilder) AllowEmpty(allow bool) *MACAddressStringParamsBuilder {
+	builder.allowEmpty(allow)
+	return builder
+}
+
 // MACAddressStringFormatParamsBuilder builds an immutable MACAddressStringFormatParams for controlling parsing of MAC address strings.
 type MACAddressStringFormatParamsBuilder struct {
 	params macAddressStringFormatParameters
