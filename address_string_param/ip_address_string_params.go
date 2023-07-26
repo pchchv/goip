@@ -321,6 +321,20 @@ func (builder *IPv6AddressStringParamsBuilder) getEmbeddedIPv4ParametersBuilder(
 	return
 }
 
+// GetEmbeddedIPv4AddressParamsBuilder returns a builder to build the IPv4 parameters that controls parsing of the embedded IPv4 section of a mixed IPv6/v4 address.
+func (builder *IPv6AddressStringParamsBuilder) GetEmbeddedIPv4AddressParamsBuilder() (result *IPv4AddressStringParamsBuilder) {
+	return builder.getEmbeddedIPv4ParametersBuilder().GetIPv4AddressParamsBuilder()
+}
+
+// AllowLeadingZeros dictates whether to allow addresses with segments that have leasing zeros like "001.2.3.004" or "1:000a::".
+// For IPV4, this option overrides inet_aton octal.
+// Single segment addresses that must have the requisite length to be parsed are not affected by this flag.
+func (builder *IPv6AddressStringParamsBuilder) AllowLeadingZeros(allow bool) *IPv6AddressStringParamsBuilder {
+	builder.GetEmbeddedIPv4AddressParamsBuilder().allowLeadingZeros(allow)
+	builder.allowLeadingZeros(allow)
+	return builder
+}
+
 // IPv4AddressStringParamsBuilder builds an immutable IPv4AddressStringParams for controlling parsing of IPv4 address strings.
 type IPv4AddressStringParamsBuilder struct {
 	IPAddressStringFormatParamsBuilder
