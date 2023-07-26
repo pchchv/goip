@@ -168,6 +168,19 @@ func (builder *MACAddressStringParamsBuilder) AllowAll(allow bool) *MACAddressSt
 	return builder
 }
 
+// SetPreferredLen indicates the length for an ambiguous address like *,
+// whether it is considered to be MAC 6 bytes, EUI-64 8 bytes, or either one.
+func (builder *MACAddressStringParamsBuilder) SetPreferredLen(size MACAddressLen) *MACAddressStringParamsBuilder {
+	builder.params.allAddresses = size
+	return builder
+}
+
+// AllowDashed dictates whether to allow addresses like "aa-bb-cc-dd-ee-ff".
+func (builder *MACAddressStringParamsBuilder) AllowDashed(allow bool) *MACAddressStringParamsBuilder {
+	builder.params.noAllowDashed = !allow
+	return builder
+}
+
 // MACAddressStringFormatParamsBuilder builds an immutable MACAddressStringFormatParams for controlling parsing of MAC address strings.
 type MACAddressStringFormatParamsBuilder struct {
 	params macAddressStringFormatParameters
