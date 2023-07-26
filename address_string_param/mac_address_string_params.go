@@ -155,6 +155,19 @@ func (builder *MACAddressStringParamsBuilder) AllowEmpty(allow bool) *MACAddress
 	return builder
 }
 
+// AllowSingleSegment dictates whether to allow an address to be specified as a single value,
+// eg "ffffffff", without the standard use of segments like "1.2.3.4" or "1:2:4:3:5:6:7:8".
+func (builder *MACAddressStringParamsBuilder) AllowSingleSegment(allow bool) *MACAddressStringParamsBuilder {
+	builder.allowSingleSegment(allow)
+	return builder
+}
+
+// AllowAll dictates whether to allow the string of just the wildcard "*" to denote all MAC addresses.
+func (builder *MACAddressStringParamsBuilder) AllowAll(allow bool) *MACAddressStringParamsBuilder {
+	builder.allowAll(allow)
+	return builder
+}
+
 // MACAddressStringFormatParamsBuilder builds an immutable MACAddressStringFormatParams for controlling parsing of MAC address strings.
 type MACAddressStringFormatParamsBuilder struct {
 	params macAddressStringFormatParameters
