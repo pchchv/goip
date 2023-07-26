@@ -831,3 +831,11 @@ func (builder *IPAddressStringParamsBuilder) set(params IPAddressStringParams, i
 func (builder *IPAddressStringParamsBuilder) Set(params IPAddressStringParams) *IPAddressStringParamsBuilder {
 	return builder.set(params, false)
 }
+
+// AllowWildcardedSeparator dictates whether the wildcard '*' or '%' can replace the segment separators '.' and ':'.
+// If so, then you can write addresses like *.* or *:*
+func (builder *IPAddressStringParamsBuilder) AllowWildcardedSeparator(allow bool) *IPAddressStringParamsBuilder {
+	builder.GetIPv4AddressParamsBuilder().AllowWildcardedSeparator(allow)
+	builder.GetIPv6AddressParamsBuilder().AllowWildcardedSeparator(allow)
+	return builder
+}
