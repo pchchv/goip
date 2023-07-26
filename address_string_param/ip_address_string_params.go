@@ -353,6 +353,25 @@ func (builder *IPv6AddressStringParamsBuilder) SetRangeParams(rangeParams RangeP
 	return builder
 }
 
+// AllowEmptyZone dictates whether to allow the zone character % with no following zone
+func (builder *IPv6AddressStringParamsBuilder) AllowEmptyZone(allow bool) *IPv6AddressStringParamsBuilder {
+	builder.params.noEmptyZone = !allow
+	if ipv4Builder := builder.getEmbeddedIPv4ParametersBuilder(); ipv4Builder != nil {
+		ipv4Builder.GetIPv6AddressParamsBuilder().params.noEmptyZone = !allow
+	}
+	return builder
+}
+
+// AllowMixedInetAton dictates whether to allow inet_aton style formats, whether hex, octal,
+// or joined segments, in the embedded IPv4 section of a mixed IPv6/v4 address.
+func (builder *IPv6AddressStringParamsBuilder) AllowMixedInetAton(allow bool) *IPv6AddressStringParamsBuilder {
+	builder.getEmbeddedIPv4ParametersBuilder().GetIPv4AddressParamsBuilder().AllowInetAton(allow)
+	if allow { // if we allow inet_aton in the mixed part, then of course that insinuates that we allow the mixed part
+		builder.AllowMixed(allow)
+	}
+	return builder
+}
+
 // IPv4AddressStringParamsBuilder builds an immutable IPv4AddressStringParams for controlling parsing of IPv4 address strings.
 type IPv4AddressStringParamsBuilder struct {
 	IPAddressStringFormatParamsBuilder
