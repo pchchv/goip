@@ -205,6 +205,19 @@ func (builder *MACAddressStringParamsBuilder) AllowSpaceDelimited(allow bool) *M
 	return builder
 }
 
+// AllowWildcardedSeparator dictates whether the wildcard '*' or '%' can replace the segment separators '.', '-' and ':'.
+// If so, then you can write addresses like "*.*" or "*:*".
+func (builder *MACAddressStringParamsBuilder) AllowWildcardedSeparator(allow bool) *MACAddressStringParamsBuilder {
+	builder.GetFormatParamsBuilder().AllowWildcardedSeparator(allow)
+	return builder
+}
+
+// SetRangeParams populates this builder with the values from the given RangeParams.
+func (builder *MACAddressStringParamsBuilder) SetRangeParams(rangeParams RangeParams) *MACAddressStringParamsBuilder {
+	builder.GetFormatParamsBuilder().SetRangeParams(rangeParams)
+	return builder
+}
+
 // MACAddressStringFormatParamsBuilder builds an immutable MACAddressStringFormatParams for controlling parsing of MAC address strings.
 type MACAddressStringFormatParamsBuilder struct {
 	params macAddressStringFormatParameters
