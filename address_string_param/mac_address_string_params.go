@@ -148,3 +148,16 @@ type MACAddressStringFormatParamsBuilder struct {
 	AddressStringFormatParamsBuilder
 	parent *MACAddressStringParamsBuilder
 }
+
+// Set populates this builder with the values from the given MACAddressStringFormatParams.
+func (builder *MACAddressStringFormatParamsBuilder) Set(parms MACAddressStringFormatParams) *MACAddressStringFormatParamsBuilder {
+	if p, ok := parms.(*macAddressStringFormatParameters); ok {
+		builder.params = *p
+	} else {
+		builder.params = macAddressStringFormatParameters{
+			noShortSegments: !parms.AllowsShortSegments(),
+		}
+	}
+	builder.AddressStringFormatParamsBuilder.set(parms)
+	return builder
+}
