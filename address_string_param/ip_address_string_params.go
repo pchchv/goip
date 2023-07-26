@@ -353,6 +353,24 @@ func (builder *IPv6AddressStringParamsBuilder) SetRangeParams(rangeParams RangeP
 	return builder
 }
 
+func (builder *IPv6AddressStringParamsBuilder) set(params IPv6AddressStringParams, isMixed bool) *IPv6AddressStringParamsBuilder {
+	if p, ok := params.(*ipv6AddressStringParameters); ok {
+		builder.params = *p
+	} else {
+		builder.params = ipv6AddressStringParameters{
+			noMixed:     !params.AllowsMixed(),
+			noZone:      !params.AllowsZone(),
+			noEmptyZone: !params.AllowsEmptyZone(),
+			noBase85:    !params.AllowsBase85(),
+		}
+	}
+	builder.IPAddressStringFormatParamsBuilder.set(params)
+	if !isMixed {
+		builder.getEmbeddedIPv4ParametersBuilder().ipv4Builder.Set(params.GetEmbeddedIPv4AddressParams())
+	}
+	return builder
+}
+
 // AllowEmptyZone dictates whether to allow the zone character % with no following zone
 func (builder *IPv6AddressStringParamsBuilder) AllowEmptyZone(allow bool) *IPv6AddressStringParamsBuilder {
 	builder.params.noEmptyZone = !allow
