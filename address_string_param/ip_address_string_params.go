@@ -395,6 +395,22 @@ func (builder *IPv6AddressStringParamsBuilder) AllowMixedInetAton(allow bool) *I
 	return builder
 }
 
+// AllowBinary dictates whether to allow binary addresses like "11111111.0.1.0" or "1111111111111111::".
+func (builder *IPv6AddressStringParamsBuilder) AllowBinary(allow bool) *IPv6AddressStringParamsBuilder {
+	builder.GetEmbeddedIPv4AddressParamsBuilder().AllowBinary(allow)
+	builder.allowBinary(allow)
+	return builder
+}
+
+// AllowWildcardedSeparator dictates whether the wildcard '*'
+// or '%' can replace the segment separators '.' and ':'.
+// If so, then you can write addresses like *.* or *:*
+func (builder *IPv6AddressStringParamsBuilder) AllowWildcardedSeparator(allow bool) *IPv6AddressStringParamsBuilder {
+	builder.GetEmbeddedIPv4AddressParamsBuilder().AllowWildcardedSeparator(allow)
+	builder.allowWildcardedSeparator(allow)
+	return builder
+}
+
 // IPv4AddressStringParamsBuilder builds an immutable IPv4AddressStringParams for controlling parsing of IPv4 address strings.
 type IPv4AddressStringParamsBuilder struct {
 	IPAddressStringFormatParamsBuilder
