@@ -193,6 +193,18 @@ func (builder *MACAddressStringParamsBuilder) AllowColonDelimited(allow bool) *M
 	return builder
 }
 
+// AllowDotted dictates whether to allow addresses like "aaa.bbb.ccc.ddd".
+func (builder *MACAddressStringParamsBuilder) AllowDotted(allow bool) *MACAddressStringParamsBuilder {
+	builder.params.noAllowDotted = !allow
+	return builder
+}
+
+// AllowSpaceDelimited dictates whether to allow addresses like "aa bb cc dd ee ff".
+func (builder *MACAddressStringParamsBuilder) AllowSpaceDelimited(allow bool) *MACAddressStringParamsBuilder {
+	builder.params.noAllowSpaceDelimited = !allow
+	return builder
+}
+
 // MACAddressStringFormatParamsBuilder builds an immutable MACAddressStringFormatParams for controlling parsing of MAC address strings.
 type MACAddressStringFormatParamsBuilder struct {
 	params macAddressStringFormatParameters
