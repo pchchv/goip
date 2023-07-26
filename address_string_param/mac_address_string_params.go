@@ -293,3 +293,13 @@ func (builder *MACAddressStringFormatParamsBuilder) AllowShortSegments(allow boo
 	builder.params.noShortSegments = !allow
 	return builder
 }
+
+// CopyMACAddressStringParams produces an immutable copy of the original MACAddressStringParams.
+// Copying a MACAddressStringParams created by
+// a MACAddressStringParamsBuilder is unnecessary since it is already immutable.
+func CopyMACAddressStringParams(orig MACAddressStringParams) MACAddressStringParams {
+	if p, ok := orig.(*macAddressStringParameters); ok {
+		return p
+	}
+	return new(MACAddressStringParamsBuilder).Set(orig).ToParams()
+}
