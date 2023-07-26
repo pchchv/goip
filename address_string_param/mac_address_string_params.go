@@ -268,3 +268,15 @@ func (builder *MACAddressStringFormatParamsBuilder) AllowUnlimitedLeadingZeros(a
 	builder.allowUnlimitedLeadingZeros(allow)
 	return builder
 }
+
+// SetRangeParams populates this builder with the values from the given RangeParams.
+func (builder *MACAddressStringFormatParamsBuilder) SetRangeParams(rangeParams RangeParams) *MACAddressStringFormatParamsBuilder {
+	builder.setRangeParameters(rangeParams)
+	return builder
+}
+
+// AllowShortSegments dictates whether to allow segments that are just a single hex digit and not two.
+func (builder *MACAddressStringFormatParamsBuilder) AllowShortSegments(allow bool) *MACAddressStringFormatParamsBuilder {
+	builder.params.noShortSegments = !allow
+	return builder
+}
