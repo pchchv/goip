@@ -6,6 +6,11 @@ const (
 	UnspecifiedMACLen MACAddressLen = ""      // indicates unspecified bit-length MAC addresses
 )
 
+var (
+	_ MACAddressStringParams       = &macAddressStringParameters{}
+	_ MACAddressStringFormatParams = &macAddressStringFormatParameters{}
+)
+
 // MACAddressLen is an option indicating a MAC address length.
 type MACAddressLen string
 
@@ -96,4 +101,11 @@ func (params *macAddressStringParameters) AllowsSpaceDelimited() bool {
 // GetFormatParams returns the parameters that apply to formatting of the address segments.
 func (params *macAddressStringParameters) GetFormatParams() MACAddressStringFormatParams {
 	return &params.formatParams
+}
+
+// MACAddressStringParamsBuilder builds an immutable MACAddressStringParameters for controlling parsing of MAC address strings.
+type MACAddressStringParamsBuilder struct {
+	params macAddressStringParameters
+	AddressStringParamsBuilder
+	formatBuilder MACAddressStringFormatParamsBuilder
 }
