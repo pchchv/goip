@@ -371,6 +371,11 @@ func (builder *IPv6AddressStringParamsBuilder) set(params IPv6AddressStringParam
 	return builder
 }
 
+// Set populates this builder with the values from the given IPv6AddressStringParams.
+func (builder *IPv6AddressStringParamsBuilder) Set(params IPv6AddressStringParams) *IPv6AddressStringParamsBuilder {
+	return builder.set(params, false)
+}
+
 // AllowEmptyZone dictates whether to allow the zone character % with no following zone
 func (builder *IPv6AddressStringParamsBuilder) AllowEmptyZone(allow bool) *IPv6AddressStringParamsBuilder {
 	builder.params.noEmptyZone = !allow
