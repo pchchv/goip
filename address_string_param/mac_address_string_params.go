@@ -110,6 +110,19 @@ type MACAddressStringParamsBuilder struct {
 	formatBuilder MACAddressStringFormatParamsBuilder
 }
 
+// ToParams returns an immutable MACAddressStringParams instance built by this builder.
+func (builder *MACAddressStringParamsBuilder) ToParams() MACAddressStringParams {
+	// do not return a pointer to builder.params because
+	// that would allow macAddressStringParameters to be changed
+	// while still using the same builder,
+	// and we need immutable objects for concurrency safety,
+	// so we can't allow that
+	result := builder.params
+	result.addressStringParameters = *builder.AddressStringParamsBuilder.ToParams().(*addressStringParameters)
+	result.formatParams = *builder.formatBuilder.ToParams().(*macAddressStringFormatParameters)
+	return &result
+}
+
 // MACAddressStringFormatParamsBuilder builds an immutable MACAddressStringFormatParams for controlling parsing of MAC address strings.
 type MACAddressStringFormatParamsBuilder struct {
 	params macAddressStringFormatParameters
