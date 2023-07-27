@@ -21,6 +21,21 @@ var (
 	defaultEmbeddedBuilder IPAddressStringParamsBuilder
 )
 
+func init() {
+	defaultEmbeddedBuilder.
+		AllowEmpty(false).
+		AllowPrefix(false).
+		AllowMask(false).
+		AllowAll(false).
+		AllowIPv6(false).
+		GetIPv6AddressParamsBuilder().
+		AllowZone(true).
+		AllowEmptyZone(true)
+	defaultEmbeddedParams =
+		defaultEmbeddedBuilder.
+			ToParams().(*ipAddressStringParameters)
+}
+
 type ipAddressStringFormatParameters struct {
 	addressStringFormatParameters
 	allowPrefixesBeyondAddrSize,
