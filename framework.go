@@ -422,3 +422,23 @@ type IPAddressSegmentSeries interface {
 	// For "2001:db8::567:89ab" it is "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa".
 	ToReverseDNSString() (string, address_error.IncompatibleAddressError)
 }
+
+// IPAddressType represents any IP address, all of which can be represented by the base type [IPAddress].
+// This includes [IPv4Address] and [IPv6Address].
+// You must use the pointer types *IPAddress, *IPv4Address, and *IPv6Address when implementing IPAddressType.
+type IPAddressType interface {
+	AddressType
+	IPAddressRange
+	// Wrap wraps this IP address, returning a WrappedIPAddress, an implementation of ExtendedIPSegmentSeries,
+	// which can be used to write code that works with both IP addresses and IP address sections.
+	Wrap() WrappedIPAddress
+	// ToIP converts to an IPAddress, a polymorphic type usable with all IP addresses and subnets.
+	// ToIP can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+	ToIP() *IPAddress
+	// ToAddressString retrieves or generates an IPAddressString instance for this IP address.
+	// This may be the IPAddressString this instance was generated from, if it was generated from an IPAddressString.
+	// In general, users are intended to create IP address instances from IPAddressString instances,
+	// while the reverse direction, calling this method, is generally not encouraged and not useful, except under specific circumstances.
+	// Those specific circumstances may include when maintaining a collection of HostIdentifierString or IPAddressString instances.
+	ToAddressString() *IPAddressString
+}
