@@ -173,6 +173,15 @@ func (builder *RangeParamsBuilder) GetIPv6ParentBuilder() *IPv6AddressStringPara
 	return nil
 }
 
+// GetMACParentBuilder returns the IPv6AddressStringParamsBuilder if this builder was obtained by a call to IPv6AddressStringParamsBuilder.GetRangeParamsBuilder.
+func (builder *RangeParamsBuilder) GetMACParentBuilder() *MACAddressStringFormatParamsBuilder {
+	parent := builder.parent
+	if p, ok := parent.(*MACAddressStringFormatParamsBuilder); ok {
+		return p
+	}
+	return nil
+}
+
 // addressStringFormatParams are parameters specific to a given address type or version that is supplied.
 type addressStringFormatParameters struct {
 	rangeParams             rangeParameters
