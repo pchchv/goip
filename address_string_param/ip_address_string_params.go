@@ -376,6 +376,17 @@ func (builder *IPv6AddressStringParamsBuilder) Set(params IPv6AddressStringParam
 	return builder.set(params, false)
 }
 
+// AllowZone dictates whether to allow zones like "a:b:c:d:e:f:a:b%zone".
+func (builder *IPv6AddressStringParamsBuilder) AllowZone(allow bool) *IPv6AddressStringParamsBuilder {
+	builder.params.noZone = !allow
+
+	// ipv4Builder can be nil when builder == &defaultEmbeddedBuilder.ipv6Builder, see getEmbeddedIPv4ParametersBuilder()
+	if ipv4Builder := builder.getEmbeddedIPv4ParametersBuilder(); ipv4Builder != nil {
+		ipv4Builder.GetIPv6AddressParamsBuilder().params.noZone = !allow
+	}
+	return builder
+}
+
 // AllowEmptyZone dictates whether to allow the zone character % with no following zone
 func (builder *IPv6AddressStringParamsBuilder) AllowEmptyZone(allow bool) *IPv6AddressStringParamsBuilder {
 	builder.params.noEmptyZone = !allow
