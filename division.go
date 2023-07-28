@@ -482,3 +482,15 @@ func cacheStrPtr(cachedString **string, strPtr *string) {
 	}
 	return
 }
+
+func cacheStr(cachedString **string, stringer func() string) (str string) {
+	cachedVal := (*string)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(cachedString))))
+	if cachedVal == nil {
+		str = stringer()
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(cachedString))
+		atomicStorePointer(dataLoc, unsafe.Pointer(&str))
+	} else {
+		str = *cachedVal
+	}
+	return
+}
