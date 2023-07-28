@@ -260,3 +260,18 @@ func (seg *ipAddressSegmentInternal) CopyUpperBytes(bytes []byte) []byte {
 func (seg *ipAddressSegmentInternal) IsZero() bool {
 	return seg.addressSegmentInternal.IsZero()
 }
+
+// IncludesZero returns whether this segment includes the value of zero within its range.
+func (seg *ipAddressSegmentInternal) IncludesZero() bool {
+	return seg.addressSegmentInternal.IncludesZero()
+}
+
+// IsMax returns whether this segment matches exactly the maximum possible value, the value whose bits are all ones.
+func (seg *ipAddressSegmentInternal) IsMax() bool {
+	return seg.addressSegmentInternal.IsMax()
+}
+
+// IncludesMax returns whether this segment includes the max value, the value whose bits are all ones, within its range.
+func (seg *ipAddressSegmentInternal) IncludesMax() bool {
+	return seg.addressSegmentInternal.IncludesMax()
+}
