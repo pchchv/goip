@@ -317,3 +317,14 @@ func (seg *ipAddressSegmentInternal) GetSegmentValue() SegInt {
 func (seg *ipAddressSegmentInternal) GetUpperSegmentValue() SegInt {
 	return seg.addressSegmentInternal.GetUpperSegmentValue()
 }
+
+// Matches returns true if the segment range matches the given single value.
+func (seg *ipAddressSegmentInternal) Matches(value SegInt) bool {
+	return seg.addressSegmentInternal.Matches(value)
+}
+
+// MatchesWithMask applies the mask to this segment and then compares the result with the given value,
+// returning true if the range of the resulting segment matches that single value.
+func (seg *ipAddressSegmentInternal) MatchesWithMask(value, mask SegInt) bool {
+	return seg.addressSegmentInternal.MatchesWithMask(value, mask)
+}
