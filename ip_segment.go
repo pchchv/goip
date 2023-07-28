@@ -37,3 +37,22 @@ func (seg *ipAddressSegmentInternal) isPrefixed() bool {
 func (seg *ipAddressSegmentInternal) IsPrefixBlock() bool {
 	return seg.isPrefixBlock()
 }
+
+// GetPrefixValueCount returns the count of prefixes in this segment for its prefix length,
+// or the total count if it has no prefix length.
+func (seg *ipAddressSegmentInternal) GetPrefixValueCount() SegIntCount {
+	prefixLength := seg.GetSegmentPrefixLen()
+	if prefixLength == nil {
+		return seg.GetValueCount()
+	}
+	return getPrefixValueCount(seg.toAddressSegment(), prefixLength.bitCount())
+}
+
+// MatchesWithPrefixMask applies the network mask of the given bit-length to
+// this segment and then compares the result with the given value masked by the same mask,
+// returning true if the resulting range matches the given single value.
+func (seg *ipAddressSegmentInternal) MatchesWithPrefixMask(value SegInt, networkBits BitCount) bool {
+	mask := seg.GetSegmentNetworkMask(networkBits)
+	matchingValue := value & mask
+	return matchingValue == (seg.GetSegmentValue()&mask) && matchingValue == (seg.GetUpperSegmentValue()&mask)
+}
