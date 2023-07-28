@@ -5,6 +5,7 @@ import (
 	"math/bits"
 	"unsafe"
 
+	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/address_string"
 )
 
@@ -489,6 +490,20 @@ func cacheStr(cachedString **string, stringer func() string) (str string) {
 		str = stringer()
 		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(cachedString))
 		atomicStorePointer(dataLoc, unsafe.Pointer(&str))
+	} else {
+		str = *cachedVal
+	}
+	return
+}
+
+func cacheStrErr(cachedString **string, stringer func() (string, address_error.IncompatibleAddressError)) (str string, err address_error.IncompatibleAddressError) {
+	cachedVal := (*string)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(cachedString))))
+	if cachedVal == nil {
+		str, err = stringer()
+		if err == nil {
+			dataLoc := (*unsafe.Pointer)(unsafe.Pointer(cachedString))
+			atomicStorePointer(dataLoc, unsafe.Pointer(&str))
+		}
 	} else {
 		str = *cachedVal
 	}
