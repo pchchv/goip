@@ -246,3 +246,17 @@ func (seg *ipAddressSegmentInternal) UpperBytes() []byte {
 func (seg *ipAddressSegmentInternal) CopyBytes(bytes []byte) []byte {
 	return seg.addressSegmentInternal.CopyBytes(bytes)
 }
+
+// CopyUpperBytes copies the highest value in the address segment range into a byte slice.
+//
+// If the value can fit in the given slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (seg *ipAddressSegmentInternal) CopyUpperBytes(bytes []byte) []byte {
+	return seg.addressSegmentInternal.CopyUpperBytes(bytes)
+}
+
+// IsZero returns whether this segment matches exactly the value of zero.
+func (seg *ipAddressSegmentInternal) IsZero() bool {
+	return seg.addressSegmentInternal.IsZero()
+}
