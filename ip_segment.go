@@ -232,3 +232,17 @@ func (seg *ipAddressSegmentInternal) GetUpperValue() *BigDivInt {
 func (seg *ipAddressSegmentInternal) Bytes() []byte {
 	return seg.addressSegmentInternal.Bytes()
 }
+
+// UpperBytes returns the highest value in the address segment range as a byte slice.
+func (seg *ipAddressSegmentInternal) UpperBytes() []byte {
+	return seg.addressSegmentInternal.UpperBytes()
+}
+
+// CopyBytes copies the lowest value in the address segment range into a byte slice.
+//
+// If the value can fit in the given slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (seg *ipAddressSegmentInternal) CopyBytes(bytes []byte) []byte {
+	return seg.addressSegmentInternal.CopyBytes(bytes)
+}
