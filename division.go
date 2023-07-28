@@ -473,3 +473,12 @@ func createAddressDivision(vals divisionValues) *AddressDivision {
 		},
 	}
 }
+
+func cacheStrPtr(cachedString **string, strPtr *string) {
+	cachedVal := (*string)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(cachedString))))
+	if cachedVal == nil {
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(cachedString))
+		atomicStorePointer(dataLoc, unsafe.Pointer(strPtr))
+	}
+	return
+}
