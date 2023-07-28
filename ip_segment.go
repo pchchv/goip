@@ -359,3 +359,16 @@ func (seg *ipAddressSegmentInternal) GetValueCount() SegIntCount {
 func (seg *ipAddressSegmentInternal) GetMaxValue() SegInt {
 	return seg.addressSegmentInternal.GetMaxValue()
 }
+
+// TestBit returns true if the bit in the lower value of this segment at the given index is 1, where index 0 refers to the least significant bit.
+// In other words, it computes (bits & (1 << n)) != 0), using the lower value of this section.
+// TestBit will panic if n < 0, or if it matches or exceeds the bit count of this item.
+func (seg *ipAddressSegmentInternal) TestBit(n BitCount) bool {
+	return seg.addressSegmentInternal.TestBit(n)
+}
+
+// IsOneBit returns true if the bit in the lower value of this segment at the given index is 1, where index 0 refers to the most significant bit.
+// IsOneBit will panic if bitIndex is less than zero, or if it is larger than the bit count of this item.
+func (seg *ipAddressSegmentInternal) IsOneBit(segmentBitIndex BitCount) bool {
+	return seg.addressSegmentInternal.IsOneBit(segmentBitIndex)
+}
