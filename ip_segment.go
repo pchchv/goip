@@ -222,3 +222,13 @@ func (seg *ipAddressSegmentInternal) GetByteCount() int {
 func (seg *ipAddressSegmentInternal) GetValue() *BigDivInt {
 	return seg.addressSegmentInternal.GetValue()
 }
+
+// GetUpperValue returns the highest value in the address segment range as a big integer.
+func (seg *ipAddressSegmentInternal) GetUpperValue() *BigDivInt {
+	return seg.addressSegmentInternal.GetUpperValue()
+}
+
+// Bytes returns the lowest value in the address segment range as a byte slice.
+func (seg *ipAddressSegmentInternal) Bytes() []byte {
+	return seg.addressSegmentInternal.Bytes()
+}
