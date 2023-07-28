@@ -77,3 +77,33 @@ func (seg *ipAddressSegmentInternal) IsSinglePrefixBlock() bool {
 	}
 	return false
 }
+
+func (seg *ipAddressSegmentInternal) checkForPrefixMask() (networkMaskLen, hostMaskLen PrefixLen) {
+	val := seg.GetSegmentValue()
+	if val == 0 {
+		networkMaskLen, hostMaskLen = cacheBitCount(0), cacheBitCount(seg.GetBitCount())
+	} else {
+		maxVal := seg.GetMaxValue()
+		if val == maxVal {
+			networkMaskLen, hostMaskLen = cacheBitCount(seg.GetBitCount()), cacheBitCount(0)
+		} else {
+			var shifted SegInt
+			trailingOnes := seg.GetTrailingBitCount(true)
+			if trailingOnes == 0 {
+				// can only be 11110000 and not 00000000
+				trailingZeros := seg.GetTrailingBitCount(false)
+				shifted = (^val & maxVal) >> uint(trailingZeros)
+				if shifted == 0 {
+					networkMaskLen = cacheBitCount(seg.GetBitCount() - trailingZeros)
+				}
+			} else {
+				// can only be 00001111 and not 11111111
+				shifted = val >> uint(trailingOnes)
+				if shifted == 0 {
+					hostMaskLen = cacheBitCount(seg.GetBitCount() - trailingOnes)
+				}
+			}
+		}
+	}
+	return
+}
