@@ -1,5 +1,7 @@
 package goip
 
+import "math/big"
+
 type ipAddressSegmentInternal struct {
 	addressSegmentInternal
 }
@@ -327,4 +329,15 @@ func (seg *ipAddressSegmentInternal) Matches(value SegInt) bool {
 // returning true if the range of the resulting segment matches that single value.
 func (seg *ipAddressSegmentInternal) MatchesWithMask(value, mask SegInt) bool {
 	return seg.addressSegmentInternal.MatchesWithMask(value, mask)
+}
+
+// MatchesValsWithMask applies the mask to this segment and then compares the result with the given values,
+// returning true if the range of the resulting segment matches the given range.
+func (seg *ipAddressSegmentInternal) MatchesValsWithMask(lowerValue, upperValue, mask SegInt) bool {
+	return seg.addressSegmentInternal.MatchesValsWithMask(lowerValue, upperValue, mask)
+}
+
+// GetPrefixCountLen returns the count of the number of distinct prefix values for the given prefix length in the range of values of this segment.
+func (seg *ipAddressSegmentInternal) GetPrefixCountLen(segmentPrefixLength BitCount) *big.Int {
+	return seg.addressSegmentInternal.GetPrefixCountLen(segmentPrefixLength)
 }
