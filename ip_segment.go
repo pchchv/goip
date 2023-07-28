@@ -191,3 +191,19 @@ func (seg *ipAddressSegmentInternal) setRangeStandardString(
 		}
 	}
 }
+
+func (seg *ipAddressSegmentInternal) setRangeWildcardString(
+	addressStr string,
+	isStandardRangeString bool,
+	lowerStringStartIndex,
+	upperStringEndIndex int,
+	rangeLower,
+	rangeUpper SegInt) {
+	if cache := seg.getCache(); cache != nil {
+		if seg.IsFullRange() {
+			cacheStrPtr(&cache.cachedWildcardString, &segmentWildcardStr)
+		} else if isStandardRangeString && rangeLower == seg.getSegmentValue() && rangeUpper == seg.getUpperSegmentValue() {
+			cacheStr(&cache.cachedString, func() string { return addressStr[lowerStringStartIndex:upperStringEndIndex] })
+		}
+	}
+}
