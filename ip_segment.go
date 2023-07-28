@@ -135,3 +135,31 @@ func (seg *ipAddressSegmentInternal) GetBlockMaskPrefixLen(network bool) PrefixL
 	}
 	return nil
 }
+
+func (seg *ipAddressSegmentInternal) setStandardString(
+	addressStr string,
+	isStandardString bool,
+	lowerStringStartIndex,
+	lowerStringEndIndex int,
+	originalLowerValue SegInt) {
+	if cache := seg.getCache(); cache != nil {
+		if isStandardString && originalLowerValue == seg.getSegmentValue() {
+			cacheStr(&cache.cachedString, func() string { return addressStr[lowerStringStartIndex:lowerStringEndIndex] })
+		}
+	}
+}
+
+func (seg *ipAddressSegmentInternal) setWildcardString(
+	addressStr string,
+	isStandardString bool,
+	lowerStringStartIndex,
+	lowerStringEndIndex int,
+	lowerValue SegInt) {
+	if cache := seg.getCache(); cache != nil {
+		if isStandardString &&
+			lowerValue == seg.getSegmentValue() &&
+			lowerValue == seg.getUpperSegmentValue() {
+			cacheStr(&cache.cachedWildcardString, func() string { return addressStr[lowerStringStartIndex:lowerStringEndIndex] })
+		}
+	}
+}
