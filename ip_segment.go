@@ -1,6 +1,9 @@
 package goip
 
-import "math/big"
+import (
+	"math/big"
+	"unsafe"
+)
 
 type ipAddressSegmentInternal struct {
 	addressSegmentInternal
@@ -371,6 +374,10 @@ func (seg *ipAddressSegmentInternal) TestBit(n BitCount) bool {
 // IsOneBit will panic if bitIndex is less than zero, or if it is larger than the bit count of this item.
 func (seg *ipAddressSegmentInternal) IsOneBit(segmentBitIndex BitCount) bool {
 	return seg.addressSegmentInternal.IsOneBit(segmentBitIndex)
+}
+
+func (seg *ipAddressSegmentInternal) toIPAddressSegment() *IPAddressSegment {
+	return (*IPAddressSegment)(unsafe.Pointer(seg))
 }
 
 // IPAddressSegment represents a single IP address segment.
