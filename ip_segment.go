@@ -288,3 +288,16 @@ func (seg *ipAddressSegmentInternal) IsFullRange() bool {
 func (seg *ipAddressSegmentInternal) ContainsPrefixBlock(prefixLen BitCount) bool {
 	return seg.addressSegmentInternal.ContainsPrefixBlock(prefixLen)
 }
+
+// IsSinglePrefix determines if the segment has a single prefix value for the given prefix length.
+// You can call GetPrefixCountLen to get the count of prefixes.
+func (seg *ipAddressSegmentInternal) IsSinglePrefix(divisionPrefixLength BitCount) bool {
+	return seg.addressSegmentInternal.IsSinglePrefix(divisionPrefixLength)
+}
+
+// PrefixContains returns whether the prefix values in
+// the prefix of the given segment are also prefix values in this segment.
+// It returns whether the prefix of this segment contains the prefix of the given segment.
+func (seg *ipAddressSegmentInternal) PrefixContains(other AddressSegmentType, prefixLength BitCount) bool {
+	return seg.addressSegmentInternal.PrefixContains(other, prefixLength)
+}
