@@ -341,3 +341,8 @@ func (seg *ipAddressSegmentInternal) MatchesValsWithMask(lowerValue, upperValue,
 func (seg *ipAddressSegmentInternal) GetPrefixCountLen(segmentPrefixLength BitCount) *big.Int {
 	return seg.addressSegmentInternal.GetPrefixCountLen(segmentPrefixLength)
 }
+
+// GetPrefixValueCountLen returns the same value as GetPrefixCountLen as an integer.
+func (seg *ipAddressSegmentInternal) GetPrefixValueCountLen(segmentPrefixLength BitCount) SegIntCount {
+	return seg.addressSegmentInternal.GetPrefixValueCountLen(segmentPrefixLength)
+}
