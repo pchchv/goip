@@ -275,3 +275,16 @@ func (seg *ipAddressSegmentInternal) IsMax() bool {
 func (seg *ipAddressSegmentInternal) IncludesMax() bool {
 	return seg.addressSegmentInternal.IncludesMax()
 }
+
+// IsFullRange returns whether the segment range includes all possible values for its bit length.
+//
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (seg *ipAddressSegmentInternal) IsFullRange() bool {
+	return seg.addressSegmentInternal.IsFullRange()
+}
+
+// ContainsPrefixBlock returns whether the division range includes
+// the block of values for the given prefix length.
+func (seg *ipAddressSegmentInternal) ContainsPrefixBlock(prefixLen BitCount) bool {
+	return seg.addressSegmentInternal.ContainsPrefixBlock(prefixLen)
+}
