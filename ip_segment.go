@@ -56,3 +56,24 @@ func (seg *ipAddressSegmentInternal) MatchesWithPrefixMask(value SegInt, network
 	matchingValue := value & mask
 	return matchingValue == (seg.GetSegmentValue()&mask) && matchingValue == (seg.GetUpperSegmentValue()&mask)
 }
+
+// IsSinglePrefixBlock returns whether the range matches the value block for a single prefix identified by the prefix length of this address.
+// This is similar to IsPrefixBlock, except that it returns false if the subnet has multiple prefixes.
+//
+// This method differs from ContainsSinglePrefixBlock in that it returns false if no prefix length is assigned to
+// the series or the prefix length is different from the prefix length for which ContainsSinglePrefixBlock returns true.
+//
+// Method is similar to IsPrefixBlock, but returns false if there are multiple prefixes.
+func (seg *ipAddressSegmentInternal) IsSinglePrefixBlock() bool {
+	cache := seg.getCache()
+	if cache != nil {
+		res := cache.isSinglePrefBlock
+		if res != nil {
+			return *res
+		}
+	}
+	if prefLen := seg.GetSegmentPrefixLen(); prefLen != nil {
+		return seg.isSinglePrefixBlock(seg.getDivisionValue(), seg.getUpperDivisionValue(), prefLen.bitCount())
+	}
+	return false
+}
