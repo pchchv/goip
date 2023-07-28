@@ -163,3 +163,31 @@ func (seg *ipAddressSegmentInternal) setWildcardString(
 		}
 	}
 }
+
+func (seg *ipAddressSegmentInternal) setRangeStandardString(
+	addressStr string,
+	isStandardString,
+	isStandardRangeString bool,
+	lowerStringStartIndex,
+	lowerStringEndIndex,
+	upperStringEndIndex int,
+	rangeLower,
+	rangeUpper SegInt) {
+	if cache := seg.getCache(); cache != nil {
+		if seg.IsSinglePrefixBlock() {
+			if isStandardString && rangeLower == seg.getSegmentValue() {
+				cacheStr(&cache.cachedString, func() string { return addressStr[lowerStringStartIndex:lowerStringEndIndex] })
+			}
+		} else if seg.IsFullRange() {
+			cacheStrPtr(&cache.cachedString, &segmentWildcardStr)
+		} else if isStandardRangeString && rangeLower == seg.getSegmentValue() {
+			upper := seg.getUpperSegmentValue()
+			if seg.isPrefixed() {
+				upper &= seg.GetSegmentNetworkMask(seg.getDivisionPrefixLength().bitCount())
+			}
+			if rangeUpper == upper {
+				cacheStr(&cache.cachedString, func() string { return addressStr[lowerStringStartIndex:upperStringEndIndex] })
+			}
+		}
+	}
+}
