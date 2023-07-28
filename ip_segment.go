@@ -26,3 +26,14 @@ type ipAddressSegmentInternal struct {
 func (seg *ipAddressSegmentInternal) GetSegmentPrefixLen() PrefixLen {
 	return seg.getDivisionPrefixLength()
 }
+
+func (seg *ipAddressSegmentInternal) isPrefixed() bool {
+	return seg.GetSegmentPrefixLen() != nil
+}
+
+// IsPrefixBlock returns whether the segment has a prefix length and
+// the segment range includes the block of values for that prefix length.
+// If the prefix length matches the bit count, this returns true.
+func (seg *ipAddressSegmentInternal) IsPrefixBlock() bool {
+	return seg.isPrefixBlock()
+}
