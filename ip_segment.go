@@ -107,3 +107,31 @@ func (seg *ipAddressSegmentInternal) checkForPrefixMask() (networkMaskLen, hostM
 	}
 	return
 }
+
+// GetBlockMaskPrefixLen returns the prefix length if this address segment is equivalent to a CIDR prefix block mask.
+// Otherwise, nil is returned.
+//
+// A CIDR network mask is a segment with all ones in the network bits followed by all zeros in the host bits.
+// A CIDR host mask is a segment with all zeros in the network bits followed by all ones in the host bits.
+// The length of the prefix is equal to the length of the network bits.
+//
+// Note also that the prefix length returned by this method is not equivalent to the prefix length of this segment.
+// The prefix length returned here indicates whether the value of this segment can be used as a mask for the network and host bits of any other segment.
+// Therefore, the two values may be different, or one may be nil and the other may not.
+//
+// This method applies only to the lowest value of the range if this segment represents multiple values.
+func (seg *ipAddressSegmentInternal) GetBlockMaskPrefixLen(network bool) PrefixLen {
+	hostLength := seg.GetTrailingBitCount(!network)
+	var shifted SegInt
+	val := seg.GetSegmentValue()
+	if network {
+		maxVal := seg.GetMaxValue()
+		shifted = (^val & maxVal) >> uint(hostLength)
+	} else {
+		shifted = val >> uint(hostLength)
+	}
+	if shifted == 0 {
+		return cacheBitCount(seg.GetBitCount() - hostLength)
+	}
+	return nil
+}
