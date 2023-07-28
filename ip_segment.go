@@ -301,3 +301,19 @@ func (seg *ipAddressSegmentInternal) IsSinglePrefix(divisionPrefixLength BitCoun
 func (seg *ipAddressSegmentInternal) PrefixContains(other AddressSegmentType, prefixLength BitCount) bool {
 	return seg.addressSegmentInternal.PrefixContains(other, prefixLength)
 }
+
+// PrefixEqual returns whether the prefix bits of this segment match the same bits of the given segment.
+// It returns whether the two segments share the same range of prefix values using the given prefix length.
+func (seg *ipAddressSegmentInternal) PrefixEqual(other AddressSegmentType, prefixLength BitCount) bool {
+	return seg.addressSegmentInternal.PrefixEqual(other, prefixLength)
+}
+
+// GetSegmentValue returns the lower value of the segment value range.
+func (seg *ipAddressSegmentInternal) GetSegmentValue() SegInt {
+	return seg.addressSegmentInternal.GetSegmentValue()
+}
+
+// GetUpperSegmentValue returns the upper value of the segment value range.
+func (seg *ipAddressSegmentInternal) GetUpperSegmentValue() SegInt {
+	return seg.addressSegmentInternal.GetUpperSegmentValue()
+}
