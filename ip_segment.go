@@ -372,3 +372,17 @@ func (seg *ipAddressSegmentInternal) TestBit(n BitCount) bool {
 func (seg *ipAddressSegmentInternal) IsOneBit(segmentBitIndex BitCount) bool {
 	return seg.addressSegmentInternal.IsOneBit(segmentBitIndex)
 }
+
+// IPAddressSegment represents a single IP address segment.
+// An IP segment contains a single value or a range of sequential values,
+// a prefix length, and has an assigned bit length.
+//
+// For IPv4, segments consist of 1 byte.
+// For IPv6, they consist of 2 bytes.
+//
+// IPAddressSegment objects are immutable and therefore concurrency-safe.
+//
+// For more details about segments, see AddressSegment.
+type IPAddressSegment struct {
+	ipAddressSegmentInternal
+}
