@@ -207,3 +207,18 @@ func (seg *ipAddressSegmentInternal) setRangeWildcardString(
 		}
 	}
 }
+
+// GetBitCount returns the number of bits in each value comprising this address item.
+func (seg *ipAddressSegmentInternal) GetBitCount() BitCount {
+	return seg.addressSegmentInternal.GetBitCount()
+}
+
+// GetByteCount returns the number of bytes required for each value comprising this address item.
+func (seg *ipAddressSegmentInternal) GetByteCount() int {
+	return seg.addressSegmentInternal.GetByteCount()
+}
+
+// GetValue returns the lowest value in the address segment range as a big integer.
+func (seg *ipAddressSegmentInternal) GetValue() *BigDivInt {
+	return seg.addressSegmentInternal.GetValue()
+}
