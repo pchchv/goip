@@ -346,3 +346,16 @@ func (seg *ipAddressSegmentInternal) GetPrefixCountLen(segmentPrefixLength BitCo
 func (seg *ipAddressSegmentInternal) GetPrefixValueCountLen(segmentPrefixLength BitCount) SegIntCount {
 	return seg.addressSegmentInternal.GetPrefixValueCountLen(segmentPrefixLength)
 }
+
+// GetValueCount returns the same value as GetCount as an integer.
+func (seg *ipAddressSegmentInternal) GetValueCount() SegIntCount {
+	return seg.addressSegmentInternal.GetValueCount()
+}
+
+// GetMaxValue gets the maximum possible value for this type or version of segment,
+// determined by the number of bits.
+//
+// For the highest range value of this particular segment, use GetUpperSegmentValue.
+func (seg *ipAddressSegmentInternal) GetMaxValue() SegInt {
+	return seg.addressSegmentInternal.GetMaxValue()
+}
