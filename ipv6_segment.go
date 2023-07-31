@@ -12,6 +12,10 @@ type ipv6DivsBlock struct {
 	block []ipv6SegmentValues
 }
 
+type ipv6DivsPartition struct {
+	block []*ipv6DivsBlock
+}
+
 type ipv6SegmentValues struct {
 	value      IPv6SegInt
 	upperValue IPv6SegInt
