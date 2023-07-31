@@ -38,3 +38,15 @@ func (seg *ipv6SegmentValues) getCount() *big.Int {
 func (seg *ipv6SegmentValues) getBitCount() BitCount {
 	return IPv6BitsPerSegment
 }
+
+func (seg *ipv6SegmentValues) getByteCount() int {
+	return IPv6BytesPerSegment
+}
+
+func (seg *ipv6SegmentValues) getValue() *BigDivInt {
+	return big.NewInt(int64(seg.value))
+}
+
+func (seg *ipv6SegmentValues) getUpperValue() *BigDivInt {
+	return big.NewInt(int64(seg.upperValue))
+}
