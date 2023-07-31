@@ -12,3 +12,15 @@ type ipv6SegmentValues struct {
 	prefLen    PrefixLen
 	cache      divCache
 }
+
+func (seg *ipv6SegmentValues) getAddrType() addrType {
+	return ipv6Type
+}
+
+func (seg *ipv6SegmentValues) includesZero() bool {
+	return seg.value == 0
+}
+
+func (seg *ipv6SegmentValues) includesMax() bool {
+	return seg.upperValue == 0xffff
+}
