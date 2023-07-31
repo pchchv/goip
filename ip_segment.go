@@ -434,3 +434,14 @@ func (seg *IPAddressSegment) Equal(other AddressSegmentType) bool {
 	}
 	return seg.equal(other)
 }
+
+// ContainsPrefixBlock returns whether the division range includes
+// the block of values for the given prefix length.
+func (seg *IPAddressSegment) ContainsPrefixBlock(divisionPrefixLen BitCount) bool {
+	return seg.containsPrefixBlock(divisionPrefixLen)
+}
+
+// IsPrefixed returns whether this section has an associated prefix length.
+func (seg *IPAddressSegment) IsPrefixed() bool {
+	return seg != nil && seg.isPrefixed()
+}
