@@ -153,6 +153,16 @@ func (seg *ipv6SegmentValues) deriveNewMultiSeg(val, upperVal SegInt, prefLen Pr
 	return newIPv6SegmentPrefixedValues(IPv6SegInt(val), IPv6SegInt(upperVal), prefLen)
 }
 
+// IPv6AddressSegment represents an IPv6 address segment.
+// An IPv6 segment contains a single value or a range of sequential values, a prefix length, and is 16 bits long.
+//
+// Like strings, segments are immutable, which also makes them concurrency-safe.
+//
+// For more information about segments, see AddressSegment.
+type IPv6AddressSegment struct {
+	ipAddressSegmentInternal
+}
+
 func newIPv6SegmentVal(value IPv6SegInt) *ipv6SegmentValues {
 	if useIPv6SegmentCache {
 		cache := segmentCacheIPv6
