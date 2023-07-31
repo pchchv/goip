@@ -136,6 +136,14 @@ func (seg *ipv6SegmentValues) getCache() *divCache {
 	return &seg.cache
 }
 
+func (seg *ipv6SegmentValues) deriveNew(val, upperVal DivInt, prefLen PrefixLen) divisionValues {
+	return newIPv6SegmentPrefixedValues(IPv6SegInt(val), IPv6SegInt(upperVal), prefLen)
+}
+
+func (seg *ipv6SegmentValues) derivePrefixed(prefLen PrefixLen) divisionValues {
+	return newIPv6SegmentPrefixedValues(seg.value, seg.upperValue, prefLen)
+}
+
 func newIPv6SegmentVal(value IPv6SegInt) *ipv6SegmentValues {
 	if useIPv6SegmentCache {
 		cache := segmentCacheIPv6
