@@ -374,3 +374,14 @@ func WrapIPv6SegmentValueProvider(f IPv6SegmentValueProvider) SegmentValueProvid
 		return SegInt(f(segmentIndex))
 	}
 }
+
+// WrapSegmentValueProviderForIPv6 converts the given SegmentValueProvider to an IPv6SegmentValueProvider.
+// Values that do not fit IPv6SegInt are truncated.
+func WrapSegmentValueProviderForIPv6(f SegmentValueProvider) IPv6SegmentValueProvider {
+	if f == nil {
+		return nil
+	}
+	return func(segmentIndex int) IPv6SegInt {
+		return IPv6SegInt(f(segmentIndex))
+	}
+}
