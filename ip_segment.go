@@ -407,3 +407,30 @@ func (seg *IPAddressSegment) Contains(other AddressSegmentType) bool {
 	}
 	return seg.contains(other)
 }
+
+// GetCount returns a count of possible distinct values for the given item.
+// If multiple values are not represented, the count is 1.
+//
+// For example, a segment with a range of values 3-7 has a count of 5.
+//
+// If you want to know if the count is greater than 1, use IsMultiple.
+func (seg *IPAddressSegment) GetCount() *big.Int {
+	if seg == nil {
+		return bigZero()
+	}
+	return seg.getCount()
+}
+
+// Equal returns whether the given segment is equal to this segment.
+// Two segments are equal if they match:
+//   - type/version IPv4, IPv6
+//   - value range
+//
+// Prefix lengths is ignored.
+func (seg *IPAddressSegment) Equal(other AddressSegmentType) bool {
+	if seg == nil {
+		return other == nil || other.ToDiv() == nil
+		//return seg.getAddrType() == zeroType && other.(StandardDivisionType).ToDiv() == nil
+	}
+	return seg.equal(other)
+}
