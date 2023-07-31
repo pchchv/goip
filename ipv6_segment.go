@@ -1,5 +1,7 @@
 package goip
 
+import "math/big"
+
 const useIPv6SegmentCache = true
 
 type IPv6SegInt = uint16
@@ -23,4 +25,16 @@ func (seg *ipv6SegmentValues) includesZero() bool {
 
 func (seg *ipv6SegmentValues) includesMax() bool {
 	return seg.upperValue == 0xffff
+}
+
+func (seg *ipv6SegmentValues) isMultiple() bool {
+	return seg.value != seg.upperValue
+}
+
+func (seg *ipv6SegmentValues) getCount() *big.Int {
+	return big.NewInt(int64(seg.upperValue-seg.value) + 1)
+}
+
+func (seg *ipv6SegmentValues) getBitCount() BitCount {
+	return IPv6BitsPerSegment
 }
