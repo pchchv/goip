@@ -1,8 +1,15 @@
 package goip
 
-import "math/big"
+import (
+	"math/big"
+	"unsafe"
+)
 
 const useIPv6SegmentCache = true
+
+// single-valued no-prefix cache.
+// there are 0x10000 (ie 0xffff + 1 or 64k) possible segment values in IPv6.
+var segmentCacheIPv6 = make([]*ipv6DivsBlock, (IPv6MaxValuePerSegment>>8)+1)
 
 type IPv6SegInt = uint16
 
@@ -101,4 +108,38 @@ func (seg *ipv6SegmentValues) bytesInternal(upper bool) []byte {
 	}
 
 	return []byte{byte(val >> 8), byte(val)}
+}
+
+func newIPv6SegmentVal(value IPv6SegInt) *ipv6SegmentValues {
+	if useIPv6SegmentCache {
+		cache := segmentCacheIPv6
+		blockIndex := value >> 8 // divide by 0x100
+		firstBlockVal := blockIndex << 8
+		resultIndex := value - firstBlockVal // mod 0x100
+		block := (*ipv6DivsBlock)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache[blockIndex]))))
+		//block := cache[blockIndex]
+		if block == nil {
+			block = &ipv6DivsBlock{make([]ipv6SegmentValues, 0x100)}
+			vals := block.block
+			for i := range vals {
+				item := &vals[i]
+				itemVal := firstBlockVal | IPv6SegInt(i)
+				item.value = itemVal
+				item.upperValue = itemVal
+				item.cache.isSinglePrefBlock = &falseVal
+			}
+			dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache[blockIndex]))
+			atomicStorePointer(dataLoc, unsafe.Pointer(block))
+		}
+		result := &block.block[resultIndex]
+		return result
+	}
+
+	return &ipv6SegmentValues{
+		value:      value,
+		upperValue: value,
+		cache: divCache{
+			isSinglePrefBlock: &falseVal,
+		},
+	}
 }
