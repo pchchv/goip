@@ -445,3 +445,15 @@ func (seg *IPAddressSegment) ContainsPrefixBlock(divisionPrefixLen BitCount) boo
 func (seg *IPAddressSegment) IsPrefixed() bool {
 	return seg != nil && seg.isPrefixed()
 }
+
+// IsIPv4 returns true if this segment originated as an IPv4 segment.
+// If so, use ToIPv4 to convert back to the IPv4-specific type.
+func (seg *IPAddressSegment) IsIPv4() bool {
+	return seg != nil && seg.matchesIPv4Segment()
+}
+
+// IsIPv6 returns true if this segment originated as an IPv6 segment.
+// If so, use ToIPv6 to convert back to the IPv6-specific type.
+func (seg *IPAddressSegment) IsIPv6() bool {
+	return seg != nil && seg.matchesIPv6Segment()
+}
