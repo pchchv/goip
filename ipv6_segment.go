@@ -132,6 +132,10 @@ func (seg *ipv6SegmentValues) bytesInternal(upper bool) []byte {
 	return []byte{byte(val >> 8), byte(val)}
 }
 
+func (seg *ipv6SegmentValues) getCache() *divCache {
+	return &seg.cache
+}
+
 func newIPv6SegmentVal(value IPv6SegInt) *ipv6SegmentValues {
 	if useIPv6SegmentCache {
 		cache := segmentCacheIPv6
