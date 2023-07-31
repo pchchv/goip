@@ -393,3 +393,17 @@ func (seg *ipAddressSegmentInternal) toIPAddressSegment() *IPAddressSegment {
 type IPAddressSegment struct {
 	ipAddressSegmentInternal
 }
+
+// IsMultiple returns whether this segment represents multiple values.
+func (seg *IPAddressSegment) IsMultiple() bool {
+	return seg != nil && seg.isMultiple()
+}
+
+// Contains returns whether this is same type and version as
+// the given segment and whether it contains all values in the given segment.
+func (seg *IPAddressSegment) Contains(other AddressSegmentType) bool {
+	if seg == nil {
+		return other == nil || other.ToSegmentBase() == nil
+	}
+	return seg.contains(other)
+}
