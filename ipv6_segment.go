@@ -62,3 +62,11 @@ func (seg *ipv6SegmentValues) getUpperDivisionValue() DivInt {
 func (seg *ipv6SegmentValues) getDivisionPrefixLength() PrefixLen {
 	return seg.prefLen
 }
+
+func (seg *ipv6SegmentValues) getSegmentValue() SegInt {
+	return SegInt(seg.value)
+}
+
+func (seg *ipv6SegmentValues) getUpperSegmentValue() SegInt {
+	return SegInt(seg.upperValue)
+}
