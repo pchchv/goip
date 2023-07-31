@@ -50,3 +50,15 @@ func (seg *ipv6SegmentValues) getValue() *BigDivInt {
 func (seg *ipv6SegmentValues) getUpperValue() *BigDivInt {
 	return big.NewInt(int64(seg.upperValue))
 }
+
+func (seg *ipv6SegmentValues) getDivisionValue() DivInt {
+	return DivInt(seg.value)
+}
+
+func (seg *ipv6SegmentValues) getUpperDivisionValue() DivInt {
+	return DivInt(seg.upperValue)
+}
+
+func (seg *ipv6SegmentValues) getDivisionPrefixLength() PrefixLen {
+	return seg.prefLen
+}
