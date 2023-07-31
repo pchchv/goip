@@ -10,6 +10,7 @@ const useIPv6SegmentCache = true
 var (
 	segmentCacheIPv6       = make([]*ipv6DivsBlock, (IPv6MaxValuePerSegment>>8)+1) // single-valued no-prefix cache.
 	segmentPrefixCacheIPv6 = make([]*ipv6DivsPartition, IPv6BitsPerSegment+1)      // single-valued cache for each prefix
+	allPrefixedCacheIPv6   = makePrefixCacheIPv6()
 )
 
 type IPv6SegInt = uint16
@@ -211,4 +212,18 @@ func newIPv6SegmentPrefixedVal(value IPv6SegInt, prefLen PrefixLen) (result *ipv
 			isSinglePrefBlock: isSinglePrefBlock,
 		},
 	}
+}
+
+func makePrefixCacheIPv6() (allPrefixedCacheIPv6 []ipv6SegmentValues) {
+	if useIPv6SegmentCache {
+		allPrefixedCacheIPv6 = make([]ipv6SegmentValues, IPv6BitsPerSegment+1)
+		for i := range allPrefixedCacheIPv6 {
+			vals := &allPrefixedCacheIPv6[i]
+			vals.upperValue = IPv6MaxValuePerSegment
+			vals.prefLen = cacheBitCount(i)
+			vals.cache.isSinglePrefBlock = &falseVal
+		}
+		allPrefixedCacheIPv6[0].cache.isSinglePrefBlock = &trueVal
+	}
+	return
 }
