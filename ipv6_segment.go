@@ -364,3 +364,13 @@ func newIPv6SegmentPrefixedValues(value, upperValue IPv6SegInt, prefLen PrefixLe
 		},
 	}
 }
+
+// WrapIPv6SegmentValueProvider converts the given IPv6SegmentValueProvider to a SegmentValueProvider.
+func WrapIPv6SegmentValueProvider(f IPv6SegmentValueProvider) SegmentValueProvider {
+	if f == nil {
+		return nil
+	}
+	return func(segmentIndex int) SegInt {
+		return SegInt(f(segmentIndex))
+	}
+}
