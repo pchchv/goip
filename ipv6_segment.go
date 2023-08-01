@@ -254,6 +254,16 @@ func (seg *IPv6AddressSegment) GetCount() *big.Int {
 	return seg.getCount()
 }
 
+// GetPrefixCountLen returns the count of the number of distinct prefix values for the given prefix length in the range of values of this segment.
+func (seg *IPv6AddressSegment) GetPrefixCountLen(segmentPrefixLength BitCount) *big.Int {
+	return seg.init().ipAddressSegmentInternal.GetPrefixCountLen(segmentPrefixLength)
+}
+
+// GetPrefixValueCountLen returns the same value as GetPrefixCountLen as an integer.
+func (seg *IPv6AddressSegment) GetPrefixValueCountLen(segmentPrefixLength BitCount) SegIntCount {
+	return seg.init().ipAddressSegmentInternal.GetPrefixValueCountLen(segmentPrefixLength)
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
