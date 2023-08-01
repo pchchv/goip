@@ -192,6 +192,19 @@ func (seg *IPv6AddressSegment) Contains(other AddressSegmentType) bool {
 	return seg.init().contains(other)
 }
 
+// Equal returns whether the given segment is equal to this segment.
+// Two segments are equal if they match:
+//   - type/version: IPv6
+//   - value range
+//
+// Prefix lengths are ignored.
+func (seg *IPv6AddressSegment) Equal(other AddressSegmentType) bool {
+	if seg == nil {
+		return other == nil || other.ToDiv() == nil
+	}
+	return seg.init().equal(other)
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
