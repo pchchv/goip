@@ -276,6 +276,20 @@ func (seg *IPv6AddressSegment) Bytes() []byte {
 	return seg.init().ipAddressSegmentInternal.Bytes()
 }
 
+// UpperBytes returns the highest value in the address segment range as a byte slice.
+func (seg *IPv6AddressSegment) UpperBytes() []byte {
+	return seg.init().ipAddressSegmentInternal.UpperBytes()
+}
+
+// CopyBytes copies the lowest value in the address segment range into a byte slice.
+//
+// If the value can fit in the given slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (seg *IPv6AddressSegment) CopyBytes(bytes []byte) []byte {
+	return seg.init().ipAddressSegmentInternal.CopyBytes(bytes)
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
