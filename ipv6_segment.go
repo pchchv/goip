@@ -611,3 +611,11 @@ func WrapSegmentValueProviderForIPv6(f SegmentValueProvider) IPv6SegmentValuePro
 		return IPv6SegInt(f(segmentIndex))
 	}
 }
+
+func highByteIpv6(value SegInt) SegInt {
+	return value >> 8
+}
+
+func lowByteIpv6(value SegInt) SegInt {
+	return value & 0xff
+}
