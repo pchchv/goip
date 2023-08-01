@@ -31,8 +31,10 @@ var (
 			isSinglePrefBlock: &falseVal,
 		},
 	}
-	_           divisionValues = &ipv6SegmentValues{}
-	zeroIPv6Seg                = NewIPv6Segment(0)
+	_                      divisionValues = &ipv6SegmentValues{}
+	zeroIPv6Seg                           = NewIPv6Segment(0)
+	zeroIPv6SegZeroPrefix                 = NewIPv6PrefixedSegment(0, cacheBitCount(0))
+	zeroIPv6SegPrefixBlock                = NewIPv6RangePrefixedSegment(0, IPv6MaxValuePerSegment, cacheBitCount(0))
 )
 
 type IPv6SegInt = uint16
@@ -184,6 +186,17 @@ func NewIPv6Segment(val IPv6SegInt) *IPv6AddressSegment {
 // NewIPv6RangeSegment constructs a segment of an IPv6 subnet with the given range of sequential values.
 func NewIPv6RangeSegment(val, upperVal IPv6SegInt) *IPv6AddressSegment {
 	return newIPv6Segment(newIPv6SegmentPrefixedValues(val, upperVal, nil))
+}
+
+// NewIPv6PrefixedSegment constructs a segment of an IPv6 address with the given value and assigned prefix length.
+func NewIPv6PrefixedSegment(val IPv6SegInt, prefixLen PrefixLen) *IPv6AddressSegment {
+	return newIPv6Segment(newIPv6SegmentPrefixedVal(val, prefixLen))
+}
+
+// NewIPv6RangePrefixedSegment constructs a segment of
+// an IPv6 subnet with the given range of sequential values and assigned prefix length.
+func NewIPv6RangePrefixedSegment(val, upperVal IPv6SegInt, prefixLen PrefixLen) *IPv6AddressSegment {
+	return newIPv6Segment(newIPv6SegmentPrefixedValues(val, upperVal, prefixLen))
 }
 
 func newIPv6SegmentVal(value IPv6SegInt) *ipv6SegmentValues {
