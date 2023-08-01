@@ -299,6 +299,19 @@ func (seg *IPv6AddressSegment) CopyUpperBytes(bytes []byte) []byte {
 	return seg.init().ipAddressSegmentInternal.CopyUpperBytes(bytes)
 }
 
+// GetPrefixValueCount returns the count of prefixes in this segment for its prefix length,
+// or the total count if it has no prefix length.
+func (seg *IPv6AddressSegment) GetPrefixValueCount() SegIntCount {
+	return seg.init().ipAddressSegmentInternal.GetPrefixValueCount()
+}
+
+// MatchesWithPrefixMask applies the network mask of the given bit-length to
+// this segment and then compares the result with the given value masked by the same mask,
+// returning true if the resulting range matches the given single value.
+func (seg *IPv6AddressSegment) MatchesWithPrefixMask(value IPv6SegInt, networkBits BitCount) bool {
+	return seg.init().ipAddressSegmentInternal.MatchesWithPrefixMask(SegInt(value), networkBits)
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
