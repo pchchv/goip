@@ -166,6 +166,18 @@ type IPv6AddressSegment struct {
 	ipAddressSegmentInternal
 }
 
+func (seg *IPv6AddressSegment) init() *IPv6AddressSegment {
+	if seg.divisionValues == nil {
+		return zeroIPv6Seg
+	}
+	return seg
+}
+
+// GetIPv6SegmentValue returns the lower value.  Same as GetSegmentValue but returned as a IPv6SegInt.
+func (seg *IPv6AddressSegment) GetIPv6SegmentValue() IPv6SegInt {
+	return IPv6SegInt(seg.GetSegmentValue())
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
