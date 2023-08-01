@@ -218,6 +218,16 @@ func (seg *IPv6AddressSegment) PrefixEqual(other AddressSegmentType, prefixLengt
 	return seg.init().ipAddressSegmentInternal.PrefixEqual(other, prefixLength)
 }
 
+// GetBitCount returns the number of bits in each value comprising this address item, which is 16.
+func (seg *IPv6AddressSegment) GetBitCount() BitCount {
+	return IPv6BitsPerSegment
+}
+
+// GetByteCount returns the number of bytes required for each value comprising this address item, which is 2.
+func (seg *IPv6AddressSegment) GetByteCount() int {
+	return IPv6BytesPerSegment
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
