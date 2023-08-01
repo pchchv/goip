@@ -328,6 +328,24 @@ func (seg *IPv6AddressSegment) GetBlockMaskPrefixLen(network bool) PrefixLen {
 	return seg.init().ipAddressSegmentInternal.GetBlockMaskPrefixLen(network)
 }
 
+// GetTrailingBitCount returns the number of consecutive trailing one or zero bits.
+// If ones is true, returns the number of consecutive trailing zero bits.
+// Otherwise, returns the number of consecutive trailing one bits.
+//
+// This method applies only to the lower value of the range if this segment represents multiple values.
+func (seg *IPv6AddressSegment) GetTrailingBitCount(ones bool) BitCount {
+	return seg.init().ipAddressSegmentInternal.GetTrailingBitCount(ones)
+}
+
+// GetLeadingBitCount returns the number of consecutive leading one or zero bits.
+// If ones is true, returns the number of consecutive leading one bits.
+// Otherwise, returns the number of consecutive leading zero bits.
+//
+// This method applies only to the lower value of the range if this segment represents multiple values.
+func (seg *IPv6AddressSegment) GetLeadingBitCount(ones bool) BitCount {
+	return seg.init().ipAddressSegmentInternal.GetLeadingBitCount(ones)
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
