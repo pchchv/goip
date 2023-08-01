@@ -205,6 +205,19 @@ func (seg *IPv6AddressSegment) Equal(other AddressSegmentType) bool {
 	return seg.init().equal(other)
 }
 
+// PrefixContains returns whether the prefix values in the prefix of
+// the given segment are also prefix values in this segment.
+// It returns whether the prefix of this segment contains the prefix of the given segment.
+func (seg *IPv6AddressSegment) PrefixContains(other AddressSegmentType, prefixLength BitCount) bool {
+	return seg.init().ipAddressSegmentInternal.PrefixContains(other, prefixLength)
+}
+
+// PrefixEqual returns whether the prefix bits of this segment match the same bits of the given segment.
+// It returns whether the two segments share the same range of prefix values using the given prefix length.
+func (seg *IPv6AddressSegment) PrefixEqual(other AddressSegmentType, prefixLength BitCount) bool {
+	return seg.init().ipAddressSegmentInternal.PrefixEqual(other, prefixLength)
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
