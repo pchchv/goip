@@ -241,6 +241,19 @@ func (seg *IPv6AddressSegment) IsMultiple() bool {
 	return seg != nil && seg.isMultiple()
 }
 
+// GetCount returns a count of possible distinct values for the given item.
+// If multiple values are not represented, the count is 1.
+//
+// For example, a segment with a range of values 3-7 has count 5.
+//
+// If you want to know if the count is greater than 1, use IsMultiple.
+func (seg *IPv6AddressSegment) GetCount() *big.Int {
+	if seg == nil {
+		return bigZero()
+	}
+	return seg.getCount()
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
