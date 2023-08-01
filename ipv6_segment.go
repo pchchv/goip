@@ -163,6 +163,18 @@ type IPv6AddressSegment struct {
 	ipAddressSegmentInternal
 }
 
+func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
+	return &IPv6AddressSegment{
+		ipAddressSegmentInternal{
+			addressSegmentInternal{
+				addressDivisionInternal{
+					addressDivisionBase{vals},
+				},
+			},
+		},
+	}
+}
+
 func newIPv6SegmentVal(value IPv6SegInt) *ipv6SegmentValues {
 	if useIPv6SegmentCache {
 		cache := segmentCacheIPv6
