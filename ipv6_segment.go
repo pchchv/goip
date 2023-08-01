@@ -346,6 +346,19 @@ func (seg *IPv6AddressSegment) GetLeadingBitCount(ones bool) BitCount {
 	return seg.init().ipAddressSegmentInternal.GetLeadingBitCount(ones)
 }
 
+// IsPrefixed returns whether this segment has an associated prefix length.
+func (seg *IPv6AddressSegment) IsPrefixed() bool {
+	return seg != nil && seg.isPrefixed()
+}
+
+func (seg *IPv6AddressSegment) highByte() SegInt {
+	return highByteIpv6(seg.GetSegmentValue())
+}
+
+func (seg *IPv6AddressSegment) lowByte() SegInt {
+	return lowByteIpv6(seg.GetSegmentValue())
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
