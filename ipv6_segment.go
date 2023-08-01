@@ -178,6 +178,20 @@ func (seg *IPv6AddressSegment) GetIPv6SegmentValue() IPv6SegInt {
 	return IPv6SegInt(seg.GetSegmentValue())
 }
 
+// GetIPv6UpperSegmentValue returns the lower value.  Same as GetUpperSegmentValue but returned as a IPv6SegInt.
+func (seg *IPv6AddressSegment) GetIPv6UpperSegmentValue() IPv6SegInt {
+	return IPv6SegInt(seg.GetUpperSegmentValue())
+}
+
+// Contains returns whether this is same type and version as
+// the given segment and whether it contains all values in the given segment.
+func (seg *IPv6AddressSegment) Contains(other AddressSegmentType) bool {
+	if seg == nil {
+		return other == nil || other.ToSegmentBase() == nil
+	}
+	return seg.init().contains(other)
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
