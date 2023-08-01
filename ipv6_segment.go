@@ -359,6 +359,27 @@ func (seg *IPv6AddressSegment) lowByte() SegInt {
 	return lowByteIpv6(seg.GetSegmentValue())
 }
 
+// ToSegmentBase converts to an AddressSegment, a polymorphic type usable with all address segments.
+// Afterwards, you can convert back with ToIPv6.
+//
+// ToSegmentBase can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (seg *IPv6AddressSegment) ToSegmentBase() *AddressSegment {
+	return seg.ToIP().ToSegmentBase()
+}
+
+// ToIP converts to an IPAddressSegment, a polymorphic type usable with all IP address segments.
+// Afterwards, you can convert back with ToIPv6.
+//
+// ToIP can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (seg *IPv6AddressSegment) ToIP() *IPAddressSegment {
+	if seg == nil {
+		return nil
+	}
+	return (*IPAddressSegment)(seg.init())
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
