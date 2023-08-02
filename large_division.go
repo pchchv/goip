@@ -204,6 +204,20 @@ func (div *IPAddressLargeDivision) ContainsPrefixBlock(prefixLen BitCount) bool 
 	return testBigRange(lower, upper, upper, bitCount, prefixLen)
 }
 
+// ContainsSinglePrefixBlock returns whether the division range matches exactly
+// the block of values for the given prefix length and
+// has just a single prefix for that prefix length.
+func (div *IPAddressLargeDivision) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	bitCount := div.GetBitCount()
+	prefixLen = checkBitCount(prefixLen, bitCount)
+	if prefixLen == 0 {
+		return div.IsFullRange()
+	}
+
+	lower, upper := div.getValue(), div.getUpperValue()
+	return testBigRange(lower, lower, upper, bitCount, prefixLen)
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
