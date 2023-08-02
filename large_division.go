@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"bytes"
 	"math/big"
 	"unsafe"
 )
@@ -393,4 +394,18 @@ func setVals(valueBytes []byte, upperBytes []byte, bitCount BitCount) (assignedV
 
 	maxVal = setMax(assignedUpper, bitCount)
 	return
+}
+
+func createLargeAddressDiv(vals divisionValues, defaultRadix int) *IPAddressLargeDivision {
+	res := &IPAddressLargeDivision{
+		addressLargeDivInternal{
+			addressDivisionBase: addressDivisionBase{vals},
+		},
+	}
+
+	if defaultRadix >= 2 {
+		res.defaultRadix = new(big.Int).SetInt64(int64(defaultRadix))
+	}
+
+	return res
 }
