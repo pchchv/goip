@@ -176,6 +176,34 @@ func (div *IPAddressLargeDivision) GetUpperValue() *BigDivInt {
 	return new(big.Int).Set(div.addressLargeDivInternal.GetUpperValue())
 }
 
+// GetCount returns the count of possible distinct values for this division.
+// If not representing multiple values, the count is 1.
+//
+// For example, a division with the value range of 3-7 has count 5.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (div *IPAddressLargeDivision) GetCount() *big.Int {
+	if div == nil {
+		return bigZero()
+	}
+	return div.getCount()
+}
+
+// ContainsPrefixBlock returns whether the division range includes
+// the block of values for the given prefix length.
+func (div *IPAddressLargeDivision) ContainsPrefixBlock(prefixLen BitCount) bool {
+	bitCount := div.GetBitCount()
+
+	if prefixLen <= 0 {
+		return div.IsFullRange()
+	} else if prefixLen >= bitCount {
+		return true
+	}
+
+	lower, upper := div.getValue(), div.getUpperValue()
+	return testBigRange(lower, upper, upper, bitCount, prefixLen)
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
