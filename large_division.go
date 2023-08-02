@@ -429,3 +429,15 @@ func newLargeDivValues(value, upperValue []byte, bitCount BitCount) *largeDivVal
 	result.cache.isSinglePrefBlock = &falseVal
 	return result
 }
+
+// NewIPAddressLargeDivision creates a division of the given arbitrary bit-length, assigning it the given value.
+// If the value's bit length exceeds the given bit length, it is truncated.
+func NewIPAddressLargeDivision(val []byte, bitCount BitCount, defaultRadix int) *IPAddressLargeDivision {
+	return createLargeAddressDiv(newLargeDivValue(val, bitCount), defaultRadix)
+}
+
+// NewIPAddressLargeRangeDivision creates a division of the given arbitrary bit-length, assigning it the given value range.
+// If a value's bit length exceeds the given bit length, it is truncated.
+func NewIPAddressLargeRangeDivision(val, upperVal []byte, bitCount BitCount, defaultRadix int) *IPAddressLargeDivision {
+	return createLargeAddressDiv(newLargeDivValues(val, upperVal, bitCount), defaultRadix)
+}
