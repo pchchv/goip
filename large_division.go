@@ -326,3 +326,71 @@ func setMax(assignedUpper *BigDivInt, bitCount BitCount) (max *BigDivInt) {
 
 	return max
 }
+
+func setVal(valueBytes []byte, bitCount BitCount) (assignedValue *BigDivInt, assignedBitCount BitCount, maxVal *BigDivInt) {
+	if bitCount < 0 {
+		bitCount = 0
+	}
+
+	assignedBitCount = bitCount
+	maxLen := (bitCount + 7) >> 3
+
+	if len(valueBytes) >= maxLen {
+		valueBytes = valueBytes[:maxLen]
+	}
+
+	assignedValue = new(big.Int).SetBytes(valueBytes)
+	maxVal = setMax(assignedValue, bitCount)
+	return
+}
+
+func setVals(valueBytes []byte, upperBytes []byte, bitCount BitCount) (assignedValue, assignedUpper *BigDivInt, assignedBitCount BitCount, maxVal *BigDivInt) {
+	if bitCount < 0 {
+		bitCount = 0
+	}
+
+	assignedBitCount = bitCount
+	maxLen := (bitCount + 7) >> 3
+
+	if len(valueBytes) >= maxLen || len(upperBytes) >= maxLen {
+		extraBits := bitCount & 7
+		mask := byte(0xff)
+		if extraBits > 0 {
+			mask = ^(mask << uint(8-extraBits))
+		}
+		if len(valueBytes) >= maxLen {
+			valueBytes = valueBytes[len(valueBytes)-maxLen:]
+			b := valueBytes[0]
+			if b&mask != b {
+				valueBytes = cloneBytes(valueBytes)
+				valueBytes[0] &= mask
+			}
+		}
+		if len(upperBytes) >= maxLen {
+			upperBytes = upperBytes[len(upperBytes)-maxLen:]
+			b := upperBytes[0]
+			if b&mask != b {
+				upperBytes = cloneBytes(upperBytes)
+				upperBytes[0] &= mask
+			}
+		}
+	}
+
+	assignedValue = new(big.Int).SetBytes(valueBytes)
+
+	if upperBytes == nil || bytes.Compare(valueBytes, upperBytes) == 0 {
+		assignedUpper = assignedValue
+	} else {
+		assignedUpper = new(big.Int).SetBytes(upperBytes)
+		cmp := assignedValue.CmpAbs(assignedUpper)
+		if cmp == 0 {
+			assignedUpper = assignedValue
+		} else if cmp > 0 {
+			// flip them
+			assignedValue, assignedUpper = assignedUpper, assignedValue
+		}
+	}
+
+	maxVal = setMax(assignedUpper, bitCount)
+	return
+}
