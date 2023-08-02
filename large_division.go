@@ -166,6 +166,16 @@ func (div *IPAddressLargeDivision) IsSinglePrefixBlock() bool {
 	return *div.getLargeDivValues().cache.isSinglePrefBlock
 }
 
+// GetValue returns the lowest value in the address division range as a big integer.
+func (div *IPAddressLargeDivision) GetValue() *BigDivInt {
+	return new(big.Int).Set(div.addressLargeDivInternal.GetValue())
+}
+
+// GetUpperValue returns the highest value in the address division range as a big integer.
+func (div *IPAddressLargeDivision) GetUpperValue() *BigDivInt {
+	return new(big.Int).Set(div.addressLargeDivInternal.GetUpperValue())
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
