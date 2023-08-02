@@ -116,6 +116,14 @@ func (div *IPAddressLargeDivision) IsSinglePrefix(divisionPrefixLen BitCount) bo
 	return one.Rsh(lower, shift).Cmp(two.Rsh(upper, shift)) == 0
 }
 
+func (div *IPAddressLargeDivision) getBigRadix(radix int) *big.Int {
+	defaultRadix := div.getDefaultTextualRadix()
+	if defaultRadix == radix {
+		return div.getBigDefaultTextualRadix()
+	}
+	return big.NewInt(int64(radix))
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
