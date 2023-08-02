@@ -153,6 +153,19 @@ func (div *IPAddressLargeDivision) getRangeDigitCount(radix int) int {
 	}
 }
 
+// IsPrefixBlock returns whether the division has a prefix length and
+// the division range includes the block of values for that prefix length.
+// If the prefix length matches the bit count, this returns true.
+func (div *IPAddressLargeDivision) IsPrefixBlock() bool {
+	return div.getLargeDivValues().isPrefixBlock
+}
+
+// IsSinglePrefixBlock returns whether the division range matches
+// the block of values for its prefix length
+func (div *IPAddressLargeDivision) IsSinglePrefixBlock() bool {
+	return *div.getLargeDivValues().cache.isSinglePrefBlock
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
