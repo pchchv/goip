@@ -105,6 +105,17 @@ func (div *IPAddressLargeDivision) isNil() bool {
 	return div == nil
 }
 
+// IsSinglePrefix returns true if the division value range spans
+// just a single prefix value for the given prefix length.
+func (div *IPAddressLargeDivision) IsSinglePrefix(divisionPrefixLen BitCount) bool {
+	lower, upper := div.getValue(), div.getUpperValue()
+	bitCount := div.GetBitCount()
+	divisionPrefixLen = checkBitCount(divisionPrefixLen, bitCount)
+	shift := uint(bitCount - divisionPrefixLen)
+	var one, two big.Int
+	return one.Rsh(lower, shift).Cmp(two.Rsh(upper, shift)) == 0
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
