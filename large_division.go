@@ -124,6 +124,35 @@ func (div *IPAddressLargeDivision) getBigRadix(radix int) *big.Int {
 	return big.NewInt(int64(radix))
 }
 
+func (div *IPAddressLargeDivision) getRangeDigitCount(radix int) int {
+	if !div.IsMultiple() {
+		return 0
+	}
+
+	var quotient, upperQuotient, remainder big.Int
+	val, upperVal := div.getValue(), div.getUpperValue()
+	count := 1
+	bigRadix := big.NewInt(int64(radix))
+	bigUpperDigit := big.NewInt(int64(radix - 1))
+
+	for {
+		quotient.QuoRem(val, bigRadix, &remainder)
+		if bigIsZero(&remainder) {
+			upperQuotient.QuoRem(upperVal, bigRadix, &remainder)
+			if remainder.CmpAbs(bigUpperDigit) == 0 {
+				val, upperVal = &quotient, &upperQuotient
+				if val.CmpAbs(upperVal) == 0 {
+					return count
+				} else {
+					count++
+					continue
+				}
+			}
+		}
+		return 0
+	}
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
