@@ -409,3 +409,23 @@ func createLargeAddressDiv(vals divisionValues, defaultRadix int) *IPAddressLarg
 
 	return res
 }
+
+func newLargeDivValue(value []byte, bitCount BitCount) *largeDivValues {
+	result := &largeDivValues{cache: divCache{}}
+	result.value, bitCount, result.maxValue = setVal(value, bitCount)
+	result.bitCount = bitCount
+	result.upperValue = result.value
+	result.upperValueMasked = result.upperValue
+	result.cache.isSinglePrefBlock = &falseVal
+	return result
+}
+
+func newLargeDivValues(value, upperValue []byte, bitCount BitCount) *largeDivValues {
+	result := &largeDivValues{cache: divCache{}}
+	result.value, result.upperValue, bitCount, result.maxValue = setVals(value, upperValue, bitCount)
+	result.bitCount = bitCount
+	result.isMult = result.value != result.upperValue
+	result.upperValueMasked = result.upperValue
+	result.cache.isSinglePrefBlock = &falseVal
+	return result
+}
