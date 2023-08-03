@@ -6,6 +6,7 @@ import (
 )
 
 const (
+	maxUint             = ^uint(0)
 	digits              = "0123456789abcdefghijklmnopqrstuvwxyz"
 	extendedDigits      = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~"
 	uppercaseDigits     = extendedDigits
@@ -423,4 +424,31 @@ func toUnsignedStringLengthFast(value uint16, radix int) int {
 		return digitCount
 	}
 	return -1
+}
+
+func toUnsignedStringLengthSlow(value uint64, radix int) int {
+	count := 1
+	useInts := value <= uint64(maxUint)
+	value2 := uint(radix)
+
+	if useInts {
+		value2 = uint(value)
+	}
+
+	uradix := uint(radix)
+
+	for value2 >= uradix {
+		if useInts {
+			value2 /= uradix
+		} else {
+			value /= uint64(radix)
+			if value <= uint64(maxUint) {
+				useInts = true
+				value2 = uint(value)
+			}
+		}
+		count++
+	}
+
+	return count
 }
