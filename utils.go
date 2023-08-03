@@ -37,3 +37,17 @@ func atomicLoadPointer(dataLoc *unsafe.Pointer) unsafe.Pointer {
 func atomicStorePointer(dataLoc *unsafe.Pointer, val unsafe.Pointer) {
 	atomic.StorePointer(dataLoc, val)
 }
+
+func umin(a, b uint) uint {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
