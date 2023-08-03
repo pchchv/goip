@@ -695,3 +695,42 @@ func createRadixMap() *map[uint64]*big.Int {
 	res := make(map[uint64]*big.Int)
 	return &res
 }
+
+func getRadixPower(radix *big.Int, power int) *big.Int {
+	if power == 1 {
+		return radix
+	}
+
+	intRadix := radix.Uint64()
+	key := intRadix<<32 | uint64(power)
+	theMapPtr := (*map[uint64]*big.Int)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&radixPowerMap))))
+	theMap := *theMapPtr
+
+	if res, ok := theMap[key]; ok {
+		return res
+	}
+
+	result := new(big.Int)
+
+	if (power & 1) == 0 {
+		halfPower := getRadixPower(radix, power>>1)
+		result.Mul(halfPower, halfPower)
+	} else {
+		halfPower := getRadixPower(radix, (power-1)>>1)
+		result.Mul(halfPower, halfPower).Mul(result, radix)
+	}
+
+	// replace the map atomically
+	newRadixMap := createRadixMap()
+	theNewMap := *newRadixMap
+
+	for k, val := range theMap {
+		theNewMap[k] = val
+	}
+
+	theNewMap[key] = result
+	dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&radixPowerMap))
+	atomicStorePointer(dataLoc, unsafe.Pointer(newRadixMap))
+
+	return result
+}
