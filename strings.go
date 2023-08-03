@@ -757,3 +757,42 @@ func toDefaultStringRecursive(val *BigDivInt, radix *BigDivInt, uppercase bool, 
 		}
 	}
 }
+
+func toDefaultBigString(val, radix *BigDivInt, uppercase bool, choppedDigits, maxDigits int) string {
+	if bigIsZero(val) {
+		return "0"
+	} else if bigAbsIsOne(val) {
+		return "1"
+	}
+
+	var builder strings.Builder
+	dig := getDigits(uppercase, int(radix.Uint64()))
+
+	if maxDigits > 0 { //maxDigits is 0 or less if the max digits is unknown
+		if maxDigits <= choppedDigits {
+			return ""
+		}
+		toDefaultStringRecursive(val, radix, uppercase, choppedDigits, maxDigits, dig, true, &builder)
+	} else {
+		var quotient big.Int
+		quotient.Set(val)
+		for { // value == quotient * 16 + remainder
+			var remainder big.Int
+			quotient.QuoRem(&quotient, radix, &remainder)
+			if choppedDigits > 0 {
+				choppedDigits--
+				continue
+			}
+			builder.WriteByte(dig[remainder.Uint64()])
+			if bigIsZero(&quotient) {
+				break
+			}
+		}
+		if builder.Len() == 0 {
+			return "" // all digits are chopped
+		}
+		return reverse(builder.String())
+	}
+
+	return builder.String()
+}
