@@ -734,3 +734,26 @@ func getRadixPower(radix *big.Int, power int) *big.Int {
 
 	return result
 }
+
+func toDefaultStringRecursive(val *BigDivInt, radix *BigDivInt, uppercase bool, choppedDigits, digitCount int, dig string, highest bool, builder *strings.Builder) {
+	if val.IsUint64() {
+		longVal := val.Uint64()
+		intRadix := int(radix.Int64())
+		if !highest {
+			getLeadingZeros(digitCount-toUnsignedStringLength(longVal, intRadix), builder)
+		}
+		toUnsignedStringCased(longVal, intRadix, choppedDigits, uppercase, builder)
+	} else if digitCount > choppedDigits {
+		halfCount := digitCount >> 1
+		var quotient, remainder big.Int
+		var radixPower = getRadixPower(radix, halfCount)
+		quotient.QuoRem(val, radixPower, &remainder)
+		if highest && bigIsZero(&quotient) {
+			// only do low
+			toDefaultStringRecursive(&remainder, radix, uppercase, choppedDigits, halfCount, dig, true, builder)
+		} else {
+			toDefaultStringRecursive(&quotient, radix, uppercase, max(0, choppedDigits-halfCount), digitCount-halfCount, dig, highest, builder)
+			toDefaultStringRecursive(&remainder, radix, uppercase, choppedDigits, halfCount, dig, false, builder)
+		}
+	}
+}
