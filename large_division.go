@@ -288,6 +288,13 @@ func (div *IPAddressLargeDivision) getMaxDigitCount() int {
 	return getBigMaxDigitCount(rad, bc, maxValue)
 }
 
+func (div *IPAddressLargeDivision) getDefaultLowerString() string {
+	val := div.GetValue()
+	rad := div.getBigDefaultTextualRadix()
+	mdg := div.getMaxDigitCount()
+	return toDefaultBigString(val, rad, false, 0, mdg)
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
