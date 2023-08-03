@@ -452,3 +452,12 @@ func toUnsignedStringLengthSlow(value uint64, radix int) int {
 
 	return count
 }
+
+func toUnsignedStringLength(value uint64, radix int) int {
+	if value <= 0xffff {
+		if result := toUnsignedStringLengthFast(uint16(value), radix); result >= 0 {
+			return result
+		}
+	}
+	return toUnsignedStringLengthSlow(value, radix)
+}
