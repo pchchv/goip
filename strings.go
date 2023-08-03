@@ -355,3 +355,72 @@ func getDigits(uppercase bool, radix int) string {
 	}
 	return digits
 }
+
+func toUnsignedStringLengthFast(value uint16, radix int) int {
+	if value <= 1 { // for values larger than 1, result can be different with different radix (radix is 2 and up)
+		return 1
+	}
+	if radix == 10 {
+		// value <= 0xffff (ie 16 bits or less)
+		if value < 10 {
+			return 1
+		} else if value < 100 {
+			return 2
+		} else if value < 1000 {
+			return 3
+		} else if value < 10000 {
+			return 4
+		}
+		return 5
+	} else if radix == 16 {
+		// value <= 0xffff (ie 16 bits or less)
+		if value < 0x10 {
+			return 1
+		} else if value < 0x100 {
+			return 2
+		} else if value < 0x1000 {
+			return 3
+		}
+		return 4
+	} else if radix == 8 {
+		// value <= 0xffff (ie 16 bits or less)
+		if value < 010 {
+			return 1
+		} else if value < 0100 {
+			return 2
+		} else if value < 01000 {
+			return 3
+		} else if value < 010000 {
+			return 4
+		} else if value < 0100000 {
+			return 5
+		}
+		return 6
+	} else if radix == 2 {
+		// count the number of digits
+		// note that we already know value != 0 and that value <= 0xffff
+		// and we use both of those facts
+		digitCount := 15
+		val := value
+		if val>>8 == 0 {
+			digitCount -= 8
+		} else {
+			val >>= 8
+		}
+		if val>>4 == 0 {
+			digitCount -= 4
+		} else {
+			val >>= 4
+		}
+		if val>>2 == 0 {
+			digitCount -= 2
+		} else {
+			val >>= 2
+		}
+		if (val & 2) != 0 {
+			digitCount++
+		}
+		return digitCount
+	}
+	return -1
+}
