@@ -316,6 +316,14 @@ func (div *IPAddressLargeDivision) getDefaultRangeSeparatorString() string {
 	return RangeSeparatorStr
 }
 
+func (div *IPAddressLargeDivision) getDefaultMaskedRangeString() string {
+	maxDigitCount := div.getMaxDigitCount()
+	radix := div.getBigDefaultTextualRadix()
+	return toDefaultBigString(div.getValue(), radix, false, 0, maxDigitCount) +
+		div.getDefaultRangeSeparatorString() +
+		toDefaultBigString(div.getLargeDivValues().upperValueMasked, radix, false, 0, maxDigitCount)
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
