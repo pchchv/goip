@@ -796,3 +796,29 @@ func toDefaultBigString(val, radix *BigDivInt, uppercase bool, choppedDigits, ma
 
 	return builder.String()
 }
+
+func getBigDigitCount(val, radix *BigDivInt) int {
+	if bigIsZero(val) || bigAbsIsOne(val) {
+		return 1
+	}
+
+	var v big.Int
+	v.Set(val)
+	result := 1
+
+	for {
+		v.Quo(&v, radix)
+		if bigIsZero(&v) {
+			break
+		}
+		result++
+	}
+
+	return result
+}
+
+func getBigMaxDigitCount(radix int, bitCount BitCount, maxValue *BigDivInt) int {
+	return getMaxDigitCountCalc(radix, bitCount, func() int {
+		return getBigDigitCount(maxValue, big.NewInt(int64(radix)))
+	})
+}
