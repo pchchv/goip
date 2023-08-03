@@ -243,6 +243,36 @@ func (div *IPAddressLargeDivision) GetMinPrefixLenForBlock() BitCount {
 	return result
 }
 
+// GetPrefixLenForSingleBlock returns a prefix length for which there is only one prefix in a given division,
+// and the range of values in that division is the same as the block of all values for that prefix.
+//
+// If the range of division values can be described in this way,
+// this method returns, the same value as GetMinPrefixLenForBlock.
+//
+// If no such prefix length exists, returns nil.
+//
+// If this division is a single value, this returns the bit count of the segment.
+func (div *IPAddressLargeDivision) GetPrefixLenForSingleBlock() PrefixLen {
+	prefLen := div.GetMinPrefixLenForBlock()
+	bitCount := div.GetBitCount()
+
+	if prefLen == bitCount {
+		if !div.IsMultiple() {
+			result := PrefixBitCount(prefLen)
+			return &result
+		}
+	} else {
+		lower, upper := div.getValue(), div.getUpperValue()
+		shift := uint(bitCount - prefLen)
+		var one, two big.Int
+		if one.Rsh(lower, shift).Cmp(two.Rsh(upper, shift)) == 0 {
+			result := PrefixBitCount(prefLen)
+			return &result
+		}
+	}
+	return nil
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
