@@ -675,3 +675,14 @@ func toUnsignedStringFast(value uint16, radix int, uppercase bool, appendable *s
 	}
 	return false
 }
+
+func toUnsignedString(value uint64, radix int, appendable *strings.Builder) *strings.Builder {
+	return toUnsignedStringCased(value, radix, 0, false, appendable)
+}
+
+func toUnsignedStringCased(value uint64, radix, choppedDigits int, uppercase bool, appendable *strings.Builder) *strings.Builder {
+	if value > 0xffff || choppedDigits != 0 || !toUnsignedStringFast(uint16(value), radix, uppercase, appendable) {
+		toUnsignedStringSlow(value, radix, choppedDigits, uppercase, appendable)
+	}
+	return appendable
+}
