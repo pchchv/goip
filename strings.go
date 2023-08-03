@@ -510,3 +510,168 @@ func toUnsignedStringSlow(value uint64, radix, choppedDigits int, uppercase bool
 
 	appendable.Write(bytes[index:])
 }
+
+func toUnsignedStringFast(value uint16, radix int, uppercase bool, appendable *strings.Builder) bool {
+	if value <= 1 { // for values larger than 1, result can be different with different radix (radix is 2 and up)
+		if value == 0 {
+			appendable.WriteByte('0')
+		} else {
+			appendable.WriteByte('1')
+		}
+		return true
+	}
+	if radix == 10 {
+		// value <= 0xffff (ie 16 bits or less)
+		if value < 10 {
+			appendable.WriteByte(digits[value])
+			return true
+		} else if value < 100 {
+			dig := doubleDigitsDecimal
+			digIndex := value << 1
+			appendable.WriteByte(dig[digIndex])
+			appendable.WriteByte(dig[digIndex+1])
+			return true
+		} else if value < 200 {
+			dig := doubleDigitsDecimal
+			digIndex := (value - 100) << 1
+			appendable.WriteByte('1')
+			appendable.WriteByte(dig[digIndex])
+			appendable.WriteByte(dig[digIndex+1])
+			return true
+		} else if value < 300 {
+			dig := doubleDigitsDecimal
+			digIndex := (value - 200) << 1
+			appendable.WriteByte('2')
+			appendable.WriteByte(dig[digIndex])
+			appendable.WriteByte(dig[digIndex+1])
+			return true
+		}
+
+		dig := digits
+		uval := uint(value)
+		var res [5]byte
+		i := 4
+
+		for { // value == quotient * 10 + remainder
+			quotient := (uval * 0xcccd) >> 19                       // floor of n/10 is floor of ((0xcccd * n / 2^16) / 2^3)
+			remainder := uval - ((quotient << 3) + (quotient << 1)) // multiplication by 2 added to multiplication by 2^3 is multiplication by 2 + 8 = 10
+			res[i] = dig[remainder]
+			uval = quotient
+			if uval == 0 {
+				break
+			}
+			i--
+		}
+
+		appendable.Write(res[i:])
+		return true
+	} else if radix == 16 {
+		if value < 0x10 {
+			dig := getDigits(uppercase, radix)
+			appendable.WriteByte(dig[value])
+			return true
+		} else if value == 0xffff {
+			if uppercase {
+				appendable.WriteString("FFFF")
+			} else {
+				appendable.WriteString("ffff")
+			}
+			return true
+		}
+
+		dig := getDigits(uppercase, radix)
+		shift := uint(12)
+
+		for {
+			index := (value >> shift) & 15
+			if index != 0 { // index 0 is digit "0", no need to write leading zeros
+				appendable.WriteByte(dig[index])
+				shift -= 4
+				for shift > 0 {
+					appendable.WriteByte(dig[(value>>shift)&15])
+					shift -= 4
+				}
+				break
+			}
+			shift -= 4
+			if shift == 0 {
+				break
+			}
+		}
+		appendable.WriteByte(dig[value&15])
+		return true
+	} else if radix == 8 {
+		dig := digits
+		if value < 010 {
+			appendable.WriteByte(dig[value])
+			return true
+
+		}
+
+		shift := uint(15)
+		for {
+			index := (value >> shift) & 7
+			if index != 0 { // index 0 is digit "0"
+				appendable.WriteByte(dig[index])
+				shift -= 3
+				for shift > 0 {
+					appendable.WriteByte(dig[(value>>shift)&7])
+					shift -= 3
+				}
+				break
+			}
+			shift -= 3
+			if shift == 0 {
+				break
+			}
+		}
+		appendable.WriteByte(dig[value&7])
+		return true
+	} else if radix == 2 {
+		// value != 0 and that value <= 0xffff
+		var digitIndex int
+		if (value >> 8) == 0 {
+			if value == 0xff {
+				appendable.WriteString("11111111")
+				return true
+			} else if (value >> 4) == 0 {
+				digitIndex = 4
+			} else {
+				digitIndex = 8
+			}
+		} else {
+			if value == 0xffff {
+				appendable.WriteString("1111111111111111")
+				return true
+			} else if (value >> 4) == 0 {
+				digitIndex = 12
+			} else {
+				digitIndex = 16
+			}
+		}
+
+		for digitIndex--; digitIndex > 0; digitIndex-- {
+			digit := (value >> uint(digitIndex)) & 1
+			if digit == 1 {
+				appendable.WriteByte('1')
+				for digitIndex--; digitIndex > 0; digitIndex-- {
+					digit = (value >> uint(digitIndex)) & 1
+					if digit == 0 {
+						appendable.WriteByte('0')
+					} else {
+						appendable.WriteByte('1')
+					}
+				}
+				break
+			}
+		}
+
+		if (value & 1) == 0 {
+			appendable.WriteByte('0')
+		} else {
+			appendable.WriteByte('1')
+		}
+		return true
+	}
+	return false
+}
