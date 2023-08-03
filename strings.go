@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"math/big"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -23,7 +24,10 @@ const (
 		"90919293949596979899"
 )
 
-var maxDigitMap = createDigitMap()
+var (
+	maxDigitMap   = createDigitMap()
+	radixPowerMap = createRadixMap() // we use a pointer so we can overwrite atomically
+)
 
 func getRangeString(
 	strProvider divStringProvider,
@@ -685,4 +689,9 @@ func toUnsignedStringCased(value uint64, radix, choppedDigits int, uppercase boo
 		toUnsignedStringSlow(value, radix, choppedDigits, uppercase, appendable)
 	}
 	return appendable
+}
+
+func createRadixMap() *map[uint64]*big.Int {
+	res := make(map[uint64]*big.Int)
+	return &res
 }
