@@ -273,6 +273,21 @@ func (div *IPAddressLargeDivision) GetPrefixLenForSingleBlock() PrefixLen {
 	return nil
 }
 
+func (div *IPAddressLargeDivision) getMaxDigitCount() int {
+	var maxValue *BigDivInt
+	rad := div.getDefaultTextualRadix()
+	bc := div.GetBitCount()
+	vals := div.getLargeDivValues()
+
+	if vals == nil {
+		maxValue = bigZeroConst()
+	} else {
+		maxValue = vals.maxValue
+	}
+
+	return getBigMaxDigitCount(rad, bc, maxValue)
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
