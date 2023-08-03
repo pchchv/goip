@@ -58,3 +58,17 @@ func max(a, b int) int {
 	}
 	return b
 }
+
+func minSegInt(a, b SegInt) SegInt {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func maxSegInt(a, b SegInt) SegInt {
+	if a > b {
+		return a
+	}
+	return b
+}
