@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"strconv"
 	"strings"
 	"unsafe"
 )
@@ -460,4 +461,52 @@ func toUnsignedStringLength(value uint64, radix int) int {
 		}
 	}
 	return toUnsignedStringLengthSlow(value, radix)
+}
+
+func toUnsignedStringSlow(value uint64, radix, choppedDigits int, uppercase bool, appendable *strings.Builder) {
+	var str string
+
+	if radix <= 36 { // strconv.FormatUint doesn't work with larger radix
+		str = strconv.FormatUint(value, radix)
+		if choppedDigits > 0 {
+			str = str[:len(str)-choppedDigits]
+		}
+		if uppercase && radix > 10 {
+			strlen := len(str)
+			diff := uint8('a' - 'A')
+			for i := 0; i < strlen; i++ {
+				c := str[i]
+				if c > '9' {
+					c -= diff
+				}
+				appendable.WriteByte(c)
+			}
+		} else {
+			appendable.WriteString(str)
+		}
+		return
+	}
+
+	var bytes [13]byte
+	index := 13
+	dig := extendedDigits
+	rad64 := uint64(radix)
+
+	for value >= rad64 {
+		val := value
+		value /= rad64
+		if choppedDigits > 0 {
+			choppedDigits--
+			continue
+		}
+		index--
+		remainder := val - (value * rad64)
+		bytes[index] = dig[remainder]
+	}
+
+	if choppedDigits == 0 {
+		appendable.WriteByte(dig[value])
+	}
+
+	appendable.Write(bytes[index:])
 }
