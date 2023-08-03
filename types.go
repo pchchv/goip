@@ -180,3 +180,12 @@ func cacheBitCount(i BitCount) PrefixLen {
 
 	return &res
 }
+
+func bigAbsIsOne(val *BigDivInt) bool {
+	bits := val.Bits()
+	return len(bits) == 1 && bits[0] == 1
+}
+
+func bigIsOne(val *BigDivInt) bool {
+	return bigAbsIsOne(val) && val.Sign() > 0
+}
