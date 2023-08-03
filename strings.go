@@ -344,3 +344,14 @@ func reverse(s string) string {
 	}
 	return string(bts)
 }
+
+func isExtendedDigits(radix int) bool {
+	return radix > len(digits)
+}
+
+func getDigits(uppercase bool, radix int) string {
+	if uppercase || isExtendedDigits(radix) {
+		return uppercaseDigits
+	}
+	return digits
+}
