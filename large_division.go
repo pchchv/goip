@@ -305,6 +305,17 @@ func (div *IPAddressLargeDivision) getStringAsLower() string {
 	return stringer()
 }
 
+func (div *IPAddressLargeDivision) isExtendedDigits() bool {
+	return isExtendedDigits(div.getDefaultTextualRadix())
+}
+
+func (div *IPAddressLargeDivision) getDefaultRangeSeparatorString() string {
+	if div.isExtendedDigits() {
+		return ExtendedDigitsRangeSeparatorStr
+	}
+	return RangeSeparatorStr
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
