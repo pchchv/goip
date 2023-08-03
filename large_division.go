@@ -218,6 +218,31 @@ func (div *IPAddressLargeDivision) ContainsSinglePrefixBlock(prefixLen BitCount)
 	return testBigRange(lower, lower, upper, bitCount, prefixLen)
 }
 
+// GetMinPrefixLenForBlock returns the smallest prefix length such that this division includes the block of all values for that prefix length.
+//
+// If the entire range can be described in this way, this method returns, the same value as GetPrefixLenForSingleBlock.
+//
+// This block can have a single prefix or multiple possible prefix values for the returned prefix length.
+// To avoid the case of multiple prefix values, use GetPrefixLenForSingleBlock.
+//
+// If this division represents a single value, a bit count is returned.
+func (div *IPAddressLargeDivision) GetMinPrefixLenForBlock() BitCount {
+	result := div.GetBitCount()
+	if div.IsMultiple() {
+		lower, upper := div.getValue(), div.getUpperValue()
+		lowerZeros := lower.TrailingZeroBits()
+		if lowerZeros != 0 {
+			var upperNot big.Int
+			upperOnes := upperNot.Not(upper).TrailingZeroBits()
+			if upperOnes != 0 {
+				prefixedBitCount := BitCount(umin(lowerZeros, upperOnes))
+				result -= prefixedBitCount
+			}
+		}
+	}
+	return result
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
