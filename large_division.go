@@ -295,6 +295,16 @@ func (div *IPAddressLargeDivision) getDefaultLowerString() string {
 	return toDefaultBigString(val, rad, false, 0, mdg)
 }
 
+func (div *IPAddressLargeDivision) getStringAsLower() string {
+	stringer := div.getDefaultLowerString
+	if div.divisionValues != nil {
+		if cache := div.getCache(); cache != nil {
+			return cacheStr(&cache.cachedString, stringer)
+		}
+	}
+	return stringer()
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
