@@ -336,3 +336,11 @@ func getDefaultRangeStringVals(strProvider divStringProvider, val1, val2 uint64,
 	}
 	return buildDefaultRangeString(strProvider, radix)
 }
+
+func reverse(s string) string {
+	bts := []byte(s)
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		bts[i], bts[j] = bts[j], bts[i]
+	}
+	return string(bts)
+}
