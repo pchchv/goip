@@ -2,6 +2,7 @@ package goip
 
 import (
 	"bytes"
+	"fmt"
 	"math/big"
 	"strings"
 	"unsafe"
@@ -60,6 +61,35 @@ func (div *addressLargeDivInternal) getBigDefaultTextualRadix() *big.Int {
 // GetString() is more appropriate in context with prefix lengths, it uses zeros instead of wildcards for prefix block ranges.
 func (div *addressLargeDivInternal) toString() string { // this can be moved to addressDivisionBase when we have ContainsPrefixBlock and similar methods implemented for big.Int in the base
 	return toString(div.toLargeAddressDivision())
+}
+
+// Format implements [fmt.Formatter] interface. It accepts the formats
+//   - 'v' for the default address and section format (either the normalized or canonical string),
+//   - 's' (string) for the same,
+//   - 'b' (binary), 'o' (octal with 0 prefix), 'O' (octal with 0o prefix),
+//   - 'd' (decimal), 'x' (lowercase hexadecimal), and
+//   - 'X' (uppercase hexadecimal).
+//
+// Also supported are some of fmt's format flags for integral types.
+// Sign control is not supported since addresses and sections are never negative.
+// '#' for an alternate format is supported, which adds a leading zero for octal, and for hexadecimal it adds
+// a leading "0x" or "0X" for "%#x" and "%#X" respectively.
+// Also supported is specification of minimum digits precision, output field width,
+// space or zero padding, and '-' for left or right justification.
+func (div addressLargeDivInternal) Format(state fmt.State, verb rune) {
+	switch verb {
+	case 's', 'v':
+		_, _ = state.Write([]byte(div.toString()))
+		return
+	}
+	// we try to filter through the flags provided to the DivInt values, as if the fmt string were applied to the int(s) directly
+	formatStr := flagsFromState(state, verb)
+	if div.isMultiple() {
+		formatStr = fmt.Sprintf("%s%c%s", formatStr, RangeSeparator, formatStr)
+		_, _ = state.Write([]byte(fmt.Sprintf(formatStr, div.getValue(), div.getUpperValue())))
+	} else {
+		_, _ = state.Write([]byte(fmt.Sprintf(formatStr, div.getValue())))
+	}
 }
 
 // IPAddressLargeDivision represents an arbitrary bit size division in an address or address division grouping.
