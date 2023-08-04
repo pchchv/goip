@@ -408,6 +408,14 @@ func (div *IPAddressLargeDivision) getLowerStringChopped(radix int, choppedDigit
 	appendable.WriteString(div.toDefaultString(div.getValue(), radix, uppercase, choppedDigits))
 }
 
+func (div *IPAddressLargeDivision) getUpperString(radix int, uppercase bool, appendable *strings.Builder) {
+	appendable.WriteString(div.toDefaultString(div.getUpperValue(), radix, uppercase, 0))
+}
+
+func (div *IPAddressLargeDivision) getUpperStringMasked(radix int, uppercase bool, appendable *strings.Builder) {
+	appendable.WriteString(div.toDefaultString(div.getLargeDivValues().upperValueMasked, radix, uppercase, 0))
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
