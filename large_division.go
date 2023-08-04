@@ -523,6 +523,56 @@ func (div *IPAddressLargeDivision) getSplitRangeString(
 	return nil
 }
 
+func (div *IPAddressLargeDivision) getSplitRangeStringLength(
+	rangeSeparator string,
+	wildcard string,
+	leadingZeroCount int,
+	radix int,
+	uppercase bool,
+	splitDigitSeparator byte,
+	reverseSplitDigits bool,
+	stringPrefix string) int {
+	var lowerBuilder, upperBuilder strings.Builder
+	_, _, _ = rangeSeparator, splitDigitSeparator, reverseSplitDigits
+	digitsLength := -1
+	stringPrefixLength := len(stringPrefix)
+	div.getLowerString(radix, uppercase, &lowerBuilder)
+	div.getUpperString(radix, uppercase, &upperBuilder)
+	dig := getDigits(uppercase, radix)
+	zeroDigit := dig[0]
+	highestDigit := dig[radix-1]
+	remainingAfterLoop := leadingZeroCount
+	lowerStr := lowerBuilder.String()
+	upperStr := upperBuilder.String()
+	upperLength := len(upperStr)
+	lowerLength := len(lowerStr)
+
+	for i := 1; i < upperLength; i++ {
+		var lower byte
+		if i <= lowerLength {
+			lower = lowerStr[lowerLength-i]
+		}
+		upperIndex := upperLength - i
+		upper := upperStr[upperIndex]
+		isFullRange := (lower == zeroDigit) && (upper == highestDigit)
+		if isFullRange {
+			digitsLength += len(wildcard) + 1
+		} else if lower != upper {
+			digitsLength += (stringPrefixLength << 1) + 4 //1 for each digit, 1 for range separator, 1 for split digit separator
+		} else {
+			//this and any remaining must be singles
+			remainingAfterLoop += upperIndex + 1
+			break
+		}
+	}
+
+	if remainingAfterLoop > 0 {
+		digitsLength += remainingAfterLoop * (stringPrefixLength + 2) // one for each splitDigitSeparator, 1 for each digit
+	}
+
+	return digitsLength
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
