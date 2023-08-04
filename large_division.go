@@ -601,6 +601,14 @@ func (div *IPAddressLargeDivision) getMaxDigitCountRadix(radix int) int {
 	return getBigMaxDigitCount(radix, bc, maxValue)
 }
 
+func (div *IPAddressLargeDivision) adjustLeadingZeroCount(leadingZeroCount int, value *BigDivInt, radix int) int {
+	if leadingZeroCount < 0 {
+		width := div.getDigitCount(value, radix)
+		return max(0, div.getMaxDigitCountRadix(radix)-width)
+	}
+	return leadingZeroCount
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
