@@ -995,3 +995,21 @@ func newLargeDivPrefixedValues(value, upperValue []byte, prefLen PrefixLen, bitC
 	}
 	return result
 }
+
+// NewIPAddressLargeRangePrefixDivision creates a division of the given arbitrary bit-length,
+// assigning it the given value range and prefix length.
+// If a value's bit length exceeds the given bit length, it is truncated.
+// If the prefix length exceeds the bit length, it is adjusted to the bit length.
+// If the prefix length is negative, it is adjusted to zero.
+func NewIPAddressLargeRangePrefixDivision(val, upperVal []byte, prefixLen PrefixLen, bitCount BitCount, defaultRadix int) *IPAddressLargeDivision {
+	return createLargeAddressDiv(newLargeDivPrefixedValues(val, upperVal, prefixLen, bitCount), defaultRadix)
+}
+
+// NewIPAddressLargePrefixDivision creates a division of the given arbitrary bit-length,
+// assigning it the given value and prefix length.
+// If the value's bit length exceeds the given bit length, it is truncated.
+// If the prefix length exceeds the bit length, it is adjusted to the bit length.
+// If the prefix length is negative, it is adjusted to zero.
+func NewIPAddressLargePrefixDivision(val []byte, prefixLen PrefixLen, bitCount BitCount, defaultRadix int) *IPAddressLargeDivision {
+	return createLargeAddressDiv(newLargeDivPrefixedValue(val, prefixLen, bitCount), defaultRadix)
+}
