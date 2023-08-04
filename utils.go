@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"sync/atomic"
 	"unsafe"
 )
@@ -71,4 +72,36 @@ func maxSegInt(a, b SegInt) SegInt {
 		return a
 	}
 	return b
+}
+
+func flagsFromState(state fmt.State, verb rune) string {
+	flags := "# +-0"
+	vals := make([]rune, 0, len(flags)+5) // %, flags, width, '.', precision, verb
+	vals = append(vals, '%')
+
+	for i := 0; i < len(flags); i++ {
+		b := flags[i]
+		if state.Flag(int(b)) {
+			vals = append(vals, rune(b))
+		}
+	}
+
+	width, widthOK := state.Width()
+	precision, precisionOK := state.Precision()
+
+	if widthOK || precisionOK {
+		var wpv string
+		if widthOK && precisionOK {
+			wpv = fmt.Sprintf("%d.%d%c", width, precision, verb)
+		} else if widthOK {
+			wpv = fmt.Sprintf("%d%c", width, verb)
+		} else {
+			wpv = fmt.Sprintf(".%d%c", precision, verb)
+		}
+		return string(vals) + wpv
+	}
+
+	vals = append(vals, verb)
+
+	return string(vals)
 }
