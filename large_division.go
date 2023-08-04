@@ -573,6 +573,34 @@ func (div *IPAddressLargeDivision) getSplitRangeStringLength(
 	return digitsLength
 }
 
+func (div *IPAddressLargeDivision) getDigitCount(val *BigDivInt, radix int) int {
+	vals := div.divisionValues
+	if vals == nil {
+		return 1
+	}
+	var bigRadix *big.Int
+	if div.getDefaultTextualRadix() == radix {
+		bigRadix = div.getBigDefaultTextualRadix()
+	} else {
+		bigRadix = big.NewInt(int64(radix))
+	}
+	return getBigDigitCount(val, bigRadix)
+}
+
+func (div *IPAddressLargeDivision) getMaxDigitCountRadix(radix int) int {
+	var maxValue *BigDivInt
+	bc := div.GetBitCount()
+	vals := div.getLargeDivValues()
+
+	if vals == nil {
+		maxValue = bigZeroConst()
+	} else {
+		maxValue = vals.maxValue
+	}
+
+	return getBigMaxDigitCount(radix, bc, maxValue)
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
