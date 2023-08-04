@@ -975,3 +975,23 @@ func newLargeDivPrefixedValue(value []byte, prefLen PrefixLen, bitCount BitCount
 	}
 	return result
 }
+
+func newLargeDivPrefixedValues(value, upperValue []byte, prefLen PrefixLen, bitCount BitCount) *largeDivValues {
+	result := &largeDivValues{cache: divCache{}}
+	result.value, result.upperValue, bitCount, result.maxValue = setVals(value, upperValue, bitCount)
+	result.bitCount = bitCount
+	prefLen = checkPrefLen(prefLen, bitCount)
+	result.prefLen = prefLen
+	result.isMult = result.value != result.upperValue
+
+	var isSinglePrefBlock bool
+
+	result.isPrefixBlock, isSinglePrefBlock, result.upperValueMasked =
+		setCachedPrefixValues(result.value, result.upperValue, result.maxValue, prefLen, bitCount)
+	if isSinglePrefBlock {
+		result.cache.isSinglePrefBlock = &trueVal
+	} else {
+		result.cache.isSinglePrefBlock = &falseVal
+	}
+	return result
+}
