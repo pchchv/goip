@@ -332,6 +332,37 @@ func (div *IPAddressLargeDivision) getDefaultRangeString() string {
 		toDefaultBigString(div.getUpperValue(), radix, false, 0, maxDigitCount)
 }
 
+// GetString produces a normalized string to represent the segment.
+// If the segment is an IP segment string with a CIDR network prefix block for its prefix length,
+// the string contains only the lower value of the block range.
+// Otherwise, an explicit range will be printed.
+// If the segment is not an IP segment,
+// the string will be similar to the string output by the GetWildcardString function.
+//
+// The returned string is useful in the context of creating strings for address sections or full addresses,
+// in which case the radix and bit length can be deduced from the context.
+// The String method produces strings, which are more appropriate when there is no context.
+func (div *IPAddressLargeDivision) GetString() string {
+	stringer := func() string {
+		if div.IsSinglePrefixBlock() || !div.isMultiple() { //covers the case of single addresses, when there is no prefix or the prefix is the bit count
+			return div.getDefaultLowerString()
+		} else {
+			if div.IsPrefixBlock() {
+				return div.getDefaultMaskedRangeString()
+			}
+			return div.getDefaultRangeString()
+		}
+	}
+
+	if div.divisionValues != nil {
+		if cache := div.getCache(); cache != nil {
+			return cacheStr(&cache.cachedString, stringer)
+		}
+	}
+
+	return stringer()
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
