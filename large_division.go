@@ -387,6 +387,14 @@ func (div *IPAddressLargeDivision) GetWildcardString() string {
 	return stringer()
 }
 
+func (div *IPAddressLargeDivision) getLowerStringLength(radix int) int {
+	return getBigDigitCount(div.getValue(), div.getBigRadix(radix))
+}
+
+func (div *IPAddressLargeDivision) getUpperStringLength(radix int) int {
+	return getBigDigitCount(div.getUpperValue(), div.getBigRadix(radix))
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
