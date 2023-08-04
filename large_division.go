@@ -953,3 +953,25 @@ func NewIPAddressLargeDivision(val []byte, bitCount BitCount, defaultRadix int) 
 func NewIPAddressLargeRangeDivision(val, upperVal []byte, bitCount BitCount, defaultRadix int) *IPAddressLargeDivision {
 	return createLargeAddressDiv(newLargeDivValues(val, upperVal, bitCount), defaultRadix)
 }
+
+func newLargeDivPrefixedValue(value []byte, prefLen PrefixLen, bitCount BitCount) *largeDivValues {
+	result := &largeDivValues{cache: divCache{}}
+	result.value, bitCount, result.maxValue = setVal(value, bitCount)
+	result.bitCount = bitCount
+	result.upperValue = result.value
+	prefLen = checkPrefLen(prefLen, bitCount)
+	result.prefLen = prefLen
+	if prefLen != nil {
+		if result.isPrefixBlock = prefLen.Len() == bitCount; result.isPrefixBlock {
+			result.cache.isSinglePrefBlock = &trueVal
+			result.upperValueMasked = result.upperValue
+		} else {
+			result.cache.isSinglePrefBlock = &falseVal
+			result.upperValueMasked = setUpperValueMasked(result.value, result.upperValue, prefLen, bitCount)
+		}
+	} else {
+		result.upperValueMasked = result.upperValue
+		result.cache.isSinglePrefBlock = &falseVal
+	}
+	return result
+}
