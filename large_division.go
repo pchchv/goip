@@ -324,6 +324,14 @@ func (div *IPAddressLargeDivision) getDefaultMaskedRangeString() string {
 		toDefaultBigString(div.getLargeDivValues().upperValueMasked, radix, false, 0, maxDigitCount)
 }
 
+func (div *IPAddressLargeDivision) getDefaultRangeString() string {
+	maxDigitCount := div.getMaxDigitCount()
+	radix := div.getBigDefaultTextualRadix()
+	return toDefaultBigString(div.getValue(), radix, false, 0, maxDigitCount) +
+		div.getDefaultRangeSeparatorString() +
+		toDefaultBigString(div.getUpperValue(), radix, false, 0, maxDigitCount)
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
