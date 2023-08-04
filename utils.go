@@ -113,3 +113,13 @@ func cloneInts(orig []int) []int {
 func cloneDivs(orig []*AddressDivision) []*AddressDivision {
 	return append(make([]*AddressDivision, 0, len(orig)), orig...)
 }
+
+func cloneLargeDivs(orig []*IPAddressLargeDivision) []*IPAddressLargeDivision {
+	return append(make([]*IPAddressLargeDivision, 0, len(orig)), orig...)
+}
+
+func fillDivs(orig []*AddressDivision, val *AddressDivision) {
+	for i := range orig {
+		orig[i] = val
+	}
+}
