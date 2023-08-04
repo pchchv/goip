@@ -5,6 +5,8 @@ import (
 	"math/big"
 	"strings"
 	"unsafe"
+
+	"github.com/pchchv/goip/address_error"
 )
 
 var _ divisionValues = &largeDivValues{}
@@ -436,6 +438,89 @@ func (div *IPAddressLargeDivision) getSplitLowerString(radix int, choppedDigits 
 			appendable.WriteByte(str[i])
 		}
 	}
+}
+
+func (div *IPAddressLargeDivision) getSplitRangeString(
+	rangeSeparator string,
+	wildcard string,
+	radix int,
+	uppercase bool,
+	splitDigitSeparator byte,
+	reverseSplitDigits bool,
+	stringPrefix string,
+	appendable *strings.Builder) address_error.IncompatibleAddressError {
+	var lowerBuilder, upperBuilder strings.Builder
+	div.getLowerString(radix, uppercase, &lowerBuilder)
+	div.getUpperString(radix, uppercase, &upperBuilder)
+	diff := upperBuilder.Len() - lowerBuilder.Len()
+	if diff > 0 {
+		lowerStr := lowerBuilder.String()
+		lowerBuilder.Reset()
+		for ; diff > 0; diff-- {
+			lowerBuilder.WriteByte('0')
+		}
+		lowerBuilder.WriteString(lowerStr)
+	}
+
+	previousWasFull, nextMustBeFull := true, false
+	dig := getDigits(uppercase, radix)
+	zeroDigit := dig[0]
+	highestDigit := dig[radix-1]
+	lowerStr := lowerBuilder.String()
+	upperStr := upperBuilder.String()
+	length := len(lowerStr)
+	prefLen := len(stringPrefix)
+
+	for i := 0; i < length; i++ {
+		var index int
+		if reverseSplitDigits {
+			index = length - i - 1
+		} else {
+			index = 1
+		}
+
+		lower := lowerStr[index]
+		upper := upperStr[index]
+
+		if i > 0 {
+			appendable.WriteByte(splitDigitSeparator)
+		}
+
+		if lower == upper {
+			if nextMustBeFull {
+				return &incompatibleAddressError{addressError{key: "ipaddress.error.splitMismatch"}}
+			}
+			if prefLen > 0 {
+				appendable.WriteString(stringPrefix)
+			}
+			appendable.WriteByte(lower)
+		} else {
+			isFullRange := (lower == zeroDigit) && (upper == highestDigit)
+			if isFullRange {
+				appendable.WriteString(wildcard)
+			} else {
+				if nextMustBeFull {
+					return &incompatibleAddressError{addressError{key: "ipaddress.error.splitMismatch"}}
+				}
+				if prefLen > 0 {
+					appendable.WriteString(stringPrefix)
+				}
+				appendable.WriteByte(lower)
+				appendable.WriteString(rangeSeparator)
+				appendable.WriteByte(upper)
+			}
+
+			if reverseSplitDigits {
+				if !previousWasFull {
+					return &incompatibleAddressError{addressError{key: "ipaddress.error.splitMismatch"}}
+				}
+				previousWasFull = isFullRange
+			} else {
+				nextMustBeFull = true
+			}
+		}
+	}
+	return nil
 }
 
 type largeDivValues struct {
