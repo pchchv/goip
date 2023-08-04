@@ -609,6 +609,14 @@ func (div *IPAddressLargeDivision) adjustLeadingZeroCount(leadingZeroCount int, 
 	return leadingZeroCount
 }
 
+func (div *IPAddressLargeDivision) adjustLowerLeadingZeroCount(leadingZeroCount int, radix int) int {
+	return div.adjustLeadingZeroCount(leadingZeroCount, div.getValue(), radix)
+}
+
+func (div *IPAddressLargeDivision) adjustUpperLeadingZeroCount(leadingZeroCount int, radix int) int {
+	return div.adjustLeadingZeroCount(leadingZeroCount, div.getUpperValue(), radix)
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
