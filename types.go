@@ -181,6 +181,19 @@ func cacheBitCount(i BitCount) PrefixLen {
 	return &res
 }
 
+func checkPrefLen(prefixLength PrefixLen, max BitCount) PrefixLen {
+	if prefixLength != nil {
+		prefLen := prefixLength.bitCount()
+		if prefLen > max {
+			return cacheBitCount(max)
+		} else if prefLen < 0 {
+			return cacheBitCount(0)
+		}
+	}
+	return prefixLength
+
+}
+
 func bigAbsIsOne(val *BigDivInt) bool {
 	bits := val.Bits()
 	return len(bits) == 1 && bits[0] == 1
