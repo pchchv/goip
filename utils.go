@@ -2,6 +2,7 @@ package goip
 
 import (
 	"fmt"
+	"math/big"
 	"sync/atomic"
 	"unsafe"
 )
@@ -122,4 +123,30 @@ func fillDivs(orig []*AddressDivision, val *AddressDivision) {
 	for i := range orig {
 		orig[i] = val
 	}
+}
+
+func getLongCount(segmentCountProvider func(index int) uint64, segCount int) uint64 {
+	if segCount <= 0 {
+		return 1
+	}
+
+	result := segmentCountProvider(0)
+
+	for i := 1; i < segCount; i++ {
+		result *= segmentCountProvider(i)
+	}
+
+	return result
+}
+
+func mult(currentResult *big.Int, newResult uint64) *big.Int {
+	if currentResult == nil {
+		return bigZero().SetUint64(newResult)
+	} else if newResult == 1 {
+		return currentResult
+	}
+
+	newBig := bigZero().SetUint64(newResult)
+
+	return currentResult.Mul(currentResult, newBig)
 }
