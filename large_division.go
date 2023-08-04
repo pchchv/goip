@@ -395,6 +395,10 @@ func (div *IPAddressLargeDivision) getUpperStringLength(radix int) int {
 	return getBigDigitCount(div.getUpperValue(), div.getBigRadix(radix))
 }
 
+func (div *IPAddressLargeDivision) toDefaultString(val *BigDivInt, radix int, uppercase bool, choppedDigits int) string {
+	return toDefaultBigString(val, div.getBigRadix(radix), uppercase, choppedDigits, getBigMaxDigitCount(radix, div.GetBitCount(), div.getLargeDivValues().maxValue))
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
