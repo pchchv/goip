@@ -416,6 +416,28 @@ func (div *IPAddressLargeDivision) getUpperStringMasked(radix int, uppercase boo
 	appendable.WriteString(div.toDefaultString(div.getLargeDivValues().upperValueMasked, radix, uppercase, 0))
 }
 
+func (div *IPAddressLargeDivision) getSplitLowerString(radix int, choppedDigits int, uppercase bool, splitDigitSeparator byte, reverseSplitDigits bool, stringPrefix string, appendable *strings.Builder) {
+	var builder strings.Builder
+	div.getLowerStringChopped(radix, choppedDigits, uppercase, &builder)
+	str := builder.String()
+	length := len(str)
+	prefLen := len(stringPrefix)
+
+	for i := 0; i < length; i++ {
+		if i > 0 {
+			appendable.WriteByte(splitDigitSeparator)
+		}
+		if prefLen > 0 {
+			appendable.WriteString(stringPrefix)
+		}
+		if reverseSplitDigits {
+			appendable.WriteByte(str[length-i-1])
+		} else {
+			appendable.WriteByte(str[i])
+		}
+	}
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
