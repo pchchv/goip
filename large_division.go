@@ -3,6 +3,7 @@ package goip
 import (
 	"bytes"
 	"math/big"
+	"strings"
 	"unsafe"
 )
 
@@ -397,6 +398,14 @@ func (div *IPAddressLargeDivision) getUpperStringLength(radix int) int {
 
 func (div *IPAddressLargeDivision) toDefaultString(val *BigDivInt, radix int, uppercase bool, choppedDigits int) string {
 	return toDefaultBigString(val, div.getBigRadix(radix), uppercase, choppedDigits, getBigMaxDigitCount(radix, div.GetBitCount(), div.getLargeDivValues().maxValue))
+}
+
+func (div *IPAddressLargeDivision) getLowerString(radix int, uppercase bool, appendable *strings.Builder) {
+	appendable.WriteString(div.toDefaultString(div.getValue(), radix, uppercase, 0))
+}
+
+func (div *IPAddressLargeDivision) getLowerStringChopped(radix int, choppedDigits int, uppercase bool, appendable *strings.Builder) {
+	appendable.WriteString(div.toDefaultString(div.getValue(), radix, uppercase, choppedDigits))
 }
 
 type largeDivValues struct {
