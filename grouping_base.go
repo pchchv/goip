@@ -141,3 +141,11 @@ func (grouping largeDivArray) init() largeDivArray {
 	}
 	return grouping
 }
+
+func (grouping largeDivArray) getSubDivisions(index, endIndex int) (divs []*IPAddressLargeDivision) {
+	return grouping[index:endIndex]
+}
+
+func (grouping largeDivArray) String() string {
+	return fmt.Sprint([]*IPAddressLargeDivision(grouping.init()))
+}
