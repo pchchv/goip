@@ -6,8 +6,11 @@ import (
 )
 
 var (
-	zeroDivs             = make([]*AddressDivision, 0)
-	zeroStandardDivArray = standardDivArray(zeroDivs)
+	zeroDivs                      = make([]*AddressDivision, 0)
+	zeroStandardDivArray          = standardDivArray(zeroDivs)
+	zeroLargeDivs                 = make([]*IPAddressLargeDivision, 0)
+	zeroLargeDivArray             = largeDivArray(zeroLargeDivs)
+	_                    divArray = standardDivArray{}
 )
 
 type ipStringCache struct {
@@ -115,3 +118,11 @@ func (grouping standardDivArray) getGenericDivision(index int) DivisionType {
 }
 
 type largeDivArray []*IPAddressLargeDivision
+
+func (grouping largeDivArray) getDivisionCount() int {
+	return len(grouping)
+}
+
+func (grouping largeDivArray) getDivision(index int) *addressDivisionBase {
+	return (*addressDivisionBase)(unsafe.Pointer(grouping[index]))
+}
