@@ -191,3 +191,11 @@ func count(segmentCountProvider func(index int) uint64, segCount, safeMultiplies
 		result = mult(result, curResult)
 	}
 }
+
+func reverseUint8(b uint8) uint8 {
+	x := b
+	x = ((x & 0xaa) >> 1) | ((x & 0x55) << 1)
+	x = ((x & 0xcc) >> 2) | ((x & 0x33) << 2)
+	x = (x >> 4) | (x << 4)
+	return x
+}
