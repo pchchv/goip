@@ -89,3 +89,24 @@ func (grouping *largeDivisionGroupingInternal) calcBytes() (bytes, upperBytes []
 	}
 	return
 }
+
+func (grouping *largeDivisionGroupingInternal) getUpperBytes() (bytes []byte) {
+	_, bytes = grouping.getCachedBytes(grouping.calcBytes)
+	return
+}
+
+// CopyUpperBytes copies the value of the highest division grouping in the range into a byte slice.
+//
+// If the value can fit in the given slice, it is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice with the value is created and returned.
+//
+// You can use the GetByteCount function to determine the required length of the byte array.
+func (grouping *largeDivisionGroupingInternal) CopyUpperBytes(bytes []byte) []byte {
+	if grouping.hasNoDivisions() {
+		if bytes != nil {
+			return bytes[:0]
+		}
+		return emptyBytes
+	}
+	return getBytesCopy(bytes, grouping.getUpperBytes())
+}
