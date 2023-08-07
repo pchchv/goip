@@ -113,3 +113,5 @@ func (grouping standardDivArray) init() standardDivArray {
 func (grouping standardDivArray) getGenericDivision(index int) DivisionType {
 	return grouping[index]
 }
+
+type largeDivArray []*IPAddressLargeDivision
