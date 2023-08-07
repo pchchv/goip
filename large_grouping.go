@@ -1,5 +1,7 @@
 package goip
 
+import "math/big"
+
 type largeDivisionGroupingInternal struct {
 	addressDivisionGroupingBase
 }
@@ -109,4 +111,22 @@ func (grouping *largeDivisionGroupingInternal) CopyUpperBytes(bytes []byte) []by
 		return emptyBytes
 	}
 	return getBytesCopy(bytes, grouping.getUpperBytes())
+}
+
+// UpperBytes returns the highest individual division grouping in this grouping as a byte slice.
+func (grouping *largeDivisionGroupingInternal) UpperBytes() []byte {
+	if grouping.hasNoDivisions() {
+		return emptyBytes
+	}
+	return cloneBytes(grouping.getUpperBytes())
+}
+
+// GetUpperValue returns the highest individual address division grouping
+// in this address division grouping as an integer value.
+func (grouping *largeDivisionGroupingInternal) GetUpperValue() *big.Int {
+	res := big.Int{}
+	if grouping.hasNoDivisions() {
+		return &res
+	}
+	return res.SetBytes(grouping.getUpperBytes())
 }
