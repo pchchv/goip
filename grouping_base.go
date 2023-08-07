@@ -134,3 +134,10 @@ func (grouping largeDivArray) copyDivisions(divs []*IPAddressLargeDivision) (cou
 func (grouping largeDivArray) copySubDivisions(start, end int, divs []*IPAddressLargeDivision) (count int) {
 	return copy(divs, grouping[start:end])
 }
+
+func (grouping largeDivArray) init() largeDivArray {
+	if grouping == nil {
+		return zeroLargeDivArray
+	}
+	return grouping
+}
