@@ -199,3 +199,11 @@ func reverseUint8(b uint8) uint8 {
 	x = (x >> 4) | (x << 4)
 	return x
 }
+
+func reverseUint16(b uint16) uint16 {
+	x := b
+	x = ((x & 0xaaaa) >> 1) | ((x & 0x5555) << 1)
+	x = ((x & 0xcccc) >> 2) | ((x & 0x3333) << 2)
+	x = ((x & 0xf0f0) >> 4) | ((x & 0x0f0f) << 4)
+	return (x >> 8) | (x << 8)
+}
