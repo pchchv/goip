@@ -126,3 +126,11 @@ func (grouping largeDivArray) getDivisionCount() int {
 func (grouping largeDivArray) getDivision(index int) *addressDivisionBase {
 	return (*addressDivisionBase)(unsafe.Pointer(grouping[index]))
 }
+
+func (grouping largeDivArray) copyDivisions(divs []*IPAddressLargeDivision) (count int) {
+	return copy(divs, grouping)
+}
+
+func (grouping largeDivArray) copySubDivisions(start, end int, divs []*IPAddressLargeDivision) (count int) {
+	return copy(divs, grouping[start:end])
+}
