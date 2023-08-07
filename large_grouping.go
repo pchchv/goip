@@ -130,3 +130,49 @@ func (grouping *largeDivisionGroupingInternal) GetUpperValue() *big.Int {
 	}
 	return res.SetBytes(grouping.getUpperBytes())
 }
+
+func normalizeLargeDivisions(divs []*IPAddressLargeDivision) (newDivs []*IPAddressLargeDivision, newPref PrefixLen, isMultiple bool) {
+	var previousDivPrefixed bool
+	var bits BitCount
+	divCount := len(divs)
+	newDivs = make([]*IPAddressLargeDivision, 0, divCount)
+
+	for _, div := range divs {
+		if div == nil || div.GetBitCount() == 0 {
+			continue
+		}
+
+		var newDiv *IPAddressLargeDivision
+
+		// The final prefix length is the minimum amongst the divisions' own prefixes
+		divPrefix := div.getDivisionPrefixLength()
+		divIsPrefixed := divPrefix != nil
+
+		if previousDivPrefixed {
+			if !divIsPrefixed || divPrefix.bitCount() != 0 {
+				newDiv = createLargeAddressDiv(div.derivePrefixed(cacheBitCount(0)), div.getDefaultRadix()) // change prefix to 0
+			} else {
+				newDiv = div // div prefix is already 0
+			}
+		} else {
+			if divIsPrefixed {
+				if divPrefix.bitCount() == 0 && len(newDivs) > 0 {
+					// normalize boundaries by looking back
+					lastDiv := newDivs[len(newDivs)-1]
+					if !lastDiv.IsPrefixed() {
+						newDivs[len(newDivs)-1] = createLargeAddressDiv(
+							lastDiv.derivePrefixed(cacheBitCount(lastDiv.GetBitCount())), div.getDefaultRadix())
+					}
+				}
+				newPref = cacheBitCount(bits + divPrefix.bitCount())
+				previousDivPrefixed = true
+			}
+			newDiv = div
+		}
+
+		newDivs = append(newDivs, newDiv)
+		bits += newDiv.GetBitCount()
+		isMultiple = isMultiple || newDiv.isMultiple()
+	}
+	return
+}
