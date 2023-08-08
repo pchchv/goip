@@ -442,3 +442,27 @@ type IPAddressType interface {
 	// Those specific circumstances may include when maintaining a collection of HostIdentifierString or IPAddressString instances.
 	ToAddressString() *IPAddressString
 }
+
+type PrefixedConstraint[T any] interface {
+	Prefixed
+	// WithoutPrefixLen provides the same item but with no prefix length.
+	// The values remain unchanged.
+	WithoutPrefixLen() T
+	// ToPrefixBlock returns the item whose prefix matches the prefix of this item,
+	// while the remaining bits span all values.
+	// If this item has no prefix length, then this item is returned.
+	//
+	// The returned item will include all items with the same prefix as this item, known as the prefix "block".
+	ToPrefixBlock() T
+	// ToPrefixBlockLen returns the item associated with the prefix length provided,
+	// the item whose prefix of that length matches the prefix of that length in this item,
+	// and the remaining bits span all values.
+	//
+	// The returned address will include all items with the same prefix as this one, known as the prefix "block".
+	ToPrefixBlockLen(BitCount) T
+	// SetPrefixLen sets the prefix length, returning a new item with the same values but with the new prefix length.
+	//
+	// A prefix length will not be set to a value lower than zero or beyond the bit length of the item.
+	// The provided prefix length will be adjusted to these boundaries if necessary.
+	SetPrefixLen(BitCount) T
+}
