@@ -20,6 +20,11 @@ var (
 	cachedPrefixBitCounts, cachedPrefixLens = initPrefLens()
 )
 
+type boolSetting struct {
+	isSet bool
+	val   bool
+}
+
 // BitCount is a bit count of an address, section, grouping, segment or division.
 // Using signed integers simplifies arithmetic by avoiding errors.
 // However, all methods adjust the number of bits according to the address size,
