@@ -1,6 +1,9 @@
 package goip
 
-import "strings"
+import (
+	"strings"
+	"unsafe"
+)
 
 const (
 	// IPv4 represents Internet Protocol version 4
@@ -74,4 +77,8 @@ func (version IPVersion) String() string {
 // necessary to avoid direct access to IPAddress
 type ipAddressInternal struct {
 	addressInternal
+}
+
+func (addr *ipAddressInternal) toIPAddress() *IPAddress {
+	return (*IPAddress)(unsafe.Pointer(addr))
 }
