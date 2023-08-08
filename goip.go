@@ -70,3 +70,8 @@ func (version IPVersion) Equal(other IPVersion) bool {
 func (version IPVersion) String() string {
 	return string(version)
 }
+
+// necessary to avoid direct access to IPAddress
+type ipAddressInternal struct {
+	addressInternal
+}
