@@ -180,6 +180,46 @@ func (parseData *addressParseData) getValue(segmentIndex, indexIndicator int) ui
 	return getValueFromData(segmentIndex, indexIndicator, parseData.getSegmentData())
 }
 
+func (parseData *addressParseData) set7IndexFlags(segmentIndex,
+	indexIndicator0 int, value0 uint32,
+	indexIndicator1 int, value1 uint32,
+	indexIndicator2 int, value2 uint32,
+	indexIndicator3 int, value3 uint32,
+	indexIndicator4 int, value4 uint32,
+	indexIndicator5 int, value5 uint32,
+	indexIndicator6 int, value6 uint32) {
+	baseIndex := segmentIndex << segmentIndexShift
+	segmentData := parseData.getSegmentData()
+	segmentData[baseIndex|indexIndicator0] = value0
+	segmentData[baseIndex|indexIndicator1] = value1
+	segmentData[baseIndex|indexIndicator2] = value2
+	segmentData[baseIndex|indexIndicator3] = value3
+	segmentData[baseIndex|indexIndicator4] = value4
+	segmentData[baseIndex|indexIndicator5] = value5
+	segmentData[baseIndex|indexIndicator6] = value6
+}
+
+func (parseData *addressParseData) set8IndexFlags(segmentIndex,
+	indexIndicator0 int, value0 uint32,
+	indexIndicator1 int, value1 uint32,
+	indexIndicator2 int, value2 uint32,
+	indexIndicator3 int, value3 uint32,
+	indexIndicator4 int, value4 uint32,
+	indexIndicator5 int, value5 uint32,
+	indexIndicator6 int, value6 uint32,
+	indexIndicator7 int, value7 uint32) {
+	baseIndex := segmentIndex << segmentIndexShift
+	segmentData := parseData.getSegmentData()
+	segmentData[baseIndex|indexIndicator0] = value0
+	segmentData[baseIndex|indexIndicator1] = value1
+	segmentData[baseIndex|indexIndicator2] = value2
+	segmentData[baseIndex|indexIndicator3] = value3
+	segmentData[baseIndex|indexIndicator4] = value4
+	segmentData[baseIndex|indexIndicator5] = value5
+	segmentData[baseIndex|indexIndicator6] = value6
+	segmentData[baseIndex|indexIndicator7] = value7
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
