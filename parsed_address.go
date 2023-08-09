@@ -2,6 +2,12 @@ package goip
 
 import "github.com/pchchv/goip/address_error"
 
+type translatedResult struct {
+	sections *sectionResult
+	rng      *SequentialRange[*IPAddress]
+	mask     *IPAddress
+}
+
 type sectionResult struct {
 	section          *IPAddressSection
 	hostSection      *IPAddressSection
