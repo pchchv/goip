@@ -220,6 +220,76 @@ func (parseData *addressParseData) set8IndexFlags(segmentIndex,
 	segmentData[baseIndex|indexIndicator7] = value7
 }
 
+func (parseData *addressParseData) set8Index4ValuesFlags(segmentIndex,
+	indexIndicator0 int, value0 uint32,
+	indexIndicator1 int, value1 uint32,
+	indexIndicator2 int, value2 uint32,
+	indexIndicator3 int, value3 uint32,
+	indexIndicator4 int, value4 uint32,
+	indexIndicator5 int, value5 uint32,
+	indexIndicator6 int, value6 uint32,
+	indexIndicator7 int, value7 uint32,
+	indexIndicator8 int, value8 uint64,
+	indexIndicator9 int, value9 uint64,
+	indexIndicator10 int, value10 uint64,
+	indexIndicator11 int, value11 uint64) {
+	baseIndex := segmentIndex << segmentIndexShift
+	segmentData := parseData.getSegmentData()
+	setIndexValuesFlags(baseIndex, segmentData,
+		indexIndicator0, value0,
+		indexIndicator1, value1,
+		indexIndicator2, value2,
+		indexIndicator3, value3,
+		indexIndicator4, value4,
+		indexIndicator5, value5,
+		indexIndicator6, value6,
+		indexIndicator8, value8,
+		indexIndicator9, value9)
+	segmentData[baseIndex|indexIndicator7] = value7
+
+	index := baseIndex | indexIndicator10
+	segmentData[index] = uint32(value10 >> 32)
+	segmentData[index|1] = uint32(value10 & 0xffffffff)
+
+	index = baseIndex | indexIndicator11
+	segmentData[index] = uint32(value11 >> 32)
+	segmentData[index|1] = uint32(value11 & 0xffffffff)
+}
+
+func (parseData *addressParseData) set7Index4ValuesFlags(segmentIndex,
+	indexIndicator0 int, value0 uint32,
+	indexIndicator1 int, value1 uint32,
+	indexIndicator2 int, value2 uint32,
+	indexIndicator3 int, value3 uint32,
+	indexIndicator4 int, value4 uint32,
+	indexIndicator5 int, value5 uint32,
+	indexIndicator6 int, value6 uint32,
+	indexIndicator7 int, value7 uint64,
+	indexIndicator8 int, value8 uint64,
+	indexIndicator9 int, value9 uint64,
+	indexIndicator10 int, value10 uint64) {
+	baseIndex := segmentIndex << segmentIndexShift
+	segmentData := parseData.getSegmentData()
+	setIndexValuesFlags(baseIndex, segmentData,
+		indexIndicator0, value0,
+		indexIndicator1, value1,
+		indexIndicator2, value2,
+		indexIndicator3, value3,
+		indexIndicator4, value4,
+		indexIndicator5, value5,
+		indexIndicator6, value6,
+		indexIndicator7, value7,
+		indexIndicator8, value8)
+
+	index := baseIndex | indexIndicator9
+	segmentData[index] = uint32(value9 >> 32)
+	segmentData[index|1] = uint32(value9 & 0xffffffff)
+
+	index = baseIndex | indexIndicator10
+	segmentData[index] = uint32(value10 >> 32)
+	segmentData[index|1] = uint32(value10 & 0xffffffff)
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
