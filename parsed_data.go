@@ -68,3 +68,11 @@ func (parseData *addressParseData) setConsecutiveSeparatorSegmentIndex(val int) 
 func (parseData *addressParseData) setConsecutiveSeparatorIndex(val int) {
 	parseData.consecutiveSepIndex = val
 }
+
+func (parseData *addressParseData) incrementSegmentCount() {
+	parseData.segmentCount++
+}
+
+func (parseData *addressParseData) isProvidingEmpty() bool {
+	return parseData.isEmpty
+}
