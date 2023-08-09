@@ -88,3 +88,11 @@ func (parseData *addressParseData) setEmpty(val bool) {
 func (parseData *addressParseData) setAll() {
 	parseData.isAllVal = true
 }
+
+func (parseData *addressParseData) getAddressEndIndex() int {
+	return parseData.addressEndIndex
+}
+
+func (parseData *addressParseData) setAddressEndIndex(val int) {
+	parseData.addressEndIndex = val
+}
