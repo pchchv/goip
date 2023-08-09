@@ -8,6 +8,11 @@ type translatedResult struct {
 	mask     *IPAddress
 }
 
+type boundaryResult struct {
+	lowerSection *IPAddressSection
+	upperSection *IPAddressSection
+}
+
 type sectionResult struct {
 	section          *IPAddressSection
 	hostSection      *IPAddressSection
