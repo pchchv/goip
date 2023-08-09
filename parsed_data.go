@@ -52,3 +52,11 @@ func (parseData *addressParseData) getSegmentData() []uint32 {
 func (parseData *addressParseData) getSegmentCount() int {
 	return parseData.segmentCount
 }
+
+func (parseData *addressParseData) getConsecutiveSeparatorIndex() int {
+	return parseData.consecutiveSepIndex
+}
+
+func (parseData *addressParseData) getConsecutiveSeparatorSegmentIndex() int {
+	return parseData.consecutiveSepSegmentIndex
+}
