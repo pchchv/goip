@@ -126,3 +126,7 @@ func (parseData *addressParseData) getFlag(segmentIndex int, flagIndicator uint3
 	segmentData := parseData.getSegmentData()
 	return (segmentData[(segmentIndex<<segmentIndexShift)|flagsIndex] & flagIndicator) != 0
 }
+
+func (parseData *addressParseData) hasEitherFlag(segmentIndex int, flagIndicator1, flagIndicator2 uint32) bool {
+	return parseData.getFlag(segmentIndex, flagIndicator1|flagIndicator2)
+}
