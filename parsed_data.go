@@ -60,3 +60,11 @@ func (parseData *addressParseData) getConsecutiveSeparatorIndex() int {
 func (parseData *addressParseData) getConsecutiveSeparatorSegmentIndex() int {
 	return parseData.consecutiveSepSegmentIndex
 }
+
+func (parseData *addressParseData) setConsecutiveSeparatorSegmentIndex(val int) {
+	parseData.consecutiveSepSegmentIndex = val
+}
+
+func (parseData *addressParseData) setConsecutiveSeparatorIndex(val int) {
+	parseData.consecutiveSepIndex = val
+}
