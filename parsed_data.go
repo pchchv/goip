@@ -76,3 +76,15 @@ func (parseData *addressParseData) incrementSegmentCount() {
 func (parseData *addressParseData) isProvidingEmpty() bool {
 	return parseData.isEmpty
 }
+
+func (parseData *addressParseData) isAll() bool {
+	return parseData.isAllVal
+}
+
+func (parseData *addressParseData) setEmpty(val bool) {
+	parseData.isEmpty = val
+}
+
+func (parseData *addressParseData) setAll() {
+	parseData.isAllVal = true
+}
