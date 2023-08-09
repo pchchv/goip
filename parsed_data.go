@@ -171,3 +171,7 @@ func (parseData *addressParseData) setIndex(segmentIndex,
 	segmentData[baseIndex|indexIndicator4] = value4
 	segmentData[baseIndex|indexIndicator5] = value5
 }
+
+func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
+	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
+}
