@@ -12,3 +12,13 @@ type addressParseData struct {
 	addressEndIndex            int
 	str                        string
 }
+
+func (parseData *addressParseData) init(str string) {
+	parseData.consecutiveSepIndex = -1
+	parseData.consecutiveSepSegmentIndex = -1
+	parseData.str = str
+}
+
+func (parseData *addressParseData) getString() string {
+	return parseData.str
+}
