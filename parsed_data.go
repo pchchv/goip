@@ -104,3 +104,11 @@ func (parseData *addressParseData) isSingleSegment() bool {
 func (parseData *addressParseData) hasWildcard() bool {
 	return parseData.anyWildcard
 }
+
+func (parseData *addressParseData) setSingleSegment() {
+	parseData.isSingleSegmentVal = true
+}
+
+func (parseData *addressParseData) setHasWildcard() {
+	parseData.anyWildcard = true
+}
