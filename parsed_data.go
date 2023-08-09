@@ -1,6 +1,9 @@
 package goip
 
 const (
+	keyLowerRadixIndex = 0
+	flagsIndex         = keyLowerRadixIndex
+	segmentIndexShift   = 4
 	segmentDataSize     = 16
 	ipv4SegmentDataSize = segmentDataSize * 4
 	ipv6SegmentDataSize = segmentDataSize * 8
@@ -111,4 +114,15 @@ func (parseData *addressParseData) setSingleSegment() {
 
 func (parseData *addressParseData) setHasWildcard() {
 	parseData.anyWildcard = true
+}
+
+func (parseData *addressParseData) unsetFlag(segmentIndex int, flagIndicator uint32) {
+	index := (segmentIndex << segmentIndexShift) | flagsIndex
+	segmentData := parseData.getSegmentData()
+	segmentData[index] &= uint32(0xffff) ^ flagIndicator // segmentData[index] &= ~flagIndicator
+}
+
+func (parseData *addressParseData) getFlag(segmentIndex int, flagIndicator uint32) bool {
+	segmentData := parseData.getSegmentData()
+	return (segmentData[(segmentIndex<<segmentIndexShift)|flagsIndex] & flagIndicator) != 0
 }
