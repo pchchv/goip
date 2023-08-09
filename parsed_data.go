@@ -44,3 +44,11 @@ func (parseData *addressParseData) initSegmentData(segmentCapacity int) {
 
 	parseData.segmentData = make([]uint32, dataSize)
 }
+
+func (parseData *addressParseData) getSegmentData() []uint32 {
+	return parseData.segmentData
+}
+
+func (parseData *addressParseData) getSegmentCount() int {
+	return parseData.segmentCount
+}
