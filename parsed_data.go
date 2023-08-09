@@ -1,12 +1,16 @@
 package goip
 
 const (
-	keyLowerRadixIndex = 0
-	flagsIndex         = keyLowerRadixIndex
-	segmentIndexShift   = 4
-	segmentDataSize     = 16
-	ipv4SegmentDataSize = segmentDataSize * 4
-	ipv6SegmentDataSize = segmentDataSize * 8
+	keyRadix            uint32 = 0x00ff
+	keyBitSize          uint32 = 0xff00
+	keyBitSizeIndex            = keyLowerRadixIndex
+	keyLowerRadixIndex         = 0
+	flagsIndex                 = keyLowerRadixIndex
+	bitSizeShift               = 8
+	segmentIndexShift          = 4
+	segmentDataSize            = 16
+	ipv4SegmentDataSize        = segmentDataSize * 4
+	ipv6SegmentDataSize        = segmentDataSize * 8
 )
 
 type addressParseData struct {
@@ -129,4 +133,19 @@ func (parseData *addressParseData) getFlag(segmentIndex int, flagIndicator uint3
 
 func (parseData *addressParseData) hasEitherFlag(segmentIndex int, flagIndicator1, flagIndicator2 uint32) bool {
 	return parseData.getFlag(segmentIndex, flagIndicator1|flagIndicator2)
+}
+
+func (parseData *addressParseData) getRadix(segmentIndex, indexIndicator int) uint32 {
+	segmentData := parseData.getSegmentData()
+	radix := segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator] & keyRadix
+	if radix == 0 {
+		return IPv6DefaultTextualRadix // 16 is the default, we only set the radix if not 16
+	}
+	return radix
+}
+
+func (parseData *addressParseData) getBitLength(segmentIndex int) BitCount {
+	segmentData := parseData.getSegmentData()
+	bitLength := (segmentData[(segmentIndex<<segmentIndexShift)|keyBitSizeIndex] & keyBitSize) >> bitSizeShift
+	return BitCount(bitLength)
 }
