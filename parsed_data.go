@@ -1,5 +1,11 @@
 package goip
 
+const (
+	segmentDataSize     = 16
+	ipv4SegmentDataSize = segmentDataSize * 4
+	ipv6SegmentDataSize = segmentDataSize * 8
+)
+
 type addressParseData struct {
 	segmentData                []uint32
 	segmentCount               int
@@ -21,4 +27,20 @@ func (parseData *addressParseData) init(str string) {
 
 func (parseData *addressParseData) getString() string {
 	return parseData.str
+}
+
+func (parseData *addressParseData) initSegmentData(segmentCapacity int) {
+	dataSize := 0
+
+	if segmentCapacity == 4 {
+		dataSize = ipv4SegmentDataSize
+	} else if segmentCapacity == 8 {
+		dataSize = ipv6SegmentDataSize
+	} else if segmentCapacity == 1 {
+		dataSize = segmentDataSize // segmentDataSize * segmentCapacity
+	} else {
+		dataSize = segmentCapacity * segmentDataSize
+	}
+
+	parseData.segmentData = make([]uint32, dataSize)
 }
