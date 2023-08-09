@@ -23,3 +23,7 @@ type sectionResult struct {
 	mixedError       address_error.IncompatibleAddressError
 	maskError        address_error.IncompatibleAddressError
 }
+
+func (res *sectionResult) withoutAddressException() bool {
+	return res.joinAddressError == nil && res.mixedError == nil && res.maskError == nil
+}
