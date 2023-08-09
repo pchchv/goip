@@ -96,3 +96,11 @@ func (parseData *addressParseData) getAddressEndIndex() int {
 func (parseData *addressParseData) setAddressEndIndex(val int) {
 	parseData.addressEndIndex = val
 }
+
+func (parseData *addressParseData) isSingleSegment() bool {
+	return parseData.isSingleSegmentVal
+}
+
+func (parseData *addressParseData) hasWildcard() bool {
+	return parseData.anyWildcard
+}
