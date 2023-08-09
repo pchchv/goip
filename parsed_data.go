@@ -231,3 +231,32 @@ func getValueFromData(segmentIndex, indexIndicator int, segmentData []uint32) ui
 	value := (upperValue << 32) | lowerValue
 	return value
 }
+
+func setIndexValuesFlags(
+	baseIndex int,
+	segmentData []uint32,
+	indexIndicator0 int, value0 uint32,
+	indexIndicator1 int, value1 uint32,
+	indexIndicator2 int, value2 uint32,
+	indexIndicator3 int, value3 uint32,
+	indexIndicator4 int, value4 uint32,
+	indexIndicator5 int, value5 uint32,
+	indexIndicator6 int, value6 uint32,
+	indexIndicator7 int, value7 uint64,
+	indexIndicator8 int, value8 uint64) {
+	segmentData[baseIndex|indexIndicator0] = value0
+	segmentData[baseIndex|indexIndicator1] = value1
+	segmentData[baseIndex|indexIndicator2] = value2
+	segmentData[baseIndex|indexIndicator3] = value3
+	segmentData[baseIndex|indexIndicator4] = value4
+	segmentData[baseIndex|indexIndicator5] = value5
+	segmentData[baseIndex|indexIndicator6] = value6
+
+	index := baseIndex | indexIndicator7
+	segmentData[index] = uint32(value7 >> 32)
+	segmentData[index|1] = uint32(value7 & 0xffffffff)
+
+	index = baseIndex | indexIndicator8
+	segmentData[index] = uint32(value8 >> 32)
+	segmentData[index|1] = uint32(value8 & 0xffffffff)
+}
