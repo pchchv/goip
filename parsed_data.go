@@ -387,6 +387,15 @@ type ipAddressParseData struct {
 	mixedParsedAddress      *parsedIPAddress
 }
 
+func (parseData *ipAddressParseData) init(str string) {
+	parseData.qualifierIndex = -1
+	parseData.addressParseData.init(str)
+}
+
+func (parseData *ipAddressParseData) getAddressParseData() *addressParseData {
+	return &parseData.addressParseData
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
