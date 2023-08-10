@@ -22,6 +22,8 @@ const (
 	ipv6SegmentDataSize             = segmentDataSize * 8
 )
 
+type macFormat *byte
+
 type addressParseData struct {
 	segmentData                []uint32
 	segmentCount               int
