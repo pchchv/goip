@@ -1,6 +1,8 @@
 package goip
 
 const (
+	keyWildcard         uint32 = 0x10000
+	keyMergedMixed      uint32 = 0x800000
 	keyRadix            uint32 = 0x00ff
 	keyBitSize          uint32 = 0xff00
 	keyBitSizeIndex            = keyLowerRadixIndex
@@ -348,6 +350,14 @@ func (parseData *addressParseData) setValue(segmentIndex,
 	segmentData := parseData.getSegmentData()
 	segmentData[index] = upperValue
 	segmentData[index|1] = lowerValue
+}
+
+func (parseData *addressParseData) isMergedMixed(segmentIndex int) bool {
+	return parseData.getFlag(segmentIndex, keyMergedMixed)
+}
+
+func (parseData *addressParseData) isWildcard(segmentIndex int) bool {
+	return parseData.getFlag(segmentIndex, keyWildcard)
 }
 
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
