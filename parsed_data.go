@@ -482,6 +482,18 @@ func (parseData *ipAddressParseData) setHasPrefixSeparator(val bool) {
 	parseData.hasPrefixSeparatorVal = val
 }
 
+func (parseData *ipAddressParseData) isProvidingBase85IPv6() bool {
+	return parseData.isBase85
+}
+
+func (parseData *ipAddressParseData) setBase85(val bool) {
+	parseData.isBase85 = val
+}
+
+func (parseData *ipAddressParseData) isBase85Zoned() bool {
+	return parseData.isBase85ZonedVal
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
