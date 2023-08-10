@@ -408,6 +408,14 @@ func (parseData *ipAddressParseData) clearQualifier() {
 	parseData.qualifier = parsedHostIdentifierStringQualifier{}
 }
 
+func (parseData *ipAddressParseData) setVersion(version IPVersion) {
+	parseData.ipVersion = version
+}
+
+func (parseData *ipAddressParseData) setInetAtonJoined(val bool) {
+	parseData.isInetAtonJoinedVal = val
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
