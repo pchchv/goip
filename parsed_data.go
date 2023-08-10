@@ -371,6 +371,22 @@ func (parseData *addressParseData) isInferredUpperBoundary(segmentIndex int) boo
 	return parseData.getFlag(segmentIndex, keyInferredUpperBoundary)
 }
 
+type ipAddressParseData struct {
+	addressParseData
+	qualifier               parsedHostIdentifierStringQualifier
+	qualifierIndex          int
+	hasPrefixSeparatorVal   bool
+	isZonedVal              bool
+	ipVersion               IPVersion
+	is_inet_aton_joined_val bool
+	has_inet_aton_value_val bool // either octal 01 or hex 0x1
+	hasIPv4LeadingZerosVal  bool
+	isBinaryVal             bool
+	isBase85                bool
+	isBase85ZonedVal        bool
+	mixedParsedAddress      *parsedIPAddress
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
