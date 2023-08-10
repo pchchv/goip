@@ -450,6 +450,14 @@ func (parseData *ipAddressParseData) hasBinaryDigits() bool {
 	return parseData.isBinaryVal
 }
 
+func (parseData *ipAddressParseData) setHasBinaryDigits(val bool) {
+	parseData.isBinaryVal = val
+}
+
+func (parseData *ipAddressParseData) setQualifierIndex(index int) {
+	parseData.qualifierIndex = index
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
