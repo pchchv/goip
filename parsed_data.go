@@ -494,6 +494,14 @@ func (parseData *ipAddressParseData) isBase85Zoned() bool {
 	return parseData.isBase85ZonedVal
 }
 
+func (parseData *ipAddressParseData) setBase85Zoned(val bool) {
+	parseData.isBase85ZonedVal = val
+}
+
+func (parseData *ipAddressParseData) isCompressed() bool {
+	return parseData.addressParseData.getConsecutiveSeparatorIndex() >= 0
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
