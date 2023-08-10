@@ -1,18 +1,21 @@
 package goip
 
 const (
-	keyWildcard         uint32 = 0x10000
-	keyMergedMixed      uint32 = 0x800000
-	keyRadix            uint32 = 0x00ff
-	keyBitSize          uint32 = 0xff00
-	keyBitSizeIndex            = keyLowerRadixIndex
-	keyLowerRadixIndex         = 0
-	flagsIndex                 = keyLowerRadixIndex
-	bitSizeShift               = 8
-	segmentIndexShift          = 4
-	segmentDataSize            = 16
-	ipv4SegmentDataSize        = segmentDataSize * 4
-	ipv6SegmentDataSize        = segmentDataSize * 8
+	keyRadix                 uint32 = 0x00ff
+	keyBitSize               uint32 = 0xff00
+	keyWildcard              uint32 = 0x10000
+	keyMergedMixed           uint32 = 0x800000
+	keyRangeWildcard         uint32 = 0x100000
+	keySingleWildcard        uint32 = 0x20000
+	keyInferredUpperBoundary uint32 = 0x400000
+	keyBitSizeIndex                 = keyLowerRadixIndex
+	keyLowerRadixIndex              = 0
+	flagsIndex                      = keyLowerRadixIndex
+	bitSizeShift                    = 8
+	segmentDataSize                 = 16
+	segmentIndexShift               = 4
+	ipv4SegmentDataSize             = segmentDataSize * 4
+	ipv6SegmentDataSize             = segmentDataSize * 8
 )
 
 type addressParseData struct {
@@ -358,6 +361,14 @@ func (parseData *addressParseData) isMergedMixed(segmentIndex int) bool {
 
 func (parseData *addressParseData) isWildcard(segmentIndex int) bool {
 	return parseData.getFlag(segmentIndex, keyWildcard)
+}
+
+func (parseData *addressParseData) hasRange(segmentIndex int) bool {
+	return parseData.hasEitherFlag(segmentIndex, keySingleWildcard, keyRangeWildcard)
+}
+
+func (parseData *addressParseData) isInferredUpperBoundary(segmentIndex int) bool {
+	return parseData.getFlag(segmentIndex, keyInferredUpperBoundary)
 }
 
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
