@@ -466,6 +466,14 @@ func (parseData *ipAddressParseData) getQualifierIndex() int {
 	return parseData.qualifierIndex
 }
 
+func (parseData *ipAddressParseData) isZoned() bool {
+	return parseData.isZonedVal
+}
+
+func (parseData *ipAddressParseData) setZoned(val bool) {
+	parseData.isZonedVal = val
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
