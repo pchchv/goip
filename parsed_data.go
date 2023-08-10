@@ -426,6 +426,14 @@ func (parseData *ipAddressParseData) isProvidingIPv4() bool {
 	return version.IsIPv4()
 }
 
+func (parseData *ipAddressParseData) isInetAtonJoined() bool {
+	return parseData.isInetAtonJoinedVal
+}
+
+func (parseData *ipAddressParseData) hasInetAtonValue() bool {
+	return parseData.hasInetAtonValueVal
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
