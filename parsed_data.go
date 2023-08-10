@@ -516,6 +516,14 @@ func (parseData *ipAddressParseData) segmentIsCompressed(index int) bool {
 	return parseData.segIsCompressed(index, parseData.addressParseData.getSegmentData())
 }
 
+func (parseData *ipAddressParseData) isProvidingMixedIPv6() bool {
+	return parseData.mixedParsedAddress != nil
+}
+
+func (parseData *ipAddressParseData) setMixedParsedAddress(val *parsedIPAddress) {
+	parseData.mixedParsedAddress = val
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
