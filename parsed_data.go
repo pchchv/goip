@@ -584,6 +584,14 @@ func (parseData *macAddressParseData) setDoubleSegment(val bool) {
 	parseData.isExtendedVal = val
 }
 
+func (parseData *macAddressParseData) isExtended() bool {
+	return parseData.isDoubleSegmentVal
+}
+
+func (parseData *macAddressParseData) setExtended(val bool) {
+	parseData.isDoubleSegmentVal = val
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
