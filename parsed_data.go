@@ -1,25 +1,52 @@
 package goip
 
 const (
-	upperAdjustment                 = 8
+	dot                             = '.'
+	dash                            = '-'
+	colon                           = ':'
+	space                           = ' '
 	keyRadix                 uint32 = 0x00ff
 	keyBitSize               uint32 = 0xff00
 	keyWildcard              uint32 = 0x10000
+	keyStandardStr           uint32 = 0x40000
 	keyMergedMixed           uint32 = 0x800000
 	keyRangeWildcard         uint32 = 0x100000
 	keySingleWildcard        uint32 = 0x20000
+	keyStandardRangeStr      uint32 = 0x80000
+	keyInferredLowerBoundary uint32 = 0x200000
 	keyInferredUpperBoundary uint32 = 0x400000
+	keyLower                        = 2
+	keyUpper                        = keyLower + upperAdjustment
 	keyBitSizeIndex                 = keyLowerRadixIndex
+	keyExtendedUpper                = keyExtendedLower + upperAdjustment
+	keyExtendedLower                = 4
+	keyUpperRadixIndex              = keyLowerRadixIndex + upperAdjustment
 	keyLowerRadixIndex              = 0
 	keyLowerStrEndIndex             = 7
 	keyUpperStrEndIndex             = keyLowerStrEndIndex + upperAdjustment
+	keyUpperStrStartIndex           = keyLowerStrStartIndex + upperAdjustment
 	keyLowerStrStartIndex           = 6
+	keyLowerStrDigitsIndex          = 1
+	keyUpperStrDigitsIndex          = keyLowerStrDigitsIndex + upperAdjustment
 	flagsIndex                      = keyLowerRadixIndex
 	bitSizeShift                    = 8
+	upperAdjustment                 = 8
 	segmentDataSize                 = 16
 	segmentIndexShift               = 4
 	ipv4SegmentDataSize             = segmentDataSize * 4
 	ipv6SegmentDataSize             = segmentDataSize * 8
+)
+
+var (
+	dotByte        byte      = dot
+	colonByte      byte      = colon
+	spaceByte      byte      = space
+	dashedByte     byte      = dash
+	dashed         macFormat = &dashedByte
+	dotted         macFormat = &dotByte
+	colonDelimited macFormat = &colonByte
+	spaceDelimited macFormat = &spaceByte
+	unknownFormat  macFormat
 )
 
 type macFormat *byte
