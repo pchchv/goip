@@ -438,8 +438,16 @@ func (parseData *ipAddressParseData) setHasInetAtonValue(val bool) {
 	parseData.hasInetAtonValueVal = val
 }
 
+func (parseData *ipAddressParseData) setHasIPv4LeadingZeros(val bool) {
+	parseData.hasIPv4LeadingZerosVal = val
+}
+
 func (parseData *ipAddressParseData) hasIPv4LeadingZeros() bool {
 	return parseData.hasIPv4LeadingZerosVal
+}
+
+func (parseData *ipAddressParseData) hasBinaryDigits() bool {
+	return parseData.isBinaryVal
 }
 
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
