@@ -458,6 +458,14 @@ func (parseData *ipAddressParseData) setQualifierIndex(index int) {
 	parseData.qualifierIndex = index
 }
 
+func (parseData *ipAddressParseData) getQualifier() *parsedHostIdentifierStringQualifier {
+	return &parseData.qualifier
+}
+
+func (parseData *ipAddressParseData) getQualifierIndex() int {
+	return parseData.qualifierIndex
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
