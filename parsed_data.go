@@ -526,6 +526,13 @@ func (parseData *ipAddressParseData) setMixedParsedAddress(val *parsedIPAddress)
 	parseData.mixedParsedAddress = val
 }
 
+type macAddressParseData struct {
+	addressParseData
+	isDoubleSegmentVal bool
+	isExtendedVal      bool
+	format             macFormat
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
