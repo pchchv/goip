@@ -1,6 +1,7 @@
 package goip
 
 const (
+	upperAdjustment                 = 8
 	keyRadix                 uint32 = 0x00ff
 	keyBitSize               uint32 = 0xff00
 	keyWildcard              uint32 = 0x10000
@@ -10,6 +11,9 @@ const (
 	keyInferredUpperBoundary uint32 = 0x400000
 	keyBitSizeIndex                 = keyLowerRadixIndex
 	keyLowerRadixIndex              = 0
+	keyLowerStrEndIndex             = 7
+	keyUpperStrEndIndex             = keyLowerStrEndIndex + upperAdjustment
+	keyLowerStrStartIndex           = 6
 	flagsIndex                      = keyLowerRadixIndex
 	bitSizeShift                    = 8
 	segmentDataSize                 = 16
@@ -500,6 +504,16 @@ func (parseData *ipAddressParseData) setBase85Zoned(val bool) {
 
 func (parseData *ipAddressParseData) isCompressed() bool {
 	return parseData.addressParseData.getConsecutiveSeparatorIndex() >= 0
+}
+
+func (parseData *ipAddressParseData) segIsCompressed(index int, segmentData []uint32) bool {
+	end := getIndexFromData(index, keyUpperStrEndIndex, segmentData)
+	start := getIndexFromData(index, keyLowerStrStartIndex, segmentData)
+	return start == end
+}
+
+func (parseData *ipAddressParseData) segmentIsCompressed(index int) bool {
+	return parseData.segIsCompressed(index, parseData.addressParseData.getSegmentData())
 }
 
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
