@@ -434,6 +434,14 @@ func (parseData *ipAddressParseData) hasInetAtonValue() bool {
 	return parseData.hasInetAtonValueVal
 }
 
+func (parseData *ipAddressParseData) setHasInetAtonValue(val bool) {
+	parseData.hasInetAtonValueVal = val
+}
+
+func (parseData *ipAddressParseData) hasIPv4LeadingZeros() bool {
+	return parseData.hasIPv4LeadingZerosVal
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
