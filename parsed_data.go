@@ -396,6 +396,18 @@ func (parseData *ipAddressParseData) getAddressParseData() *addressParseData {
 	return &parseData.addressParseData
 }
 
+func (parseData *ipAddressParseData) getProviderIPVersion() IPVersion {
+	return parseData.ipVersion
+}
+
+func (parseData *ipAddressParseData) clearQualifier() {
+	parseData.qualifierIndex = -1
+	parseData.isZonedVal = false
+	parseData.isBase85ZonedVal = false
+	parseData.hasPrefixSeparatorVal = false
+	parseData.qualifier = parsedHostIdentifierStringQualifier{}
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
