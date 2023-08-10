@@ -340,6 +340,16 @@ func (parseData *addressParseData) set7Index2ValuesFlags(segmentIndex,
 		indexIndicator8, value8)
 }
 
+func (parseData *addressParseData) setValue(segmentIndex,
+	indexIndicator int, value uint64) {
+	index := (segmentIndex << segmentIndexShift) | indexIndicator
+	upperValue := uint32(value >> 32)
+	lowerValue := uint32(value & 0xffffffff)
+	segmentData := parseData.getSegmentData()
+	segmentData[index] = upperValue
+	segmentData[index|1] = lowerValue
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
