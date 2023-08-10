@@ -572,6 +572,18 @@ func (parseData *macAddressParseData) getFormat() macFormat {
 	return parseData.format
 }
 
+func (parseData *macAddressParseData) setFormat(format macFormat) {
+	parseData.format = format
+}
+
+func (parseData *macAddressParseData) isDoubleSegment() bool {
+	return parseData.isExtendedVal
+}
+
+func (parseData *macAddressParseData) setDoubleSegment(val bool) {
+	parseData.isExtendedVal = val
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
