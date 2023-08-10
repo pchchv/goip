@@ -474,6 +474,14 @@ func (parseData *ipAddressParseData) setZoned(val bool) {
 	parseData.isZonedVal = val
 }
 
+func (parseData *ipAddressParseData) hasPrefixSeparator() bool {
+	return parseData.hasPrefixSeparatorVal
+}
+
+func (parseData *ipAddressParseData) setHasPrefixSeparator(val bool) {
+	parseData.hasPrefixSeparatorVal = val
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
