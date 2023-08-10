@@ -560,6 +560,18 @@ type macAddressParseData struct {
 	format             macFormat
 }
 
+func (parseData *macAddressParseData) init(str string) {
+	parseData.addressParseData.init(str)
+}
+
+func (parseData *macAddressParseData) getAddressParseData() *addressParseData {
+	return &parseData.addressParseData
+}
+
+func (parseData *macAddressParseData) getFormat() macFormat {
+	return parseData.format
+}
+
 func getIndexFromData(segmentIndex, indexIndicator int, segmentData []uint32) int {
 	return int(segmentData[(segmentIndex<<segmentIndexShift)|indexIndicator])
 }
