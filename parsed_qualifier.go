@@ -15,3 +15,13 @@ type parsedHostIdentifierStringQualifier struct {
 	zone    Zone
 	isZoned bool
 }
+
+func (parsedQual *parsedHostIdentifierStringQualifier) clearPortOrService() {
+	parsedQual.port = nil
+	parsedQual.service = ""
+}
+
+func (parsedQual *parsedHostIdentifierStringQualifier) clearPrefixOrMask() {
+	parsedQual.networkPrefixLength = nil
+	parsedQual.mask = nil
+}
