@@ -215,3 +215,15 @@ func bigIsOne(val *BigDivInt) bool {
 // PortNum is the port number for a non-nil Port.
 // For arithmetic, you might wish to use the signed integer type PortInt instead.
 type PortNum uint16
+
+func (portNum *PortNum) portNum() PortInt {
+	return PortInt(*portNum)
+}
+
+// Num converts to a PortPortIntNum, returning 0 if the receiver is nil.
+func (portNum *PortNum) Num() PortInt {
+	if portNum == nil {
+		return 0
+	}
+	return PortInt(*portNum)
+}
