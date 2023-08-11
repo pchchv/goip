@@ -141,3 +141,11 @@ func (p *ipAddrProvider) getProviderNetworkPrefixLen() PrefixLen {
 func (p *ipAddrProvider) getParameters() address_string_param.IPAddressStringParams {
 	return nil
 }
+
+func (p *ipAddrProvider) containsProvider(ipAddressProvider) boolSetting {
+	return boolSetting{}
+}
+
+func (p *ipAddrProvider) prefixEqualsProvider(ipAddressProvider) boolSetting {
+	return boolSetting{}
+}
