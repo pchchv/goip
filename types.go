@@ -20,6 +20,8 @@ var (
 	cachedPrefixBitCounts, cachedPrefixLens = initPrefLens()
 )
 
+type PortInt = int // using signed integers allows for easier arithmetic
+
 type boolSetting struct {
 	isSet bool
 	val   bool
