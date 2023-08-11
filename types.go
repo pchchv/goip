@@ -227,3 +227,16 @@ func (portNum *PortNum) Num() PortInt {
 	}
 	return PortInt(*portNum)
 }
+
+// Port dereferences this PortNum, while returning 0 if the receiver is nil.
+func (portNum *PortNum) Port() PortNum {
+	if portNum == nil {
+		return 0
+	}
+	return *portNum
+}
+
+// Matches compares a Port value with a port number.
+func (portNum *PortNum) Matches(other PortInt) bool {
+	return portNum != nil && portNum.portNum() == other
+}
