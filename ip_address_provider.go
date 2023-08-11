@@ -133,3 +133,11 @@ func (p *ipAddrProvider) isProvidingMixedIPv6() bool {
 func (p *ipAddrProvider) isProvidingBase85IPv6() bool {
 	return false
 }
+
+func (p *ipAddrProvider) getProviderNetworkPrefixLen() PrefixLen {
+	return nil
+}
+
+func (p *ipAddrProvider) getParameters() address_string_param.IPAddressStringParams {
+	return nil
+}
