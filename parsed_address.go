@@ -1,6 +1,11 @@
 package goip
 
-import "github.com/pchchv/goip/address_error"
+import (
+	"sync"
+
+	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string_param"
+)
 
 type translatedResult struct {
 	sections *sectionResult
@@ -26,4 +31,16 @@ type sectionResult struct {
 
 func (res *sectionResult) withoutAddressException() bool {
 	return res.joinAddressError == nil && res.mixedError == nil && res.maskError == nil
+}
+
+type parsedIPAddress struct {
+	ipAddressParseData
+	ipAddrProvider // provides a few methods like isInvalid
+	options        address_string_param.IPAddressStringParams
+	originator     HostIdentifierString
+	vals           translatedResult
+	skipCntains    *bool
+	maskers        []Masker
+	mixedMaskers   []Masker
+	creationLock   sync.Mutex
 }
