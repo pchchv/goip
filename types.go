@@ -240,3 +240,12 @@ func (portNum *PortNum) Port() PortNum {
 func (portNum *PortNum) Matches(other PortInt) bool {
 	return portNum != nil && portNum.portNum() == other
 }
+
+// String returns the bit count as a base-10 positive integer string,
+// or "<nil>" if the receiver is a nil pointer.
+func (portNum *PortNum) String() string {
+	if portNum == nil {
+		return nilString()
+	}
+	return strconv.Itoa(portNum.portNum())
+}
