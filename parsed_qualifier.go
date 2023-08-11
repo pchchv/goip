@@ -37,3 +37,15 @@ func (parsedQual *parsedHostIdentifierStringQualifier) setZone(zone *Zone) {
 		parsedQual.isZoned = true
 	}
 }
+
+func (parsedQual *parsedHostIdentifierStringQualifier) getZone() Zone {
+	return parsedQual.zone
+}
+
+func (parsedQual *parsedHostIdentifierStringQualifier) getPort() Port {
+	return parsedQual.port
+}
+
+func (parsedQual *parsedHostIdentifierStringQualifier) getService() string {
+	return parsedQual.service
+}
