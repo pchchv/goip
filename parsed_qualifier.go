@@ -25,3 +25,15 @@ func (parsedQual *parsedHostIdentifierStringQualifier) clearPrefixOrMask() {
 	parsedQual.networkPrefixLength = nil
 	parsedQual.mask = nil
 }
+
+func (parsedQual *parsedHostIdentifierStringQualifier) getNetworkPrefixLen() PrefixLen {
+	return parsedQual.networkPrefixLength
+}
+
+// setZone distinguishes callers with empty zones vs callers in which there was no zone indicator
+func (parsedQual *parsedHostIdentifierStringQualifier) setZone(zone *Zone) {
+	if zone != nil {
+		parsedQual.zone = *zone
+		parsedQual.isZoned = true
+	}
+}
