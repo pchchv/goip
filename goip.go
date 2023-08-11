@@ -7,6 +7,8 @@ import (
 )
 
 const (
+	// IndeterminateIPVersion represents an unspecified IP address version
+	IndeterminateIPVersion IPVersion = ""
 	// IPv4 represents Internet Protocol version 4
 	IPv4 IPVersion = "IPv4"
 	// IPv6 represents Internet Protocol version 6

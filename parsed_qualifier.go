@@ -1,5 +1,7 @@
 package goip
 
+import "github.com/pchchv/goip/address_string_param"
+
 type parsedHostIdentifierStringQualifier struct {
 	// if there is a port for the host, this will be its numeric value
 	port    Port   // non-nil for a host with port
@@ -48,4 +50,25 @@ func (parsedQual *parsedHostIdentifierStringQualifier) getPort() Port {
 
 func (parsedQual *parsedHostIdentifierStringQualifier) getService() string {
 	return parsedQual.service
+}
+
+func (parsedQual *parsedHostIdentifierStringQualifier) inferVersion(validationOptions address_string_param.IPAddressStringParams) IPVersion {
+	if parsedQual.networkPrefixLength != nil {
+		if parsedQual.networkPrefixLength.bitCount() > IPv4BitCount &&
+			!validationOptions.GetIPv4Params().AllowsPrefixesBeyondAddressSize() {
+			return IPv6
+		}
+	} else if mask := parsedQual.mask; mask != nil {
+		if mask.isProvidingIPv6() {
+			return IPv6
+		} else if mask.isProvidingIPv4() {
+			return IPv4
+		}
+	}
+
+	if parsedQual.isZoned {
+		return IPv6
+	}
+
+	return IndeterminateIPVersion
 }
