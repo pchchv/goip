@@ -93,3 +93,11 @@ func (p *ipAddrProvider) getProviderSeqRange() *SequentialRange[*IPAddress] {
 func (p *ipAddrProvider) getVersionedAddress(_ IPVersion) (*IPAddress, address_error.IncompatibleAddressError) {
 	return nil, nil
 }
+
+func (p *ipAddrProvider) getProviderMask() *IPAddress {
+	return nil
+}
+
+func (p *ipAddrProvider) getProviderIPVersion() IPVersion {
+	return IndeterminateIPVersion
+}
