@@ -77,3 +77,11 @@ func (p *ipAddrProvider) getType() ipType {
 func (p *ipAddrProvider) isSequential() bool {
 	return false
 }
+
+func (p *ipAddrProvider) getProviderHostAddress() (*IPAddress, address_error.IncompatibleAddressError) {
+	return nil, nil
+}
+
+func (p *ipAddrProvider) getProviderAddress() (*IPAddress, address_error.IncompatibleAddressError) {
+	return nil, nil
+}
