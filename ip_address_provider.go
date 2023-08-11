@@ -109,3 +109,11 @@ func (p *ipAddrProvider) isProvidingIPAddress() bool {
 func (p *ipAddrProvider) isProvidingIPv4() bool {
 	return false
 }
+
+func (p *ipAddrProvider) isProvidingIPv6() bool {
+	return false
+}
+
+func (p *ipAddrProvider) isProvidingAllAddresses() bool {
+	return false
+}
