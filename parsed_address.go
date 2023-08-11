@@ -53,3 +53,10 @@ func (parseData *parsedIPAddress) isProvidingIPAddress() bool {
 	return true
 }
 
+func (parseData *parsedIPAddress) getParameters() address_string_param.IPAddressStringParams {
+	return parseData.options
+}
+
+func (parseData *parsedIPAddress) isProvidingMixedIPv6() bool {
+	return parseData.ipAddressParseData.isProvidingMixedIPv6()
+}
