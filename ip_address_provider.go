@@ -58,3 +58,5 @@ type ipAddressProvider interface {
 	// Unconventional addresses may require the address objects, in such cases null is returned.
 	parsedEquals(ipAddressProvider) boolSetting
 }
+
+type ipAddrProvider struct{}
