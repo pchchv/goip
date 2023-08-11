@@ -5,6 +5,15 @@ import (
 	"github.com/pchchv/goip/address_string_param"
 )
 
+const (
+	uninitializedType ipType = iota
+	invalidType
+	emptyType
+	ipv4AddrType
+	ipv6AddrType
+	allType
+)
+
 // All IP address strings corresponds to exactly one of these types.
 // In cases where there is no corresponding default IPAddress value
 // (invalidType, allType, and possibly emptyType), these types can be used for comparison.
@@ -60,3 +69,11 @@ type ipAddressProvider interface {
 }
 
 type ipAddrProvider struct{}
+
+func (p *ipAddrProvider) getType() ipType {
+	return uninitializedType
+}
+
+func (p *ipAddrProvider) isSequential() bool {
+	return false
+}
