@@ -24,6 +24,10 @@ var (
 
 type PortInt = int // using signed integers allows for easier arithmetic
 
+// Port represents the port of a UDP or TCP address.
+// A nil value indicates no port.
+type Port = *PortNum
+
 type boolSetting struct {
 	isSet bool
 	val   bool
