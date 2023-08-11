@@ -44,3 +44,12 @@ type parsedIPAddress struct {
 	mixedMaskers   []Masker
 	creationLock   sync.Mutex
 }
+
+func (parseData *parsedIPAddress) values() *translatedResult {
+	return &parseData.vals
+}
+
+func (parseData *parsedIPAddress) isProvidingIPAddress() bool {
+	return true
+}
+
