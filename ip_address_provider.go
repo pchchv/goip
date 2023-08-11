@@ -125,3 +125,11 @@ func (p *ipAddrProvider) isProvidingEmpty() bool {
 func (p *ipAddrProvider) isInvalid() bool {
 	return false
 }
+
+func (p *ipAddrProvider) isProvidingMixedIPv6() bool {
+	return false
+}
+
+func (p *ipAddrProvider) isProvidingBase85IPv6() bool {
+	return false
+}
