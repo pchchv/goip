@@ -9,6 +9,8 @@ import (
 const (
 	maxBitCountInternal = math.MaxUint8
 	minBitCountInternal = 0
+	maxPortNumInternal  = math.MaxUint16
+	minPortNumInternal  = 0
 )
 
 var (
@@ -209,3 +211,7 @@ func bigAbsIsOne(val *BigDivInt) bool {
 func bigIsOne(val *BigDivInt) bool {
 	return bigAbsIsOne(val) && val.Sign() > 0
 }
+
+// PortNum is the port number for a non-nil Port.
+// For arithmetic, you might wish to use the signed integer type PortInt instead.
+type PortNum uint16
