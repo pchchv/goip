@@ -253,3 +253,18 @@ func (portNum *PortNum) String() string {
 	}
 	return strconv.Itoa(portNum.portNum())
 }
+
+func (portNum *PortNum) copy() Port {
+	if portNum == nil {
+		return nil
+	}
+	return portNum
+}
+
+// Equal compares two Port values for equality.
+func (portNum *PortNum) Equal(other Port) bool {
+	if portNum == nil {
+		return other == nil
+	}
+	return other != nil && portNum.portNum() == other.portNum()
+}
