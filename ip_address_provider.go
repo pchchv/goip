@@ -117,3 +117,11 @@ func (p *ipAddrProvider) isProvidingIPv6() bool {
 func (p *ipAddrProvider) isProvidingAllAddresses() bool {
 	return false
 }
+
+func (p *ipAddrProvider) isProvidingEmpty() bool {
+	return false
+}
+
+func (p *ipAddrProvider) isInvalid() bool {
+	return false
+}
