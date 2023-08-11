@@ -268,3 +268,18 @@ func (portNum *PortNum) Equal(other Port) bool {
 	}
 	return other != nil && portNum.portNum() == other.portNum()
 }
+
+// Compare compares PrefixLen values,
+// returning -1, 0, or 1 if the receiver is less than,
+// equal to, or greater than the argument.
+func (portNum *PortNum) Compare(other Port) int {
+	if portNum == nil {
+		if other == nil {
+			return 0
+		}
+		return -1
+	} else if other == nil {
+		return 1
+	}
+	return portNum.portNum() - other.portNum()
+}
