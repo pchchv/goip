@@ -85,3 +85,11 @@ func (p *ipAddrProvider) getProviderHostAddress() (*IPAddress, address_error.Inc
 func (p *ipAddrProvider) getProviderAddress() (*IPAddress, address_error.IncompatibleAddressError) {
 	return nil, nil
 }
+
+func (p *ipAddrProvider) getProviderSeqRange() *SequentialRange[*IPAddress] {
+	return nil
+}
+
+func (p *ipAddrProvider) getVersionedAddress(_ IPVersion) (*IPAddress, address_error.IncompatibleAddressError) {
+	return nil, nil
+}
