@@ -149,3 +149,11 @@ func (p *ipAddrProvider) containsProvider(ipAddressProvider) boolSetting {
 func (p *ipAddrProvider) prefixEqualsProvider(ipAddressProvider) boolSetting {
 	return boolSetting{}
 }
+
+func (p *ipAddrProvider) prefixContainsProvider(ipAddressProvider) boolSetting {
+	return boolSetting{}
+}
+
+func (p *ipAddrProvider) parsedEquals(ipAddressProvider) boolSetting {
+	return boolSetting{}
+}
