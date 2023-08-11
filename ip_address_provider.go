@@ -101,3 +101,11 @@ func (p *ipAddrProvider) getProviderMask() *IPAddress {
 func (p *ipAddrProvider) getProviderIPVersion() IPVersion {
 	return IndeterminateIPVersion
 }
+
+func (p *ipAddrProvider) isProvidingIPAddress() bool {
+	return false
+}
+
+func (p *ipAddrProvider) isProvidingIPv4() bool {
+	return false
+}
