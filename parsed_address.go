@@ -80,3 +80,13 @@ func (parseData *parsedIPAddress) getProviderIPVersion() IPVersion {
 func (parseData *parsedIPAddress) getIPAddressParseData() *ipAddressParseData {
 	return &parseData.ipAddressParseData
 }
+
+func (parseData *parsedIPAddress) getVersionedAddress(version IPVersion) (*IPAddress, address_error.IncompatibleAddressError) {
+	thisVersion := parseData.getProviderIPVersion()
+
+	if version != thisVersion {
+		return nil, nil
+	}
+
+	return parseData.getProviderAddress()
+}
