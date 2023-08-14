@@ -79,3 +79,23 @@ func getAdjustedPrefixLength(bitsPerSegment BitCount, prefixLength BitCount, fro
 
 	return getDivisionPrefixLength(BitCount(totalBits), prefixLength-BitCount(decrement))
 }
+
+// getNetworkPrefixLen translates a non-nil segment prefix length into an address prefix length.
+// When calling this for the first segment with a non-nil prefix length, this gives the overall prefix length.
+//
+// Across an address prefixes are:
+// IPv6: (nil):...:(nil):(1 to 16):(0):...:(0)
+// or IPv4: ...(nil).(1 to 8).(0)...
+func getNetworkPrefixLen(bitsPerSegment, segmentPrefixLength BitCount, segmentIndex int) PrefixLen {
+	var increment BitCount
+
+	if bitsPerSegment == 8 {
+		increment = BitCount(segmentIndex) << ipv4BitsToSegmentBitshift
+	} else if bitsPerSegment == 16 {
+		increment = BitCount(segmentIndex) << ipv6BitsToSegmentBitshift
+	} else {
+		increment = BitCount(segmentIndex) * bitsPerSegment
+	}
+
+	return cacheBitCount(increment + segmentPrefixLength)
+}
