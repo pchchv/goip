@@ -49,3 +49,13 @@ func getPrefixedSegmentPrefixLength(bitsPerSegment BitCount, prefixLength BitCou
 
 	return getDivisionPrefixLength(bitsPerSegment, prefixLength-BitCount(decrement))
 }
+
+// Across an address prefixes are:
+// IPv6: (nil):...:(nil):(1 to 16):(0):...:(0)
+// or IPv4: ...(nil).(1 to 8).(0)...
+func getSegmentPrefixLength(bitsPerSegment BitCount, prefixLength PrefixLen, segmentIndex int) PrefixLen {
+	if prefixLength != nil {
+		return getPrefixedSegmentPrefixLength(bitsPerSegment, prefixLength.bitCount(), segmentIndex)
+	}
+	return nil
+}
