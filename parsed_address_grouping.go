@@ -1,5 +1,14 @@
 package goip
 
+type subnetOption int
+
+const (
+	zerosOnly = subnetOption(iota)
+	fullRangeOnly
+	zerosToFullRange
+	zerosOrFullRange
+)
+
 // getNetworkSegmentIndex returns the index of the segment containing the last byte within the network prefix
 // When networkPrefixLength is zero (so there are no segments containing bytes within the network prefix), returns -1
 func getNetworkSegmentIndex(networkPrefixLength BitCount, bytesPerSegment int, bitsPerSegment BitCount) int {
