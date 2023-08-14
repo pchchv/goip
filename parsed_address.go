@@ -90,3 +90,70 @@ func (parseData *parsedIPAddress) getVersionedAddress(version IPVersion) (*IPAdd
 
 	return parseData.getProviderAddress()
 }
+
+// isPrefixSubnet is not called with parsing data from inetAton or single-segment strings, so casting to int is acceptable.
+// This is only for addresses with the standard segment counts, although compressed addresses are allowed.
+func (parseData *parsedIPAddress) isPrefixSubnet(networkPrefixLength BitCount) bool {
+	var (
+		bytesPerSegment int
+		max             SegInt
+		bitsPerSegment  BitCount
+	)
+
+	if parseData.isProvidingIPv4() {
+		bytesPerSegment = IPv4BytesPerSegment
+		bitsPerSegment = IPv4BitsPerSegment
+		max = IPv4MaxValuePerSegment
+	} else {
+		bytesPerSegment = IPv6BytesPerSegment
+		bitsPerSegment = IPv6BitsPerSegment
+		max = IPv6MaxValuePerSegment
+	}
+
+	addressParseData := parseData.getAddressParseData()
+	segmentCount := addressParseData.getSegmentCount()
+
+	if parseData.isCompressed() {
+		compressedCount := IPv6SegmentCount - segmentCount
+		compressedIndex := addressParseData.getConsecutiveSeparatorSegmentIndex()
+		return isPrefixSubnet(
+			func(segmentIndex int) SegInt {
+				if segmentIndex >= compressedIndex {
+					if segmentIndex-compressedIndex < compressedCount {
+						return 0
+					}
+					segmentIndex -= compressedCount
+				}
+				return SegInt(parseData.getValue(segmentIndex, keyLower))
+			},
+			func(segmentIndex int) SegInt {
+				if segmentIndex >= compressedIndex {
+					if segmentIndex-compressedIndex < compressedCount {
+						return 0
+					}
+					segmentIndex -= compressedCount
+				}
+				return SegInt(parseData.getValue(segmentIndex, keyUpper))
+			},
+			segmentCount+compressedCount,
+			bytesPerSegment,
+			bitsPerSegment,
+			max,
+			networkPrefixLength,
+			zerosOrFullRange)
+	}
+
+	return isPrefixSubnet(
+		func(segmentIndex int) SegInt {
+			return SegInt(parseData.getValue(segmentIndex, keyLower))
+		},
+		func(segmentIndex int) SegInt {
+			return SegInt(parseData.getValue(segmentIndex, keyUpper))
+		},
+		segmentCount,
+		bytesPerSegment,
+		bitsPerSegment,
+		max,
+		networkPrefixLength,
+		zerosOrFullRange)
+}
