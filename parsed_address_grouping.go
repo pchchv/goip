@@ -24,11 +24,9 @@ func getHostSegmentIndex(networkPrefixLength BitCount, bytesPerSegment int, bits
 	return int(networkPrefixLength >> ipv4BitsToSegmentBitshift)
 }
 
-/**
- * Across an address prefixes are:
- * IPv6: (nil):...:(nil):(1 to 16):(0):...:(0)
- * or IPv4: ...(nil).(1 to 8).(0)...
- */
+// Across an address prefixes are:
+// IPv6: (nil):...:(nil):(1 to 16):(0):...:(0)
+// or IPv4: ...(nil).(1 to 8).(0)...
 func getDivisionPrefixLength(divisionBits, divisionPrefixedBits BitCount) PrefixLen {
 	if divisionPrefixedBits <= 0 {
 		return cacheBitCount(0) // none of the bits in this segment matter
