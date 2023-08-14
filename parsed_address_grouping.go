@@ -99,3 +99,12 @@ func getNetworkPrefixLen(bitsPerSegment, segmentPrefixLength BitCount, segmentIn
 
 	return cacheBitCount(increment + segmentPrefixLength)
 }
+
+func getSegmentsBitCount(bitsPerSegment BitCount, segmentCount int) BitCount {
+	if bitsPerSegment == 8 {
+		return BitCount(segmentCount) << ipv4BitsToSegmentBitshift
+	} else if bitsPerSegment == 16 {
+		return BitCount(segmentCount) << ipv6BitsToSegmentBitshift
+	}
+	return BitCount(segmentCount) * bitsPerSegment
+}
