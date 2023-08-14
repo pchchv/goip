@@ -37,3 +37,17 @@ func getDivisionPrefixLength(divisionBits, divisionPrefixedBits BitCount) Prefix
 	}
 	return nil // all the bits in this segment matter
 }
+
+func getPrefixedSegmentPrefixLength(bitsPerSegment BitCount, prefixLength BitCount, segmentIndex int) PrefixLen {
+	var decrement int
+
+	if bitsPerSegment == 8 {
+		decrement = segmentIndex << ipv4BitsToSegmentBitshift
+	} else if bitsPerSegment == 16 {
+		decrement = segmentIndex << ipv6BitsToSegmentBitshift
+	} else {
+		decrement = segmentIndex * int(bitsPerSegment)
+	}
+
+	return getDivisionPrefixLength(bitsPerSegment, prefixLength-BitCount(decrement))
+}
