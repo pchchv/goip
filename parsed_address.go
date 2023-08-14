@@ -68,3 +68,15 @@ func (parseData *parsedIPAddress) isProvidingIPv6() bool {
 func (parseData *parsedIPAddress) isProvidingIPv4() bool {
 	return parseData.ipAddressParseData.isProvidingIPv4()
 }
+
+func (parseData *parsedIPAddress) isProvidingBase85IPv6() bool {
+	return parseData.ipAddressParseData.isProvidingBase85IPv6()
+}
+
+func (parseData *parsedIPAddress) getProviderIPVersion() IPVersion {
+	return parseData.ipAddressParseData.getProviderIPVersion()
+}
+
+func (parseData *parsedIPAddress) getIPAddressParseData() *ipAddressParseData {
+	return &parseData.ipAddressParseData
+}
