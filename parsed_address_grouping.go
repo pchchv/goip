@@ -1,5 +1,7 @@
 package goip
 
+import "math/bits"
+
 type subnetOption int
 
 const (
@@ -116,4 +118,123 @@ func getSegmentsBitCount(bitsPerSegment BitCount, segmentCount int) BitCount {
 		return BitCount(segmentCount) << ipv6BitsToSegmentBitshift
 	}
 	return BitCount(segmentCount) * bitsPerSegment
+}
+
+// For explicit prefix config this always returns false.
+// For all prefix subnets config this always returns true if the prefix length does not extend beyond the address end.
+func isPrefixSubnet(
+	lowerValueProvider,
+	upperValueProvider SegmentValueProvider,
+	segmentCount,
+	bytesPerSegment int,
+	bitsPerSegment BitCount,
+	segmentMaxValue SegInt,
+	prefLen BitCount,
+	subnetOption subnetOption) bool {
+
+	if prefLen < 0 {
+		prefLen = 0
+	} else {
+		var totalBitCount BitCount
+		if bitsPerSegment == 8 {
+			totalBitCount = BitCount(segmentCount) << ipv4BitsToSegmentBitshift
+		} else if bitsPerSegment == 16 {
+			totalBitCount = BitCount(segmentCount) << ipv6BitsToSegmentBitshift
+		} else {
+			totalBitCount = BitCount(segmentCount) * bitsPerSegment
+		}
+		if prefLen >= totalBitCount {
+			return false
+		}
+	}
+
+	prefixedSegment := getHostSegmentIndex(prefLen, bytesPerSegment, bitsPerSegment)
+	i := prefixedSegment
+	if i < segmentCount {
+		zero := PrefixBitCount(0)
+		segmentPrefixLength := getPrefixedSegmentPrefixLength(bitsPerSegment, prefLen, i)
+		for {
+			//we want to see if there is a sequence of zeros followed by a sequence of full-range bits from the prefix onwards
+			//once we start seeing full range bits, the remained of the section must be full range
+			//for instance x marks the start of zeros and y marks the start of full range:
+			//segment 1 segment 2 ...
+			//upper: 10101010  10100111 11111111 11111111
+			//lower: 00111010  00100000 00000000 00000000
+			//                    x y
+			//upper: 10101010  10100000 00000000 00111111
+			//lower: 00111010  00100000 10000000 00000000
+			//                           x         y
+			//
+			//the bit marked x in each set of 4 segment of 8 bits is a sequence of zeros, followed by full range bits starting at bit y
+			lower := lowerValueProvider(i)
+			prefLen := segmentPrefixLength.bitCount()
+			if prefLen == 0 {
+				if lower != 0 {
+					return false
+				}
+				upper := upperValueProvider(i)
+				if subnetOption == fullRangeOnly {
+					if upper != segmentMaxValue {
+						return false
+					}
+				} else if upper != 0 {
+					if subnetOption == zerosOnly {
+						return false
+					} else if upper == segmentMaxValue {
+						if subnetOption == zerosOrFullRange && i > prefixedSegment {
+							return false
+						}
+					} else if subnetOption == zerosOrFullRange {
+						return false
+					} else { //zerosToFullRange
+						upperTrailingOnes := bits.TrailingZeros64(^uint64(upper))
+						if (upper >> uint(upperTrailingOnes)) != 0 {
+							return false
+						}
+					}
+					subnetOption = fullRangeOnly
+				}
+			} else if prefLen < bitsPerSegment {
+				segHostBits := bitsPerSegment - prefLen
+				hostMask := ^(^SegInt(0) << uint(segHostBits))
+				if (hostMask & lower) != 0 {
+					return false
+				}
+				upper := upperValueProvider(i)
+				if subnetOption == fullRangeOnly {
+					if (hostMask & upper) != hostMask {
+						return false
+					}
+				} else {
+					hostUpper := hostMask & upper
+					if hostUpper != 0 {
+						if subnetOption == zerosOnly {
+							return false
+						} else if hostUpper == hostMask {
+							if subnetOption == zerosOrFullRange && i > prefixedSegment {
+								return false
+							}
+						} else if subnetOption == zerosOrFullRange {
+							return false
+						} else { // zerosToFullRange
+							upperTrailingOnes := uint(bits.TrailingZeros64(^uint64(upper)))
+							hostMask >>= upperTrailingOnes
+							upper >>= upperTrailingOnes
+							if (hostMask & upper) != 0 {
+								return false
+							}
+						}
+						subnetOption = fullRangeOnly
+					}
+				}
+			}
+
+			segmentPrefixLength = &zero
+			i++
+			if i >= segmentCount {
+				break
+			}
+		}
+	}
+	return true
 }
