@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"strconv"
 	"sync"
 
 	"github.com/pchchv/goip/address_error"
@@ -192,4 +193,8 @@ func createRangeSeg(
 	}
 
 	return result
+}
+
+func maskString(lower, upper, maskInt uint64) string {
+	return strconv.FormatUint(lower, 10) + "-" + strconv.FormatUint(upper, 10) + " /" + strconv.FormatUint(maskInt, 10)
 }
