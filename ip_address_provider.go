@@ -26,6 +26,16 @@ const (
 // These constants are ordered by address space size, from smallest to largest, and the ordering affects comparisons
 type ipType int
 
+func fromVersion(version IPVersion) ipType {
+	switch version {
+	case IPv4:
+		return ipv4AddrType
+	case IPv6:
+		return ipv6AddrType
+	}
+	return uninitializedType
+}
+
 type ipAddressProvider interface {
 	getType() ipType
 	getProviderHostAddress() (*IPAddress, address_error.IncompatibleAddressError)
