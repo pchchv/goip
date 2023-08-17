@@ -17,3 +17,9 @@ type addressSegmentCreator interface {
 	createPrefixSegment(value SegInt, segmentPrefixLength PrefixLen) *AddressDivision
 	getMaxValuePerSegment() SegInt
 }
+
+type parsedAddressCreator interface {
+	addressSegmentCreator
+	createSectionInternal(segments []*AddressDivision, isMultiple bool) *AddressSection
+	createAddressInternal(section *AddressSection, identifier HostIdentifierString) *Address
+}
