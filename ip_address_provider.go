@@ -171,3 +171,11 @@ func (p *ipAddrProvider) prefixContainsProvider(ipAddressProvider) boolSetting {
 func (p *ipAddrProvider) parsedEquals(ipAddressProvider) boolSetting {
 	return boolSetting{}
 }
+
+type nullProvider struct {
+	ipAddrProvider
+	ipType       ipType
+	isEmpty      bool
+	isInvalidVal bool
+	params       address_string_param.IPAddressStringParams
+}
