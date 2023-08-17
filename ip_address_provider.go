@@ -179,3 +179,11 @@ type nullProvider struct {
 	isInvalidVal bool
 	params       address_string_param.IPAddressStringParams
 }
+
+func (p *nullProvider) isInvalid() bool {
+	return p.isInvalidVal
+}
+
+func (p *nullProvider) isProvidingEmpty() bool {
+	return p.isEmpty
+}
