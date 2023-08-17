@@ -14,6 +14,11 @@ const (
 	allType
 )
 
+var (
+	invalidProvider = &nullProvider{isInvalidVal: true, ipType: invalidType}
+	emptyProvider   = &nullProvider{isEmpty: true, ipType: emptyType}
+)
+
 // All IP address strings corresponds to exactly one of these types.
 // In cases where there is no corresponding default IPAddress value
 // (invalidType, allType, and possibly emptyType), these types can be used for comparison.
@@ -186,4 +191,12 @@ func (p *nullProvider) isInvalid() bool {
 
 func (p *nullProvider) isProvidingEmpty() bool {
 	return p.isEmpty
+}
+
+type addressResult struct {
+	address       *IPAddress
+	hostAddress   *IPAddress
+	address_Error address_error.IncompatibleAddressError
+	hostErr       address_error.IncompatibleAddressError
+	rng           *SequentialRange[*IPAddress] // only used when no address can be obtained
 }
