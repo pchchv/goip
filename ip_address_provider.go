@@ -200,3 +200,10 @@ type addressResult struct {
 	hostErr       address_error.IncompatibleAddressError
 	rng           *SequentialRange[*IPAddress] // only used when no address can be obtained
 }
+
+type cachedAddressProvider struct {
+	ipAddrProvider
+	// addressCreator creates two addresses, the host address and address with prefix/mask, at the same time
+	addressCreator func() (address, hostAddress *IPAddress, address_Error, hosterr address_error.IncompatibleAddressError)
+	addresses      *addressResult
+}
