@@ -198,3 +198,58 @@ func createRangeSeg(
 func maskString(lower, upper, maskInt uint64) string {
 	return strconv.FormatUint(lower, 10) + "-" + strconv.FormatUint(upper, 10) + " /" + strconv.FormatUint(maskInt, 10)
 }
+
+func createFullRangeSegment(
+	version IPVersion,
+	stringLower,
+	stringUpper SegInt,
+	parsedSegIndex int,
+	segmentPrefixLength PrefixLen,
+	mask *SegInt,
+	creator parsedAddressCreator) (result, hostResult, lower, upper *AddressDivision, err address_error.IncompatibleAddressError) {
+	var maskedLower, maskedUpper SegInt
+	maskedIsDifferent := false
+	hasMask := mask != nil
+	if hasMask {
+		maskInt := DivInt(*mask)
+		lstringLower := uint64(stringLower)
+		lstringUpper := uint64(stringUpper)
+		masker := MaskRange(lstringLower, lstringUpper, maskInt, uint64(creator.getMaxValuePerSegment()))
+		if !masker.IsSequential() {
+			err = &incompatibleAddressError{
+				addressError{
+					str: maskString(lstringLower, lstringUpper, maskInt),
+					key: "ipaddress.error.maskMismatch",
+				},
+			}
+		}
+		maskedLower = SegInt(masker.GetMaskedLower(lstringLower, maskInt))
+		maskedUpper = SegInt(masker.GetMaskedUpper(lstringUpper, maskInt))
+		maskedIsDifferent = maskedLower != stringLower || maskedUpper != stringUpper
+	} else {
+		maskedLower = stringLower
+		maskedUpper = stringUpper
+	}
+
+	result = createRangeSeg("", version, maskedLower, maskedUpper,
+		false, nil, parsedSegIndex, segmentPrefixLength, creator)
+
+	if maskedIsDifferent || segmentPrefixLength != nil {
+		hostResult = createRangeSeg("", version, stringLower, stringUpper,
+			false, nil, parsedSegIndex, nil, creator)
+	} else {
+		hostResult = result
+	}
+
+	if maskedLower == maskedUpper {
+		lower = result
+		upper = result
+	} else {
+		lower = createRangeSeg("", version, maskedLower, maskedLower,
+			false, nil, parsedSegIndex, segmentPrefixLength, creator)
+		upper = createRangeSeg("", version, maskedUpper, maskedUpper,
+			false, nil, parsedSegIndex, segmentPrefixLength, creator)
+	}
+
+	return
+}
