@@ -253,3 +253,9 @@ func createFullRangeSegment(
 
 	return
 }
+
+// createIPv6Segment creates an IPv6 segment by joining two IPv4 segments.
+func createIPv6Segment(value1, value2 SegInt, segmentPrefixLength PrefixLen, creator parsedAddressCreator) *AddressDivision {
+	value := (value1 << uint(IPv4BitsPerSegment)) | value2
+	return creator.createPrefixSegment(value, segmentPrefixLength)
+}
