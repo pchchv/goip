@@ -259,3 +259,13 @@ func createIPv6Segment(value1, value2 SegInt, segmentPrefixLength PrefixLen, cre
 	value := (value1 << uint(IPv4BitsPerSegment)) | value2
 	return creator.createPrefixSegment(value, segmentPrefixLength)
 }
+
+func allocateSegments(segments, originalSegments []*AddressDivision, segmentCount, originalCount int) []*AddressDivision {
+	if segments == nil {
+		segments = createSegmentArray(segmentCount)
+		if originalCount > 0 {
+			copy(segments, originalSegments[:originalCount])
+		}
+	}
+	return segments
+}
