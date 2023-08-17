@@ -36,6 +36,10 @@ func fromVersion(version IPVersion) ipType {
 	return uninitializedType
 }
 
+func (t ipType) isUnknown() bool {
+	return t == uninitializedType
+}
+
 type ipAddressProvider interface {
 	getType() ipType
 	getProviderHostAddress() (*IPAddress, address_error.IncompatibleAddressError)
