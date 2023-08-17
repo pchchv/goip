@@ -22,3 +22,7 @@ type addressDivisionGroupingInternal struct {
 type AddressDivisionGrouping struct {
 	addressDivisionGroupingInternal
 }
+
+func createSegmentArray(length int) []*AddressDivision {
+	return make([]*AddressDivision, length)
+}
