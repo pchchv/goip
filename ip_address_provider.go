@@ -207,3 +207,15 @@ type cachedAddressProvider struct {
 	addressCreator func() (address, hostAddress *IPAddress, address_Error, hosterr address_error.IncompatibleAddressError)
 	addresses      *addressResult
 }
+
+func (cached *cachedAddressProvider) isProvidingIPAddress() bool {
+	return true
+}
+
+func (cached *cachedAddressProvider) isSequential() bool {
+	addr, _ := cached.getProviderAddress()
+	if addr != nil {
+		return addr.IsSequential()
+	}
+	return false
+}
