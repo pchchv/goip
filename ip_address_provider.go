@@ -261,3 +261,11 @@ type versionedAddressCreator struct {
 	versionedValues             [2]*IPAddress
 	parameters                  address_string_param.IPAddressStringParams
 }
+
+func (versioned *versionedAddressCreator) getParameters() address_string_param.IPAddressStringParams {
+	return versioned.parameters
+}
+
+func (versioned *versionedAddressCreator) isProvidingIPAddress() bool {
+	return versioned.adjustedVersion != IndeterminateIPVersion
+}
