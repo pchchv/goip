@@ -277,3 +277,11 @@ func (versioned *versionedAddressCreator) isProvidingIPv4() bool {
 func (versioned *versionedAddressCreator) isProvidingIPv6() bool {
 	return versioned.adjustedVersion == IPv6
 }
+
+func (versioned *versionedAddressCreator) getProviderIPVersion() IPVersion {
+	return versioned.adjustedVersion
+}
+
+func (versioned *versionedAddressCreator) getType() ipType {
+	return fromVersion(versioned.adjustedVersion)
+}
