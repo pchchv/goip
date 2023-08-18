@@ -290,3 +290,7 @@ type emptyAddrCreator struct {
 	versionedAddressCreator
 	zone Zone
 }
+
+func (loop *emptyAddrCreator) getProviderNetworkPrefixLen() PrefixLen {
+	return nil
+}
