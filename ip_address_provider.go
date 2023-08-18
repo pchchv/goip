@@ -258,6 +258,16 @@ func (cached *cachedAddressProvider) getCachedAddresses() (address, hostAddress 
 	return
 }
 
+func (cached *cachedAddressProvider) getProviderHostAddress() (res *IPAddress, err address_error.IncompatibleAddressError) {
+	_, res, _, err = cached.getCachedAddresses()
+	return
+}
+
+func (cached *cachedAddressProvider) getProviderAddress() (res *IPAddress, err address_error.IncompatibleAddressError) {
+	res, _, err, _ = cached.getCachedAddresses()
+	return
+}
+
 type versionedAddressCreator struct {
 	cachedAddressProvider
 	adjustedVersion             IPVersion
