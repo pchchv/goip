@@ -285,3 +285,8 @@ func (versioned *versionedAddressCreator) getProviderIPVersion() IPVersion {
 func (versioned *versionedAddressCreator) getType() ipType {
 	return fromVersion(versioned.adjustedVersion)
 }
+
+type emptyAddrCreator struct {
+	versionedAddressCreator
+	zone Zone
+}
