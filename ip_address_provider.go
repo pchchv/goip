@@ -321,3 +321,9 @@ func (adjusted *adjustedAddressCreator) getProviderHostAddress() (*IPAddress, ad
 type maskCreator struct {
 	adjustedAddressCreator
 }
+
+type allCreator struct {
+	adjustedAddressCreator
+	originator HostIdentifierString
+	qualifier  parsedHostIdentifierStringQualifier
+}
