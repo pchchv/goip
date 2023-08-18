@@ -253,3 +253,11 @@ func (cached *cachedAddressProvider) getCachedAddresses() (address, hostAddress 
 	}
 	return
 }
+
+type versionedAddressCreator struct {
+	cachedAddressProvider
+	adjustedVersion             IPVersion
+	versionedAddressCreatorFunc func(IPVersion) (*IPAddress, address_error.IncompatibleAddressError)
+	versionedValues             [2]*IPAddress
+	parameters                  address_string_param.IPAddressStringParams
+}
