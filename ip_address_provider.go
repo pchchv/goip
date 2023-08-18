@@ -340,3 +340,11 @@ func (all *allCreator) getType() ipType {
 func (all *allCreator) isProvidingAllAddresses() bool {
 	return all.adjustedVersion == IndeterminateIPVersion
 }
+
+func (all *allCreator) isSequential() bool {
+	addr, _ := all.getProviderAddress()
+	if addr != nil {
+		return addr.IsSequential()
+	}
+	return false
+}
