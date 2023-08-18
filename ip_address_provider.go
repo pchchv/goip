@@ -294,3 +294,8 @@ type emptyAddrCreator struct {
 func (loop *emptyAddrCreator) getProviderNetworkPrefixLen() PrefixLen {
 	return nil
 }
+
+type adjustedAddressCreator struct {
+	versionedAddressCreator
+	networkPrefixLength PrefixLen
+}
