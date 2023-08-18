@@ -310,3 +310,10 @@ func (adjusted *adjustedAddressCreator) getProviderAddress() (*IPAddress, addres
 	}
 	return adjusted.versionedAddressCreator.getProviderAddress()
 }
+
+func (adjusted *adjustedAddressCreator) getProviderHostAddress() (*IPAddress, address_error.IncompatibleAddressError) {
+	if !adjusted.isProvidingIPAddress() {
+		return nil, nil
+	}
+	return adjusted.versionedAddressCreator.getProviderHostAddress()
+}
