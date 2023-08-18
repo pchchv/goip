@@ -317,3 +317,7 @@ func (adjusted *adjustedAddressCreator) getProviderHostAddress() (*IPAddress, ad
 	}
 	return adjusted.versionedAddressCreator.getProviderHostAddress()
 }
+
+type maskCreator struct {
+	adjustedAddressCreator
+}
