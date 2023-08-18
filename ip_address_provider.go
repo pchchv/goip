@@ -327,3 +327,16 @@ type allCreator struct {
 	originator HostIdentifierString
 	qualifier  parsedHostIdentifierStringQualifier
 }
+
+func (all *allCreator) getType() ipType {
+	if !all.adjustedVersion.IsIndeterminate() {
+		return fromVersion(all.adjustedVersion)
+	}
+	return allType
+}
+
+// isProvidingAllAddresses providing **all** addresses of any IP version,
+// "*" not "*.*" or "*:*"
+func (all *allCreator) isProvidingAllAddresses() bool {
+	return all.adjustedVersion == IndeterminateIPVersion
+}
