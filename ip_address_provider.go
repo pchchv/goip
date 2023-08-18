@@ -269,3 +269,11 @@ func (versioned *versionedAddressCreator) getParameters() address_string_param.I
 func (versioned *versionedAddressCreator) isProvidingIPAddress() bool {
 	return versioned.adjustedVersion != IndeterminateIPVersion
 }
+
+func (versioned *versionedAddressCreator) isProvidingIPv4() bool {
+	return versioned.adjustedVersion == IPv4
+}
+
+func (versioned *versionedAddressCreator) isProvidingIPv6() bool {
+	return versioned.adjustedVersion == IPv6
+}
