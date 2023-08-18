@@ -219,3 +219,15 @@ func (cached *cachedAddressProvider) isSequential() bool {
 	}
 	return false
 }
+
+func (cached *cachedAddressProvider) getVersionedAddress(version IPVersion) (*IPAddress, address_error.IncompatibleAddressError) {
+	thisVersion := cached.getProviderIPVersion()
+	if version != thisVersion {
+		return nil, nil
+	}
+	return cached.getProviderAddress()
+}
+
+func (cached *cachedAddressProvider) getType() ipType {
+	return fromVersion(cached.getProviderIPVersion())
+}
