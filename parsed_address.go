@@ -159,6 +159,41 @@ func (parseData *parsedIPAddress) isPrefixSubnet(networkPrefixLength BitCount) b
 		zerosOrFullRange)
 }
 
+func (parseData *parsedIPAddress) createSegment(
+	addressString string,
+	version IPVersion,
+	val,
+	upperVal SegInt,
+	useFlags bool,
+	parsedSegIndex int,
+	segmentPrefixLength PrefixLen,
+	creator parsedAddressCreator) (div *AddressDivision, isMultiple bool) {
+	parsed := parseData.getAddressParseData()
+
+	if val != upperVal {
+		return createRangeSeg(addressString, version, val, upperVal,
+			useFlags, parsed, parsedSegIndex,
+			segmentPrefixLength, creator), true
+	}
+
+	var result *AddressDivision
+
+	if !useFlags {
+		result = creator.createSegment(val, val, segmentPrefixLength)
+	} else {
+		result = creator.createSegmentInternal(
+			val,
+			segmentPrefixLength,
+			addressString,
+			val,
+			parsed.getFlag(parsedSegIndex, keyStandardStr),
+			parsed.getIndex(parsedSegIndex, keyLowerStrStartIndex),
+			parsed.getIndex(parsedSegIndex, keyLowerStrEndIndex))
+	}
+
+	return result, false
+}
+
 func createRangeSeg(
 	addressString string,
 	_ IPVersion,
