@@ -1,6 +1,8 @@
 package goip
 
 import (
+	"unsafe"
+
 	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/address_string_param"
 )
@@ -230,4 +232,24 @@ func (cached *cachedAddressProvider) getVersionedAddress(version IPVersion) (*IP
 
 func (cached *cachedAddressProvider) getType() ipType {
 	return fromVersion(cached.getProviderIPVersion())
+}
+
+func (cached *cachedAddressProvider) getCachedAddresses() (address, hostAddress *IPAddress, address_Error, hostErr address_error.IncompatibleAddressError) {
+	addrs := (*addressResult)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cached.addresses))))
+	if addrs == nil {
+		if cached.addressCreator != nil {
+			address, hostAddress, address_Error, hostErr = cached.addressCreator()
+			addresses := &addressResult{
+				address:       address,
+				hostAddress:   hostAddress,
+				address_Error: address_Error,
+				hostErr:       hostErr,
+			}
+			dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cached.addresses))
+			atomicStorePointer(dataLoc, unsafe.Pointer(addresses))
+		}
+	} else {
+		address, hostAddress, address_Error, hostErr = addrs.address, addrs.hostAddress, addrs.address_Error, addrs.hostErr
+	}
+	return
 }
