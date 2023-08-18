@@ -195,6 +195,10 @@ func (p *nullProvider) isProvidingEmpty() bool {
 	return p.isEmpty
 }
 
+func (p *nullProvider) getType() ipType {
+	return p.ipType
+}
+
 type addressResult struct {
 	address       *IPAddress
 	hostAddress   *IPAddress
