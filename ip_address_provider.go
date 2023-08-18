@@ -299,3 +299,14 @@ type adjustedAddressCreator struct {
 	versionedAddressCreator
 	networkPrefixLength PrefixLen
 }
+
+func (adjusted *adjustedAddressCreator) getProviderNetworkPrefixLen() PrefixLen {
+	return adjusted.networkPrefixLength
+}
+
+func (adjusted *adjustedAddressCreator) getProviderAddress() (*IPAddress, address_error.IncompatibleAddressError) {
+	if !adjusted.isProvidingIPAddress() {
+		return nil, nil
+	}
+	return adjusted.versionedAddressCreator.getProviderAddress()
+}
