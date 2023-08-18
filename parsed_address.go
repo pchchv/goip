@@ -194,6 +194,10 @@ func (parseData *parsedIPAddress) createSegment(
 	return result, false
 }
 
+func (parseData *parsedIPAddress) getType() ipType {
+	return fromVersion(parseData.getProviderIPVersion())
+}
+
 func createRangeSeg(
 	addressString string,
 	_ IPVersion,
