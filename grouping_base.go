@@ -203,3 +203,10 @@ func (grouping *addressDivisionGroupingBase) isPrefixed() bool {
 func (grouping *addressDivisionGroupingBase) isMultiple() bool {
 	return grouping.isMult
 }
+
+// hasNoDivisions() returns whether this grouping is the zero grouping,
+// which is what you get when constructing a grouping or section with no divisions
+func (grouping *addressDivisionGroupingBase) hasNoDivisions() bool {
+	divisions := grouping.divisions
+	return divisions == nil || divisions.getDivisionCount() == 0
+}
