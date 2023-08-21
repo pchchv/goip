@@ -1,5 +1,11 @@
 package goip
 
+// IPv6AddressSection represents a section of an IPv6 address comprising 0 to 8 IPv6 address segments.
+// The zero values is a section with zero-segments.
+type IPv6AddressSection struct {
+	ipAddressSectionInternal
+}
+
 // IPv6v4MixedAddressGrouping has divisions that are a mix of IPv6 and IPv4 sections.
 // It has an initial IPv6 section followed by an IPv4 section.
 type IPv6v4MixedAddressGrouping struct {
