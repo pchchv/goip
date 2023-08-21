@@ -2,6 +2,7 @@ package goip
 
 import (
 	"fmt"
+	"math/big"
 	"unsafe"
 )
 
@@ -84,6 +85,19 @@ type mixedCache struct {
 	defaultMixedAddressSection *IPv6v4MixedAddressGrouping
 	embeddedIPv4Section        *IPv4AddressSection
 	embeddedIPv6Section        *EmbeddedIPv6AddressSection
+}
+
+type valueCache struct {
+	cachedCount         *big.Int
+	cachedPrefixCount   *big.Int
+	cachedMaskLens      *maskLenSetting
+	bytesCache          *bytesCache
+	stringCache         stringCache
+	sectionCache        *groupingCache
+	mixed               *mixedCache
+	minPrefix           PrefixLen
+	equivalentPrefix    *PrefixLen
+	isSinglePrefixBlock *bool
 }
 
 type standardDivArray []*AddressDivision
