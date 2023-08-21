@@ -169,3 +169,19 @@ func (grouping largeDivArray) getSubDivisions(index, endIndex int) (divs []*IPAd
 func (grouping largeDivArray) String() string {
 	return fmt.Sprint([]*IPAddressLargeDivision(grouping.init()))
 }
+
+type addressDivisionGroupingBase struct {
+	// the non-cacheBitCount elements are assigned at creation and are immutable
+	divisions    divArray  // either standard or large
+	prefixLength PrefixLen // must align with the divisions if they store prefix lengths
+	isMult       bool
+	// When a top-level section is created, it is assigned an address type, IPv4, IPv6, or MAC,
+	// and determines if an *AddressDivisionGrouping can be converted back to a section of the original type.
+	//
+	// Type-specific functions in IPAddressSection and lower levels,
+	// such as functions returning strings, can rely on this field.
+	addrType addrType
+	// assigned on creation only; for zero-value groupings it is never assigned,
+	// but in that case it is not needed since there is nothing to cache
+	cache *valueCache
+}
