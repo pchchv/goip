@@ -308,3 +308,8 @@ func allocateSegments(segments, originalSegments []*AddressDivision, segmentCoun
 	}
 	return segments
 }
+
+func getPrefixLength(qualifier *parsedHostIdentifierStringQualifier) PrefixLen {
+	return qualifier.getEquivalentPrefixLen()
+}
+
