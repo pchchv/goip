@@ -10,6 +10,12 @@ type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
 
+// EmbeddedIPv6AddressSection represents the initial IPv6 section of an IPv6v4MixedAddressGrouping.
+type EmbeddedIPv6AddressSection struct {
+	embeddedIPv6AddressSection
+	encompassingSection *IPv6AddressSection
+}
+
 // IPv6v4MixedAddressGrouping has divisions that are a mix of IPv6 and IPv4 sections.
 // It has an initial IPv6 section followed by an IPv4 section.
 type IPv6v4MixedAddressGrouping struct {
