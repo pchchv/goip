@@ -193,3 +193,13 @@ func (grouping *addressDivisionGroupingBase) getAddrType() addrType {
 func (grouping *addressDivisionGroupingBase) getPrefixLen() PrefixLen {
 	return grouping.prefixLength
 }
+
+func (grouping *addressDivisionGroupingBase) isPrefixed() bool {
+	return grouping.prefixLength != nil
+}
+
+// isMultiple returns whether this address or grouping represents more than one address or grouping.
+// Such addresses include CIDR/IP addresses (eg 1.2.3.4/11) or wildcard addresses (eg 1.2.*.4) or range addresses (eg 1.2.3-4.5)
+func (grouping *addressDivisionGroupingBase) isMultiple() bool {
+	return grouping.isMult
+}
