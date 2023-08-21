@@ -84,3 +84,14 @@ func (parsedQual *parsedHostIdentifierStringQualifier) getMaskLower() *IPAddress
 
 	return nil
 }
+
+func (parsedQual *parsedHostIdentifierStringQualifier) getEquivalentPrefixLen() PrefixLen {
+	pref := parsedQual.getNetworkPrefixLen()
+	if pref == nil {
+		mask := parsedQual.getMaskLower()
+		if mask != nil {
+			pref = mask.GetBlockMaskPrefixLen(true)
+		}
+	}
+	return pref
+}
