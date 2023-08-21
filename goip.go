@@ -28,6 +28,14 @@ type IPAddress struct {
 	ipAddressInternal
 }
 
+// ToIP is an identity method.
+//
+// ToIP can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (addr *IPAddress) ToIP() *IPAddress {
+	return addr
+}
+
 // IsIPv4 returns true if this represents version 4.
 func (version IPVersion) IsIPv4() bool {
 	return len(version) == 4 && strings.EqualFold(string(version), string(IPv4))
