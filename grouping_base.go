@@ -80,6 +80,12 @@ type groupingCache struct {
 	upper *AddressSection
 }
 
+type mixedCache struct {
+	defaultMixedAddressSection *IPv6v4MixedAddressGrouping
+	embeddedIPv4Section        *IPv4AddressSection
+	embeddedIPv6Section        *EmbeddedIPv6AddressSection
+}
+
 type standardDivArray []*AddressDivision
 
 func (grouping standardDivArray) String() string {
