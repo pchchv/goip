@@ -72,3 +72,15 @@ func (parsedQual *parsedHostIdentifierStringQualifier) inferVersion(validationOp
 
 	return IndeterminateIPVersion
 }
+
+func (parsedQual *parsedHostIdentifierStringQualifier) getMaskLower() *IPAddress {
+	if mask := parsedQual.mergedMask; mask != nil {
+		return mask
+	}
+
+	if mask := parsedQual.mask; mask != nil {
+		return mask.getValForMask()
+	}
+
+	return nil
+}
