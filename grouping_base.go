@@ -185,3 +185,11 @@ type addressDivisionGroupingBase struct {
 	// but in that case it is not needed since there is nothing to cache
 	cache *valueCache
 }
+
+func (grouping *addressDivisionGroupingBase) getAddrType() addrType {
+	return grouping.addrType
+}
+
+func (grouping *addressDivisionGroupingBase) getPrefixLen() PrefixLen {
+	return grouping.prefixLength
+}
