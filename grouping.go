@@ -24,6 +24,17 @@ func (grouping *addressDivisionGroupingInternal) matchesIPAddressType() bool {
 	return grouping.matchesIPSectionType() // no need to check segment count because addresses cannot be constructed with incorrect segment count (note the zero IPAddress has zero-segments)
 }
 
+func (grouping *addressDivisionGroupingInternal) matchesAddrSectionType() bool {
+	addrType := grouping.getAddrType()
+	// because there are no init() conversions for IPv6/IPV4/MAC sections,
+	// an implicitly zero-valued IPv6/IPV4/MAC or zero IP section has addr type nil
+	return addrType.isIP() || addrType.isMAC() || grouping.matchesZeroGrouping()
+}
+
+func (grouping *addressDivisionGroupingInternal) isAddressSection() bool {
+	return grouping != nil && grouping.matchesAddrSectionType()
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
