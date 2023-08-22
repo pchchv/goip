@@ -37,6 +37,18 @@ func (grouping *addressDivisionGroupingInternal) isAddressSection() bool {
 	return grouping != nil && grouping.matchesAddrSectionType()
 }
 
+func (grouping *addressDivisionGroupingInternal) matchesIPv6SectionType() bool {
+	// because there are no init() conversions for IPv6 sections,
+	// an implicitly zero-valued IPV6 section has addr type nil
+	return grouping.getAddrType().isIPv6() || grouping.matchesZeroGrouping()
+}
+
+func (grouping *addressDivisionGroupingInternal) matchesIPv4SectionType() bool {
+	// because there are no init() conversions for IPV4 sections,
+	// an implicitly zero-valued IPV4 section has addr type nil
+	return grouping.getAddrType().isIPv4() || grouping.matchesZeroGrouping()
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
