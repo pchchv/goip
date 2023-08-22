@@ -44,6 +44,18 @@ func (section *AddressSection) ToSectionBase() *AddressSection {
 	return section
 }
 
+// IsIPv4 returns true if this address section originated as an IPv4 section.
+// If so, use ToIPv4 to convert back to the IPv4-specific type.
+func (section *AddressSection) IsIPv4() bool {
+	return section != nil && section.matchesIPv4SectionType()
+}
+
+// IsIPv6 returns true if this address section originated as an IPv6 section.
+// If so, use ToIPv6 to convert back to the IPv6-specific type.
+func (section *AddressSection) IsIPv6() bool {
+	return section != nil && section.matchesIPv6SectionType()
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
