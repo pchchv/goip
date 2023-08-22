@@ -68,6 +68,19 @@ func (section *AddressSection) IsIP() bool {
 	return section != nil && section.matchesIPSectionType()
 }
 
+// ToIP converts to an IPAddressSection if this address section originated as an IPv4 or IPv6 section,
+// or an implicitly zero-valued IP section.
+// If not, ToIP returns nil.
+//
+// ToIP can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (section *AddressSection) ToIP() *IPAddressSection {
+	if section.IsIP() {
+		return (*IPAddressSection)(unsafe.Pointer(section))
+	}
+	return nil
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
