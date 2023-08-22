@@ -93,3 +93,20 @@ func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) 
 		stringCache.macStringCache = &macStringCache{}
 	}
 }
+
+func createSection(segments []*AddressDivision, prefixLength PrefixLen, addrType addrType) *AddressSection {
+	sect := &AddressSection{
+		addressSectionInternal{
+			addressDivisionGroupingInternal{
+				addressDivisionGroupingBase: addressDivisionGroupingBase{
+					divisions:    standardDivArray(segments),
+					prefixLength: prefixLength,
+					addrType:     addrType,
+					cache:        &valueCache{},
+				},
+			},
+		},
+	}
+	assignStringCache(&sect.addressDivisionGroupingBase, addrType)
+	return sect
+}
