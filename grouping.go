@@ -1,5 +1,7 @@
 package goip
 
+import "unsafe"
+
 var emptyBytes = make([]byte, 0, 0)
 
 type addressDivisionGroupingInternal struct {
@@ -50,6 +52,18 @@ func (grouping *addressDivisionGroupingInternal) isAddressSection() bool {
 // whereas all segments in an address or address section must have the same bit size and exact number of bytes.
 type AddressDivisionGrouping struct {
 	addressDivisionGroupingInternal
+}
+
+// ToSectionBase converts to an address section if the given grouping originated as an address section.
+// Otherwise, the result is nil.
+//
+// ToSectionBase can be called with a nil receiver,
+// allowing this method to be used in a chain with methods that may return a nil pointer.
+func (grouping *AddressDivisionGrouping) ToSectionBase() *AddressSection {
+	if grouping == nil || !grouping.isAddressSection() {
+		return nil
+	}
+	return (*AddressSection)(unsafe.Pointer(grouping))
 }
 
 func createSegmentArray(length int) []*AddressDivision {
