@@ -56,6 +56,18 @@ func (section *AddressSection) IsIPv6() bool {
 	return section != nil && section.matchesIPv6SectionType()
 }
 
+// IsMAC returns true if this address section originated as a MAC section.
+// If so, use ToMAC to convert back to the MAC-specific type.
+func (section *AddressSection) IsMAC() bool {
+	return section != nil && section.matchesMACSectionType()
+}
+
+// IsIP returns true if this address section originated as an IPv4 or IPv6 section, or a zero-length IP section.
+// If so, use ToIP to convert back to the IP-specific type.
+func (section *AddressSection) IsIP() bool {
+	return section != nil && section.matchesIPSectionType()
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
