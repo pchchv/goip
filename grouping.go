@@ -43,10 +43,22 @@ func (grouping *addressDivisionGroupingInternal) matchesIPv6SectionType() bool {
 	return grouping.getAddrType().isIPv6() || grouping.matchesZeroGrouping()
 }
 
+func (grouping *addressDivisionGroupingInternal) matchesIPv6v4MixedGroupingType() bool {
+	// because there are no init() conversions for IPv6v4MixedGrouping groupings,
+	// an implicitly zero-valued IPv6v4MixedGrouping has addr type nil
+	return grouping.getAddrType().isIPv6v4Mixed() || grouping.matchesZeroGrouping()
+}
+
 func (grouping *addressDivisionGroupingInternal) matchesIPv4SectionType() bool {
 	// because there are no init() conversions for IPV4 sections,
 	// an implicitly zero-valued IPV4 section has addr type nil
 	return grouping.getAddrType().isIPv4() || grouping.matchesZeroGrouping()
+}
+
+func (grouping *addressDivisionGroupingInternal) matchesMACSectionType() bool {
+	// because there are no init() conversions for MAC sections,
+	// an implicitly zero-valued MAC section has addr type nil
+	return grouping.getAddrType().isMAC() || grouping.matchesZeroGrouping()
 }
 
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
