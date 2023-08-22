@@ -6,6 +6,15 @@ type addressDivisionGroupingInternal struct {
 	addressDivisionGroupingBase
 }
 
+// The adaptive zero grouping, produced by zero sections like IPv4AddressSection{} or AddressDivisionGrouping{},
+// can represent a zero-length section of any address type,
+// It is not considered equal to constructions of specific zero length sections of groupings like
+// NewIPv4Section(nil) which can only represent a zero-length section of a single address type.
+func (grouping *addressDivisionGroupingInternal) matchesZeroGrouping() bool {
+	addrType := grouping.getAddrType()
+	return addrType.isZeroSegments() && grouping.hasNoDivisions()
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
