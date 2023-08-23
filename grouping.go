@@ -61,6 +61,18 @@ func (grouping *addressDivisionGroupingInternal) matchesMACSectionType() bool {
 	return grouping.getAddrType().isMAC() || grouping.matchesZeroGrouping()
 }
 
+func (grouping *addressDivisionGroupingInternal) getDivArray() standardDivArray {
+	if divsArray := grouping.divisions; divsArray != nil {
+		return divsArray.(standardDivArray)
+	}
+	return nil
+}
+
+// getDivision returns the division or panics if the index is negative or too large
+func (grouping *addressDivisionGroupingInternal) getDivision(index int) *AddressDivision {
+	return grouping.getDivArray()[index]
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
