@@ -30,6 +30,23 @@ func (countComparator) compareLargeValues(oneUpper, oneLower, twoUpper, twoLower
 	return
 }
 
+func (countComparator) compareValues(oneUpper, oneLower, twoUpper, twoLower uint64) int {
+	size1 := oneUpper - oneLower
+	size2 := twoUpper - twoLower
+
+	if size1 == size2 {
+		if oneLower == twoLower {
+			return 0
+		} else if oneLower > twoLower {
+			return 1
+		}
+	} else if size1 > size2 {
+		return 1
+	}
+
+	return -1
+}
+
 // compareDivBitCounts is called when we know that two series have the same bit size,
 // need to check that the divisions also have the same bit size.
 func compareDivBitCounts(oneSeries, twoSeries AddressDivisionSeries) int {
