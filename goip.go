@@ -163,3 +163,21 @@ func (addr *ipAddressInternal) GetPrefixLen() PrefixLen {
 type Address struct {
 	addressInternal
 }
+
+// IsIP returns true if this address or subnet originated as an IPv4 or IPv6 address or subnet,
+// or an implicitly zero-valued IP.
+// If so, use ToIP to convert back to the IP-specific type.
+func (addr *Address) IsIP() bool {
+	return addr != nil && addr.isIP()
+}
+
+// ToIP converts to an IPAddress if this address or subnet originated as an IPv4 or IPv6 address or subnet, or an implicitly zero-valued IP.
+// If not, ToIP returns nil.
+//
+// ToIP can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (addr *Address) ToIP() *IPAddress {
+	if addr.IsIP() {
+		return (*IPAddress)(unsafe.Pointer(addr))
+	}
+	return nil
+}
