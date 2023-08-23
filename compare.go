@@ -18,3 +18,14 @@ type AddressComparator struct {
 }
 
 type countComparator struct{}
+
+func (countComparator) compareLargeValues(oneUpper, oneLower, twoUpper, twoLower *big.Int) (result int) {
+	oneUpper.Sub(oneUpper, oneLower)
+	twoUpper.Sub(twoUpper, twoLower)
+	result = oneUpper.CmpAbs(twoUpper)
+	if result == 0 {
+		//the size of the range is the same, so just compare either upper or lower values
+		result = oneLower.CmpAbs(twoLower)
+	}
+	return
+}
