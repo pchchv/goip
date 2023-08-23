@@ -210,3 +210,8 @@ func (grouping *addressDivisionGroupingBase) hasNoDivisions() bool {
 	divisions := grouping.divisions
 	return divisions == nil || divisions.getDivisionCount() == 0
 }
+
+// getDivision returns the division or panics if the index is negative or it is too large
+func (grouping *addressDivisionGroupingBase) getDivision(index int) *addressDivisionBase {
+	return grouping.divisions.getDivision(index)
+}
