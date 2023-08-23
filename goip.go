@@ -137,6 +137,13 @@ func (addr *ipAddressInternal) GetPrefixLen() PrefixLen {
 	return addr.addressInternal.GetPrefixLen()
 }
 
+// isIP returns whether this matches an IP address.
+// It must be IPv4, IPv6, or the zero IPAddress which has no segments
+// we allow nil receivers to allow this to be called following a failed conversion like ToIP()
+func (addr *addressInternal) isIP() bool {
+	return addr.section == nil || addr.section.matchesIPAddressType()
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
