@@ -90,6 +90,16 @@ func (grouping *AddressDivisionGrouping) ToSectionBase() *AddressSection {
 	return (*AddressSection)(unsafe.Pointer(grouping))
 }
 
+// ToIP converts to an IPAddressSection if this grouping originated as an IPv4 or IPv6 section,
+// or an implicitly zero-valued IP section.
+// If not, ToIP returns nil.
+//
+// ToIP can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (grouping *AddressDivisionGrouping) ToIP() *IPAddressSection {
+	return grouping.ToSectionBase().ToIP()
+}
+
 func createSegmentArray(length int) []*AddressDivision {
 	return make([]*AddressDivision, length)
 }
