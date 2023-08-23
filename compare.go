@@ -29,3 +29,19 @@ func (countComparator) compareLargeValues(oneUpper, oneLower, twoUpper, twoLower
 	}
 	return
 }
+
+// compareDivBitCounts is called when we know that two series have the same bit size,
+// need to check that the divisions also have the same bit size.
+func compareDivBitCounts(oneSeries, twoSeries AddressDivisionSeries) int {
+	count := oneSeries.GetDivisionCount()
+	result := count - twoSeries.GetDivisionCount()
+	if result == 0 {
+		for i := 0; i < count; i++ {
+			result = int(oneSeries.GetGenericDivision(i).GetBitCount() - twoSeries.GetGenericDivision(i).GetBitCount())
+			if result != 0 {
+				break
+			}
+		}
+	}
+	return result
+}
