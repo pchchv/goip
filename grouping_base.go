@@ -215,3 +215,17 @@ func (grouping *addressDivisionGroupingBase) hasNoDivisions() bool {
 func (grouping *addressDivisionGroupingBase) getDivision(index int) *addressDivisionBase {
 	return grouping.divisions.getDivision(index)
 }
+
+func (grouping *addressDivisionGroupingBase) calcCount(counter func() *big.Int) *big.Int {
+	if grouping != nil && !grouping.isMultiple() {
+		return bigOne()
+	}
+	return counter()
+}
+
+func (grouping *addressDivisionGroupingBase) calcUint64Count(counter func() uint64) uint64 {
+	if grouping != nil && !grouping.isMultiple() {
+		return 1
+	}
+	return counter()
+}
