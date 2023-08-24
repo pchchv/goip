@@ -246,3 +246,26 @@ func (grouping *addressDivisionGroupingBase) cachedCount(counter func() *big.Int
 
 	return count
 }
+
+// GetDivisionCount returns the number of divisions in this grouping.
+func (grouping *addressDivisionGroupingBase) GetDivisionCount() int {
+	divisions := grouping.divisions
+	if divisions != nil {
+		return divisions.getDivisionCount()
+	}
+	return 0
+}
+
+func (grouping *addressDivisionGroupingBase) getCountBig() *big.Int {
+	res := bigOne()
+	count := grouping.GetDivisionCount()
+	if count > 0 {
+		for i := 0; i < count; i++ {
+			div := grouping.getDivision(i)
+			if div.isMultiple() {
+				res.Mul(res, div.getCount())
+			}
+		}
+	}
+	return res
+}
