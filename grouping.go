@@ -119,3 +119,19 @@ func (grouping *AddressDivisionGrouping) ToIP() *IPAddressSection {
 func createSegmentArray(length int) []*AddressDivision {
 	return make([]*AddressDivision, length)
 }
+
+// ToIPv4 converts to an IPv4AddressSection if this grouping originated as an IPv4 section.
+// If not, ToIPv4 returns nil.
+//
+// ToIPv4 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (grouping *AddressDivisionGrouping) ToIPv4() *IPv4AddressSection {
+	return grouping.ToSectionBase().ToIPv4()
+}
+
+// ToIPv6 converts to an IPv6AddressSection if this grouping originated as an IPv6 section.
+// If not, ToIPv6 returns nil.
+//
+// ToIPv6 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (grouping *AddressDivisionGrouping) ToIPv6() *IPv6AddressSection {
+	return grouping.ToSectionBase().ToIPv6()
+}
