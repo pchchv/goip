@@ -466,3 +466,30 @@ type PrefixedConstraint[T any] interface {
 	// The provided prefix length will be adjusted to these boundaries if necessary.
 	SetPrefixLen(BitCount) T
 }
+
+// IPAddressSeqRangeType represents any IP address sequential range,
+// all of which can be represented by the base type IPAddressSeqRange.
+// This includes IPv4AddressSeqRange and IPv6AddressSeqRange.
+type IPAddressSeqRangeType interface {
+	AddressItem
+	IPAddressRange
+	// ContainsRange returns whether all the addresses in the given sequential range are also contained in this sequential range.
+	ContainsRange(IPAddressSeqRangeType) bool
+	// Contains returns whether this range contains all IP addresses in the given address or subnet.
+	Contains(IPAddressType) bool
+	// Equal returns whether the given sequential address range is equal to this sequential address range.
+	// Two sequential address ranges are equal if their lower and upper range boundaries are equal.
+	Equal(IPAddressSeqRangeType) bool
+	// ToCanonicalString produces a canonical string for the address range.
+	// It has the format "lower -> upper" where lower and upper are the canonical strings for
+	// the lowest and highest addresses in the range, given by GetLower and GetUpper.
+	ToCanonicalString() string
+	// ToNormalizedString produces a normalized string for the address range.
+	// It has the format "lower -> upper" where lower and upper are the normalized strings for
+	// the lowest and highest addresses in the range, given by GetLower and GetUpper.
+	ToNormalizedString() string
+	// ToIP converts to an IPAddressSeqRange, a polymorphic type usable with all IP address sequential ranges.
+	//
+	// ToIP can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+	ToIP() *SequentialRange[*IPAddress]
+}
