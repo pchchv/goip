@@ -135,3 +135,20 @@ func (grouping *AddressDivisionGrouping) ToIPv4() *IPv4AddressSection {
 func (grouping *AddressDivisionGrouping) ToIPv6() *IPv6AddressSection {
 	return grouping.ToSectionBase().ToIPv6()
 }
+
+// ToMAC converts to a MACAddressSection if this grouping originated as a MAC section.
+// If not, ToMAC returns nil.
+//
+// ToMAC can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (grouping *AddressDivisionGrouping) ToMAC() *MACAddressSection {
+	return grouping.ToSectionBase().ToMAC()
+}
+
+// ToDivGrouping is an identity method.
+//
+// ToDivGrouping can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (grouping *AddressDivisionGrouping) ToDivGrouping() *AddressDivisionGrouping {
+	return grouping
+}
