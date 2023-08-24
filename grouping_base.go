@@ -229,3 +229,20 @@ func (grouping *addressDivisionGroupingBase) calcUint64Count(counter func() uint
 	}
 	return counter()
 }
+
+// cachedCount returns the cached count value, not a duplicate.
+func (grouping *addressDivisionGroupingBase) cachedCount(counter func() *big.Int) *big.Int {
+	cache := grouping.cache
+	if cache == nil {
+		return grouping.calcCount(counter)
+	}
+
+	count := (*big.Int)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.cachedCount))))
+	if count == nil {
+		count = grouping.calcCount(counter)
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.cachedCount))
+		atomicStorePointer(dataLoc, unsafe.Pointer(count))
+	}
+
+	return count
+}
