@@ -48,6 +48,16 @@ func (addr *MACAddress) GetCount() *big.Int {
 	return addr.getCount()
 }
 
+// IsMultiple returns true if this represents more than a single individual address, whether it is a collection of multiple addresses.
+func (addr *MACAddress) IsMultiple() bool {
+	return addr != nil && addr.isMultiple()
+}
+
+// IsPrefixed returns whether this address has an associated prefix length.
+func (addr *MACAddress) IsPrefixed() bool {
+	return addr != nil && addr.isPrefixed()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
