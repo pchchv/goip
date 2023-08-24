@@ -1,5 +1,7 @@
 package goip
 
+import "math/big"
+
 const (
 	MACBitsPerSegment                             = 8
 	MACBytesPerSegment                            = 1
@@ -32,6 +34,18 @@ const (
 // use NewMACAddressString and then use the ToAddress or GetAddress method from [MACAddressString].
 type MACAddress struct {
 	addressInternal
+}
+
+// GetCount returns the count of addresses that this address or address collection represents.
+//
+// If just a single address, not a collection of multiple addresses, returns 1.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (addr *MACAddress) GetCount() *big.Int {
+	if addr == nil {
+		return bigZero()
+	}
+	return addr.getCount()
 }
 
 func getMacSegCount(isExtended bool) (segmentCount int) {
