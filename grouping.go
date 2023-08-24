@@ -73,6 +73,10 @@ func (grouping *addressDivisionGroupingInternal) getDivision(index int) *Address
 	return grouping.getDivArray()[index]
 }
 
+func (grouping *addressDivisionGroupingInternal) toAddressDivisionGrouping() *AddressDivisionGrouping {
+	return (*AddressDivisionGrouping)(unsafe.Pointer(grouping))
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
