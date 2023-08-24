@@ -180,3 +180,21 @@ func normalizeLargeDivisions(divs []*IPAddressLargeDivision) (newDivs []*IPAddre
 type IPAddressLargeDivisionGrouping struct {
 	largeDivisionGroupingInternal
 }
+
+// GetCount returns the count of possible distinct values for this division grouping.
+// If not representing multiple values, the count is 1,
+// unless this is a division grouping with no divisions,
+// or an address section with no segments, in which case it is 0.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (grouping *IPAddressLargeDivisionGrouping) GetCount() *big.Int {
+	if !grouping.isMultiple() {
+		return bigOne()
+	}
+	return grouping.addressDivisionGroupingBase.getCount()
+}
+
+// IsMultiple returns whether this grouping represents multiple values rather than a single value.
+func (grouping *IPAddressLargeDivisionGrouping) IsMultiple() bool {
+	return grouping != nil && grouping.isMultiple()
+}
