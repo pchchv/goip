@@ -421,11 +421,29 @@ func (div *AddressDivision) IsMAC() bool {
 	return div != nil && div.matchesMACSegment()
 }
 
+// IsSegmentBase returns true if this division originated as an address segment,
+// and this can be converted back with ToSegmentBase.
+func (div *AddressDivision) IsSegmentBase() bool {
+	return div != nil && div.matchesSegment()
+}
+
 // ToDiv is an identity method.
 // ToDiv can be called with a nil receiver, which allows this method to be
 // used in a chain with methods that can return a nil pointer.
 func (div *AddressDivision) ToDiv() *AddressDivision {
 	return div
+}
+
+// ToSegmentBase converts to an AddressSegment if this division originated as a segment.
+// If not, ToSegmentBase returns nil.
+//
+// ToSegmentBase can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (div *AddressDivision) ToSegmentBase() *AddressSegment {
+	if div.IsSegmentBase() {
+		return (*AddressSegment)(unsafe.Pointer(div))
+	}
+	return nil
 }
 
 func testRange(lowerValue, upperValue, finalUpperValue, networkMask, hostMask DivInt) bool {
