@@ -47,3 +47,21 @@ func (section *MACAddressSection) ToDivGrouping() *AddressDivisionGrouping {
 func (section *MACAddressSection) IsAdaptiveZero() bool {
 	return section != nil && section.matchesZeroGrouping()
 }
+
+func createMACSection(segments []*AddressDivision) *MACAddressSection {
+	return &MACAddressSection{
+		addressSectionInternal{
+			addressDivisionGroupingInternal{
+				addressDivisionGroupingBase: addressDivisionGroupingBase{
+					divisions: standardDivArray(segments),
+					addrType:  macType,
+					cache: &valueCache{
+						stringCache: stringCache{
+							macStringCache: &macStringCache{},
+						},
+					},
+				},
+			},
+		},
+	}
+}
