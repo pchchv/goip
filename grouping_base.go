@@ -285,3 +285,11 @@ func (grouping *addressDivisionGroupingBase) getCountBig() *big.Int {
 	}
 	return res
 }
+
+func (grouping *addressDivisionGroupingBase) getCachedCount() *big.Int {
+	return grouping.cachedCount(grouping.getCountBig)
+}
+
+func (grouping *addressDivisionGroupingBase) getCount() *big.Int {
+	return grouping.cacheCount(grouping.getCountBig)
+}
