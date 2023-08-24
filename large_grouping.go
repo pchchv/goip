@@ -207,3 +207,7 @@ func (grouping *IPAddressLargeDivisionGrouping) IsPrefixed() bool {
 	}
 	return grouping.isPrefixed()
 }
+
+func (grouping *IPAddressLargeDivisionGrouping) isNil() bool {
+	return grouping == nil
+}
