@@ -176,3 +176,7 @@ func normalizeLargeDivisions(divs []*IPAddressLargeDivision) (newDivs []*IPAddre
 	}
 	return
 }
+
+type IPAddressLargeDivisionGrouping struct {
+	largeDivisionGroupingInternal
+}
