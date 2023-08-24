@@ -198,3 +198,12 @@ func (grouping *IPAddressLargeDivisionGrouping) GetCount() *big.Int {
 func (grouping *IPAddressLargeDivisionGrouping) IsMultiple() bool {
 	return grouping != nil && grouping.isMultiple()
 }
+
+// IsPrefixed returns whether this division grouping has an associated prefix length.
+// If so, the prefix length is given by GetPrefixLen.
+func (grouping *IPAddressLargeDivisionGrouping) IsPrefixed() bool {
+	if grouping == nil {
+		return false
+	}
+	return grouping.isPrefixed()
+}
