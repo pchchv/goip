@@ -81,6 +81,30 @@ func (section *AddressSection) ToIP() *IPAddressSection {
 	return nil
 }
 
+// ToIPv4 converts to an IPv4AddressSection if this section originated as an IPv4 section.
+// If not, ToIPv4 returns nil.
+//
+// ToIPv4 can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (section *AddressSection) ToIPv4() *IPv4AddressSection {
+	if section.IsIPv4() {
+		return (*IPv4AddressSection)(unsafe.Pointer(section))
+	}
+	return nil
+}
+
+// ToIPv6 converts to an IPv6AddressSection if this section originated as an IPv6 section.
+// If not, ToIPv6 returns nil.
+//
+// ToIPv6 can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (section *AddressSection) ToIPv6() *IPv6AddressSection {
+	if section.IsIPv6() {
+		return (*IPv6AddressSection)(unsafe.Pointer(section))
+	}
+	return nil
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
