@@ -6,3 +6,13 @@ package goip
 type MACAddressSection struct {
 	addressSectionInternal
 }
+
+// IsMultiple returns whether this section represents multiple values.
+func (section *MACAddressSection) IsMultiple() bool {
+	return section != nil && section.isMultiple()
+}
+
+// IsPrefixed returns whether this section has an associated prefix length.
+func (section *MACAddressSection) IsPrefixed() bool {
+	return section != nil && section.isPrefixed()
+}
