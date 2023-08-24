@@ -1,6 +1,9 @@
 package goip
 
-import "unsafe"
+import (
+	"math/big"
+	"unsafe"
+)
 
 var emptyBytes = make([]byte, 0, 0)
 
@@ -75,6 +78,22 @@ func (grouping *addressDivisionGroupingInternal) getDivision(index int) *Address
 
 func (grouping *addressDivisionGroupingInternal) toAddressDivisionGrouping() *AddressDivisionGrouping {
 	return (*AddressDivisionGrouping)(unsafe.Pointer(grouping))
+}
+
+func (grouping *addressDivisionGroupingInternal) getCachedCount() *big.Int {
+	if !grouping.isMultiple() {
+		return bigOne()
+	} else {
+		g := grouping.toAddressDivisionGrouping()
+		if sect := g.ToIPv4(); sect != nil {
+			return sect.getCachedCount()
+		} else if sect := g.ToIPv6(); sect != nil {
+			return sect.getCachedCount()
+		} else if sect := g.ToMAC(); sect != nil {
+			return sect.getCachedCount()
+		}
+	}
+	return grouping.addressDivisionGroupingBase.getCachedCount()
 }
 
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
