@@ -58,6 +58,18 @@ func (addr *MACAddress) IsPrefixed() bool {
 	return addr != nil && addr.isPrefixed()
 }
 
+// GetBitsPerSegment returns the number of bits comprising each segment in this address.
+// Segments in the same address are equal length.
+func (addr *MACAddress) GetBitsPerSegment() BitCount {
+	return MACBitsPerSegment
+}
+
+// GetBytesPerSegment returns the number of bytes comprising each segment in this address.
+// Segments in the same address are equal length.
+func (addr *MACAddress) GetBytesPerSegment() int {
+	return MACBytesPerSegment
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
