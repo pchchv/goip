@@ -21,3 +21,12 @@ const (
 	MacDashedSegmentRangeSeparatorStr             = "|"
 	macBitsToSegmentBitshift                      = 3
 )
+
+func getMacSegCount(isExtended bool) (segmentCount int) {
+	if isExtended {
+		segmentCount = ExtendedUniqueIdentifier64SegmentCount
+	} else {
+		segmentCount = MediaAccessControlSegmentCount
+	}
+	return
+}
