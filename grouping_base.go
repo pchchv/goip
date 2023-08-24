@@ -247,6 +247,22 @@ func (grouping *addressDivisionGroupingBase) cachedCount(counter func() *big.Int
 	return count
 }
 
+func (grouping *addressDivisionGroupingBase) cacheCount(counter func() *big.Int) *big.Int {
+	cache := grouping.cache
+	if cache == nil {
+		return grouping.calcCount(counter)
+	}
+
+	count := (*big.Int)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.cachedCount))))
+	if count == nil {
+		count = grouping.calcCount(counter)
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.cachedCount))
+		atomicStorePointer(dataLoc, unsafe.Pointer(count))
+	}
+
+	return new(big.Int).Set(count)
+}
+
 // GetDivisionCount returns the number of divisions in this grouping.
 func (grouping *addressDivisionGroupingBase) GetDivisionCount() int {
 	divisions := grouping.divisions
