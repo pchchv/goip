@@ -105,6 +105,18 @@ func (section *AddressSection) ToIPv6() *IPv6AddressSection {
 	return nil
 }
 
+// ToMAC converts to a MACAddressSection if this section originated as a MAC section.
+// If not, ToMAC returns nil.
+//
+// ToMAC can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (section *AddressSection) ToMAC() *MACAddressSection {
+	if section.IsMAC() {
+		return (*MACAddressSection)(section)
+	}
+	return nil
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
