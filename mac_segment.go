@@ -76,3 +76,11 @@ func (seg *macSegmentValues) getUpperValue() *BigDivInt {
 func (seg *macSegmentValues) getDivisionValue() DivInt {
 	return DivInt(seg.value)
 }
+
+func (seg *macSegmentValues) getUpperDivisionValue() DivInt {
+	return DivInt(seg.upperValue)
+}
+
+func (seg *macSegmentValues) getDivisionPrefixLength() PrefixLen {
+	return nil
+}
