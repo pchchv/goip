@@ -13,3 +13,15 @@ type MACSegmentValueProvider func(segmentIndex int) MACSegInt
 type MACAddressSegment struct {
 	addressSegmentInternal
 }
+
+// GetMACSegmentValue returns the lower value.
+// Same as GetSegmentValue but returned as a MACSegInt.
+func (seg *MACAddressSegment) GetMACSegmentValue() MACSegInt {
+	return MACSegInt(seg.GetSegmentValue())
+}
+
+// GetMACUpperSegmentValue returns the lower value.
+// Same as GetUpperSegmentValue but returned as a MACSegInt.
+func (seg *MACAddressSegment) GetMACUpperSegmentValue() MACSegInt {
+	return MACSegInt(seg.GetUpperSegmentValue())
+}
