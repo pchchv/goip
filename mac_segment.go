@@ -5,10 +5,13 @@ import "math/big"
 const useMACSegmentCache = true
 
 var (
-	allRangeValsMAC = &macSegmentValues{
+	_               divisionValues = &macSegmentValues{}
+	segmentCacheMAC                = makeSegmentCacheMAC()
+	zeroMACSeg                     = NewMACSegment(0)
+	allRangeMACSeg                 = NewMACRangeSegment(0, MACMaxValuePerSegment)
+	allRangeValsMAC                = &macSegmentValues{
 		upperValue: MACMaxValuePerSegment,
 	}
-	segmentCacheMAC = makeSegmentCacheMAC()
 )
 
 type MACSegInt = uint8
@@ -128,6 +131,14 @@ func (seg *macSegmentValues) deriveNew(val, upperVal DivInt, _ PrefixLen) divisi
 
 func (seg *macSegmentValues) deriveNewMultiSeg(val, upperVal SegInt, _ PrefixLen) divisionValues {
 	return newMACSegmentValues(MACSegInt(val), MACSegInt(upperVal))
+}
+
+func (seg *macSegmentValues) deriveNewSeg(val SegInt, _ PrefixLen) divisionValues {
+	return newMACSegmentVal(MACSegInt(val))
+}
+
+func (seg *macSegmentValues) derivePrefixed(_ PrefixLen) divisionValues {
+	return seg
 }
 
 func makeSegmentCacheMAC() (segmentCacheMAC []macSegmentValues) {
