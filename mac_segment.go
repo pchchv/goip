@@ -84,3 +84,11 @@ func (seg *macSegmentValues) getUpperDivisionValue() DivInt {
 func (seg *macSegmentValues) getDivisionPrefixLength() PrefixLen {
 	return nil
 }
+
+func (seg *macSegmentValues) getSegmentValue() SegInt {
+	return SegInt(seg.value)
+}
+
+func (seg *macSegmentValues) getUpperSegmentValue() SegInt {
+	return SegInt(seg.upperValue)
+}
