@@ -1,5 +1,7 @@
 package goip
 
+import "math/big"
+
 const useMACSegmentCache = true
 
 
@@ -49,4 +51,12 @@ func (seg *macSegmentValues) includesMax() bool {
 
 func (seg *macSegmentValues) isMultiple() bool {
 	return seg.value != seg.upperValue
+}
+
+func (seg *macSegmentValues) getCount() *big.Int {
+	return big.NewInt(int64(seg.upperValue-seg.value) + 1)
+}
+
+func (seg *macSegmentValues) getBitCount() BitCount {
+	return MACBitsPerSegment
 }
