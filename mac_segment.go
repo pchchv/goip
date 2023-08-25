@@ -4,6 +4,12 @@ import "math/big"
 
 const useMACSegmentCache = true
 
+var (
+	allRangeValsMAC = &macSegmentValues{
+		upperValue: MACMaxValuePerSegment,
+	}
+	segmentCacheMAC = makeSegmentCacheMAC()
+)
 
 type MACSegInt = uint8
 
@@ -110,4 +116,17 @@ func (seg *macSegmentValues) bytesInternal(upper bool) []byte {
 		return []byte{byte(seg.upperValue)}
 	}
 	return []byte{byte(seg.value)}
+}
+
+func makeSegmentCacheMAC() (segmentCacheMAC []macSegmentValues) {
+	if useMACSegmentCache {
+		segmentCacheMAC = make([]macSegmentValues, MACMaxValuePerSegment+1)
+		for i := range segmentCacheMAC {
+			vals := &segmentCacheMAC[i]
+			segi := MACSegInt(i)
+			vals.value = segi
+			vals.upperValue = segi
+		}
+	}
+	return
 }
