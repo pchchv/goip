@@ -42,3 +42,11 @@ func (seg *macSegmentValues) getAddrType() addrType {
 func (seg *macSegmentValues) includesZero() bool {
 	return seg.value == 0
 }
+
+func (seg *macSegmentValues) includesMax() bool {
+	return seg.upperValue == 0xff
+}
+
+func (seg *macSegmentValues) isMultiple() bool {
+	return seg.value != seg.upperValue
+}
