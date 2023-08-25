@@ -1,5 +1,8 @@
 package goip
 
+const useMACSegmentCache = true
+
+
 type MACSegInt = uint8
 
 type MACSegmentValueProvider func(segmentIndex int) MACSegInt
@@ -24,4 +27,10 @@ func (seg *MACAddressSegment) GetMACSegmentValue() MACSegInt {
 // Same as GetUpperSegmentValue but returned as a MACSegInt.
 func (seg *MACAddressSegment) GetMACUpperSegmentValue() MACSegInt {
 	return MACSegInt(seg.GetUpperSegmentValue())
+}
+
+type macSegmentValues struct {
+	value      MACSegInt
+	upperValue MACSegInt
+	cache      divCache
 }
