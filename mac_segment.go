@@ -40,6 +40,21 @@ func (seg *MACAddressSegment) GetMACUpperSegmentValue() MACSegInt {
 	return MACSegInt(seg.GetUpperSegmentValue())
 }
 
+func (seg *MACAddressSegment) init() *MACAddressSegment {
+	if seg.divisionValues == nil {
+		return zeroMACSeg
+	}
+	return seg
+}
+
+// Contains returns whether this is same type and version as the given segment and whether it contains all values in the given segment.
+func (seg *MACAddressSegment) Contains(other AddressSegmentType) bool {
+	if seg == nil {
+		return other == nil || other.ToSegmentBase() == nil
+	}
+	return seg.init().contains(other)
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
