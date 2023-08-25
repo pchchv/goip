@@ -130,3 +130,12 @@ func makeSegmentCacheMAC() (segmentCacheMAC []macSegmentValues) {
 	}
 	return
 }
+
+func newMACSegmentVal(value MACSegInt) *macSegmentValues {
+	if useMACSegmentCache {
+		result := &segmentCacheMAC[value]
+		//checkValuesMAC(value, value, result)
+		return result
+	}
+	return &macSegmentValues{value: value, upperValue: value}
+}
