@@ -55,6 +55,19 @@ func (seg *MACAddressSegment) Contains(other AddressSegmentType) bool {
 	return seg.init().contains(other)
 }
 
+// Equal returns whether the given segment is equal to this segment.
+// Two segments are equal if they match:
+//   - type/version: MAC
+//   - value range
+//
+// Prefix lengths are ignored.
+func (seg *MACAddressSegment) Equal(other AddressSegmentType) bool {
+	if seg == nil {
+		return other == nil || other.ToDiv() == nil
+	}
+	return seg.init().equal(other)
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
