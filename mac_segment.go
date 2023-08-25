@@ -163,3 +163,13 @@ func newMACSegment(vals *macSegmentValues) *MACAddressSegment {
 		},
 	}
 }
+
+// NewMACSegment constructs a segment of a MAC address with the given value.
+func NewMACSegment(val MACSegInt) *MACAddressSegment {
+	return newMACSegment(newMACSegmentVal(val))
+}
+
+// NewMACRangeSegment constructs a segment of a MAC address collection with the given range of sequential values.
+func NewMACRangeSegment(val, upperVal MACSegInt) *MACAddressSegment {
+	return newMACSegment(newMACSegmentValues(val, upperVal))
+}
