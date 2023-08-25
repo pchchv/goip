@@ -153,3 +153,13 @@ func newMACSegmentValues(value, upperValue MACSegInt) *macSegmentValues {
 
 	return &macSegmentValues{value: value, upperValue: upperValue}
 }
+
+func newMACSegment(vals *macSegmentValues) *MACAddressSegment {
+	return &MACAddressSegment{
+		addressSegmentInternal{
+			addressDivisionInternal{
+				addressDivisionBase{vals},
+			},
+		},
+	}
+}
