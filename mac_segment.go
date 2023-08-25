@@ -122,6 +122,14 @@ func (seg *macSegmentValues) bytesInternal(upper bool) []byte {
 	return []byte{byte(seg.value)}
 }
 
+func (seg *macSegmentValues) deriveNew(val, upperVal DivInt, _ PrefixLen) divisionValues {
+	return newMACSegmentValues(MACSegInt(val), MACSegInt(upperVal))
+}
+
+func (seg *macSegmentValues) deriveNewMultiSeg(val, upperVal SegInt, _ PrefixLen) divisionValues {
+	return newMACSegmentValues(MACSegInt(val), MACSegInt(upperVal))
+}
+
 func makeSegmentCacheMAC() (segmentCacheMAC []macSegmentValues) {
 	if useMACSegmentCache {
 		segmentCacheMAC = make([]macSegmentValues, MACMaxValuePerSegment+1)
