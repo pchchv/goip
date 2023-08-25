@@ -90,6 +90,19 @@ func (seg *MACAddressSegment) GetByteCount() int {
 	return IPv4BytesPerSegment
 }
 
+// GetMaxValue gets the maximum possible value for this type or version of segment,
+// determined by the number of bits.
+//
+// For the highest range value of this particular segment, use GetUpperSegmentValue.
+func (seg *MACAddressSegment) GetMaxValue() MACSegInt {
+	return 0xff
+}
+
+// IsMultiple returns whether this segment represents multiple values.
+func (seg *MACAddressSegment) IsMultiple() bool {
+	return seg != nil && seg.isMultiple()
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
