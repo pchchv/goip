@@ -99,6 +99,10 @@ func (seg *macSegmentValues) getUpperSegmentValue() SegInt {
 	return SegInt(seg.upperValue)
 }
 
+func (seg *macSegmentValues) getCache() *divCache {
+	return &seg.cache
+}
+
 func (seg *macSegmentValues) calcBytesInternal() (bytes, upperBytes []byte) {
 	bytes = []byte{byte(seg.value)}
 
