@@ -34,3 +34,11 @@ type macSegmentValues struct {
 	upperValue MACSegInt
 	cache      divCache
 }
+
+func (seg *macSegmentValues) getAddrType() addrType {
+	return macType
+}
+
+func (seg *macSegmentValues) includesZero() bool {
+	return seg.value == 0
+}
