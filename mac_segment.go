@@ -60,3 +60,11 @@ func (seg *macSegmentValues) getCount() *big.Int {
 func (seg *macSegmentValues) getBitCount() BitCount {
 	return MACBitsPerSegment
 }
+
+func (seg *macSegmentValues) getByteCount() int {
+	return MACBytesPerSegment
+}
+
+func (seg *macSegmentValues) getValue() *BigDivInt {
+	return big.NewInt(int64(seg.value))
+}
