@@ -236,3 +236,14 @@ func NewMACSegment(val MACSegInt) *MACAddressSegment {
 func NewMACRangeSegment(val, upperVal MACSegInt) *MACAddressSegment {
 	return newMACSegment(newMACSegmentValues(val, upperVal))
 }
+
+// WrapMACSegmentValueProvider converts the given MACSegmentValueProvider to a SegmentValueProvider
+func WrapMACSegmentValueProvider(f MACSegmentValueProvider) SegmentValueProvider {
+	if f == nil {
+		return nil
+	}
+
+	return func(segmentIndex int) SegInt {
+		return SegInt(f(segmentIndex))
+	}
+}
