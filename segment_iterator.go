@@ -186,3 +186,7 @@ func segIterator(
 		segmentPrefixLength: segmentPrefixLength,
 	}
 }
+
+func nilSegIterator() Iterator[*AddressSegment] {
+	return &singleSegmentIterator{}
+}
