@@ -121,6 +121,20 @@ func (seg *MACAddressSegment) Bytes() []byte {
 	return seg.init().addressSegmentInternal.Bytes()
 }
 
+// UpperBytes returns the highest value in the address segment range as a byte slice.
+func (seg *MACAddressSegment) UpperBytes() []byte {
+	return seg.init().addressSegmentInternal.UpperBytes()
+}
+
+// CopyBytes copies the lowest value in the address segment range into a byte slice.
+//
+// If the value can fit in the given slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (seg *MACAddressSegment) CopyBytes(bytes []byte) []byte {
+	return seg.init().addressSegmentInternal.CopyBytes(bytes)
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
