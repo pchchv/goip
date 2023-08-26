@@ -150,6 +150,17 @@ func (seg *MACAddressSegment) GetPrefixCountLen(segmentPrefixLength BitCount) *b
 	return seg.init().addressSegmentInternal.GetPrefixCountLen(segmentPrefixLength)
 }
 
+// GetPrefixValueCountLen returns the same value as GetPrefixCountLen as an integer.
+func (seg *MACAddressSegment) GetPrefixValueCountLen(segmentPrefixLength BitCount) SegIntCount {
+	return seg.init().addressSegmentInternal.GetPrefixValueCountLen(segmentPrefixLength)
+}
+
+// IsOneBit returns true if the bit in the lower value of this segment at
+// the given index is 1, where index 0 is the most significant bit.
+func (seg *MACAddressSegment) IsOneBit(segmentBitIndex BitCount) bool {
+	return seg.init().addressSegmentInternal.IsOneBit(segmentBitIndex)
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
