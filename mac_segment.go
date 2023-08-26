@@ -103,6 +103,24 @@ func (seg *MACAddressSegment) IsMultiple() bool {
 	return seg != nil && seg.isMultiple()
 }
 
+// GetCount returns the count of possible distinct values for this item.
+// If not representing multiple values, the count is 1.
+//
+// For instance, a segment with the value range of 3-7 has count 5.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (seg *MACAddressSegment) GetCount() *big.Int {
+	if seg == nil {
+		return bigZero()
+	}
+	return seg.getCount()
+}
+
+// Bytes returns the lowest value in the address segment range as a byte slice.
+func (seg *MACAddressSegment) Bytes() []byte {
+	return seg.init().addressSegmentInternal.Bytes()
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
