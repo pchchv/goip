@@ -246,6 +246,11 @@ func (seg *MACAddressSegment) joinSegs(macSegment1 *MACAddressSegment, flip bool
 		prefixLength), nil
 }
 
+// ReverseBytes returns a segment with the bytes reversed, which for a MAC segment is always the original segment.
+func (seg *MACAddressSegment) ReverseBytes() (*MACAddressSegment, address_error.IncompatibleAddressError) {
+	return seg, nil
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
