@@ -634,6 +634,17 @@ func (seg *AddressSegment) ToDiv() *AddressDivision {
 	return (*AddressDivision)(unsafe.Pointer(seg))
 }
 
+// ToMAC converts to a MACAddressSegment if this segment originated as a MAC segment.
+// If not, ToMAC returns nil.
+//
+// ToMAC can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (seg *AddressSegment) ToMAC() *MACAddressSegment {
+	if seg.IsMAC() {
+		return (*MACAddressSegment)(seg)
+	}
+	return nil
+}
+
 func segsSame(onePref, twoPref PrefixLen, oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return onePref.Equal(twoPref) &&
 		oneVal == twoVal && oneUpperVal == twoUpperVal
