@@ -261,6 +261,25 @@ func (seg *MACAddressSegment) JoinAndFlip2ndBit(macSegment1 *MACAddressSegment, 
 	return seg.joinSegs(macSegment1, true, prefixLength)
 }
 
+// ToDiv converts to an AddressDivision, a polymorphic type usable with all address segments and divisions.
+// Afterwards, you can convert back with ToMAC.
+//
+// ToDiv can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (seg *MACAddressSegment) ToDiv() *AddressDivision {
+	return seg.ToSegmentBase().ToDiv()
+}
+
+// ToSegmentBase converts to an AddressSegment, a polymorphic type usable with all address segments.
+// Afterwards, you can convert back with ToMAC.
+//
+// ToSegmentBase can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (seg *MACAddressSegment) ToSegmentBase() *AddressSegment {
+	if seg == nil {
+		return nil
+	}
+	return (*AddressSegment)(seg.init())
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
