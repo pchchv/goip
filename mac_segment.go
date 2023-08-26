@@ -1,6 +1,10 @@
 package goip
 
-import "math/big"
+import (
+	"math/big"
+
+	"github.com/pchchv/goip/address_error"
+)
 
 const useMACSegmentCache = true
 
@@ -177,6 +181,42 @@ func (seg *MACAddressSegment) setRangeString(addressStr string, isStandardRangeS
 			cacheStr(&cache.cachedString, func() string { return addressStr[lowerStringStartIndex:upperStringEndIndex] })
 		}
 	}
+}
+
+// ReverseBits returns a segment with the bits reversed.
+//
+// If this segment represents a range of values that cannot be reversed, then this returns an error.
+//
+// To be reversible, a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+// Otherwise the result is not contiguous and thus cannot be represented by a sequential range of values.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (seg *MACAddressSegment) ReverseBits(_ bool) (res *MACAddressSegment, err address_error.IncompatibleAddressError) {
+	if seg.divisionValues == nil {
+		res = seg
+		return
+	}
+
+	if seg.isMultiple() {
+		if isReversible := seg.isReversibleRange(false); isReversible {
+			res = seg
+			return
+		}
+		err = &incompatibleAddressError{addressError{key: "ipaddress.error.reverseRange"}}
+		return
+	}
+
+	oldVal := MACSegInt(seg.GetSegmentValue())
+	val := MACSegInt(reverseUint8(uint8(oldVal)))
+	if oldVal == val {
+		res = seg
+	} else {
+		res = NewMACSegment(val)
+	}
+
+	return
 }
 
 type macSegmentValues struct {
