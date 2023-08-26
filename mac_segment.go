@@ -161,6 +161,24 @@ func (seg *MACAddressSegment) IsOneBit(segmentBitIndex BitCount) bool {
 	return seg.init().addressSegmentInternal.IsOneBit(segmentBitIndex)
 }
 
+func (seg *MACAddressSegment) setString(addressStr string, isStandardString bool, lowerStringStartIndex, lowerStringEndIndex int, originalLowerValue SegInt) {
+	if cache := seg.getCache(); cache != nil {
+		if isStandardString && originalLowerValue == seg.getSegmentValue() {
+			cacheStr(&cache.cachedString, func() string { return addressStr[lowerStringStartIndex:lowerStringEndIndex] })
+		}
+	}
+}
+
+func (seg *MACAddressSegment) setRangeString(addressStr string, isStandardRangeString bool, lowerStringStartIndex, upperStringEndIndex int, rangeLower, rangeUpper SegInt) {
+	if cache := seg.getCache(); cache != nil {
+		if seg.IsFullRange() {
+			cacheStrPtr(&cache.cachedString, &segmentWildcardStr)
+		} else if isStandardRangeString && rangeLower == seg.getSegmentValue() && rangeUpper == seg.getUpperSegmentValue() {
+			cacheStr(&cache.cachedString, func() string { return addressStr[lowerStringStartIndex:upperStringEndIndex] })
+		}
+	}
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
