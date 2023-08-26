@@ -114,6 +114,10 @@ type macSegmentIterator struct {
 	Iterator[*AddressSegment]
 }
 
+func (iter macSegmentIterator) Next() *MACAddressSegment {
+	return iter.Iterator.Next().ToMAC()
+}
+
 func segIterator(
 	original *addressSegmentInternal,
 	originalLower,
