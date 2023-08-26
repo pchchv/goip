@@ -251,6 +251,16 @@ func (seg *MACAddressSegment) ReverseBytes() (*MACAddressSegment, address_error.
 	return seg, nil
 }
 
+// Join joins with another MAC segment to produce a IPv6 segment.
+func (seg *MACAddressSegment) Join(macSegment1 *MACAddressSegment, prefixLength PrefixLen) (*IPv6AddressSegment, address_error.IncompatibleAddressError) {
+	return seg.joinSegs(macSegment1, false, prefixLength)
+}
+
+// JoinAndFlip2ndBit joins with another MAC segment to produce a IPv6 segment with the second bit flipped from 1 to 0.
+func (seg *MACAddressSegment) JoinAndFlip2ndBit(macSegment1 *MACAddressSegment, prefixLength PrefixLen) (*IPv6AddressSegment, address_error.IncompatibleAddressError) {
+	return seg.joinSegs(macSegment1, true, prefixLength)
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
