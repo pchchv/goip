@@ -110,6 +110,10 @@ func (it *segmentPrefIterator) Next() (res *AddressSegment) {
 	return
 }
 
+type macSegmentIterator struct {
+	Iterator[*AddressSegment]
+}
+
 func segIterator(
 	original *addressSegmentInternal,
 	originalLower,
