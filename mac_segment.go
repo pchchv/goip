@@ -219,6 +219,33 @@ func (seg *MACAddressSegment) ReverseBits(_ bool) (res *MACAddressSegment, err a
 	return
 }
 
+func (seg *MACAddressSegment) joinSegs(macSegment1 *MACAddressSegment, flip bool, prefixLength PrefixLen) (*IPv6AddressSegment, address_error.IncompatibleAddressError) {
+	if seg.isMultiple() {
+		// if the high segment has a range, the low segment must match the full range,
+		// otherwise it is not possible to create an equivalent range when joining
+		if !macSegment1.IsFullRange() {
+			return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.invalidMACIPv6Range"}}
+		}
+	}
+
+	lower0 := seg.GetSegmentValue()
+	upper0 := seg.GetUpperSegmentValue()
+
+	if flip {
+		mask2ndBit := SegInt(0x2)
+		if !seg.MatchesWithMask(mask2ndBit&lower0, mask2ndBit) { // ensures that bit remains constant
+			return nil, &incompatibleAddressError{addressError{key: "ipaddress.mac.error.not.eui.convertible"}}
+		}
+		lower0 ^= mask2ndBit
+		upper0 ^= mask2ndBit
+	}
+
+	return NewIPv6RangePrefixedSegment(
+		IPv6SegInt((lower0<<8)|macSegment1.getSegmentValue()),
+		IPv6SegInt((upper0<<8)|macSegment1.getUpperSegmentValue()),
+		prefixLength), nil
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
