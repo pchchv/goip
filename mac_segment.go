@@ -135,6 +135,21 @@ func (seg *MACAddressSegment) CopyBytes(bytes []byte) []byte {
 	return seg.init().addressSegmentInternal.CopyBytes(bytes)
 }
 
+// CopyUpperBytes copies the highest value in the address segment range into a byte slice.
+//
+// If the value can fit in the given slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (seg *MACAddressSegment) CopyUpperBytes(bytes []byte) []byte {
+	return seg.init().addressSegmentInternal.CopyUpperBytes(bytes)
+}
+
+// GetPrefixCountLen returns the count of the number of distinct prefix values for
+// the given prefix length in the range of values of this segment.
+func (seg *MACAddressSegment) GetPrefixCountLen(segmentPrefixLength BitCount) *big.Int {
+	return seg.init().addressSegmentInternal.GetPrefixCountLen(segmentPrefixLength)
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
