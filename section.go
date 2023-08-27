@@ -20,6 +20,11 @@ func (section *addressSectionInternal) GetSegment(index int) *AddressSegment {
 	return section.getDivision(index).ToSegmentBase()
 }
 
+// Bytes returns the lowest individual address section in this address section as a byte slice.
+func (section *addressSectionInternal) Bytes() []byte {
+	return section.addressDivisionGroupingInternal.Bytes()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
