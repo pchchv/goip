@@ -281,3 +281,26 @@ func getCount(item AddressItem) (b *big.Int, u uint64) {
 	}
 	return
 }
+
+func isNilItem(item AddressItem) bool {
+	if divSeries, ok := item.(AddressDivisionSeries); ok {
+		if addr, ok := divSeries.(AddressType); ok {
+			return addr.ToAddressBase() == nil
+		} else if grouping, ok := divSeries.(StandardDivGroupingType); ok {
+			return grouping.ToDivGrouping() == nil
+		} else if largeGrouping, ok := divSeries.(*IPAddressLargeDivisionGrouping); ok {
+			return largeGrouping.isNil()
+		} // else a type external to this library, which we cannot test for nil
+		//} else if rng, ok := item.(IPAddressSeqRangeType); ok {
+		//	return rng.ToIP() == nil
+	} else if rng, ok := item.(IPAddressSeqRangeType); ok {
+		return rng.ToIP() == nil
+	} else if div, ok := item.(DivisionType); ok {
+		if sdiv, ok := div.(StandardDivisionType); ok {
+			return sdiv.ToDiv() == nil
+		} else if ldiv, ok := div.(*IPAddressLargeDivision); ok {
+			return ldiv.isNil()
+		} // else a type external to this library, which we cannot test for nil
+	}
+	return item == nil
+}
