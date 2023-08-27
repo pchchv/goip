@@ -8,6 +8,18 @@ type addressSectionInternal struct {
 	addressDivisionGroupingInternal
 }
 
+// GetSegmentCount returns the segment count.
+func (section *addressSectionInternal) GetSegmentCount() int {
+	return section.GetDivisionCount()
+}
+
+// GetSegment returns the segment at the given index.
+// The first segment is at index 0.
+// GetSegment will panic given a negative index or an index matching or larger than the segment count.
+func (section *addressSectionInternal) GetSegment(index int) *AddressSegment {
+	return section.getDivision(index).ToSegmentBase()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
