@@ -243,3 +243,41 @@ func compareDivBitCounts(oneSeries, twoSeries AddressDivisionSeries) int {
 	}
 	return result
 }
+
+// Note: never called with an address instance, never called with an instance of AddressType
+func getCount(item AddressItem) (b *big.Int, u uint64) {
+	if sect, ok := item.(StandardDivGroupingType); ok {
+		grouping := sect.ToDivGrouping()
+		if grouping != nil {
+			b = grouping.getCachedCount()
+		}
+	} else if rng, ok := item.(IPAddressSeqRangeType); ok {
+		b = rng.GetCount()
+	} else if div, ok := item.(StandardDivisionType); ok {
+		base := div.ToDiv()
+		if base != nil {
+			if segBase := base.ToSegmentBase(); segBase != nil {
+				u = uint64((segBase.getUpperSegmentValue() - base.getSegmentValue()) + 1)
+			} else {
+				r := base.getUpperDivisionValue() - base.getDivisionValue()
+				if r == 0xffffffffffffffff {
+					b = bigZero().SetUint64(0xffffffffffffffff)
+					b.Add(b, bigOneConst())
+					return
+				}
+				u = r + 1
+			}
+		}
+	} else if lgrouping, ok := item.(*IPAddressLargeDivisionGrouping); ok {
+		if lgrouping != nil {
+			b = lgrouping.getCachedCount()
+		}
+	} else if ldiv, ok := item.(*IPAddressLargeDivision); ok {
+		if ldiv != nil {
+			b = ldiv.getCount()
+		}
+	} else {
+		b = item.GetCount()
+	}
+	return
+}
