@@ -107,6 +107,87 @@ func (grouping *addressDivisionGroupingInternal) GetByteCount() int {
 	return grouping.addressDivisionGroupingBase.GetByteCount()
 }
 
+func (grouping *addressDivisionGroupingInternal) calcBytes() (bytes, upperBytes []byte) {
+	addrType := grouping.getAddrType()
+	divisionCount := grouping.GetDivisionCount()
+	isMultiple := grouping.isMultiple()
+
+	if addrType.isIPv4() || addrType.isMAC() {
+		bytes = make([]byte, divisionCount)
+		if isMultiple {
+			upperBytes = make([]byte, divisionCount)
+		} else {
+			upperBytes = bytes
+		}
+		for i := 0; i < divisionCount; i++ {
+			seg := grouping.getDivision(i).ToSegmentBase()
+			bytes[i] = byte(seg.GetSegmentValue())
+			if isMultiple {
+				upperBytes[i] = byte(seg.GetUpperSegmentValue())
+			}
+		}
+	} else if addrType.isIPv6() {
+		byteCount := divisionCount << 1
+		bytes = make([]byte, byteCount)
+		if isMultiple {
+			upperBytes = make([]byte, byteCount)
+		} else {
+			upperBytes = bytes
+		}
+		for i := 0; i < divisionCount; i++ {
+			seg := grouping.getDivision(i).ToSegmentBase()
+			byteIndex := i << 1
+			val := seg.GetSegmentValue()
+			bytes[byteIndex] = byte(val >> 8)
+			var upperVal SegInt
+			if isMultiple {
+				upperVal = seg.GetUpperSegmentValue()
+				upperBytes[byteIndex] = byte(upperVal >> 8)
+			}
+			nextByteIndex := byteIndex + 1
+			bytes[nextByteIndex] = byte(val)
+			if isMultiple {
+				upperBytes[nextByteIndex] = byte(upperVal)
+			}
+		}
+	} else {
+		byteCount := grouping.GetByteCount()
+		bytes = make([]byte, byteCount)
+		if isMultiple {
+			upperBytes = make([]byte, byteCount)
+		} else {
+			upperBytes = bytes
+		}
+		for k, byteIndex, bitIndex := divisionCount-1, byteCount-1, BitCount(8); k >= 0; k-- {
+			div := grouping.getDivision(k)
+			val := div.GetDivisionValue()
+			var upperVal DivInt
+			if isMultiple {
+				upperVal = div.GetUpperDivisionValue()
+			}
+			divBits := div.GetBitCount()
+			for divBits > 0 {
+				rbi := 8 - bitIndex
+				bytes[byteIndex] |= byte(val << uint(rbi))
+				val >>= uint(bitIndex)
+				if isMultiple {
+					upperBytes[byteIndex] |= byte(upperVal << uint(rbi))
+					upperVal >>= uint(bitIndex)
+				}
+				if divBits < bitIndex {
+					bitIndex -= divBits
+					break
+				} else {
+					divBits -= bitIndex
+					bitIndex = 8
+					byteIndex--
+				}
+			}
+		}
+	}
+	return
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
