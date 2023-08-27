@@ -293,3 +293,25 @@ func (grouping *addressDivisionGroupingBase) getCachedCount() *big.Int {
 func (grouping *addressDivisionGroupingBase) getCount() *big.Int {
 	return grouping.cacheCount(grouping.getCountBig)
 }
+
+func (grouping *addressDivisionGroupingBase) getCachedBytes(calcBytes func() (bytes, upperBytes []byte)) (bytes, upperBytes []byte) {
+	cache := grouping.cache
+	if cache == nil {
+		return calcBytes()
+	}
+
+	cached := (*bytesCache)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.bytesCache))))
+	if cached == nil {
+		bytes, upperBytes = calcBytes()
+		cached = &bytesCache{
+			lowerBytes: bytes,
+			upperBytes: upperBytes,
+		}
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.bytesCache))
+		atomicStorePointer(dataLoc, unsafe.Pointer(cached))
+	}
+
+	bytes = cached.lowerBytes
+	upperBytes = cached.upperBytes
+	return
+}
