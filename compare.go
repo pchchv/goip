@@ -304,3 +304,47 @@ func isNilItem(item AddressItem) bool {
 	}
 	return item == nil
 }
+
+// Never called with an address instance,
+// never called with an instance of AddressType
+func compareCount(one, two AddressItem) int {
+	if !one.IsMultiple() {
+		if two.IsMultiple() {
+			return -1
+		}
+		return 0
+	} else if !two.IsMultiple() {
+		return 1
+	}
+
+	b1, u1 := getCount(one)
+	b2, u2 := getCount(two)
+
+	if b1 == nil {
+		if b2 != nil {
+			if b2.IsUint64() {
+				u2 = b2.Uint64()
+			} else {
+				return -1
+			}
+		}
+		if u1 < u2 {
+			return -1
+		} else if u1 == u2 {
+			return 0
+		}
+		return 1
+	} else if b2 == nil {
+		if b1.IsUint64() {
+			u1 = b1.Uint64()
+			if u1 < u2 {
+				return -1
+			} else if u1 == u2 {
+				return 0
+			}
+		}
+		return 1
+	}
+
+	return b1.CmpAbs(b2)
+}
