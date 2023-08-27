@@ -198,6 +198,22 @@ func (grouping *addressDivisionGroupingInternal) getUpperBytes() (bytes []byte) 
 	return
 }
 
+// Bytes returns the lowest individual division grouping in this grouping as a byte slice.
+func (grouping *addressDivisionGroupingInternal) Bytes() []byte {
+	if grouping.hasNoDivisions() {
+		return emptyBytes
+	}
+	return cloneBytes(grouping.getBytes())
+}
+
+// UpperBytes returns the highest individual division grouping in this grouping as a byte slice.
+func (grouping *addressDivisionGroupingInternal) UpperBytes() []byte {
+	if grouping.hasNoDivisions() {
+		return emptyBytes
+	}
+	return cloneBytes(grouping.getUpperBytes())
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
