@@ -96,6 +96,17 @@ func (grouping *addressDivisionGroupingInternal) getCachedCount() *big.Int {
 	return grouping.addressDivisionGroupingBase.getCachedCount()
 }
 
+// GetBitCount returns the number of bits in each value comprising this address item.
+func (grouping *addressDivisionGroupingInternal) GetBitCount() BitCount {
+	return grouping.addressDivisionGroupingBase.GetBitCount()
+}
+
+// GetByteCount returns the number of bytes required for each value comprising this address item,
+// rounding up if the bit count is not a multiple of 8.
+func (grouping *addressDivisionGroupingInternal) GetByteCount() int {
+	return grouping.addressDivisionGroupingBase.GetByteCount()
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
