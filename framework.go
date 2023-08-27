@@ -493,3 +493,44 @@ type IPAddressSeqRangeType interface {
 	// ToIP can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
 	ToIP() *SequentialRange[*IPAddress]
 }
+
+// IPv4AddressSegmentSeries serves as a common interface to all IPv4 address sections and IPv4 addresses.
+type IPv4AddressSegmentSeries interface {
+	IPAddressSegmentSeries
+	// GetTrailingSection returns an ending subsection of the full address section.
+	GetTrailingSection(index int) *IPv4AddressSection
+	// GetSubSection returns a subsection of the full address section.
+	GetSubSection(index, endIndex int) *IPv4AddressSection
+	// GetNetworkSection returns an address section containing the segments with the network of the series, the prefix bits.
+	// The returned section will have only as many segments as needed as determined by the existing CIDR network prefix length.
+	//
+	// If this series has no CIDR prefix length, the returned network section will
+	// be the entire series as a prefixed section with prefix length matching the address bit length.
+	GetNetworkSection() *IPv4AddressSection
+	// GetHostSection returns a section containing the segments with the host of the series, the bits beyond the CIDR network prefix length.
+	// The returned section will have only as many segments as needed to contain the host.
+	//
+	// If this series has no prefix length, the returned host section will be the full section.
+	GetHostSection() *IPv4AddressSection
+	// GetNetworkSectionLen returns a section containing the segments with the network of the series, the prefix bits according to the given prefix length.
+	// The returned section will have only as many segments as needed to contain the network.
+	//
+	// The new section will be assigned the given prefix length,
+	// unless the existing prefix length is smaller, in which case the existing prefix length will be retained.
+	GetNetworkSectionLen(BitCount) *IPv4AddressSection
+	// GetHostSectionLen returns a section containing the segments with the host of the series, the bits beyond the given CIDR network prefix length.
+	// The returned section will have only as many segments as needed to contain the host.
+	GetHostSectionLen(BitCount) *IPv4AddressSection
+	// GetSegments returns a slice with the address segments.  The returned slice is not backed by the same array as the receiver.
+	GetSegments() []*IPv4AddressSegment
+	// CopySegments copies the existing segments into the given slice,
+	// as much as can be fit into the slice, returning the number of segments copied.
+	CopySegments(segs []*IPv4AddressSegment) (count int)
+	// CopySubSegments copies the existing segments from the given start index until but not including the segment at the given end index,
+	// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+	CopySubSegments(start, end int, segs []*IPv4AddressSegment) (count int)
+	// GetSegment returns the segment at the given index.
+	// The first segment is at index 0.
+	// GetSegment will panic given a negative index or an index matching or larger than the segment count.
+	GetSegment(index int) *IPv4AddressSegment
+}
