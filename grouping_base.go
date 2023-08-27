@@ -315,3 +315,16 @@ func (grouping *addressDivisionGroupingBase) getCachedBytes(calcBytes func() (by
 	upperBytes = cached.upperBytes
 	return
 }
+
+// GetBitCount returns the total number of bits across all divisions
+func (grouping *addressDivisionGroupingBase) GetBitCount() (res BitCount) {
+	for i := 0; i < grouping.GetDivisionCount(); i++ {
+		res += grouping.getDivision(i).GetBitCount()
+	}
+	return
+}
+
+// GetByteCount returns the total number of bytes across all divisions (rounded up)
+func (grouping *addressDivisionGroupingBase) GetByteCount() int {
+	return (int(grouping.GetBitCount()) + 7) >> 3
+}
