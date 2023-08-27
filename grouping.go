@@ -188,6 +188,16 @@ func (grouping *addressDivisionGroupingInternal) calcBytes() (bytes, upperBytes 
 	return
 }
 
+func (grouping *addressDivisionGroupingInternal) getBytes() (bytes []byte) {
+	bytes, _ = grouping.getCachedBytes(grouping.calcBytes)
+	return
+}
+
+func (grouping *addressDivisionGroupingInternal) getUpperBytes() (bytes []byte) {
+	_, bytes = grouping.getCachedBytes(grouping.calcBytes)
+	return
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
