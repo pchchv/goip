@@ -134,6 +134,14 @@ func (section *AddressSection) ToMAC() *MACAddressSection {
 	return nil
 }
 
+// IsAdaptiveZero returns true if the division grouping was originally created as an implicitly zero-valued section or grouping (e.g. IPv4AddressSection{}),
+// meaning it was not constructed using a constructor function.
+// Such a grouping, which has no divisions or segments, is convertible to an implicitly zero-valued grouping of any type or version, whether IPv6, IPv4, MAC, or other.
+// In other words, when a section or grouping is the zero-value, then it is equivalent and convertible to the zero value of any other section or grouping type.
+func (section *AddressSection) IsAdaptiveZero() bool {
+	return section != nil && section.matchesZeroGrouping()
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
