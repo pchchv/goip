@@ -417,6 +417,57 @@ func (comp valueComparator) compareSegValues(oneUpper, oneLower, twoUpper, twoLo
 	return -1
 }
 
+func (comp valueComparator) compareValues(oneUpper, oneLower, twoUpper, twoLower uint64) int {
+	if comp.compareHighValue {
+		if oneUpper == twoUpper {
+			if oneLower == twoLower {
+				return 0
+			} else if oneLower > twoLower {
+				if !comp.flipSecond {
+					return 1
+				}
+			}
+		} else if oneUpper > twoUpper {
+			return 1
+		}
+	} else {
+		if oneLower == twoLower {
+			if oneUpper == twoUpper {
+				return 0
+			} else if oneUpper > twoUpper {
+				if !comp.flipSecond {
+					return 1
+				}
+			}
+		} else if oneLower > twoLower {
+			return 1
+		}
+	}
+	return -1
+}
+
+func (comp valueComparator) compareLargeValues(oneUpper, oneLower, twoUpper, twoLower *big.Int) int {
+	var result int
+	if comp.compareHighValue {
+		result = oneUpper.CmpAbs(twoUpper)
+		if result == 0 {
+			result = oneLower.CmpAbs(twoLower)
+			if comp.flipSecond {
+				result = -result
+			}
+		}
+	} else {
+		result = oneLower.CmpAbs(twoLower)
+		if result == 0 {
+			result = oneUpper.CmpAbs(twoUpper)
+			if comp.flipSecond {
+				result = -result
+			}
+		}
+	}
+	return result
+}
+
 // compareDivBitCounts is called when we know that two series have the same bit size,
 // need to check that the divisions also have the same bit size.
 func compareDivBitCounts(oneSeries, twoSeries AddressDivisionSeries) int {
