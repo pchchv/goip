@@ -143,3 +143,23 @@ func (addr *ipAddressInternal) GetPrefixLen() PrefixLen {
 func (addr *addressInternal) isIP() bool {
 	return addr.section == nil || addr.section.matchesIPAddressType()
 }
+
+// GetBlockMaskPrefixLen returns the prefix length if this address is equivalent to the mask for a CIDR prefix block.
+// Otherwise, it returns nil.
+// A CIDR network mask is an address with all ones in the network section and then all zeros in the host section.
+// A CIDR host mask is an address with all zeros in the network section and then all ones in the host section.
+// The prefix length is the bit-length of the network section.
+//
+// Also, keep in mind that the prefix length returned by this method is not equivalent to the prefix length of this instance,
+// indicating the network and host section of this address.
+// The prefix length returned here indicates the whether the value of this address can be used as a mask for the network and host
+// section of any other address.  Therefore, the two values can be different values, or one can be nil while the other is not.
+//
+// This method applies only to the lower value of the range if this address represents multiple values.
+func (addr *ipAddressInternal) GetBlockMaskPrefixLen(network bool) PrefixLen {
+	section := addr.section
+	if section == nil {
+		return nil
+	}
+	return section.ToIP().GetBlockMaskPrefixLen(network)
+}
