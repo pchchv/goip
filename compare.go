@@ -345,6 +345,11 @@ func (comp countComparator) compareSectionParts(one, two *AddressSection) int {
 	return result
 }
 
+type valueComparator struct {
+	compareHighValue bool
+	flipSecond       bool
+}
+
 // compareDivBitCounts is called when we know that two series have the same bit size,
 // need to check that the divisions also have the same bit size.
 func compareDivBitCounts(oneSeries, twoSeries AddressDivisionSeries) int {
