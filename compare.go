@@ -301,6 +301,19 @@ func (comp countComparator) compareEqualSizedSections(one, two *AddressSection) 
 	}
 	return 0
 }
+
+func (comp countComparator) compareSectionParts(one, two *AddressSection) int {
+	//result := int(one.GetBitCount() - two.GetBitCount())
+	//if result == 0 {
+	//result := compareSectionCount(one, two)
+	result := compareCount(one, two)
+	if result == 0 {
+		result = comp.compareEqualSizedSections(one, two)
+	}
+	//}
+	return result
+}
+
 // compareDivBitCounts is called when we know that two series have the same bit size,
 // need to check that the divisions also have the same bit size.
 func compareDivBitCounts(oneSeries, twoSeries AddressDivisionSeries) int {
