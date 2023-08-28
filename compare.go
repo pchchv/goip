@@ -350,6 +350,44 @@ type valueComparator struct {
 	flipSecond       bool
 }
 
+func (comp valueComparator) compareSectionParts(one, two *AddressSection) int {
+	compareHigh := comp.compareHighValue
+
+	for {
+		segCount := one.GetSegmentCount()
+		for i := 0; i < segCount; i++ {
+			segOne := one.GetSegment(i)
+			segTwo := two.GetSegment(i)
+			var s1, s2 SegInt
+			if compareHigh {
+				s1 = segOne.GetUpperSegmentValue()
+				s2 = segTwo.GetUpperSegmentValue()
+			} else {
+				s1 = segOne.GetSegmentValue()
+				s2 = segTwo.GetSegmentValue()
+			}
+			if s1 != s2 {
+				var result int
+				if s1 > s2 {
+					result = 1
+				} else {
+					result = -1
+				}
+				if comp.flipSecond && compareHigh != comp.compareHighValue {
+					result = -result
+				}
+				return result
+			}
+		}
+		compareHigh = !compareHigh
+		if compareHigh == comp.compareHighValue {
+			break
+		}
+	}
+
+	return 0
+}
+
 // compareDivBitCounts is called when we know that two series have the same bit size,
 // need to check that the divisions also have the same bit size.
 func compareDivBitCounts(oneSeries, twoSeries AddressDivisionSeries) int {
