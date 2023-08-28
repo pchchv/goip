@@ -388,6 +388,35 @@ func (comp valueComparator) compareSectionParts(one, two *AddressSection) int {
 	return 0
 }
 
+func (comp valueComparator) compareSegValues(oneUpper, oneLower, twoUpper, twoLower SegInt) int {
+	if comp.compareHighValue {
+		if oneUpper == twoUpper {
+			if oneLower == twoLower {
+				return 0
+			} else if oneLower > twoLower {
+				if !comp.flipSecond {
+					return 1
+				}
+			}
+		} else if oneUpper > twoUpper {
+			return 1
+		}
+	} else {
+		if oneLower == twoLower {
+			if oneUpper == twoUpper {
+				return 0
+			} else if oneUpper > twoUpper {
+				if !comp.flipSecond {
+					return 1
+				}
+			}
+		} else if oneLower > twoLower {
+			return 1
+		}
+	}
+	return -1
+}
+
 // compareDivBitCounts is called when we know that two series have the same bit size,
 // need to check that the divisions also have the same bit size.
 func compareDivBitCounts(oneSeries, twoSeries AddressDivisionSeries) int {
