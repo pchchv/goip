@@ -79,6 +79,37 @@ func (comp AddressComparator) CompareAddressSections(one, two AddressSectionType
 	}
 	return comp.getCompComp().compareSectionParts(one.ToSectionBase(), two.ToSectionBase())
 }
+
+// CompareSegments compares any two address segments (including from different versions or address types).
+// It returns a negative integer, zero, or a positive integer if address item one is less than,
+// equal, or greater than address item two.
+func (comp AddressComparator) CompareSegments(one, two AddressSegmentType) int {
+	oneIsNil, oneDivType := checkSegmentType(one)
+	twoIsNil, twoDivType := checkSegmentType(two)
+	// All nils are equivalent.
+	// We decided that a nil interface should be equivalent to an interface with a nil value (standard or large)
+	// But if nil interface == nil standard, and nil interface == nil large,
+	// then nil standard == nil large, by transitive condition.
+	// And in fact, if you attempted to categorize the 3 nil types,
+	// it would get quite confusing perhaps.
+	if oneIsNil {
+		if twoIsNil {
+			return 0
+		}
+		return -1
+	} else if twoIsNil {
+		return 1
+	} else if result := oneDivType - twoDivType; result != 0 {
+		return int(result)
+	} else if result := int(one.GetBitCount() - two.GetBitCount()); result != 0 {
+		return result
+	}
+
+	oneSeg := one.ToSegmentBase()
+	twoSeg := two.ToSegmentBase()
+	return comp.getCompComp().compareSegValues(oneSeg.GetUpperSegmentValue(), oneSeg.GetSegmentValue(),
+		twoSeg.GetUpperSegmentValue(), twoSeg.GetSegmentValue())
+}
 type countComparator struct{}
 
 func (countComparator) compareLargeValues(oneUpper, oneLower, twoUpper, twoLower *big.Int) (result int) {
