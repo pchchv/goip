@@ -21,11 +21,17 @@ const (
 	standarddivtype      divType      = 0
 	largedivtype         divType      = -2
 	unknowndivtype       divType      = -3
+	ipv6rangetype        rangeType    = 2
+	ipv4rangetype        rangeType    = 1
+	iprangetype          rangeType    = 0
+	unknownrangetype     rangeType    = -1
 )
 
 type groupingType int
 
 type divType int
+
+type rangeType int
 
 type componentComparator interface {
 	compareSectionParts(one, two *AddressSection) int
