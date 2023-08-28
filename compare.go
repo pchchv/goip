@@ -27,6 +27,9 @@ const (
 	unknownrangetype     rangeType    = -1
 )
 
+// CountComparator compares by count first, then by value.
+var CountComparator = AddressComparator{countComparator{}}
+
 type groupingType int
 
 type divType int
@@ -48,6 +51,13 @@ type AddressComparator struct {
 	componentComparator componentComparator
 }
 
+func (comp AddressComparator) getCompComp() componentComparator {
+	compComp := comp.componentComparator
+	if compComp == nil {
+		return countComparator{}
+	}
+	return compComp
+}
 type countComparator struct{}
 
 func (countComparator) compareLargeValues(oneUpper, oneLower, twoUpper, twoLower *big.Int) (result int) {
