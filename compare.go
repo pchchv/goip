@@ -526,3 +526,27 @@ func checkRangeTypeX(r IPAddressSeqRangeType) (isNil bool, rngType rangeType, rn
 	}
 	return
 }
+
+func checkSegmentType(div AddressSegmentType) (isNil bool, divType divType) {
+	if isNil = div == nil; isNil {
+		divType = unknowndivtype
+	} else {
+		seg := div.ToSegmentBase()
+		if isNil = seg == nil; !isNil {
+			if seg.IsIPv6() {
+				divType = ipv6segtype
+			} else if seg.IsIPv4() {
+				divType = ipv4segtype
+			} else if seg.IsMAC() {
+				divType = macsegtype
+			} else if seg.IsIP() {
+				divType = ipsegtype
+			} else {
+				divType = segtype
+			}
+		} else {
+			divType = unknowndivtype
+		}
+	}
+	return
+}
