@@ -16,3 +16,11 @@ type IPAddressNetwork interface {
 	getIPAddressCreator() ipAddressCreator
 	addressNetwork
 }
+
+type ipAddressNetwork struct {
+	subnetsMasksWithPrefix []*IPAddress
+	subnetMasks            []*IPAddress
+	hostMasksWithPrefix    []*IPAddress
+	hostMasks              []*IPAddress
+}
+
