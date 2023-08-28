@@ -58,6 +58,27 @@ func (comp AddressComparator) getCompComp() componentComparator {
 	}
 	return compComp
 }
+
+// CompareAddressSections compares any two address sections (including from different versions or address types).
+// It returns a negative integer, zero,
+// or a positive integer if address item one is less than, equal, or greater than address item two.
+func (comp AddressComparator) CompareAddressSections(one, two AddressSectionType) int {
+	oneIsNil, oneGroupingType := checkSectionType(one)
+	twoIsNil, twoGroupingType := checkSectionType(two)
+	if oneIsNil {
+		if twoIsNil {
+			return 0
+		}
+		return -1
+	} else if twoIsNil {
+		return 1
+	} else if result := oneGroupingType - twoGroupingType; result != 0 {
+		return int(result)
+	} else if result := int(one.GetBitCount() - two.GetBitCount()); result != 0 {
+		return result
+	}
+	return comp.getCompComp().compareSectionParts(one.ToSectionBase(), two.ToSectionBase())
+}
 type countComparator struct{}
 
 func (countComparator) compareLargeValues(oneUpper, oneLower, twoUpper, twoLower *big.Int) (result int) {
