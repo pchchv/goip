@@ -13,9 +13,19 @@ const (
 	standardgroupingtype groupingType = -3
 	adaptivezerotype     groupingType = -4
 	unknowntype          groupingType = -5
+	ipv6segtype          divType      = 6
+	ipv4segtype          divType      = 5
+	ipsegtype            divType      = 4
+	macsegtype           divType      = 3
+	segtype              divType      = 1
+	standarddivtype      divType      = 0
+	largedivtype         divType      = -2
+	unknowndivtype       divType      = -3
 )
 
 type groupingType int
+
+type divType int
 
 type componentComparator interface {
 	compareSectionParts(one, two *AddressSection) int
