@@ -2,6 +2,21 @@ package goip
 
 import "math/big"
 
+const (
+	ipv6sectype          groupingType = 7
+	ipv4sectype          groupingType = 6
+	ipsectype            groupingType = 5
+	macsectype           groupingType = 4
+	sectype              groupingType = 3
+	ipv6v4groupingtype   groupingType = 2
+	largegroupingtype    groupingType = -2
+	standardgroupingtype groupingType = -3
+	adaptivezerotype     groupingType = -4
+	unknowntype          groupingType = -5
+)
+
+type groupingType int
+
 type componentComparator interface {
 	compareSectionParts(one, two *AddressSection) int
 	compareParts(one, two AddressDivisionSeries) int
