@@ -505,3 +505,24 @@ func checkSectionType(sect AddressSectionType) (isNil bool, groupingType groupin
 	}
 	return
 }
+
+func checkRangeTypeX(r IPAddressSeqRangeType) (isNil bool, rngType rangeType, rng *SequentialRange[*IPAddress]) {
+	if isNil = r == nil; isNil {
+		rngType = unknownrangetype
+	} else {
+		rng = r.ToIP()
+		if isNil = rng == nil; !isNil {
+			version := r.GetIPVersion()
+			if version.IsIPv4() {
+				rngType = ipv4rangetype
+			} else if version.IsIPv6() {
+				rngType = ipv6rangetype
+			} else {
+				rngType = iprangetype
+			}
+		} else {
+			rngType = unknownrangetype
+		}
+	}
+	return
+}
