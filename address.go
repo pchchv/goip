@@ -22,7 +22,10 @@ const (
 	SegmentSqlSingleWildcardStr     = "_"
 )
 
-var segmentWildcardStr = SegmentWildcardStr
+var (
+	segmentWildcardStr = SegmentWildcardStr
+	zeroAddr           = createAddress(zeroSection, NoZone)
+)
 
 func createAddress(section *AddressSection, zone Zone) *Address {
 	res := &Address{
@@ -214,6 +217,13 @@ type Address struct {
 	addressInternal
 }
 
+func (addr *Address) init() *Address {
+	if addr.section == nil {
+		return zeroAddr // this has a zero section rather that a nil section
+	}
+	return addr
+}
+
 // IsIP returns true if this address or subnet originated as an IPv4 or IPv6 address or subnet,
 // or an implicitly zero-valued IP.
 // If so, use ToIP to convert back to the IP-specific type.
@@ -230,4 +240,9 @@ func (addr *Address) ToIP() *IPAddress {
 		return (*IPAddress)(unsafe.Pointer(addr))
 	}
 	return nil
+}
+
+// GetSection returns the backing section for this address or subnet, comprising all segments.
+func (addr *Address) GetSection() *AddressSection {
+	return addr.init().section
 }
