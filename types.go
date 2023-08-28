@@ -283,3 +283,10 @@ func (portNum *PortNum) Compare(other Port) int {
 	}
 	return portNum.portNum() - other.portNum()
 }
+
+func cachePrefixLen(external PrefixLen) PrefixLen {
+	if external == nil {
+		return nil
+	}
+	return cacheBitCount(external.bitCount())
+}
