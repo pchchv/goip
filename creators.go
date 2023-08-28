@@ -35,3 +35,5 @@ type ipAddressCreator interface {
 	parsedIPAddressCreator
 	createAddressInternalFromBytes(bytes []byte, zone Zone) *IPAddress
 }
+
+type ipv6AddressCreator struct{}
