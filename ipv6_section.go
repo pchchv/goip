@@ -39,3 +39,24 @@ func (grouping *IPv6v4MixedAddressGrouping) IsPrefixed() bool {
 func (grouping *IPv6v4MixedAddressGrouping) ToDivGrouping() *AddressDivisionGrouping {
 	return (*AddressDivisionGrouping)(grouping)
 }
+
+func createIPv6Section(segments []*AddressDivision) *IPv6AddressSection {
+	return &IPv6AddressSection{
+		ipAddressSectionInternal{
+			addressSectionInternal{
+				addressDivisionGroupingInternal{
+					addressDivisionGroupingBase: addressDivisionGroupingBase{
+						divisions: standardDivArray(segments),
+						addrType:  ipv6Type,
+						cache: &valueCache{
+							stringCache: stringCache{
+								ipv6StringCache: &ipv6StringCache{},
+								ipStringCache:   &ipStringCache{},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
