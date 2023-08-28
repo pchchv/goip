@@ -23,3 +23,9 @@ type parsedAddressCreator interface {
 	createSectionInternal(segments []*AddressDivision, isMultiple bool) *AddressSection
 	createAddressInternal(section *AddressSection, identifier HostIdentifierString) *Address
 }
+
+type parsedIPAddressCreator interface {
+	createPrefixedSectionInternalSingle(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen) *IPAddressSection
+	createPrefixedSectionInternal(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen) *IPAddressSection
+	createAddressInternalFromSection(*IPAddressSection, Zone, HostIdentifierString) *IPAddress
+}
