@@ -390,3 +390,10 @@ func compareCount(one, two AddressItem) int {
 
 	return b1.CmpAbs(b2)
 }
+
+func unwrapWrapper(item AddressDivisionSeries) AddressDivisionSeries {
+	if wrapper, ok := item.(ExtendedIPSegmentSeries); ok {
+		return wrapper.Unwrap()
+	}
+	return item
+}
