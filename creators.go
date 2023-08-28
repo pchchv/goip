@@ -29,3 +29,9 @@ type parsedIPAddressCreator interface {
 	createPrefixedSectionInternal(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen) *IPAddressSection
 	createAddressInternalFromSection(*IPAddressSection, Zone, HostIdentifierString) *IPAddress
 }
+
+type ipAddressCreator interface {
+	parsedAddressCreator
+	parsedIPAddressCreator
+	createAddressInternalFromBytes(bytes []byte, zone Zone) *IPAddress
+}
