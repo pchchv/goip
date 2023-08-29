@@ -60,3 +60,12 @@ func createIPv6Section(segments []*AddressDivision) *IPv6AddressSection {
 		},
 	}
 }
+
+func newPrefixedIPv6SectionParsed(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen, singleOnly bool) (res *IPv6AddressSection) {
+	res = createIPv6Section(segments)
+	res.isMult = isMultiple
+	if prefixLength != nil {
+		assignPrefix(prefixLength, segments, res.ToIP(), singleOnly, false, BitCount(len(segments)<<ipv6BitsToSegmentBitshift))
+	}
+	return
+}
