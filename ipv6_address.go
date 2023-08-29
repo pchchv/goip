@@ -32,6 +32,8 @@ const (
 	IPv6AlternativeRangeSeparatorStr = AlternativeRangeSeparatorStr
 )
 
+var zeroIPv6 = initZeroIPv6()
+
 // Zone represents an IPv6 address zone or scope.
 type Zone string
 
@@ -59,4 +61,15 @@ func (zone Zone) String() string {
 // You can also use one of the multiple constructors for [IPAddress] like NewIPAddress and then convert using ToIPv6.
 type IPv6Address struct {
 	ipAddressInternal
+}
+
+func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
+	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
+}
+
+func initZeroIPv6() *IPv6Address {
+	div := zeroIPv6Seg
+	segs := []*IPv6AddressSegment{div, div, div, div, div, div, div, div}
+	section := NewIPv6Section(segs)
+	return newIPv6Address(section)
 }
