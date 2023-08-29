@@ -181,3 +181,19 @@ func isPrefixSubnetDivs(sectionSegments []*AddressDivision, networkPrefixLength 
 		networkPrefixLength,
 		zerosOnly)
 }
+
+func applyPrefixToSegments(
+	sectionPrefixBits BitCount,
+	segments []*AddressDivision,
+	segmentBitCount BitCount,
+	segmentByteCount int,
+	segProducer func(*AddressDivision, PrefixLen) *AddressDivision) {
+	if sectionPrefixBits != 0 {
+		for i := getNetworkSegmentIndex(sectionPrefixBits, segmentByteCount, segmentBitCount); i < len(segments); i++ {
+			pref := getPrefixedSegmentPrefixLength(segmentBitCount, sectionPrefixBits, i)
+			if pref != nil {
+				segments[i] = segProducer(segments[i], pref)
+			}
+		}
+	}
+}
