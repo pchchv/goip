@@ -89,3 +89,16 @@ func NewIPv6Address(section *IPv6AddressSection) (*IPv6Address, address_error.Ad
 	}
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6(), nil
 }
+
+func newIPv6AddressZoned(section *IPv6AddressSection, zone string) *IPv6Address {
+	zoneVal := Zone(zone)
+	result := createAddress(section.ToSectionBase(), zoneVal).ToIPv6()
+	assignIPv6Cache(zoneVal, result.cache)
+	return result
+}
+
+func assignIPv6Cache(zoneVal Zone, cache *addressCache) {
+	if zoneVal != NoZone { // will need to cache its own strings
+		cache.stringCache = &stringCache{ipv6StringCache: &ipv6StringCache{}, ipStringCache: &ipStringCache{}}
+	}
+}
