@@ -6,6 +6,13 @@ type IPv6AddressSection struct {
 	ipAddressSectionInternal
 }
 
+// ToIP converts to an IPAddressSection, a polymorphic type usable with all IP address sections.
+//
+// ToIP can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (section *IPv6AddressSection) ToIP() *IPAddressSection {
+	return (*IPAddressSection)(section)
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
