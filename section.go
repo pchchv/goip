@@ -25,6 +25,44 @@ func (section *addressSectionInternal) Bytes() []byte {
 	return section.addressDivisionGroupingInternal.Bytes()
 }
 
+// GetBitsPerSegment returns the number of bits comprising each segment in this section.
+// Segments in the same address section are equal length.
+func (section *addressSectionInternal) GetBitsPerSegment() BitCount {
+	addrType := section.getAddrType()
+	if addrType.isIPv4() {
+		return IPv4BitsPerSegment
+	} else if addrType.isIPv6() {
+		return IPv6BitsPerSegment
+	} else if addrType.isMAC() {
+		return MACBitsPerSegment
+	}
+
+	if section.GetDivisionCount() == 0 {
+		return 0
+	}
+
+	return section.getDivision(0).GetBitCount()
+}
+
+// GetBytesPerSegment returns the number of bytes comprising each segment in this section.
+// Segments in the same address section are equal length.
+func (section *addressSectionInternal) GetBytesPerSegment() int {
+	addrType := section.getAddrType()
+	if addrType.isIPv4() {
+		return IPv4BytesPerSegment
+	} else if addrType.isIPv6() {
+		return IPv6BytesPerSegment
+	} else if addrType.isMAC() {
+		return MACBytesPerSegment
+	}
+
+	if section.GetDivisionCount() == 0 {
+		return 0
+	}
+
+	return section.getDivision(0).GetByteCount()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
