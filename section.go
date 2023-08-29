@@ -385,3 +385,10 @@ func createDivisionsFromSegs(
 	}
 	return
 }
+
+// callers to this function supply segments with prefix length consistent with the supplied prefix length
+func createSectionMultiple(segments []*AddressDivision, prefixLength PrefixLen, addrType addrType, isMultiple bool) *AddressSection {
+	result := createSection(segments, prefixLength, addrType)
+	result.isMult = isMultiple
+	return result
+}
