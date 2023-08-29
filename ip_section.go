@@ -137,6 +137,16 @@ func (section *ipAddressSectionInternal) checkForPrefixMask() (networkMaskLen, h
 	return
 }
 
+// GetBitsPerSegment returns the number of bits comprising each segment in this section.  Segments in the same address section are equal length.
+func (section *ipAddressSectionInternal) GetBitsPerSegment() BitCount {
+	return section.addressSectionInternal.GetBitsPerSegment()
+}
+
+// GetBytesPerSegment returns the number of bytes comprising each segment in this section.  Segments in the same address section are equal length.
+func (section *ipAddressSectionInternal) GetBytesPerSegment() int {
+	return section.addressSectionInternal.GetBytesPerSegment()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
