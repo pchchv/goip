@@ -147,3 +147,37 @@ func (section *ipAddressSectionInternal) checkForPrefixMask() (networkMaskLen, h
 type IPAddressSection struct {
 	ipAddressSectionInternal
 }
+
+// Starting from the first host bit according to the prefix,
+// if the section is a sequence of zeros in both low and high values,
+// followed by a sequence where low values are zero and high values are 1,
+// then the section is a subnet prefix.
+//
+// Note that this includes sections where hosts are all zeros,
+// or sections where hosts are full range of values,
+// so the sequence of zeros can be empty and the sequence of
+// where low values are zero and high values are 1 can be empty as well.
+// However, if they are both empty, then this returns false,
+// there must be at least one bit in the sequence.
+func isPrefixSubnetDivs(sectionSegments []*AddressDivision, networkPrefixLength BitCount) bool {
+	segmentCount := len(sectionSegments)
+	if segmentCount == 0 {
+		return false
+	}
+
+	seg := sectionSegments[0]
+
+	return isPrefixSubnet(
+		func(segmentIndex int) SegInt {
+			return sectionSegments[segmentIndex].ToSegmentBase().GetSegmentValue()
+		},
+		func(segmentIndex int) SegInt {
+			return sectionSegments[segmentIndex].ToSegmentBase().GetUpperSegmentValue()
+		},
+		segmentCount,
+		seg.GetByteCount(),
+		seg.GetBitCount(),
+		seg.ToSegmentBase().GetMaxValue(),
+		networkPrefixLength,
+		zerosOnly)
+}
