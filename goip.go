@@ -15,9 +15,6 @@ const (
 	IPv6 IPVersion = "IPv6"
 )
 
-// IPVersion is the version type used by IP address types.
-type IPVersion string
-
 // IPAddress represents an IP address or subnet, either IPv4 or IPv6 (except zero IPAddress, which is neither).
 // An IP address consists of segments that have a range of values and may additionally have an associated prefix length.
 // An IPAddress with a null value has no segments, neither IPv4 nor IPv6,
@@ -35,6 +32,9 @@ type IPAddress struct {
 func (addr *IPAddress) ToIP() *IPAddress {
 	return addr
 }
+
+// IPVersion is the version type used by IP address types.
+type IPVersion string
 
 // IsIPv4 returns true if this represents version 4.
 func (version IPVersion) IsIPv4() bool {
