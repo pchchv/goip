@@ -226,6 +226,16 @@ func (grouping *addressDivisionGroupingInternal) matchesMACAddressType() bool {
 	return grouping.getAddrType().isMAC()
 }
 
+// copySubDivisions copies the existing segments from the given start index until but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (grouping *addressDivisionGroupingInternal) copySubDivisions(start, end int, divs []*AddressDivision) (count int) {
+	if divArray := grouping.getDivArray(); divArray != nil {
+		start, end, targetIndex := adjust1To1Indices(start, end, grouping.GetDivisionCount(), len(divs))
+		return divArray.copySubDivisions(start, end, divs[targetIndex:])
+	}
+	return
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
