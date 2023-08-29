@@ -13,6 +13,14 @@ func (section *IPv6AddressSection) ToIP() *IPAddressSection {
 	return (*IPAddressSection)(section)
 }
 
+// ToSectionBase converts to an AddressSection, a polymorphic type usable with all address sections.
+// Afterwards, you can convert back with ToIPv6.
+//
+// ToSectionBase can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (section *IPv6AddressSection) ToSectionBase() *AddressSection {
+	return section.ToIP().ToSectionBase()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
