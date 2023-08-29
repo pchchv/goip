@@ -76,3 +76,28 @@ func newPrefixedIPv6SectionParsed(segments []*AddressDivision, isMultiple bool, 
 	}
 	return
 }
+
+func createIPv6SectionFromSegs(orig []*IPv6AddressSegment, prefLen PrefixLen) (result *IPv6AddressSection) {
+	divs, newPref, isMultiple := createDivisionsFromSegs(
+		func(index int) *IPAddressSegment {
+			return orig[index].ToIP()
+		},
+		len(orig),
+		ipv6BitsToSegmentBitshift,
+		IPv6BitsPerSegment,
+		IPv6BytesPerSegment,
+		IPv6MaxValuePerSegment,
+		zeroIPv6Seg.ToIP(),
+		zeroIPv6SegZeroPrefix.ToIP(),
+		zeroIPv6SegPrefixBlock.ToIP(),
+		prefLen)
+	result = createIPv6Section(divs)
+	result.prefixLength = newPref
+	result.isMult = isMultiple
+	return result
+}
+
+// NewIPv6Section constructs an IPv6 address or subnet section from the given segments.
+func NewIPv6Section(segments []*IPv6AddressSegment) *IPv6AddressSection {
+	return createIPv6SectionFromSegs(segments, nil)
+}
