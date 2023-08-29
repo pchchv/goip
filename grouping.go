@@ -301,3 +301,33 @@ func (grouping *AddressDivisionGrouping) ToMAC() *MACAddressSection {
 func (grouping *AddressDivisionGrouping) ToDivGrouping() *AddressDivisionGrouping {
 	return grouping
 }
+
+func adjust1To1StartIndices(sourceStart, sourceEnd, sourceCount, targetCount int) (newSourceStart, newSourceEnd, newTargetStart int) {
+	// both sourceCount and targetCount are lengths of their respective slices, so never negative
+	targetStart := 0
+	if sourceStart < 0 {
+		targetStart -= sourceStart
+		sourceStart = 0
+		if targetStart > targetCount || targetStart < 0 {
+			targetStart = targetCount
+		}
+	} else if sourceStart > sourceCount {
+		sourceStart = sourceCount
+	}
+
+	if sourceEnd > sourceCount { // end index exceeds available
+		sourceEnd = sourceCount
+	} else if sourceEnd < sourceStart {
+		sourceEnd = sourceStart
+	}
+	return sourceStart, sourceEnd, targetStart
+}
+
+func adjust1To1Indices(sourceStart, sourceEnd, sourceCount, targetCount int) (newSourceStart, newSourceEnd, newTargetStart int) {
+	var targetStart int
+	sourceStart, sourceEnd, targetStart = adjust1To1StartIndices(sourceStart, sourceEnd, sourceCount, targetCount)
+	if limitEnd := sourceStart + (targetCount - targetStart); sourceEnd > limitEnd {
+		sourceEnd = limitEnd
+	}
+	return sourceStart, sourceEnd, targetStart
+}
