@@ -158,6 +158,14 @@ type IPAddressSection struct {
 	ipAddressSectionInternal
 }
 
+// ToSectionBase converts to an AddressSection, a polymorphic type usable with all address sections.
+// Afterwards, you can convert back with ToIP.
+//
+// ToSectionBase can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (section *IPAddressSection) ToSectionBase() *AddressSection {
+	return (*AddressSection)(unsafe.Pointer(section))
+}
+
 // Starting from the first host bit according to the prefix,
 // if the section is a sequence of zeros in both low and high values,
 // followed by a sequence where low values are zero and high values are 1,
