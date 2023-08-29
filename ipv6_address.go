@@ -1,5 +1,7 @@
 package goip
 
+import "github.com/pchchv/goip/address_error"
+
 const (
 	NoZone                           = ""
 	IPv6SegmentSeparator             = ':'
@@ -72,4 +74,18 @@ func initZeroIPv6() *IPv6Address {
 	segs := []*IPv6AddressSegment{div, div, div, div, div, div, div, div}
 	section := NewIPv6Section(segs)
 	return newIPv6Address(section)
+}
+
+func NewIPv6Address(section *IPv6AddressSection) (*IPv6Address, address_error.AddressValueError) {
+	if section == nil {
+		return zeroIPv6, nil
+	}
+	segCount := section.GetSegmentCount()
+	if segCount != IPv6SegmentCount {
+		return nil, &addressValueError{
+			addressError: addressError{key: "ipaddress.error.invalid.size"},
+			val:          segCount,
+		}
+	}
+	return createAddress(section.ToSectionBase(), NoZone).ToIPv6(), nil
 }
