@@ -46,3 +46,17 @@ func (zone Zone) IsEmpty() bool {
 func (zone Zone) String() string {
 	return string(zone)
 }
+
+// IPv6Address is an IPv6 address, or a subnet of multiple IPv6 addresses.
+// An IPv6 address is composed of 8 2-byte segments and can optionally have an associated prefix length.
+// Each segment can represent a single value or a range of values.
+// The zero value is "::".
+//
+// To construct one from a string, use NewIPAddressString, then use the ToAddress or GetAddress method of [IPAddressString],
+// and then use ToIPv6 to get an IPv6Address, assuming the string had an IPv6 format.
+//
+// For other inputs, use one of the multiple constructor functions like NewIPv6Address.
+// You can also use one of the multiple constructors for [IPAddress] like NewIPAddress and then convert using ToIPv6.
+type IPv6Address struct {
+	ipAddressInternal
+}
