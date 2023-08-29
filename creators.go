@@ -37,3 +37,15 @@ type ipAddressCreator interface {
 }
 
 type ipv6AddressCreator struct{}
+
+func (creator *ipv6AddressCreator) getMaxValuePerSegment() SegInt {
+	return IPv6MaxValuePerSegment
+}
+
+func (creator *ipv6AddressCreator) createPrefixedSectionInternal(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen) *IPAddressSection {
+	return newPrefixedIPv6SectionParsed(segments, isMultiple, prefixLength, false).ToIP()
+}
+
+func (creator *ipv6AddressCreator) createPrefixedSectionInternalSingle(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen) *IPAddressSection {
+	return newPrefixedIPv6SectionParsed(segments, isMultiple, prefixLength, true).ToIP()
+}
