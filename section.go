@@ -63,6 +63,14 @@ func (section *addressSectionInternal) GetBytesPerSegment() int {
 	return section.getDivision(0).GetByteCount()
 }
 
+func (section *addressSectionInternal) toAddressSection() *AddressSection {
+	return (*AddressSection)(unsafe.Pointer(section))
+}
+
+func (section *addressSectionInternal) toIPAddressSection() *IPAddressSection {
+	return section.toAddressSection().ToIP()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
