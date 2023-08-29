@@ -214,6 +214,18 @@ func (grouping *addressDivisionGroupingInternal) UpperBytes() []byte {
 	return cloneBytes(grouping.getUpperBytes())
 }
 
+func (grouping *addressDivisionGroupingInternal) matchesIPv6AddressType() bool {
+	return grouping.getAddrType().isIPv6() // no need to check segment count because addresses cannot be constructed with incorrect segment count
+}
+
+func (grouping *addressDivisionGroupingInternal) matchesIPv4AddressType() bool {
+	return grouping.getAddrType().isIPv4() // no need to check segment count because addresses cannot be constructed with incorrect segment count
+}
+
+func (grouping *addressDivisionGroupingInternal) matchesMACAddressType() bool {
+	return grouping.getAddrType().isMAC()
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
