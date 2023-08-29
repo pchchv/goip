@@ -79,6 +79,10 @@ func (section *addressSectionInternal) toIPv6AddressSection() *IPv6AddressSectio
 	return section.toAddressSection().ToIPv6()
 }
 
+func (section *addressSectionInternal) toMACAddressSection() *MACAddressSection {
+	return section.toAddressSection().ToMAC()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
