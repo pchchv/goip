@@ -190,6 +190,24 @@ func (addr *addressInternal) getAddrType() addrType {
 	return addr.section.addrType
 }
 
+// isIPv4 returns whether this matches an IPv4 address.
+// we allow nil receivers to allow this to be called following a failed conversion like ToIP()
+func (addr *addressInternal) isIPv4() bool {
+	return addr.section != nil && addr.section.matchesIPv4AddressType()
+}
+
+// isIPv6 returns whether this matches an IPv6 address.
+// we allow nil receivers to allow this to be called following a failed conversion like ToIP()
+func (addr *addressInternal) isIPv6() bool {
+	return addr.section != nil && addr.section.matchesIPv6AddressType()
+}
+
+// isIPv6 returns whether this matches an IPv6 address.
+// we allow nil receivers to allow this to be called following a failed conversion like ToIP()
+func (addr *addressInternal) isMAC() bool {
+	return addr.section != nil && addr.section.matchesMACAddressType()
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
