@@ -264,3 +264,19 @@ func (addr *Address) ToIP() *IPAddress {
 func (addr *Address) GetSection() *AddressSection {
 	return addr.init().section
 }
+
+// IsIPv6 returns true if this address or subnet originated as an IPv6 address or subnet.  If so, use ToIPv6 to convert back to the IPv6-specific type.
+func (addr *Address) IsIPv6() bool {
+	return addr != nil && addr.isIPv6()
+}
+
+// ToIPv6 converts to an IPv6Address if this address or subnet originated as an IPv6 address or subnet.
+// If not, ToIPv6 returns nil.
+//
+// ToIPv6 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (addr *Address) ToIPv6() *IPv6Address {
+	if addr.IsIPv6() {
+		return (*IPv6Address)(unsafe.Pointer(addr))
+	}
+	return nil
+}
