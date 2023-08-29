@@ -207,3 +207,41 @@ func applyPrefixToSegments(
 		}
 	}
 }
+
+// handles prefix block subnets, and ensures segment prefixes match the section prefix
+func assignPrefix(prefixLength PrefixLen, segments []*AddressDivision, res *IPAddressSection, singleOnly, checkPrefixes bool, boundaryBits BitCount) {
+	prefLen := prefixLength.bitCount()
+	if prefLen < 0 {
+		prefLen = 0
+	} else if prefLen > boundaryBits {
+		prefLen = boundaryBits
+		prefixLength = cacheBitCount(boundaryBits)
+	} else {
+		prefixLength = cachePrefixLen(prefixLength) // use our own cache of prefix lengths so callers cannot overwrite a section's prefix length
+	}
+
+	segLen := len(segments)
+	if segLen > 0 {
+		var segProducer func(*AddressDivision, PrefixLen) *AddressDivision
+		applyPrefixSubnet := !singleOnly && isPrefixSubnetDivs(segments, prefLen)
+		if applyPrefixSubnet || checkPrefixes {
+			if applyPrefixSubnet {
+				segProducer = (*AddressDivision).toPrefixedNetworkDivision
+			} else {
+				segProducer = (*AddressDivision).toPrefixedDivision
+			}
+			applyPrefixToSegments(
+				prefLen,
+				segments,
+				res.GetBitsPerSegment(),
+				res.GetBytesPerSegment(),
+				segProducer)
+			if applyPrefixSubnet {
+				res.isMult = res.isMult || res.GetSegment(segLen-1).isMultiple()
+			}
+		}
+	}
+
+	res.prefixLength = prefixLength
+	return
+}
