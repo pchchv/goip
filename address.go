@@ -208,6 +208,19 @@ func (addr *addressInternal) isMAC() bool {
 	return addr.section != nil && addr.section.matchesMACAddressType()
 }
 
+func (addr *addressInternal) toAddress() *Address {
+	return (*Address)(unsafe.Pointer(addr))
+}
+
+func (addr *addressInternal) checkIdentity(section *AddressSection) *Address {
+	if section == nil {
+		return nil
+	} else if section == addr.section {
+		return addr.toAddress()
+	}
+	return createAddress(section, addr.zone)
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
