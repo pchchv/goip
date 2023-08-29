@@ -136,6 +136,7 @@ func (section *ipAddressSectionInternal) checkForPrefixMask() (networkMaskLen, h
 	}
 	return
 }
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
