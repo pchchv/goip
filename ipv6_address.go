@@ -65,6 +65,13 @@ type IPv6Address struct {
 	ipAddressInternal
 }
 
+func (addr *IPv6Address) init() *IPv6Address {
+	if addr.section == nil {
+		return zeroIPv6
+	}
+	return addr
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
