@@ -63,3 +63,11 @@ func (seg *ipv4SegmentValues) getUpperValue() *BigDivInt {
 func (seg *ipv4SegmentValues) getDivisionValue() DivInt {
 	return DivInt(seg.value)
 }
+
+func (seg *ipv4SegmentValues) getUpperDivisionValue() DivInt {
+	return DivInt(seg.upperValue)
+}
+
+func (seg *ipv4SegmentValues) getDivisionPrefixLength() PrefixLen {
+	return seg.prefLen
+}
