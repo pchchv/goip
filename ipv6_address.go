@@ -34,7 +34,10 @@ const (
 	IPv6AlternativeRangeSeparatorStr = AlternativeRangeSeparatorStr
 )
 
-var zeroIPv6 = initZeroIPv6()
+var (
+	zeroIPv6 = initZeroIPv6()
+	ipv6All  = zeroIPv6.ToPrefixBlockLen(0)
+)
 
 // Zone represents an IPv6 address zone or scope.
 type Zone string
@@ -70,6 +73,27 @@ func (addr *IPv6Address) init() *IPv6Address {
 		return zeroIPv6
 	}
 	return addr
+}
+
+// ToPrefixBlock returns the subnet associated with the prefix length of this address.
+// If this address has no prefix length, this address is returned.
+//
+// The subnet will include all addresses with the same prefix as this one, the prefix "block".
+// The network prefix will match the prefix of this address or subnet, and the host values will span all values.
+//
+// For example, if the address is "1:2:3:4:5:6:7:8/64" it returns the subnet "1:2:3:4::/64" which can also be written as "1:2:3:4:*:*:*:*/64".
+func (addr *IPv6Address) ToPrefixBlock() *IPv6Address {
+	return addr.init().toPrefixBlock().ToIPv6()
+}
+
+// ToPrefixBlockLen returns the subnet associated with the given prefix length.
+//
+// The subnet will include all addresses with the same prefix as this one, the prefix "block" for that prefix length.
+// The network prefix will match the prefix of this address or subnet, and the host values will span all values.
+//
+// For example, if the address is "1:2:3:4:5:6:7:8" and the prefix length provided is 64, it returns the subnet "1:2:3:4::/64" which can also be written as "1:2:3:4:*:*:*:*/64".
+func (addr *IPv6Address) ToPrefixBlockLen(prefLen BitCount) *IPv6Address {
+	return addr.init().toPrefixBlockLen(prefLen).ToIPv6()
 }
 
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
