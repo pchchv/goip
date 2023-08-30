@@ -21,3 +21,11 @@ type ipv4SegmentValues struct {
 	prefLen    PrefixLen
 	cache      divCache
 }
+
+func (seg *ipv4SegmentValues) getAddrType() addrType {
+	return ipv4Type
+}
+
+func (seg *ipv4SegmentValues) includesZero() bool {
+	return seg.value == 0
+}
