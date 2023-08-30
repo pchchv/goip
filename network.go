@@ -1,5 +1,17 @@
 package goip
 
+var (
+	ipv6Network = &ipv6AddressNetwork{
+		ipAddressNetwork: ipAddressNetwork{
+			make([]*IPAddress, IPv6BitCount+1),
+			make([]*IPAddress, IPv6BitCount+1),
+			make([]*IPAddress, IPv6BitCount+1),
+			make([]*IPAddress, IPv6BitCount+1),
+		},
+	}
+	IPv6Network = &IPv6AddressNetwork{ipv6Network}
+)
+
 type addressNetwork interface {
 	getAddressCreator() parsedAddressCreator
 }
@@ -27,4 +39,9 @@ type ipAddressNetwork struct {
 type ipv6AddressNetwork struct {
 	ipAddressNetwork
 	creator ipv6AddressCreator
+}
+
+// IPv6AddressNetwork is the implementation of IPAddressNetwork for IPv6
+type IPv6AddressNetwork struct {
+	*ipv6AddressNetwork
 }
