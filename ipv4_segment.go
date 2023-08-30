@@ -47,3 +47,11 @@ func (seg *ipv4SegmentValues) getCount() *big.Int {
 func (seg *ipv4SegmentValues) getBitCount() BitCount {
 	return IPv4BitsPerSegment
 }
+
+func (seg *ipv4SegmentValues) getByteCount() int {
+	return IPv4BytesPerSegment
+}
+
+func (seg *ipv4SegmentValues) getValue() *BigDivInt {
+	return big.NewInt(int64(seg.value))
+}
