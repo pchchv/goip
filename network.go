@@ -24,3 +24,7 @@ type ipAddressNetwork struct {
 	hostMasks              []*IPAddress
 }
 
+type ipv6AddressNetwork struct {
+	ipAddressNetwork
+	creator ipv6AddressCreator
+}
