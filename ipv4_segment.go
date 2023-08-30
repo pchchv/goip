@@ -1,5 +1,7 @@
 package goip
 
+import "math/big"
+
 type IPv4SegInt = uint8
 
 type IPv4SegmentValueProvider func(segmentIndex int) IPv4SegInt
@@ -36,4 +38,12 @@ func (seg *ipv4SegmentValues) includesMax() bool {
 
 func (seg *ipv4SegmentValues) isMultiple() bool {
 	return seg.value != seg.upperValue
+}
+
+func (seg *ipv4SegmentValues) getCount() *big.Int {
+	return big.NewInt(int64(seg.upperValue-seg.value) + 1)
+}
+
+func (seg *ipv4SegmentValues) getBitCount() BitCount {
+	return IPv4BitsPerSegment
 }
