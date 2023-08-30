@@ -83,6 +83,63 @@ func (section *addressSectionInternal) toMACAddressSection() *MACAddressSection 
 	return section.toAddressSection().ToMAC()
 }
 
+func (section *addressSectionInternal) toPrefixBlock() *AddressSection {
+	prefixLength := section.getPrefixLen()
+	if prefixLength == nil {
+		return section.toAddressSection()
+	}
+
+	return section.toPrefixBlockLen(prefixLength.bitCount())
+}
+
+func (section *addressSectionInternal) toPrefixBlockLen(prefLen BitCount) *AddressSection {
+	prefLen = checkSubnet(section, prefLen)
+	segCount := section.GetSegmentCount()
+	if segCount == 0 {
+		return section.toAddressSection()
+	}
+
+	segmentByteCount := section.GetBytesPerSegment()
+	segmentBitCount := section.GetBitsPerSegment()
+	existingPrefixLength := section.getPrefixLen()
+	prefixMatches := existingPrefixLength != nil && existingPrefixLength.bitCount() == prefLen
+	if prefixMatches {
+		prefixedSegmentIndex := getHostSegmentIndex(prefLen, segmentByteCount, segmentBitCount)
+		if prefixedSegmentIndex >= segCount {
+			return section.toAddressSection()
+		}
+		segPrefLength := getPrefixedSegmentPrefixLength(segmentBitCount, prefLen, prefixedSegmentIndex).bitCount()
+		seg := section.GetSegment(prefixedSegmentIndex)
+		if seg.containsPrefixBlock(segPrefLength) {
+			i := prefixedSegmentIndex + 1
+			for ; i < segCount; i++ {
+				seg = section.GetSegment(i)
+				if !seg.IsFullRange() {
+					break
+				}
+			}
+			if i == segCount {
+				return section.toAddressSection()
+			}
+		}
+	}
+
+	prefixedSegmentIndex := 0
+	newSegs := createSegmentArray(segCount)
+	if prefLen > 0 {
+		prefixedSegmentIndex = getNetworkSegmentIndex(prefLen, segmentByteCount, segmentBitCount)
+		section.copySubDivisions(0, prefixedSegmentIndex, newSegs)
+	}
+
+	for i := prefixedSegmentIndex; i < segCount; i++ {
+		segPrefLength := getPrefixedSegmentPrefixLength(segmentBitCount, prefLen, i)
+		oldSeg := section.getDivision(i)
+		newSegs[i] = oldSeg.toPrefixedNetworkDivision(segPrefLength)
+	}
+
+	return createSectionMultiple(newSegs, cacheBitCount(prefLen), section.getAddrType(), section.isMultiple() || prefLen < section.GetBitCount())
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
