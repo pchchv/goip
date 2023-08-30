@@ -29,3 +29,11 @@ func (seg *ipv4SegmentValues) getAddrType() addrType {
 func (seg *ipv4SegmentValues) includesZero() bool {
 	return seg.value == 0
 }
+
+func (seg *ipv4SegmentValues) includesMax() bool {
+	return seg.upperValue == 0xff
+}
+
+func (seg *ipv4SegmentValues) isMultiple() bool {
+	return seg.value != seg.upperValue
+}
