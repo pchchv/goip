@@ -55,3 +55,11 @@ func (seg *ipv4SegmentValues) getByteCount() int {
 func (seg *ipv4SegmentValues) getValue() *BigDivInt {
 	return big.NewInt(int64(seg.value))
 }
+
+func (seg *ipv4SegmentValues) getUpperValue() *BigDivInt {
+	return big.NewInt(int64(seg.upperValue))
+}
+
+func (seg *ipv4SegmentValues) getDivisionValue() DivInt {
+	return DivInt(seg.value)
+}
