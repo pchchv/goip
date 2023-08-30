@@ -221,6 +221,14 @@ func (addr *addressInternal) checkIdentity(section *AddressSection) *Address {
 	return createAddress(section, addr.zone)
 }
 
+func (addr *addressInternal) toPrefixBlock() *Address {
+	return addr.checkIdentity(addr.section.toPrefixBlock())
+}
+
+func (addr *addressInternal) toPrefixBlockLen(prefLen BitCount) *Address {
+	return addr.checkIdentity(addr.section.toPrefixBlockLen(prefLen))
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
