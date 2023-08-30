@@ -14,3 +14,10 @@ type IPv4SegmentValueProvider func(segmentIndex int) IPv4SegInt
 type IPv4AddressSegment struct {
 	ipAddressSegmentInternal
 }
+
+type ipv4SegmentValues struct {
+	value      IPv4SegInt
+	upperValue IPv4SegInt
+	prefLen    PrefixLen
+	cache      divCache
+}
