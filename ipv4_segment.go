@@ -83,3 +83,20 @@ func (seg *ipv4SegmentValues) getSegmentValue() SegInt {
 func (seg *ipv4SegmentValues) getUpperSegmentValue() SegInt {
 	return SegInt(seg.upperValue)
 }
+
+func (seg *ipv4SegmentValues) calcBytesInternal() (bytes, upperBytes []byte) {
+	bytes = []byte{byte(seg.value)}
+	if seg.isMultiple() {
+		upperBytes = []byte{byte(seg.upperValue)}
+	} else {
+		upperBytes = bytes
+	}
+	return
+}
+
+func (seg *ipv4SegmentValues) bytesInternal(upper bool) []byte {
+	if upper {
+		return []byte{byte(seg.upperValue)}
+	}
+	return []byte{byte(seg.value)}
+}
