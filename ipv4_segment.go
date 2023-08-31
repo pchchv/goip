@@ -100,3 +100,17 @@ func (seg *ipv4SegmentValues) bytesInternal(upper bool) []byte {
 	}
 	return []byte{byte(seg.value)}
 }
+
+func newIPv4Segment(vals *ipv4SegmentValues) *IPv4AddressSegment {
+	return &IPv4AddressSegment{
+		ipAddressSegmentInternal{
+			addressSegmentInternal{
+				addressDivisionInternal{
+					addressDivisionBase{
+						vals,
+					},
+				},
+			},
+		},
+	}
+}
