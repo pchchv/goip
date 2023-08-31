@@ -79,3 +79,7 @@ func (seg *ipv4SegmentValues) getCache() *divCache {
 func (seg *ipv4SegmentValues) getSegmentValue() SegInt {
 	return SegInt(seg.value)
 }
+
+func (seg *ipv4SegmentValues) getUpperSegmentValue() SegInt {
+	return SegInt(seg.upperValue)
+}
