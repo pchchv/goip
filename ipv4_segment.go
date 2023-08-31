@@ -363,3 +363,24 @@ func NewIPv4RangeSegment(val, upperVal IPv4SegInt) *IPv4AddressSegment {
 func NewIPv4RangePrefixedSegment(val, upperVal IPv4SegInt, prefixLen PrefixLen) *IPv4AddressSegment {
 	return newIPv4Segment(newIPv4SegmentPrefixedValues(val, upperVal, prefixLen))
 }
+
+// WrapIPv4SegmentValueProvider converts the given IPv4SegmentValueProvider to a SegmentValueProvider.
+func WrapIPv4SegmentValueProvider(f IPv4SegmentValueProvider) SegmentValueProvider {
+	if f == nil {
+		return nil
+	}
+	return func(segmentIndex int) SegInt {
+		return SegInt(f(segmentIndex))
+	}
+}
+
+// WrapSegmentValueProviderForIPv4 converts the given SegmentValueProvider to an IPv4SegmentValueProvider.
+// Values that do not fit IPv4SegInt are truncated.
+func WrapSegmentValueProviderForIPv4(f SegmentValueProvider) IPv4SegmentValueProvider {
+	if f == nil {
+		return nil
+	}
+	return func(segmentIndex int) IPv4SegInt {
+		return IPv4SegInt(f(segmentIndex))
+	}
+}
