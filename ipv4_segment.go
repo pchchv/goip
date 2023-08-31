@@ -168,3 +168,17 @@ func makeDivsBlock() []*ipv4DivsBlock {
 	}
 	return nil
 }
+
+func newIPv4SegmentVal(value IPv4SegInt) *ipv4SegmentValues {
+	if useIPv4SegmentCache {
+		result := &segmentCacheIPv4[value]
+		return result
+	}
+	return &ipv4SegmentValues{
+		value:      value,
+		upperValue: value,
+		cache: divCache{
+			isSinglePrefBlock: &falseVal,
+		},
+	}
+}
