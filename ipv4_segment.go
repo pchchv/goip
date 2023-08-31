@@ -43,6 +43,13 @@ type IPv4AddressSegment struct {
 	ipAddressSegmentInternal
 }
 
+func (seg *IPv4AddressSegment) init() *IPv4AddressSegment {
+	if seg.divisionValues == nil {
+		return zeroIPv4Seg
+	}
+	return seg
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
