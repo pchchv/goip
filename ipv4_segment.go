@@ -257,3 +257,80 @@ func NewIPv4Segment(val IPv4SegInt) *IPv4AddressSegment {
 func NewIPv4PrefixedSegment(val IPv4SegInt, prefixLen PrefixLen) *IPv4AddressSegment {
 	return newIPv4Segment(newIPv4SegmentPrefixedVal(val, prefixLen))
 }
+
+func newIPv4SegmentPrefixedValues(value, upperValue IPv4SegInt, prefLen PrefixLen) *ipv4SegmentValues {
+	var isSinglePrefBlock *bool
+
+	if prefLen == nil {
+		if value == upperValue {
+			return newIPv4SegmentVal(value)
+		} else if value > upperValue {
+			value, upperValue = upperValue, value
+		}
+		if useIPv4SegmentCache && value == 0 && upperValue == IPv4MaxValuePerSegment {
+			return allRangeValsIPv4
+		}
+		isSinglePrefBlock = &falseVal
+	} else {
+		if value == upperValue {
+			return newIPv4SegmentPrefixedVal(value, prefLen)
+		} else if value > upperValue {
+			value, upperValue = upperValue, value
+		}
+		segmentPrefixLength := prefLen.bitCount()
+		if segmentPrefixLength < 0 {
+			segmentPrefixLength = 0
+		} else if segmentPrefixLength > IPv4BitsPerSegment {
+			segmentPrefixLength = IPv4BitsPerSegment
+		}
+		prefLen = cacheBitCount(segmentPrefixLength) // this ensures we use the prefix length cache for all segments
+		if useIPv4SegmentCache {
+			// cache is the prefix block for any prefix length
+			shiftBits := uint(IPv4BitsPerSegment - segmentPrefixLength)
+			nmask := ^IPv4SegInt(0) << shiftBits
+			prefixBlockLower := value & nmask
+			hmask := ^nmask
+			prefixBlockUpper := value | hmask
+			if value == prefixBlockLower && upperValue == prefixBlockUpper {
+				valueIndex := value >> shiftBits
+				cache := prefixBlocksCacheIPv4
+				prefixIndex := segmentPrefixLength
+				block := (*ipv4DivsBlock)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache[prefixIndex]))))
+				var result *ipv4SegmentValues
+				if block == nil {
+					block = &ipv4DivsBlock{make([]ipv4SegmentValues, 1<<uint(segmentPrefixLength))}
+					vals := block.block
+					for i := range vals {
+						value := &vals[i]
+						segi := IPv4SegInt(i << shiftBits)
+						value.value = segi
+						value.upperValue = segi | hmask
+						value.prefLen = prefLen
+						value.cache.isSinglePrefBlock = &trueVal
+					}
+					dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache[prefixIndex]))
+					atomicStorePointer(dataLoc, unsafe.Pointer(block))
+				}
+				result = &block.block[valueIndex]
+				return result
+			}
+			if value == 0 {
+				// cache is 0-255 for any prefix length
+				if upperValue == IPv4MaxValuePerSegment {
+					result := &allPrefixedCacheIPv4[segmentPrefixLength]
+					return result
+				}
+			}
+			isSinglePrefBlock = &falseVal
+		}
+	}
+
+	return &ipv4SegmentValues{
+		value:      value,
+		upperValue: upperValue,
+		prefLen:    prefLen,
+		cache: divCache{
+			isSinglePrefBlock: isSinglePrefBlock,
+		},
+	}
+}
