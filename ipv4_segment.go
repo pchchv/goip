@@ -11,8 +11,10 @@ var (
 			isSinglePrefBlock: &falseVal,
 		},
 	}
-	allPrefixedCacheIPv4 = makePrefixCache()
-	segmentCacheIPv4     = makeSegmentCache()
+	allPrefixedCacheIPv4   = makePrefixCache()
+	segmentCacheIPv4       = makeSegmentCache()
+	segmentPrefixCacheIPv4 = makeDivsBlock()
+	prefixBlocksCacheIPv4  = makeDivsBlock()
 )
 
 type IPv4SegInt = uint8
@@ -158,4 +160,11 @@ func makeSegmentCache() (segmentCacheIPv4 []ipv4SegmentValues) {
 		}
 	}
 	return
+}
+
+func makeDivsBlock() []*ipv4DivsBlock {
+	if useIPv4SegmentCache {
+		return make([]*ipv4DivsBlock, IPv4BitsPerSegment+1)
+	}
+	return nil
 }
