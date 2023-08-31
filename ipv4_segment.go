@@ -14,13 +14,14 @@ var (
 			isSinglePrefBlock: &falseVal,
 		},
 	}
-	prefixBlocksCacheIPv4  = makeDivsBlock()
-	segmentPrefixCacheIPv4 = makeDivsBlock()
-	zeroIPv4Seg            = NewIPv4Segment(0)
-	allPrefixedCacheIPv4   = makePrefixCache()
-	segmentCacheIPv4       = makeSegmentCache()
-	zeroIPv4SegZeroPrefix  = NewIPv4PrefixedSegment(0, cacheBitCount(0))
-	zeroIPv4SegPrefixBlock = NewIPv4RangePrefixedSegment(0, IPv4MaxValuePerSegment, cacheBitCount(0))
+	prefixBlocksCacheIPv4                 = makeDivsBlock()
+	segmentPrefixCacheIPv4                = makeDivsBlock()
+	zeroIPv4Seg                           = NewIPv4Segment(0)
+	allPrefixedCacheIPv4                  = makePrefixCache()
+	segmentCacheIPv4                      = makeSegmentCache()
+	zeroIPv4SegZeroPrefix                 = NewIPv4PrefixedSegment(0, cacheBitCount(0))
+	zeroIPv4SegPrefixBlock                = NewIPv4RangePrefixedSegment(0, IPv4MaxValuePerSegment, cacheBitCount(0))
+	_                      divisionValues = &ipv4SegmentValues{}
 )
 
 type IPv4SegInt = uint8
@@ -124,6 +125,22 @@ func (seg *ipv4SegmentValues) bytesInternal(upper bool) []byte {
 		return []byte{byte(seg.upperValue)}
 	}
 	return []byte{byte(seg.value)}
+}
+
+func (seg *ipv4SegmentValues) deriveNew(val, upperVal DivInt, prefLen PrefixLen) divisionValues {
+	return newIPv4SegmentPrefixedValues(IPv4SegInt(val), IPv4SegInt(upperVal), prefLen)
+}
+
+func (seg *ipv4SegmentValues) derivePrefixed(prefLen PrefixLen) divisionValues {
+	return newIPv4SegmentPrefixedValues(seg.value, seg.upperValue, prefLen)
+}
+
+func (seg *ipv4SegmentValues) deriveNewSeg(val SegInt, prefLen PrefixLen) divisionValues {
+	return newIPv4SegmentPrefixedVal(IPv4SegInt(val), prefLen)
+}
+
+func (seg *ipv4SegmentValues) deriveNewMultiSeg(val, upperVal SegInt, prefLen PrefixLen) divisionValues {
+	return newIPv4SegmentPrefixedValues(IPv4SegInt(val), IPv4SegInt(upperVal), prefLen)
 }
 
 func newIPv4Segment(vals *ipv4SegmentValues) *IPv4AddressSegment {
