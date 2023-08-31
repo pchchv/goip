@@ -20,6 +20,7 @@ var (
 	allPrefixedCacheIPv4   = makePrefixCache()
 	segmentCacheIPv4       = makeSegmentCache()
 	zeroIPv4SegZeroPrefix  = NewIPv4PrefixedSegment(0, cacheBitCount(0))
+	zeroIPv4SegPrefixBlock = NewIPv4RangePrefixedSegment(0, IPv4MaxValuePerSegment, cacheBitCount(0))
 )
 
 type IPv4SegInt = uint8
@@ -333,4 +334,15 @@ func newIPv4SegmentPrefixedValues(value, upperValue IPv4SegInt, prefLen PrefixLe
 			isSinglePrefBlock: isSinglePrefBlock,
 		},
 	}
+}
+
+// NewIPv4RangeSegment constructs a segment of an IPv4 subnet with the given range of sequential values.
+func NewIPv4RangeSegment(val, upperVal IPv4SegInt) *IPv4AddressSegment {
+	return newIPv4Segment(newIPv4SegmentPrefixedValues(val, upperVal, nil))
+}
+
+// NewIPv4RangePrefixedSegment constructs a segment of
+// an IPv4 subnet with the given range of sequential values and assigned prefix length.
+func NewIPv4RangePrefixedSegment(val, upperVal IPv4SegInt, prefixLen PrefixLen) *IPv4AddressSegment {
+	return newIPv4Segment(newIPv4SegmentPrefixedValues(val, upperVal, prefixLen))
 }
