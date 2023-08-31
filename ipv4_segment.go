@@ -14,10 +14,12 @@ var (
 			isSinglePrefBlock: &falseVal,
 		},
 	}
+	prefixBlocksCacheIPv4  = makeDivsBlock()
+	segmentPrefixCacheIPv4 = makeDivsBlock()
+	zeroIPv4Seg            = NewIPv4Segment(0)
 	allPrefixedCacheIPv4   = makePrefixCache()
 	segmentCacheIPv4       = makeSegmentCache()
-	segmentPrefixCacheIPv4 = makeDivsBlock()
-	prefixBlocksCacheIPv4  = makeDivsBlock()
+	zeroIPv4SegZeroPrefix  = NewIPv4PrefixedSegment(0, cacheBitCount(0))
 )
 
 type IPv4SegInt = uint8
@@ -244,4 +246,14 @@ func newIPv4SegmentPrefixedVal(value IPv4SegInt, prefLen PrefixLen) (result *ipv
 			isSinglePrefBlock: isSinglePrefBlock,
 		},
 	}
+}
+
+// NewIPv4Segment constructs a segment of an IPv4 address with the given value.
+func NewIPv4Segment(val IPv4SegInt) *IPv4AddressSegment {
+	return newIPv4Segment(newIPv4SegmentVal(val))
+}
+
+// NewIPv4PrefixedSegment constructs a segment of an IPv4 address with the given value and assigned prefix length.
+func NewIPv4PrefixedSegment(val IPv4SegInt, prefixLen PrefixLen) *IPv4AddressSegment {
+	return newIPv4Segment(newIPv4SegmentPrefixedVal(val, prefixLen))
 }
