@@ -97,21 +97,6 @@ func (seg *ipv4SegmentValues) getUpperDivisionValue() DivInt {
 func (seg *ipv4SegmentValues) getDivisionPrefixLength() PrefixLen {
 	return seg.prefLen
 }
-func (seg *ipv4SegmentValues) deriveNew(val, upperVal DivInt, prefLen PrefixLen) divisionValues {
-	return newIPv4SegmentPrefixedValues(IPv4SegInt(val), IPv4SegInt(upperVal), prefLen)
-}
-
-func (seg *ipv4SegmentValues) derivePrefixed(prefLen PrefixLen) divisionValues {
-	return newIPv4SegmentPrefixedValues(seg.value, seg.upperValue, prefLen)
-}
-
-func (seg *ipv4SegmentValues) deriveNewSeg(val SegInt, prefLen PrefixLen) divisionValues {
-	return newIPv4SegmentPrefixedVal(IPv4SegInt(val), prefLen)
-}
-
-func (seg *ipv4SegmentValues) deriveNewMultiSeg(val, upperVal SegInt, prefLen PrefixLen) divisionValues {
-	return newIPv4SegmentPrefixedValues(IPv4SegInt(val), IPv4SegInt(upperVal), prefLen)
-}
 
 func (seg *ipv4SegmentValues) getCache() *divCache {
 	return &seg.cache
