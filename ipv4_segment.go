@@ -1,6 +1,9 @@
 package goip
 
-import "math/big"
+import (
+	"math/big"
+	"unsafe"
+)
 
 const useIPv4SegmentCache = true
 
@@ -179,6 +182,66 @@ func newIPv4SegmentVal(value IPv4SegInt) *ipv4SegmentValues {
 		upperValue: value,
 		cache: divCache{
 			isSinglePrefBlock: &falseVal,
+		},
+	}
+}
+
+func newIPv4SegmentPrefixedVal(value IPv4SegInt, prefLen PrefixLen) (result *ipv4SegmentValues) {
+	var isSinglePrefBlock *bool
+
+	if prefLen == nil {
+		return newIPv4SegmentVal(value)
+	}
+
+	segmentPrefixLength := prefLen.bitCount()
+	if segmentPrefixLength < 0 {
+		segmentPrefixLength = 0
+	} else if segmentPrefixLength > IPv4BitsPerSegment {
+		segmentPrefixLength = IPv4BitsPerSegment
+	}
+
+	prefLen = cacheBitCount(segmentPrefixLength) // this ensures we use the prefix length cache for all segments
+
+	if useIPv4SegmentCache {
+		prefixIndex := segmentPrefixLength
+		cache := segmentPrefixCacheIPv4
+		block := (*ipv4DivsBlock)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache[prefixIndex]))))
+		if block == nil {
+			block = &ipv4DivsBlock{make([]ipv4SegmentValues, IPv4MaxValuePerSegment+1)}
+			vals := block.block
+			var isSinglePrefBlock *bool
+			if prefixIndex == IPv4BitsPerSegment {
+				isSinglePrefBlock = &trueVal
+			} else {
+				isSinglePrefBlock = &falseVal
+			}
+			for i := range vals {
+				value := &vals[i]
+				segi := IPv4SegInt(i)
+				value.value = segi
+				value.upperValue = segi
+				value.prefLen = prefLen
+				value.cache.isSinglePrefBlock = isSinglePrefBlock
+			}
+			dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache[prefixIndex]))
+			atomicStorePointer(dataLoc, unsafe.Pointer(block))
+		}
+		result = &block.block[value]
+		return result
+	}
+
+	if segmentPrefixLength == IPv4BitsPerSegment {
+		isSinglePrefBlock = &trueVal
+	} else {
+		isSinglePrefBlock = &falseVal
+	}
+
+	return &ipv4SegmentValues{
+		value:      value,
+		upperValue: value,
+		prefLen:    prefLen,
+		cache: divCache{
+			isSinglePrefBlock: isSinglePrefBlock,
 		},
 	}
 }
