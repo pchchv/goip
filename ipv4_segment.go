@@ -2,6 +2,19 @@ package goip
 
 import "math/big"
 
+const useIPv4SegmentCache = true
+
+var (
+	allRangeValsIPv4 = &ipv4SegmentValues{
+		upperValue: IPv4MaxValuePerSegment,
+		cache: divCache{
+			isSinglePrefBlock: &falseVal,
+		},
+	}
+	allPrefixedCacheIPv4 = makePrefixCache()
+	segmentCacheIPv4     = makeSegmentCache()
+)
+
 type IPv4SegInt = uint8
 
 type IPv4SegmentValueProvider func(segmentIndex int) IPv4SegInt
@@ -113,4 +126,32 @@ func newIPv4Segment(vals *ipv4SegmentValues) *IPv4AddressSegment {
 			},
 		},
 	}
+}
+
+func makePrefixCache() (allPrefixedCacheIPv4 []ipv4SegmentValues) {
+	if useIPv4SegmentCache {
+		allPrefixedCacheIPv4 = make([]ipv4SegmentValues, IPv4BitsPerSegment+1)
+		for i := range allPrefixedCacheIPv4 {
+			vals := &allPrefixedCacheIPv4[i]
+			vals.upperValue = IPv4MaxValuePerSegment
+			vals.prefLen = cacheBitCount(i)
+			vals.cache.isSinglePrefBlock = &falseVal
+		}
+		allPrefixedCacheIPv4[0].cache.isSinglePrefBlock = &trueVal
+	}
+	return
+}
+
+func makeSegmentCache() (segmentCacheIPv4 []ipv4SegmentValues) {
+	if useIPv4SegmentCache {
+		segmentCacheIPv4 = make([]ipv4SegmentValues, IPv4MaxValuePerSegment+1)
+		for i := range segmentCacheIPv4 {
+			vals := &segmentCacheIPv4[i]
+			segi := IPv4SegInt(i)
+			vals.value = segi
+			vals.upperValue = segi
+			vals.cache.isSinglePrefBlock = &falseVal
+		}
+	}
+	return
 }
