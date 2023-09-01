@@ -273,6 +273,36 @@ func (seg *IPv4AddressSegment) getJoinedSegmentPrefixLen(lowBits PrefixLen) Pref
 	return cacheBitCount(lowBitCount + IPv4BitsPerSegment)
 }
 
+// ToIP converts to an IPAddressSegment, a polymorphic type usable with all IP address segments.
+// Afterwards, you can convert back with ToIPv4.
+//
+// ToIP can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (seg *IPv4AddressSegment) ToIP() *IPAddressSegment {
+	if seg == nil {
+		return nil
+	}
+	return (*IPAddressSegment)(seg.init())
+}
+
+// ToDiv converts to an AddressDivision, a polymorphic type usable with all address segments and divisions.
+// Afterwards, you can convert back with ToIPv4.
+//
+// ToDiv can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (seg *IPv4AddressSegment) ToDiv() *AddressDivision {
+	return seg.ToIP().ToDiv()
+}
+
+// ToSegmentBase converts to an AddressSegment, a polymorphic type usable with all address segments.
+// Afterwards, you can convert back with ToIPv4.
+//
+// ToSegmentBase can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (seg *IPv4AddressSegment) ToSegmentBase() *AddressSegment {
+	return seg.ToIP().ToSegmentBase()
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
