@@ -105,6 +105,18 @@ func (seg *IPv4AddressSegment) GetBitCount() BitCount {
 func (seg *IPv4AddressSegment) GetByteCount() int {
 	return IPv4BytesPerSegment
 }
+
+// GetMaxValue gets the maximum possible value for this type or version of segment, determined by the number of bits.
+//
+// For the highest range value of this particular segment, use GetUpperSegmentValue.
+func (seg *IPv4AddressSegment) GetMaxValue() IPv4SegInt {
+	return 0xff
+}
+
+// IsMultiple returns whether this segment represents multiple values.
+func (seg *IPv4AddressSegment) IsMultiple() bool {
+	return seg != nil && seg.isMultiple()
+}
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
