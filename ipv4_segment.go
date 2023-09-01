@@ -136,6 +136,18 @@ func (seg *IPv4AddressSegment) GetCount() *big.Int {
 func (seg *IPv4AddressSegment) GetPrefixCountLen(segmentPrefixLength BitCount) *big.Int {
 	return seg.init().ipAddressSegmentInternal.GetPrefixCountLen(segmentPrefixLength)
 }
+
+// GetPrefixValueCountLen returns the same value as GetPrefixCountLen as an integer.
+func (seg *IPv4AddressSegment) GetPrefixValueCountLen(segmentPrefixLength BitCount) SegIntCount {
+	return seg.init().ipAddressSegmentInternal.GetPrefixValueCountLen(segmentPrefixLength)
+}
+
+// IsOneBit returns true if the bit in the lower value of this segment at the given index is 1,
+// where index 0 is the most significant bit.
+func (seg *IPv4AddressSegment) IsOneBit(segmentBitIndex BitCount) bool {
+	return seg.init().ipAddressSegmentInternal.IsOneBit(segmentBitIndex)
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
