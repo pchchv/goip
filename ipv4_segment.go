@@ -117,6 +117,25 @@ func (seg *IPv4AddressSegment) GetMaxValue() IPv4SegInt {
 func (seg *IPv4AddressSegment) IsMultiple() bool {
 	return seg != nil && seg.isMultiple()
 }
+
+// GetCount returns the count of possible distinct values for this item.
+// If not representing multiple values, the count is 1.
+//
+// For instance, a segment with the value range of 3-7 has count 5.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (seg *IPv4AddressSegment) GetCount() *big.Int {
+	if seg == nil {
+		return bigZero()
+	}
+	return seg.getCount()
+}
+
+// GetPrefixCountLen returns the count of the number of distinct prefix values for
+// the given prefix length in the range of values of this segment.
+func (seg *IPv4AddressSegment) GetPrefixCountLen(segmentPrefixLength BitCount) *big.Int {
+	return seg.init().ipAddressSegmentInternal.GetPrefixCountLen(segmentPrefixLength)
+}
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
