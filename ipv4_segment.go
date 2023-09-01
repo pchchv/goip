@@ -61,6 +61,27 @@ func (seg *IPv4AddressSegment) GetIPv4SegmentValue() IPv4SegInt {
 func (seg *IPv4AddressSegment) GetIPv4UpperSegmentValue() IPv4SegInt {
 	return IPv4SegInt(seg.GetUpperSegmentValue())
 }
+
+// Contains returns whether this is same type and version as the given segment and whether it contains all values in the given segment.
+func (seg *IPv4AddressSegment) Contains(other AddressSegmentType) bool {
+	if seg == nil {
+		return other == nil || other.ToSegmentBase() == nil
+	}
+	return seg.init().contains(other)
+}
+
+// Equal returns whether the given segment is equal to this segment.
+// Two segments are equal if they match:
+//   - type/version: IPv4
+//   - value range
+//
+// Prefix lengths are ignored.
+func (seg *IPv4AddressSegment) Equal(other AddressSegmentType) bool {
+	if seg == nil {
+		return other == nil || other.ToDiv() == nil
+	}
+	return seg.init().equal(other)
+}
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
