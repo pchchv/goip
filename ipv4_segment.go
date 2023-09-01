@@ -148,6 +148,16 @@ func (seg *IPv4AddressSegment) IsOneBit(segmentBitIndex BitCount) bool {
 	return seg.init().ipAddressSegmentInternal.IsOneBit(segmentBitIndex)
 }
 
+// Bytes returns the lowest value in the address segment range as a byte slice.
+func (seg *IPv4AddressSegment) Bytes() []byte {
+	return seg.init().ipAddressSegmentInternal.Bytes()
+}
+
+// UpperBytes returns the highest value in the address segment range as a byte slice.
+func (seg *IPv4AddressSegment) UpperBytes() []byte {
+	return seg.init().ipAddressSegmentInternal.UpperBytes()
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
