@@ -158,6 +158,24 @@ func (seg *IPv4AddressSegment) UpperBytes() []byte {
 	return seg.init().ipAddressSegmentInternal.UpperBytes()
 }
 
+// CopyBytes copies the lowest value in the address segment range into a byte slice.
+//
+// If the value can fit in the given slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (seg *IPv4AddressSegment) CopyBytes(bytes []byte) []byte {
+	return seg.init().ipAddressSegmentInternal.CopyBytes(bytes)
+}
+
+// CopyUpperBytes copies the highest value in the address segment range into a byte slice.
+//
+// If the value can fit in the given slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (seg *IPv4AddressSegment) CopyUpperBytes(bytes []byte) []byte {
+	return seg.init().ipAddressSegmentInternal.CopyUpperBytes(bytes)
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
