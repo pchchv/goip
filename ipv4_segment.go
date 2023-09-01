@@ -50,6 +50,17 @@ func (seg *IPv4AddressSegment) init() *IPv4AddressSegment {
 	return seg
 }
 
+// GetIPv4SegmentValue returns the lower value.
+// Same as GetSegmentValue but returned as a IPv4SegInt.
+func (seg *IPv4AddressSegment) GetIPv4SegmentValue() IPv4SegInt {
+	return IPv4SegInt(seg.GetSegmentValue())
+}
+
+// GetIPv4UpperSegmentValue returns the lower value.
+// Same as GetUpperSegmentValue but returned as a IPv4SegInt.
+func (seg *IPv4AddressSegment) GetIPv4UpperSegmentValue() IPv4SegInt {
+	return IPv4SegInt(seg.GetUpperSegmentValue())
+}
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
