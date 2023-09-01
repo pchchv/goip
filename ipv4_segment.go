@@ -189,6 +189,34 @@ func (seg *IPv4AddressSegment) MatchesWithPrefixMask(value IPv4SegInt, networkBi
 	return seg.init().ipAddressSegmentInternal.MatchesWithPrefixMask(SegInt(value), networkBits)
 }
 
+// GetBlockMaskPrefixLen returns the prefix length if
+// this address segment is equivalent to the mask for a CIDR prefix block.
+// Otherwise, it returns nil.
+// A CIDR network mask is a segment with all ones in the network bits and then all zeros in the host bits.
+// A CIDR host mask is a segment with all zeros in the network bits and then all ones in the host bits.
+// The prefix length is the bit-length of the network bits.
+//
+// Also, keep in mind that the prefix length returned by
+// this method is not equivalent to the prefix length of this segment.
+// The prefix length returned here indicates the whether
+// the value of this segment can be used as a mask for the network and host
+// bits of any other segment.
+// Therefore, the two values can be different values, or one can be nil while the other is not.
+//
+// This method applies only to the lower value of the range if this segment represents multiple values.
+func (seg *IPv4AddressSegment) GetBlockMaskPrefixLen(network bool) PrefixLen {
+	return seg.init().ipAddressSegmentInternal.GetBlockMaskPrefixLen(network)
+}
+
+// GetTrailingBitCount returns the number of consecutive trailing one or zero bits.
+// If ones is true, returns the number of consecutive trailing zero bits.
+// Otherwise, returns the number of consecutive trailing one bits.
+//
+// This method applies only to the lower value of the range if this segment represents multiple values.
+func (seg *IPv4AddressSegment) GetTrailingBitCount(ones bool) BitCount {
+	return seg.init().ipAddressSegmentInternal.GetTrailingBitCount(ones)
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
