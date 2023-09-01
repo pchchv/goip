@@ -217,6 +217,20 @@ func (seg *IPv4AddressSegment) GetTrailingBitCount(ones bool) BitCount {
 	return seg.init().ipAddressSegmentInternal.GetTrailingBitCount(ones)
 }
 
+// GetLeadingBitCount returns the number of consecutive leading one or zero bits.
+// If ones is true, returns the number of consecutive leading one bits.
+// Otherwise, returns the number of consecutive leading zero bits.
+//
+// This method applies only to the lower value of the range if this segment represents multiple values.
+func (seg *IPv4AddressSegment) GetLeadingBitCount(ones bool) BitCount {
+	return seg.init().ipAddressSegmentInternal.GetLeadingBitCount(ones)
+}
+
+// IsPrefixed returns whether this segment has an associated prefix length.
+func (seg *IPv4AddressSegment) IsPrefixed() bool {
+	return seg != nil && seg.isPrefixed()
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
