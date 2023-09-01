@@ -244,6 +244,35 @@ func (seg *IPv4AddressSegment) isJoinableTo(low *IPv4AddressSegment) bool {
 	return !seg.isMultiple() || low.IsFullRange()
 }
 
+// Join joins this segment with another IPv4 segment to produce an IPv6 segment.
+func (seg *IPv4AddressSegment) Join(low *IPv4AddressSegment) (*IPv6AddressSegment, address_error.IncompatibleAddressError) {
+	prefixLength := seg.getJoinedSegmentPrefixLen(low.GetSegmentPrefixLen())
+
+	if !seg.isJoinableTo(low) {
+		return nil, &incompatibleAddressError{addressError: addressError{key: "ipaddress.error.invalidMixedRange"}}
+	}
+
+	return NewIPv6RangePrefixedSegment(
+		IPv6SegInt((seg.GetSegmentValue()<<8)|low.getSegmentValue()),
+		IPv6SegInt((seg.GetUpperSegmentValue()<<8)|low.getUpperSegmentValue()),
+		prefixLength), nil
+}
+
+func (seg *IPv4AddressSegment) getJoinedSegmentPrefixLen(lowBits PrefixLen) PrefixLen {
+	highBits := seg.GetSegmentPrefixLen()
+
+	if lowBits == nil {
+		return nil
+	}
+
+	lowBitCount := lowBits.bitCount()
+	if lowBitCount == 0 {
+		return highBits
+	}
+
+	return cacheBitCount(lowBitCount + IPv4BitsPerSegment)
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
