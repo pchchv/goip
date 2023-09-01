@@ -3,6 +3,8 @@ package goip
 import (
 	"math/big"
 	"unsafe"
+
+	"github.com/pchchv/goip/address_error"
 )
 
 const useIPv4SegmentCache = true
@@ -229,6 +231,17 @@ func (seg *IPv4AddressSegment) GetLeadingBitCount(ones bool) BitCount {
 // IsPrefixed returns whether this segment has an associated prefix length.
 func (seg *IPv4AddressSegment) IsPrefixed() bool {
 	return seg != nil && seg.isPrefixed()
+}
+
+// ReverseBytes returns a segment with the bytes reversed, which for an IPv4 segment is always the original segment.
+func (seg *IPv4AddressSegment) ReverseBytes() (*IPv4AddressSegment, address_error.IncompatibleAddressError) {
+	return seg, nil
+}
+
+func (seg *IPv4AddressSegment) isJoinableTo(low *IPv4AddressSegment) bool {
+	// if the high segment has a range, the low segment must match the full range,
+	// otherwise it is not possible to create an equivalent range when joining
+	return !seg.isMultiple() || low.IsFullRange()
 }
 
 type ipv4SegmentValues struct {
