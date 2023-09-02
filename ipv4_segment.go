@@ -339,6 +339,28 @@ func (seg *IPv4AddressSegment) ToHostSegment(segmentPrefixLength PrefixLen) *IPv
 	return seg.init().toHostDivision(segmentPrefixLength, false).ToIPv4()
 }
 
+// Iterator provides an iterator to iterate through the individual address segments of this address segment.
+//
+// When iterating, the prefix length is preserved.
+// Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual address segments.
+//
+// Call IsMultiple to determine if this instance represents multiple address segments, or GetValueCount for the count.
+func (seg *IPv4AddressSegment) Iterator() Iterator[*IPv4AddressSegment] {
+	if seg == nil {
+		return ipv4SegmentIterator{nilSegIterator()}
+	}
+	return ipv4SegmentIterator{seg.init().iterator()}
+}
+
+// PrefixBlockIterator provides an iterator to iterate through the individual prefix blocks,
+// one for each prefix of this address segment.
+// Each iterated address segment will be a prefix block with the same prefix length as this address segment.
+//
+// If this address segment has no prefix length, then this is equivalent to Iterator.
+func (seg *IPv4AddressSegment) PrefixBlockIterator() Iterator[*IPv4AddressSegment] {
+	return ipv4SegmentIterator{seg.init().prefixBlockIterator()}
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
