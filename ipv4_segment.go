@@ -380,6 +380,14 @@ func (seg *IPv4AddressSegment) PrefixIterator() Iterator[*IPv4AddressSegment] {
 	return ipv4SegmentIterator{seg.init().prefixIterator()}
 }
 
+// WithoutPrefixLen returns a segment with the same value range but without a prefix length.
+func (seg *IPv4AddressSegment) WithoutPrefixLen() *IPv4AddressSegment {
+	if !seg.IsPrefixed() {
+		return seg
+	}
+	return seg.withoutPrefixLen().ToIPv4()
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
