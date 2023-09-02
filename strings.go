@@ -822,3 +822,114 @@ func getBigMaxDigitCount(radix int, bitCount BitCount, maxValue *BigDivInt) int 
 		return getBigDigitCount(maxValue, big.NewInt(int64(radix)))
 	})
 }
+
+func toDefaultString(val uint64, radix int) string {
+	var length int
+	var quotient, remainder, value uint //we iterate on //value == quotient * radix + remainder
+
+	//0 and 1 are common segment values, and additionally they are the same regardless of radix (even binary)
+	//so we have a fast path for them
+	if val == 0 {
+		return "0"
+	} else if val == 1 {
+		return "1"
+	}
+
+	if radix == 10 {
+		if val < 10 {
+			return digits[val : val+1]
+		} else if val < 100 {
+			dig := doubleDigitsDecimal
+			value = uint(val)
+			digIndex := value << 1
+			var builder strings.Builder
+			builder.Grow(2)
+			builder.WriteByte(dig[digIndex])
+			builder.WriteByte(dig[digIndex+1])
+			return builder.String()
+		} else if val < 200 {
+			dig := doubleDigitsDecimal
+			value = uint(val)
+			digIndex := (value - 100) << 1
+			var builder strings.Builder
+			builder.WriteByte('1')
+			builder.WriteByte(dig[digIndex])
+			builder.WriteByte(dig[digIndex+1])
+			return builder.String()
+		} else if val < 300 {
+			dig := doubleDigitsDecimal
+			value = uint(val)
+			digIndex := (value - 200) << 1
+			var builder strings.Builder
+			builder.WriteByte('2')
+			builder.WriteByte(dig[digIndex])
+			builder.WriteByte(dig[digIndex+1])
+			return builder.String()
+		} else if val < 1000 {
+			length = 3
+			value = uint(val)
+		} else {
+			return strconv.FormatUint(val, 10)
+		}
+
+		chars := make([]byte, length)
+		dig := digits
+
+		for value != 0 {
+			length--
+			//value == quotient * 10 + remainder
+			quotient = (value * 0xcccd) >> 19                       //floor of n/10 is floor of ((0xcccd * n / (2 ^ 16)) / (2 ^ 3))
+			remainder = value - ((quotient << 3) + (quotient << 1)) //multiplication by 2 added to multiplication by 2 ^ 3 is multiplication by 2 + 8 = 10
+			chars[length] = dig[remainder]
+			value = quotient
+		}
+
+		return string(chars)
+	} else if radix == 16 {
+		if val < 0x10 {
+			return digits[val : val+1]
+		}
+
+		var builder strings.Builder
+
+		if val < 0x100 {
+			length = 2
+			value = uint(val)
+		} else if val < 0x1000 {
+			length = 3
+			value = uint(val)
+		} else if val < 0x10000 {
+			if val == 0xffff {
+				return "ffff"
+			}
+			value = uint(val)
+			length = 4
+		} else {
+			return strconv.FormatUint(val, 16)
+		}
+
+		dig := digits
+		builder.Grow(length)
+		shift := uint(12)
+
+		for {
+			index := (value >> shift) & 15
+			if index != 0 { // index 0 is digit "0", so no need to write a leading zero
+				builder.WriteByte(dig[index])
+				shift -= 4
+				for shift > 0 {
+					builder.WriteByte(dig[(value>>shift)&15])
+					shift -= 4
+				}
+				break
+			}
+			shift -= 4
+			if shift == 0 {
+				break
+			}
+		}
+		builder.WriteByte(dig[value&15])
+		return builder.String()
+	}
+	return strconv.FormatUint(val, radix)
+}
