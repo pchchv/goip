@@ -388,6 +388,40 @@ func (seg *IPv4AddressSegment) WithoutPrefixLen() *IPv4AddressSegment {
 	return seg.withoutPrefixLen().ToIPv4()
 }
 
+// ReverseBits returns a segment with the bits reversed.
+//
+// If this segment represents a range of values that cannot be reversed, then this returns an error.
+//
+// To be reversible, a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+// Otherwise the result is not contiguous and thus cannot be represented by a sequential range of values.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (seg *IPv4AddressSegment) ReverseBits(_ bool) (res *IPv4AddressSegment, err address_error.IncompatibleAddressError) {
+	if seg.divisionValues == nil {
+		res = seg
+		return
+	}
+
+	if seg.isMultiple() {
+		if isReversible := seg.isReversibleRange(false); isReversible {
+			res = seg.WithoutPrefixLen()
+			return
+		}
+		err = &incompatibleAddressError{addressError{key: "ipaddress.error.reverseRange"}}
+		return
+	}
+
+	oldVal := IPv4SegInt(seg.GetSegmentValue())
+	val := IPv4SegInt(reverseUint8(uint8(oldVal)))
+	if oldVal == val && !seg.isPrefixed() {
+		res = seg
+	} else {
+		res = NewIPv4Segment(val)
+	}
+
+	return
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
