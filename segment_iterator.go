@@ -118,6 +118,10 @@ func (iter macSegmentIterator) Next() *MACAddressSegment {
 	return iter.Iterator.Next().ToMAC()
 }
 
+type ipv4SegmentIterator struct {
+	Iterator[*AddressSegment]
+}
+
 func segIterator(
 	original *addressSegmentInternal,
 	originalLower,
