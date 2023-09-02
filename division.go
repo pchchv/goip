@@ -356,6 +356,20 @@ func (div *addressDivisionInternal) getDefaultLowerString() string {
 	return toDefaultString(div.getDivisionValue(), div.getDefaultTextualRadix())
 }
 
+func (div *addressDivisionInternal) getStringFromStringer(stringer func() string) string {
+	if div.divisionValues != nil {
+		if cache := div.getCache(); cache != nil {
+			return cacheStr(&cache.cachedString, stringer)
+		}
+	}
+	return stringer()
+}
+
+// A simple string using just the lower and upper values and the default radix, separated by the default range character.
+func (div *addressDivisionInternal) getDefaultRangeString() string {
+	return div.getDefaultRangeStringVals(div.getDivisionValue(), div.getUpperDivisionValue(), div.getDefaultTextualRadix())
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
