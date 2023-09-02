@@ -446,6 +446,28 @@ func (div *AddressDivision) ToSegmentBase() *AddressSegment {
 	return nil
 }
 
+// ToIPv4 converts to an IPv4AddressSegment if this division originated as an IPv4 segment.
+// If not, ToIPv4 returns nil.
+//
+// ToIPv4 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (div *AddressDivision) ToIPv4() *IPv4AddressSegment {
+	if div.IsIPv4() {
+		return (*IPv4AddressSegment)(unsafe.Pointer(div))
+	}
+	return nil
+}
+
+// ToIPv6 converts to an IPv6AddressSegment if this division originated as an IPv6 segment.
+// If not, ToIPv6 returns nil.
+//
+// ToIPv6 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (div *AddressDivision) ToIPv6() *IPv6AddressSegment {
+	if div.IsIPv6() {
+		return (*IPv6AddressSegment)(unsafe.Pointer(div))
+	}
+	return nil
+}
+
 func testRange(lowerValue, upperValue, finalUpperValue, networkMask, hostMask DivInt) bool {
 	return lowerValue == (lowerValue&networkMask) && finalUpperValue == (upperValue|hostMask)
 }
