@@ -645,6 +645,28 @@ func (seg *AddressSegment) ToMAC() *MACAddressSegment {
 	return nil
 }
 
+// ToIPv4 converts to an IPv4AddressSegment if this segment originated as an IPv4 segment.
+// If not, ToIPv4 returns nil.
+//
+// ToIPv4 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (seg *AddressSegment) ToIPv4() *IPv4AddressSegment {
+	if seg.IsIPv4() {
+		return (*IPv4AddressSegment)(unsafe.Pointer(seg))
+	}
+	return nil
+}
+
+// ToIPv6 converts to an IPv6AddressSegment if this segment originated as an IPv6 segment.
+// If not, ToIPv6 returns nil.
+//
+// ToIPv6 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (seg *AddressSegment) ToIPv6() *IPv6AddressSegment {
+	if seg.IsIPv6() {
+		return (*IPv6AddressSegment)(unsafe.Pointer(seg))
+	}
+	return nil
+}
+
 func segsSame(onePref, twoPref PrefixLen, oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return onePref.Equal(twoPref) &&
 		oneVal == twoVal && oneUpperVal == twoUpperVal
