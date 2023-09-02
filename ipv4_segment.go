@@ -303,6 +303,18 @@ func (seg *IPv4AddressSegment) ToSegmentBase() *AddressSegment {
 	return seg.ToIP().ToSegmentBase()
 }
 
+// GetLower returns a segment representing just the lowest value in the range,
+// which will be the same segment if it represents a single value.
+func (seg *IPv4AddressSegment) GetLower() *IPv4AddressSegment {
+	return seg.init().getLower().ToIPv4()
+}
+
+// GetUpper returns a segment representing just the highest value in the range,
+// which will be the same segment if it represents a single value.
+func (seg *IPv4AddressSegment) GetUpper() *IPv4AddressSegment {
+	return seg.init().getUpper().ToIPv4()
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
