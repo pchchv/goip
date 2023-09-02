@@ -327,6 +327,18 @@ func (seg *IPv4AddressSegment) ToNetworkSegment(segmentPrefixLength PrefixLen) *
 	return seg.init().toNetworkDivision(segmentPrefixLength, false).ToIPv4()
 }
 
+// ToPrefixedHostSegment returns a segment with the host bits matching this segment but the network bits converted to zero.
+// The new segment will be assigned the given prefix length.
+func (seg *IPv4AddressSegment) ToPrefixedHostSegment(segmentPrefixLength PrefixLen) *IPv4AddressSegment {
+	return seg.init().toPrefixedHostDivision(segmentPrefixLength).ToIPv4()
+}
+
+// ToHostSegment returns a segment with the host bits matching this segment but the network bits converted to zero.
+// The new segment will have no assigned prefix length.
+func (seg *IPv4AddressSegment) ToHostSegment(segmentPrefixLength PrefixLen) *IPv4AddressSegment {
+	return seg.init().toHostDivision(segmentPrefixLength, false).ToIPv4()
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
