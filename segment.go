@@ -529,6 +529,13 @@ func (seg *addressSegmentInternal) prefixedIterator(segPrefLen BitCount) Iterato
 	return seg.segmentIterator(cacheBitCount(segPrefLen), true, false)
 }
 
+func (seg *addressSegmentInternal) withoutPrefixLen() *AddressSegment {
+	if seg.isPrefixed() {
+		return createAddressDivision(seg.derivePrefixed(nil)).ToSegmentBase()
+	}
+	return seg.toAddressSegment()
+}
+
 // AddressSegment represents a single address segment.
 // A segment contains a single value or range of sequential values and has an assigned bit length.
 // Segments are 1 byte for Ipv4, two bytes for Ipv6, and 1 byte for MAC addresses.
