@@ -351,6 +351,11 @@ func (div *addressDivisionInternal) matchesSegment() bool {
 	return div.GetBitCount() <= SegIntSize
 }
 
+// A simple string using just the lower value and the default radix.
+func (div *addressDivisionInternal) getDefaultLowerString() string {
+	return toDefaultString(div.getDivisionValue(), div.getDefaultTextualRadix())
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
