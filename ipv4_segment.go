@@ -315,6 +315,18 @@ func (seg *IPv4AddressSegment) GetUpper() *IPv4AddressSegment {
 	return seg.init().getUpper().ToIPv4()
 }
 
+// ToPrefixedNetworkSegment returns a segment with the network bits matching this segment but the host bits converted to zero.
+// The new segment will be assigned the given prefix length.
+func (seg *IPv4AddressSegment) ToPrefixedNetworkSegment(segmentPrefixLength PrefixLen) *IPv4AddressSegment {
+	return seg.init().toPrefixedNetworkDivision(segmentPrefixLength).ToIPv4()
+}
+
+// ToNetworkSegment returns a segment with the network bits matching this segment but the host bits converted to zero.
+// The new segment will have no assigned prefix length.
+func (seg *IPv4AddressSegment) ToNetworkSegment(segmentPrefixLength PrefixLen) *IPv4AddressSegment {
+	return seg.init().toNetworkDivision(segmentPrefixLength, false).ToIPv4()
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
