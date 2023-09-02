@@ -122,6 +122,10 @@ type ipv4SegmentIterator struct {
 	Iterator[*AddressSegment]
 }
 
+func (iter ipv4SegmentIterator) Next() *IPv4AddressSegment {
+	return iter.Iterator.Next().ToIPv4()
+}
+
 func segIterator(
 	original *addressSegmentInternal,
 	originalLower,
