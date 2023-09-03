@@ -495,6 +495,17 @@ func (div *AddressDivision) ToIPv6() *IPv6AddressSegment {
 	return nil
 }
 
+// ToIP converts to an IPAddressSegment if this division originated as an IPv4 or IPv6 segment, or an implicitly zero-valued IP segment.
+// If not, ToIP returns nil.
+//
+// ToIP can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (div *AddressDivision) ToIP() *IPAddressSegment {
+	if div.IsIP() {
+		return (*IPAddressSegment)(unsafe.Pointer(div))
+	}
+	return nil
+}
+
 func testRange(lowerValue, upperValue, finalUpperValue, networkMask, hostMask DivInt) bool {
 	return lowerValue == (lowerValue&networkMask) && finalUpperValue == (upperValue|hostMask)
 }
