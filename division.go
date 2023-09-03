@@ -378,6 +378,17 @@ func (div *addressDivisionInternal) getDivString() string {
 	}
 }
 
+func (div *addressDivisionInternal) getWildcardString() string {
+	if seg := div.toAddressDivision().ToIP(); seg != nil {
+		return seg.GetWildcardString()
+	}
+	return div.getDivString() // same string as GetString() when not an IP segment
+}
+
+func (div *addressDivisionInternal) getLowerString(radix int, uppercase bool, appendable *strings.Builder) {
+	toUnsignedStringCased(div.getDivisionValue(), radix, 0, uppercase, appendable)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
