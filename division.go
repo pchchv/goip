@@ -3,6 +3,7 @@ package goip
 import (
 	"math/big"
 	"math/bits"
+	"strings"
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
@@ -387,6 +388,14 @@ func (div *addressDivisionInternal) getWildcardString() string {
 
 func (div *addressDivisionInternal) getLowerString(radix int, uppercase bool, appendable *strings.Builder) {
 	toUnsignedStringCased(div.getDivisionValue(), radix, 0, uppercase, appendable)
+}
+
+func (div *addressDivisionInternal) getLowerStringLength(radix int) int {
+	return toUnsignedStringLength(div.getDivisionValue(), radix)
+}
+
+func (div *addressDivisionInternal) getLowerStringChopped(radix int, choppedDigits int, uppercase bool, appendable *strings.Builder) {
+	toUnsignedStringCased(div.getDivisionValue(), radix, choppedDigits, uppercase, appendable)
 }
 
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
