@@ -475,3 +475,16 @@ func (seg *IPAddressSegment) ToSegmentBase() *AddressSegment {
 func (seg *IPAddressSegment) ToDiv() *AddressDivision {
 	return seg.ToSegmentBase().ToDiv()
 }
+
+// GetWildcardString produces a normalized string to represent the segment, favouring wildcards and range characters while ignoring any network prefix length.
+// The explicit range of a range-valued segment will be printed.
+//
+// The string returned is useful in the context of creating strings for address sections or full addresses,
+// in which case the radix and the bit-length can be deduced from the context.
+// The String method produces strings more appropriate when no context is provided.
+func (seg *IPAddressSegment) GetWildcardString() string {
+	if seg == nil {
+		return nilString()
+	}
+	return seg.getWildcardString()
+}
