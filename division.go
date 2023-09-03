@@ -506,6 +506,19 @@ func (div *AddressDivision) ToIP() *IPAddressSegment {
 	return nil
 }
 
+// GetWildcardString produces a normalized string to represent the segment, favouring wildcards and range characters regardless of any network prefix length.
+// The explicit range of a range-valued segment will be printed.
+//
+// The string returned is useful in the context of creating strings for address sections or full addresses,
+// in which case the radix and the bit-length can be deduced from the context.
+// The String method produces strings more appropriate when no context is provided.
+func (div *AddressDivision) GetWildcardString() string {
+	if div == nil {
+		return nilString()
+	}
+	return div.getWildcardString()
+}
+
 func testRange(lowerValue, upperValue, finalUpperValue, networkMask, hostMask DivInt) bool {
 	return lowerValue == (lowerValue&networkMask) && finalUpperValue == (upperValue|hostMask)
 }
