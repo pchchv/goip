@@ -3,6 +3,7 @@ package goip
 import (
 	"fmt"
 	"math/big"
+	"math/bits"
 )
 
 // DefaultSeqRangeSeparator is the low to high value separator used when creating strings for IP ranges.
@@ -71,4 +72,40 @@ type SequentialRange[T SequentialRangeConstraint[T]] struct {
 	upper      T
 	isMultiple bool // set on construction, even for zero values
 	cache      *rangeCache
+}
+
+// getMinPrefixLenForBlock returns the smallest prefix length such that the
+// upper and lower values span the block of values for that prefix length.
+// The given bit count indicates the bits that matter in the two values, the remaining bits are ignored.
+//
+// If the entire range can be described this way, then this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// There may be a single prefix, or multiple possible prefix values in this item for the returned prefix length.
+// Use getPrefixLenForSingleBlock to avoid the case of multiple prefix values.
+func getMinPrefixLenForBlock(lower, upper DivInt, bitCount BitCount) BitCount {
+	if lower == upper {
+		return bitCount
+	} else if lower == 0 {
+		maxValue := ^(^DivInt(0) << uint(bitCount))
+		if upper == maxValue {
+			return 0
+		}
+	}
+
+	result := bitCount
+	lowerZeros := bits.TrailingZeros64(lower)
+	if lowerZeros != 0 {
+		upperOnes := bits.TrailingZeros64(^upper)
+		if upperOnes != 0 {
+			var prefixedBitCount int
+			if lowerZeros < upperOnes {
+				prefixedBitCount = lowerZeros
+			} else {
+				prefixedBitCount = upperOnes
+			}
+			result -= BitCount(prefixedBitCount)
+		}
+	}
+
+	return result
 }
