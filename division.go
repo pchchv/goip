@@ -410,6 +410,14 @@ func (div *addressDivisionInternal) GetMinPrefixLenForBlock() BitCount {
 	return getMinPrefixLenForBlock(div.getDivisionValue(), div.getUpperDivisionValue(), div.GetBitCount())
 }
 
+func (div *addressDivisionInternal) getUpperString(radix int, uppercase bool, appendable *strings.Builder) {
+	toUnsignedStringCased(div.getUpperDivisionValue(), radix, 0, uppercase, appendable)
+}
+
+func (div *addressDivisionInternal) getUpperStringLength(radix int) int {
+	return toUnsignedStringLength(div.getUpperDivisionValue(), radix)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
