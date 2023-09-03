@@ -398,6 +398,18 @@ func (div *addressDivisionInternal) getLowerStringChopped(radix int, choppedDigi
 	toUnsignedStringCased(div.getDivisionValue(), radix, choppedDigits, uppercase, appendable)
 }
 
+// GetMinPrefixLenForBlock returns the smallest prefix length such that this division includes the block of all values for that prefix length.
+//
+// If the entire range can be described this way, then this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// There may be a single prefix, or multiple possible prefix values in this item for the returned prefix length.
+// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values.
+//
+// If this division represents a single value, this returns the bit count.
+func (div *addressDivisionInternal) GetMinPrefixLenForBlock() BitCount {
+	return getMinPrefixLenForBlock(div.getDivisionValue(), div.getUpperDivisionValue(), div.GetBitCount())
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
