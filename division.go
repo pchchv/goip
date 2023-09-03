@@ -370,6 +370,14 @@ func (div *addressDivisionInternal) getDefaultRangeString() string {
 	return div.getDefaultRangeStringVals(div.getDivisionValue(), div.getUpperDivisionValue(), div.getDefaultTextualRadix())
 }
 
+func (div *addressDivisionInternal) getDivString() string {
+	if !div.isMultiple() {
+		return div.getStringFromStringer(div.getDefaultLowerString)
+	} else {
+		return div.getStringFromStringer(div.getDefaultRangeString)
+	}
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
