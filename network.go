@@ -45,3 +45,5 @@ type ipv6AddressNetwork struct {
 type IPv6AddressNetwork struct {
 	*ipv6AddressNetwork
 }
+
+type ipv4AddressCreator struct{}
