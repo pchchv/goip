@@ -559,6 +559,22 @@ func (div *AddressDivision) GetWildcardString() string {
 	return div.getWildcardString()
 }
 
+// CompareSize compares the counts of two items, the number of individual values within.
+//
+// Rather than calculating counts with GetCount, there can be more efficient ways of determining whether one represents more individual values than another.
+//
+// CompareSize returns a positive integer if this division has a larger count than the one given, zero if they are the same, or a negative integer if the other has a larger count.
+func (div *AddressDivision) CompareSize(other AddressItem) int {
+	if div == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// we have size 0, other has size >= 1
+		return -1
+	}
+	return div.compareSize(other)
+}
+
 func testRange(lowerValue, upperValue, finalUpperValue, networkMask, hostMask DivInt) bool {
 	return lowerValue == (lowerValue&networkMask) && finalUpperValue == (upperValue|hostMask)
 }
