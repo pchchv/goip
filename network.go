@@ -80,3 +80,11 @@ func (creator *ipv4AddressCreator) createRangeSegmentInternal(lower, upper SegIn
 func (creator *ipv4AddressCreator) createPrefixSegment(value SegInt, segmentPrefixLength PrefixLen) *AddressDivision {
 	return NewIPv4PrefixedSegment(IPv4SegInt(value), segmentPrefixLength).ToDiv()
 }
+
+func (creator *ipv4AddressCreator) createPrefixedSectionInternal(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen) *IPAddressSection {
+	return newPrefixedIPv4SectionParsed(segments, isMultiple, prefixLength, false).ToIP()
+}
+
+func (creator *ipv4AddressCreator) createPrefixedSectionInternalSingle(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen) *IPAddressSection {
+	return newPrefixedIPv4SectionParsed(segments, isMultiple, prefixLength, true).ToIP()
+}
