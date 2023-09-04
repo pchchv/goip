@@ -55,3 +55,15 @@ func (creator *ipv4AddressCreator) getMaxValuePerSegment() SegInt {
 func (creator *ipv4AddressCreator) createSegment(lower, upper SegInt, segmentPrefixLength PrefixLen) *AddressDivision {
 	return NewIPv4RangePrefixedSegment(IPv4SegInt(lower), IPv4SegInt(upper), segmentPrefixLength).ToDiv()
 }
+
+func (creator *ipv4AddressCreator) createRangeSegment(lower, upper SegInt) *AddressDivision {
+	return NewIPv4RangeSegment(IPv4SegInt(lower), IPv4SegInt(upper)).ToDiv()
+}
+
+func (creator *ipv4AddressCreator) createSegmentInternal(value SegInt, segmentPrefixLength PrefixLen, addressStr string,
+	originalVal SegInt, isStandardString bool, lowerStringStartIndex, lowerStringEndIndex int) *AddressDivision {
+	seg := NewIPv4PrefixedSegment(IPv4SegInt(value), segmentPrefixLength)
+	seg.setStandardString(addressStr, isStandardString, lowerStringStartIndex, lowerStringEndIndex, originalVal)
+	seg.setWildcardString(addressStr, isStandardString, lowerStringStartIndex, lowerStringEndIndex, originalVal)
+	return seg.toAddressDivision()
+}
