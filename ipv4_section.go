@@ -41,3 +41,13 @@ func createIPv4Section(segments []*AddressDivision) *IPv4AddressSection {
 		},
 	}
 }
+
+// this one is used by that parsing code when there are prefix lengths to be applied
+func newPrefixedIPv4SectionParsed(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen, singleOnly bool) (res *IPv4AddressSection) {
+	res = createIPv4Section(segments)
+	res.isMult = isMultiple
+	if prefixLength != nil {
+		assignPrefix(prefixLength, segments, res.ToIP(), singleOnly, false, BitCount(len(segments)<<ipv4BitsToSegmentBitshift))
+	}
+	return
+}
