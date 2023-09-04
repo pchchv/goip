@@ -5,3 +5,24 @@ package goip
 type IPv4AddressSection struct {
 	ipAddressSectionInternal
 }
+
+func createIPv4Section(segments []*AddressDivision) *IPv4AddressSection {
+	return &IPv4AddressSection{
+		ipAddressSectionInternal{
+			addressSectionInternal{
+				addressDivisionGroupingInternal{
+					addressDivisionGroupingBase: addressDivisionGroupingBase{
+						divisions: standardDivArray(segments),
+						addrType:  ipv4Type,
+						cache: &valueCache{
+							stringCache: stringCache{
+								ipStringCache:   &ipStringCache{},
+								ipv4StringCache: &ipv4StringCache{},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
