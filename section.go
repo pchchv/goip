@@ -1,6 +1,10 @@
 package goip
 
-import "unsafe"
+import (
+	"unsafe"
+
+	"github.com/pchchv/goip/address_error"
+)
 
 var zeroSection = createSection(zeroDivs, nil, zeroType)
 
@@ -448,4 +452,43 @@ func createSectionMultiple(segments []*AddressDivision, prefixLength PrefixLen, 
 	result := createSection(segments, prefixLength, addrType)
 	result.isMult = isMultiple
 	return result
+}
+
+func toSegments(
+	bytes []byte,
+	segmentCount int,
+	bytesPerSegment int,
+	bitsPerSegment BitCount,
+	creator addressSegmentCreator,
+	assignedPrefixLength PrefixLen) (segments []*AddressDivision, err address_error.AddressValueError) {
+
+	segments = createSegmentArray(segmentCount)
+	byteIndex, segmentIndex := len(bytes), segmentCount-1
+	for ; segmentIndex >= 0; segmentIndex-- {
+		var value SegInt
+		k := byteIndex - bytesPerSegment
+		if k < 0 {
+			k = 0
+		}
+		for j := k; j < byteIndex; j++ {
+			byteValue := bytes[j]
+			value <<= 8
+			value |= SegInt(byteValue)
+		}
+		byteIndex = k
+		segmentPrefixLength := getSegmentPrefixLength(bitsPerSegment, assignedPrefixLength, segmentIndex)
+		seg := creator.createSegment(value, value, segmentPrefixLength)
+		segments[segmentIndex] = seg
+	}
+	// any remaining bytes should be zero
+	for byteIndex--; byteIndex >= 0; byteIndex-- {
+		if bytes[byteIndex] != 0 {
+			err = &addressValueError{
+				addressError: addressError{key: "ipaddress.error.exceeds.size"},
+				val:          int(bytes[byteIndex]),
+			}
+			break
+		}
+	}
+	return
 }
