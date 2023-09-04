@@ -47,3 +47,11 @@ type IPv6AddressNetwork struct {
 }
 
 type ipv4AddressCreator struct{}
+
+func (creator *ipv4AddressCreator) getMaxValuePerSegment() SegInt {
+	return IPv4MaxValuePerSegment
+}
+
+func (creator *ipv4AddressCreator) createSegment(lower, upper SegInt, segmentPrefixLength PrefixLen) *AddressDivision {
+	return NewIPv4RangePrefixedSegment(IPv4SegInt(lower), IPv4SegInt(upper), segmentPrefixLength).ToDiv()
+}
