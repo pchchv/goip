@@ -49,3 +49,46 @@ func (creator *ipv6AddressCreator) createPrefixedSectionInternal(segments []*Add
 func (creator *ipv6AddressCreator) createPrefixedSectionInternalSingle(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen) *IPAddressSection {
 	return newPrefixedIPv6SectionParsed(segments, isMultiple, prefixLength, true).ToIP()
 }
+
+type ipv4AddressCreator struct{}
+
+func (creator *ipv4AddressCreator) getMaxValuePerSegment() SegInt {
+	return IPv4MaxValuePerSegment
+}
+
+func (creator *ipv4AddressCreator) createSegment(lower, upper SegInt, segmentPrefixLength PrefixLen) *AddressDivision {
+	return NewIPv4RangePrefixedSegment(IPv4SegInt(lower), IPv4SegInt(upper), segmentPrefixLength).ToDiv()
+}
+
+func (creator *ipv4AddressCreator) createRangeSegment(lower, upper SegInt) *AddressDivision {
+	return NewIPv4RangeSegment(IPv4SegInt(lower), IPv4SegInt(upper)).ToDiv()
+}
+
+func (creator *ipv4AddressCreator) createSegmentInternal(value SegInt, segmentPrefixLength PrefixLen, addressStr string,
+	originalVal SegInt, isStandardString bool, lowerStringStartIndex, lowerStringEndIndex int) *AddressDivision {
+	seg := NewIPv4PrefixedSegment(IPv4SegInt(value), segmentPrefixLength)
+	seg.setStandardString(addressStr, isStandardString, lowerStringStartIndex, lowerStringEndIndex, originalVal)
+	seg.setWildcardString(addressStr, isStandardString, lowerStringStartIndex, lowerStringEndIndex, originalVal)
+	return seg.toAddressDivision()
+}
+
+func (creator *ipv4AddressCreator) createRangeSegmentInternal(lower, upper SegInt, segmentPrefixLength PrefixLen, addressStr string,
+	originalLower, originalUpper SegInt, isStandardString, isStandardRangeString bool,
+	lowerStringStartIndex, lowerStringEndIndex, upperStringEndIndex int) *AddressDivision {
+	seg := NewIPv4RangePrefixedSegment(IPv4SegInt(lower), IPv4SegInt(upper), segmentPrefixLength)
+	seg.setRangeStandardString(addressStr, isStandardString, isStandardRangeString, lowerStringStartIndex, lowerStringEndIndex, upperStringEndIndex, originalLower, originalUpper)
+	seg.setRangeWildcardString(addressStr, isStandardRangeString, lowerStringStartIndex, upperStringEndIndex, originalLower, originalUpper)
+	return seg.ToDiv()
+}
+
+func (creator *ipv4AddressCreator) createPrefixSegment(value SegInt, segmentPrefixLength PrefixLen) *AddressDivision {
+	return NewIPv4PrefixedSegment(IPv4SegInt(value), segmentPrefixLength).ToDiv()
+}
+
+func (creator *ipv4AddressCreator) createPrefixedSectionInternal(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen) *IPAddressSection {
+	return newPrefixedIPv4SectionParsed(segments, isMultiple, prefixLength, false).ToIP()
+}
+
+func (creator *ipv4AddressCreator) createPrefixedSectionInternalSingle(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen) *IPAddressSection {
+	return newPrefixedIPv4SectionParsed(segments, isMultiple, prefixLength, true).ToIP()
+}
