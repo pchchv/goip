@@ -51,3 +51,9 @@ func newPrefixedIPv4SectionParsed(segments []*AddressDivision, isMultiple bool, 
 	}
 	return
 }
+
+func newIPv4SectionParsed(segments []*AddressDivision, isMultiple bool) (res *IPv4AddressSection) {
+	res = createIPv4Section(segments)
+	res.isMult = isMultiple
+	return
+}
