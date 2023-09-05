@@ -101,3 +101,14 @@ func (creator *ipv4AddressCreator) createAddressInternalFromBytes(bytes []byte, 
 	addr, _ := NewIPv4AddressFromBytes(bytes)
 	return addr.ToIP()
 }
+
+func (creator *ipv4AddressCreator) createAddressInternalFromSection(section *IPAddressSection, _ Zone, originator HostIdentifierString) *IPAddress {
+	res := newIPv4Address(section.ToIPv4()).ToIP()
+	if originator != nil {
+		cache := res.cache
+		if cache != nil {
+			cache.identifierStr = &identifierStr{originator}
+		}
+	}
+	return res
+}
