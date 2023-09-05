@@ -870,3 +870,11 @@ func toNormalizedIPZonedString(opts address_string.IPStringOptions, section Addr
 func toNormalizedIPString(opts address_string.IPStringOptions, section AddressDivisionSeries) string {
 	return toIPParams(opts).toString(section)
 }
+
+func toNormalizedZonedString(opts address_string.StringOptions, section AddressDivisionSeries, zone Zone) string {
+	return toParams(opts).toZonedString(section, zone)
+}
+
+func toNormalizedString(opts address_string.StringOptions, section AddressDivisionSeries) string {
+	return toParams(opts).toString(section)
+}
