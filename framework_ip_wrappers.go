@@ -293,3 +293,11 @@ type ExtendedIPSegmentSeries interface {
 type WrappedIPAddressSection struct {
 	*IPAddressSection
 }
+
+func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
+	return WrappedIPAddress{addr}
+}
+
+func wrapIPSection(section *IPAddressSection) WrappedIPAddressSection {
+	return WrappedIPAddressSection{section}
+}
