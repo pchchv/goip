@@ -178,6 +178,28 @@ func (section *IPAddressSection) IsIPv6() bool {
 	return section != nil && section.matchesIPv6SectionType()
 }
 
+// ToIPv4 converts to an IPv4AddressSection if this section originated as an IPv4 section.
+// If not, ToIPv4 returns nil.
+//
+// ToIPv4 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (section *IPAddressSection) ToIPv4() *IPv4AddressSection {
+	if section.IsIPv4() {
+		return (*IPv4AddressSection)(section)
+	}
+	return nil
+}
+
+// ToIPv6 converts to an IPv6AddressSection if this section originated as an IPv6 section.
+// If not, ToIPv6 returns nil.
+//
+// ToIPv6 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (section *IPAddressSection) ToIPv6() *IPv6AddressSection {
+	if section.IsIPv6() {
+		return (*IPv6AddressSection)(section)
+	}
+	return nil
+}
+
 // Starting from the first host bit according to the prefix,
 // if the section is a sequence of zeros in both low and high values,
 // followed by a sequence where low values are zero and high values are 1,
