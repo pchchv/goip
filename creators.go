@@ -112,3 +112,14 @@ func (creator *ipv4AddressCreator) createAddressInternalFromSection(section *IPA
 	}
 	return res
 }
+
+func (creator *ipv4AddressCreator) createAddressInternal(section *AddressSection, originator HostIdentifierString) *Address {
+	res := newIPv4Address(section.ToIPv4()).ToAddressBase()
+	if originator != nil {
+		cache := res.cache
+		if cache != nil {
+			cache.identifierStr = &identifierStr{originator}
+		}
+	}
+	return res
+}
