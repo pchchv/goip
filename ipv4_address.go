@@ -77,6 +77,11 @@ func (addr *IPv4Address) Wrap() WrappedIPAddress {
 	return wrapIPAddress(addr.ToIP())
 }
 
+// GetSection returns the backing section for this address or subnet, comprising all segments.
+func (addr *IPv4Address) GetSection() *IPv4AddressSection {
+	return addr.init().section.ToIPv4()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
