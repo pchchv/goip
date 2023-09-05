@@ -15,6 +15,8 @@ const (
 	IPv6 IPVersion = "IPv6"
 )
 
+var zeroIPAddr = createIPAddress(zeroSection, NoZone)
+
 // IPAddress represents an IP address or subnet, either IPv4 or IPv6 (except zero IPAddress, which is neither).
 // An IP address consists of segments that have a range of values and may additionally have an associated prefix length.
 // An IPAddress with a null value has no segments, neither IPv4 nor IPv6,
@@ -162,4 +164,16 @@ func (addr *ipAddressInternal) GetBlockMaskPrefixLen(network bool) PrefixLen {
 		return nil
 	}
 	return section.ToIP().GetBlockMaskPrefixLen(network)
+}
+
+func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
+	return &IPAddress{
+		ipAddressInternal{
+			addressInternal{
+				section: section,
+				zone:    zone,
+				cache:   &addressCache{},
+			},
+		},
+	}
 }
