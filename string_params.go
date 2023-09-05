@@ -737,6 +737,14 @@ func (writer stringWriter) getStandardString(segmentIndex int, params addressSeg
 	return writer.getRangeString(segmentIndex, params, appendable)
 }
 
+// Each StringParams has settings to write exactly one type of IP address part string.
+type ipAddressStringParams struct {
+	addressStringParams
+	wildcardOption address_string.WildcardOption
+	expandSeg      []int //the same as expandSegments but for each segment
+	addressSuffix  string
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
