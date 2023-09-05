@@ -27,12 +27,30 @@ type IPAddress struct {
 	ipAddressInternal
 }
 
+func (addr *IPAddress) init() *IPAddress {
+	if addr.section == nil {
+		return zeroIPAddr // this has a zero section
+	}
+	return addr
+}
+
 // ToIP is an identity method.
 //
 // ToIP can be called with a nil receiver,
 // enabling you to chain this method with methods that might return a nil pointer.
 func (addr *IPAddress) ToIP() *IPAddress {
 	return addr
+}
+
+// ToAddressBase converts to an Address, a polymorphic type usable with all addresses and subnets.
+// Afterwards, you can convert back with ToIP.
+//
+// ToAddressBase can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (addr *IPAddress) ToAddressBase() *Address {
+	if addr != nil {
+		addr = addr.init()
+	}
+	return (*Address)(unsafe.Pointer(addr))
 }
 
 // IPVersion is the version type used by IP address types.
