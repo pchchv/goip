@@ -92,3 +92,12 @@ func (creator *ipv4AddressCreator) createPrefixedSectionInternal(segments []*Add
 func (creator *ipv4AddressCreator) createPrefixedSectionInternalSingle(segments []*AddressDivision, isMultiple bool, prefixLength PrefixLen) *IPAddressSection {
 	return newPrefixedIPv4SectionParsed(segments, isMultiple, prefixLength, true).ToIP()
 }
+
+func (creator *ipv4AddressCreator) createSectionInternal(segments []*AddressDivision, isMultiple bool) *AddressSection {
+	return newIPv4SectionParsed(segments, isMultiple).ToSectionBase()
+}
+
+func (creator *ipv4AddressCreator) createAddressInternalFromBytes(bytes []byte, _ Zone) *IPAddress {
+	addr, _ := NewIPv4AddressFromBytes(bytes)
+	return addr.ToIP()
+}
