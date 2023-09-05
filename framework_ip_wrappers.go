@@ -288,3 +288,8 @@ type ExtendedIPSegmentSeries interface {
 	// ToCustomString creates a customized string from this series according to the given string option parameters.
 	ToCustomString(stringOptions address_string.IPStringOptions) string
 }
+
+// WrappedIPAddressSection is the implementation of ExtendedIPSegmentSeries for IP address sections.
+type WrappedIPAddressSection struct {
+	*IPAddressSection
+}
