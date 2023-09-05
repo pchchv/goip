@@ -9,3 +9,11 @@ type WrappedAddress struct {
 type WrappedAddressSection struct {
 	*AddressSection
 }
+
+func wrapAddress(addr *Address) WrappedAddress {
+	return WrappedAddress{addr}
+}
+
+func wrapSection(section *AddressSection) WrappedAddressSection {
+	return WrappedAddressSection{section}
+}
