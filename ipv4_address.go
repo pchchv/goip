@@ -52,6 +52,25 @@ func (addr *IPv4Address) ToPrefixBlockLen(prefLen BitCount) *IPv4Address {
 	return addr.init().toPrefixBlockLen(prefLen).ToIPv4()
 }
 
+// ToIP converts to an IPAddress, a polymorphic type usable with all IP addresses and subnets.
+// Afterwards, you can convert back with ToIPv4.
+//
+// ToIP can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (addr *IPv4Address) ToIP() *IPAddress {
+	if addr != nil {
+		addr = addr.init()
+	}
+	return (*IPAddress)(addr)
+}
+
+// Wrap wraps this IP address, returning a WrappedIPAddress, an implementation of ExtendedIPSegmentSeries,
+// which can be used to write code that works with both IP addresses and IP address sections.
+// Wrap can be called with a nil receiver, wrapping a nil address.
+func (addr *IPv4Address) Wrap() WrappedIPAddress {
+	return wrapIPAddress(addr.ToIP())
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
