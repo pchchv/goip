@@ -16,6 +16,8 @@ const (
 	ipv4BitsToSegmentBitshift = 3
 )
 
+var zeroIPv4 = initZeroIPv4()
+
 // IPv4Address is an IPv4 address, or a subnet of multiple IPv4 addresses.
 // An IPv4 address is composed of 4 1-byte segments and can optionally have an associated prefix length.
 // Each segment can represent a single value or a range of values.
@@ -28,4 +30,15 @@ const (
 // You can also use one of the multiple constructors for [IPAddress] like NewIPAddress and then convert using ToIPv4.
 type IPv4Address struct {
 	ipAddressInternal
+}
+
+func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
+	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
+}
+
+func initZeroIPv4() *IPv4Address {
+	div := zeroIPv4Seg
+	segs := []*IPv4AddressSegment{div, div, div, div}
+	section := NewIPv4Section(segs)
+	return newIPv4Address(section)
 }
