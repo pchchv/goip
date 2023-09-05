@@ -166,6 +166,18 @@ func (section *IPAddressSection) ToSectionBase() *AddressSection {
 	return (*AddressSection)(unsafe.Pointer(section))
 }
 
+// IsIPv4 returns true if this address section originated as an IPv4 section.
+// If so, use ToIPv4 to convert back to the IPv4-specific type.
+func (section *IPAddressSection) IsIPv4() bool { // we allow nil receivers to allow this to be called following a failed converion like ToIP()
+	return section != nil && section.matchesIPv4SectionType()
+}
+
+// IsIPv6 returns true if this address section originated as an IPv6 section.
+// If so, use ToIPv6 to convert back to the IPv6-specific type.
+func (section *IPAddressSection) IsIPv6() bool {
+	return section != nil && section.matchesIPv6SectionType()
+}
+
 // Starting from the first host bit according to the prefix,
 // if the section is a sequence of zeros in both low and high values,
 // followed by a sequence where low values are zero and high values are 1,
