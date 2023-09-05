@@ -58,3 +58,11 @@ type ipv4AddressNetwork struct {
 	ipAddressNetwork
 	creator ipv4AddressCreator
 }
+
+func (network *ipv4AddressNetwork) getIPAddressCreator() ipAddressCreator {
+	return &network.creator
+}
+
+func (network *ipv4AddressNetwork) getAddressCreator() parsedAddressCreator {
+	return &network.creator
+}
