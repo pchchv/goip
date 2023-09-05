@@ -77,9 +77,24 @@ func (addr *IPv4Address) Wrap() WrappedIPAddress {
 	return wrapIPAddress(addr.ToIP())
 }
 
+// WrapAddress wraps this IP address, returning a WrappedAddress, an implementation of ExtendedSegmentSeries,
+// which can be used to write code that works with both addresses and address sections.
+// WrapAddress can be called with a nil receiver, wrapping a nil address.
+func (addr *IPv4Address) WrapAddress() WrappedAddress {
+	return wrapAddress(addr.ToAddressBase())
+}
+
 // GetSection returns the backing section for this address or subnet, comprising all segments.
 func (addr *IPv4Address) GetSection() *IPv4AddressSection {
 	return addr.init().section.ToIPv4()
+}
+
+// ToAddressBase converts to an Address, a polymorphic type usable with all addresses and subnets.
+// Afterwards, you can convert back with ToIPv4.
+//
+// ToAddressBase can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (addr *IPv4Address) ToAddressBase() *Address {
+	return addr.ToIP().ToAddressBase()
 }
 
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
