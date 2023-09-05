@@ -1,5 +1,11 @@
 package goip
 
+import (
+	"net"
+
+	"github.com/pchchv/goip/address_error"
+)
+
 const (
 	IPv4SegmentSeparator      = '.'
 	IPv4SegmentSeparatorStr   = "."
@@ -80,4 +86,18 @@ func initZeroIPv4() *IPv4Address {
 	segs := []*IPv4AddressSegment{div, div, div, div}
 	section := NewIPv4Section(segs)
 	return newIPv4Address(section)
+}
+
+// NewIPv4AddressFromBytes constructs an IPv4 address from the given byte slice.
+// An error is returned when the byte slice has too many bytes to match the IPv4 segment count of 4.
+// There should be 4 bytes or less, although extra leading zeros are tolerated.
+func NewIPv4AddressFromBytes(bytes []byte) (addr *IPv4Address, err address_error.AddressValueError) {
+	if ipv4 := net.IP(bytes).To4(); ipv4 != nil {
+		bytes = ipv4
+	}
+	section, err := NewIPv4SectionFromSegmentedBytes(bytes, IPv4SegmentCount)
+	if err == nil {
+		addr = newIPv4Address(section)
+	}
+	return
 }
