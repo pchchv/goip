@@ -57,3 +57,23 @@ func newIPv4SectionParsed(segments []*AddressDivision, isMultiple bool) (res *IP
 	res.isMult = isMultiple
 	return
 }
+
+func createIPv4SectionFromSegs(orig []*IPv4AddressSegment, prefLen PrefixLen) (result *IPv4AddressSection) {
+	divs, newPref, isMultiple := createDivisionsFromSegs(
+		func(index int) *IPAddressSegment {
+			return orig[index].ToIP()
+		},
+		len(orig),
+		ipv4BitsToSegmentBitshift,
+		IPv4BitsPerSegment,
+		IPv4BytesPerSegment,
+		IPv4MaxValuePerSegment,
+		zeroIPv4Seg.ToIP(),
+		zeroIPv4SegZeroPrefix.ToIP(),
+		zeroIPv4SegPrefixBlock.ToIP(),
+		prefLen)
+	result = createIPv4Section(divs)
+	result.prefixLength = newPref
+	result.isMult = isMultiple
+	return result
+}
