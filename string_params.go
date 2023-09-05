@@ -862,3 +862,11 @@ func toIPParams(opts address_string.IPStringOptions) *ipAddressStringParams {
 		addressSuffix:  opts.GetAddressSuffix(),
 	}
 }
+
+func toNormalizedIPZonedString(opts address_string.IPStringOptions, section AddressDivisionSeries, zone Zone) string {
+	return toIPParams(opts).toZonedString(section, zone)
+}
+
+func toNormalizedIPString(opts address_string.IPStringOptions, section AddressDivisionSeries) string {
+	return toIPParams(opts).toString(section)
+}
