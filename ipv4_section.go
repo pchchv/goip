@@ -77,3 +77,13 @@ func createIPv4SectionFromSegs(orig []*IPv4AddressSegment, prefLen PrefixLen) (r
 	result.isMult = isMultiple
 	return result
 }
+
+// NewIPv4Section constructs an IPv4 address or subnet section from the given segments.
+func NewIPv4Section(segments []*IPv4AddressSegment) *IPv4AddressSection {
+	return createIPv4SectionFromSegs(segments, nil)
+}
+
+// NewIPv4PrefixedSection constructs an IPv4 address or subnet section from the given segments and prefix length.
+func NewIPv4PrefixedSection(segments []*IPv4AddressSegment, prefixLen PrefixLen) *IPv4AddressSection {
+	return createIPv4SectionFromSegs(segments, prefixLen)
+}
