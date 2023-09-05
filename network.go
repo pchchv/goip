@@ -1,14 +1,6 @@
 package goip
 
 var (
-	ipv6Network = &ipv6AddressNetwork{
-		ipAddressNetwork: ipAddressNetwork{
-			make([]*IPAddress, IPv6BitCount+1),
-			make([]*IPAddress, IPv6BitCount+1),
-			make([]*IPAddress, IPv6BitCount+1),
-			make([]*IPAddress, IPv6BitCount+1),
-		},
-	}
 	ipv4Network = &ipv4AddressNetwork{
 		ipAddressNetwork: ipAddressNetwork{
 			make([]*IPAddress, IPv4BitCount+1),
@@ -17,6 +9,15 @@ var (
 			make([]*IPAddress, IPv4BitCount+1),
 		},
 	}
+	ipv6Network = &ipv6AddressNetwork{
+		ipAddressNetwork: ipAddressNetwork{
+			make([]*IPAddress, IPv6BitCount+1),
+			make([]*IPAddress, IPv6BitCount+1),
+			make([]*IPAddress, IPv6BitCount+1),
+			make([]*IPAddress, IPv6BitCount+1),
+		},
+	}
+	IPv4Network = &IPv4AddressNetwork{ipv4Network}
 	IPv6Network = &IPv6AddressNetwork{ipv6Network}
 )
 
@@ -65,4 +66,9 @@ func (network *ipv4AddressNetwork) getIPAddressCreator() ipAddressCreator {
 
 func (network *ipv4AddressNetwork) getAddressCreator() parsedAddressCreator {
 	return &network.creator
+}
+
+// IPv4AddressNetwork is the implementation of IPAddressNetwork for IPv4
+type IPv4AddressNetwork struct {
+	*ipv4AddressNetwork
 }
