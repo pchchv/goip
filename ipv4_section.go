@@ -1,5 +1,7 @@
 package goip
 
+import "github.com/pchchv/goip/address_error"
+
 // IPv4AddressSection represents a section of an IPv4 address comprising 0 to 4 IPv4 address segments.
 // The zero values is a section with zero-segments.
 type IPv4AddressSection struct {
@@ -86,4 +88,39 @@ func NewIPv4Section(segments []*IPv4AddressSegment) *IPv4AddressSection {
 // NewIPv4PrefixedSection constructs an IPv4 address or subnet section from the given segments and prefix length.
 func NewIPv4PrefixedSection(segments []*IPv4AddressSegment, prefixLen PrefixLen) *IPv4AddressSection {
 	return createIPv4SectionFromSegs(segments, prefixLen)
+}
+
+func newIPv4SectionFromBytes(bytes []byte, segmentCount int, prefixLength PrefixLen, singleOnly bool) (res *IPv4AddressSection, err address_error.AddressValueError) {
+	if segmentCount < 0 {
+		segmentCount = len(bytes)
+	}
+	expectedByteCount := segmentCount
+	segments, err := toSegments(
+		bytes,
+		segmentCount,
+		IPv4BytesPerSegment,
+		IPv4BitsPerSegment,
+		ipv4Network.getIPAddressCreator(),
+		prefixLength)
+	if err == nil {
+		res = createIPv4Section(segments)
+		if prefixLength != nil {
+			assignPrefix(prefixLength, segments, res.ToIP(), singleOnly, false, BitCount(segmentCount<<ipv4BitsToSegmentBitshift))
+		}
+		if expectedByteCount == len(bytes) && len(bytes) > 0 {
+			bytes = cloneBytes(bytes)
+			res.cache.bytesCache = &bytesCache{lowerBytes: bytes}
+			if !res.isMult { // not a prefix block
+				res.cache.bytesCache.upperBytes = bytes
+			}
+		}
+	}
+	return
+}
+
+// NewIPv4SectionFromSegmentedBytes constructs an IPv4 address section from the given byte slice.
+// It allows you to specify the segment count for the supplied bytes.
+// If the slice is too large for the given number of segments, an error is returned, although leading zeros are tolerated.
+func NewIPv4SectionFromSegmentedBytes(bytes []byte, segmentCount int) (res *IPv4AddressSection, err address_error.AddressValueError) {
+	return newIPv4SectionFromBytes(bytes, segmentCount, nil, false)
 }
