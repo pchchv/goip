@@ -286,6 +286,24 @@ func (addr *Address) GetSection() *AddressSection {
 	return addr.init().section
 }
 
+// IsIPv4 returns true if this address or subnet originated as an IPv4 address or subnet.
+// If so, use ToIPv4 to convert back to the IPv4-specific type.
+func (addr *Address) IsIPv4() bool {
+	return addr != nil && addr.isIPv4()
+}
+
+// ToIPv4 converts to an IPv4Address if this address or subnet originated as an IPv4 address or subnet.
+// If not, ToIPv4 returns nil.
+//
+// ToIPv4 can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (addr *Address) ToIPv4() *IPv4Address {
+	if addr.IsIPv4() {
+		return (*IPv4Address)(unsafe.Pointer(addr))
+	}
+	return nil
+}
+
 // IsIPv6 returns true if this address or subnet originated as an IPv6 address or subnet.  If so, use ToIPv6 to convert back to the IPv6-specific type.
 func (addr *Address) IsIPv6() bool {
 	return addr != nil && addr.isIPv6()
