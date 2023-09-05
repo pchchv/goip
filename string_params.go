@@ -843,3 +843,22 @@ func toParams(opts address_string.StringOptions) *addressStringParams {
 		zoneSeparator: IPv6ZoneSeparatorStr,
 	}
 }
+
+func toIPParams(opts address_string.IPStringOptions) *ipAddressStringParams {
+	return &ipAddressStringParams{
+		addressStringParams: addressStringParams{
+			radix:            opts.GetRadix(),
+			separator:        opts.GetSeparator(),
+			hasSep:           opts.HasSeparator(),
+			uppercase:        opts.IsUppercase(),
+			expandSegments:   opts.IsExpandedSegments(),
+			wildcards:        opts.GetWildcards(),
+			segmentStrPrefix: opts.GetSegmentStrPrefix(),
+			reverse:          opts.IsReverse(),
+			addressLabel:     opts.GetAddressLabel(),
+			zoneSeparator:    opts.GetZoneSeparator(),
+		},
+		wildcardOption: opts.GetWildcardOption(),
+		addressSuffix:  opts.GetAddressSuffix(),
+	}
+}
