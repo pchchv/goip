@@ -16,7 +16,10 @@ const (
 	ipv4BitsToSegmentBitshift = 3
 )
 
-var zeroIPv4 = initZeroIPv4()
+var (
+	zeroIPv4 = initZeroIPv4()
+	ipv4All  = zeroIPv4.ToPrefixBlockLen(0)
+)
 
 // IPv4Address is an IPv4 address, or a subnet of multiple IPv4 addresses.
 // An IPv4 address is composed of 4 1-byte segments and can optionally have an associated prefix length.
@@ -30,6 +33,23 @@ var zeroIPv4 = initZeroIPv4()
 // You can also use one of the multiple constructors for [IPAddress] like NewIPAddress and then convert using ToIPv4.
 type IPv4Address struct {
 	ipAddressInternal
+}
+
+func (addr *IPv4Address) init() *IPv4Address {
+	if addr.section == nil {
+		return zeroIPv4
+	}
+	return addr
+}
+
+// ToPrefixBlockLen returns the subnet associated with the given prefix length.
+//
+// The subnet will include all addresses with the same prefix as this one, the prefix "block" for that prefix length.
+// The network prefix will match the prefix of this address or subnet, and the host values will span all values.
+//
+// For example, if the address is "1.2.3.4" and the prefix length provided is 16, it returns the subnet "1.2.0.0/16", which can also be written as "1.2.*.*/16".
+func (addr *IPv4Address) ToPrefixBlockLen(prefLen BitCount) *IPv4Address {
+	return addr.init().toPrefixBlockLen(prefLen).ToIPv4()
 }
 
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
