@@ -1,6 +1,12 @@
 package goip
 
+import (
+	"sync"
+	"unsafe"
+)
+
 var (
+	maskMutex   sync.Mutex
 	ipv4Network = &ipv4AddressNetwork{
 		ipAddressNetwork: ipAddressNetwork{
 			make([]*IPAddress, IPv4BitCount+1),
@@ -77,4 +83,162 @@ type IPv4AddressNetwork struct {
 func createIPv4Loopback() *IPv4Address {
 	ipv4loopback, _ := NewIPv4AddressFromBytes([]byte{127, 0, 0, 1})
 	return ipv4loopback
+}
+
+func getMask(version IPVersion, zeroSeg *AddressDivision, networkPrefixLength BitCount, cache []*IPAddress, network, withPrefixLength bool) *IPAddress {
+	bits := networkPrefixLength
+	addressBitLength := version.GetBitCount()
+	if bits < 0 {
+		bits = 0
+	} else if bits > addressBitLength {
+		bits = addressBitLength
+	}
+	cacheIndex := bits
+
+	subnet := (*IPAddress)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache[cacheIndex]))))
+	if subnet != nil {
+		return subnet
+	}
+
+	maskMutex.Lock()
+	subnet = cache[cacheIndex]
+	if subnet != nil {
+		maskMutex.Unlock()
+		return subnet
+	}
+
+	var onesSubnetIndex, zerosSubnetIndex int
+
+	if network {
+		onesSubnetIndex = int(addressBitLength)
+		zerosSubnetIndex = 0
+	} else {
+		onesSubnetIndex = 0
+		zerosSubnetIndex = int(addressBitLength)
+	}
+
+	segmentCount := version.GetSegmentCount()
+	bitsPerSegment := version.GetBitsPerSegment()
+	maxSegmentValue := version.GetMaxSegmentValue()
+	onesSubnet := (*IPAddress)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache[onesSubnetIndex]))))
+	if onesSubnet == nil {
+		newSegments := createSegmentArray(segmentCount)
+		if withPrefixLength {
+			if network {
+				segment := createAddressDivision(zeroSeg.deriveNewSeg(maxSegmentValue, nil))
+				lastSegment := createAddressDivision(zeroSeg.deriveNewSeg(maxSegmentValue, cacheBitCount(bitsPerSegment) /* bitsPerSegment */))
+				lastIndex := len(newSegments) - 1
+				fillDivs(newSegments[:lastIndex], segment)
+				newSegments[lastIndex] = lastSegment
+				onesSubnet = createIPAddress(createSection(newSegments, cacheBitCount(addressBitLength), version.toType()), NoZone)
+			} else {
+				segment := createAddressDivision(zeroSeg.deriveNewSeg(maxSegmentValue, cacheBitCount(0)))
+				fillDivs(newSegments, segment)
+				onesSubnet = createIPAddress(createSection(newSegments, cacheBitCount(0), version.toType()), NoZone)
+			}
+		} else {
+			segment := createAddressDivision(zeroSeg.deriveNewSeg(maxSegmentValue, nil))
+			fillDivs(newSegments, segment)
+			onesSubnet = createIPAddress(createSection(newSegments, nil, version.toType()), NoZone) /* address creation */
+		}
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache[onesSubnetIndex]))
+		atomicStorePointer(dataLoc, unsafe.Pointer(onesSubnet))
+	}
+
+	zerosSubnet := (*IPAddress)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache[zerosSubnetIndex]))))
+	if zerosSubnet == nil {
+		newSegments := createSegmentArray(segmentCount)
+		if withPrefixLength {
+			prefLen := cacheBitCount(0)
+			if network {
+				segment := createAddressDivision(zeroSeg.deriveNewSeg(0, prefLen))
+				fillDivs(newSegments, segment)
+				zerosSubnet = createIPAddress(createSection(newSegments, prefLen, version.toType()), NoZone)
+			} else {
+				lastSegment := createAddressDivision(zeroSeg.deriveNewSeg(0, cacheBitCount(bitsPerSegment) /* bitsPerSegment */))
+				lastIndex := len(newSegments) - 1
+				fillDivs(newSegments[:lastIndex], zeroSeg)
+				newSegments[lastIndex] = lastSegment
+				zerosSubnet = createIPAddress(createSection(newSegments, cacheBitCount(addressBitLength), version.toType()), NoZone)
+			}
+		} else {
+			segment := createAddressDivision(zeroSeg.deriveNewSeg(0, nil))
+			fillDivs(newSegments, segment)
+			zerosSubnet = createIPAddress(createSection(newSegments, nil, version.toType()), NoZone)
+		}
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache[zerosSubnetIndex]))
+		atomicStorePointer(dataLoc, unsafe.Pointer(zerosSubnet))
+	}
+
+	prefix := bits
+	onesSegment := onesSubnet.getDivision(0)
+	zerosSegment := zerosSubnet.getDivision(0)
+	newSegments := createSegmentArray(segmentCount)[:0]
+	i := 0
+
+	for ; bits > 0; i, bits = i+1, bits-bitsPerSegment {
+		if bits <= bitsPerSegment {
+			var segment *AddressDivision
+
+			//first do a check whether we have already created a segment like the one we need
+			offset := ((bits - 1) % bitsPerSegment) + 1
+			for j, entry := 0, offset; j < segmentCount; j, entry = j+1, entry+bitsPerSegment {
+				//for j := 0, entry = offset; j < segmentCount; j++, entry += bitsPerSegment {
+				if entry != cacheIndex { //we already know that the entry at cacheIndex is nil
+					prev := cache[entry]
+					if prev != nil {
+						segment = prev.getDivision(j)
+						break
+					}
+				}
+			}
+
+			//if none of the other addresses with a similar segment are created yet, we need a new segment.
+			if segment == nil {
+				if network {
+					mask := maxSegmentValue & (maxSegmentValue << uint(bitsPerSegment-bits))
+					if withPrefixLength {
+						segment = createAddressDivision(zeroSeg.deriveNewSeg(mask, getDivisionPrefixLength(bitsPerSegment, bits)))
+					} else {
+						segment = createAddressDivision(zeroSeg.deriveNewSeg(mask, nil))
+					}
+				} else {
+					mask := maxSegmentValue & ^(maxSegmentValue << uint(bitsPerSegment-bits))
+					if withPrefixLength {
+						segment = createAddressDivision(zeroSeg.deriveNewSeg(mask, getDivisionPrefixLength(bitsPerSegment, bits)))
+					} else {
+						segment = createAddressDivision(zeroSeg.deriveNewSeg(mask, nil))
+					}
+				}
+			}
+			newSegments = append(newSegments, segment)
+		} else {
+			if network {
+				newSegments = append(newSegments, onesSegment)
+			} else {
+				newSegments = append(newSegments, zerosSegment)
+			}
+		}
+	}
+
+	for ; i < segmentCount; i++ {
+		if network {
+			newSegments = append(newSegments, zerosSegment)
+		} else {
+			newSegments = append(newSegments, onesSegment)
+		}
+	}
+
+	var prefLen PrefixLen
+
+	if withPrefixLength {
+		prefLen = cacheBitCount(prefix)
+	}
+
+	subnet = createIPAddress(createSection(newSegments, prefLen, version.toType()), NoZone)
+	dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache[cacheIndex]))
+	atomicStorePointer(dataLoc, unsafe.Pointer(subnet))
+	maskMutex.Unlock()
+
+	return subnet
 }
