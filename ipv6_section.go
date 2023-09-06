@@ -139,3 +139,10 @@ func newIPv6SectionFromBytes(bytes []byte, segmentCount int, prefixLength Prefix
 	}
 	return
 }
+
+// NewIPv6SectionFromSegmentedBytes constructs an IPv6 address from the given byte slice.
+// It allows you to specify the segment count for the supplied bytes.
+// If the slice is too large for the given number of segments, an error is returned, although leading zeros are tolerated.
+func NewIPv6SectionFromSegmentedBytes(bytes []byte, segmentCount int) (res *IPv6AddressSection, err address_error.AddressValueError) {
+	return newIPv6SectionFromBytes(bytes, segmentCount, nil, false)
+}
