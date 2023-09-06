@@ -62,6 +62,25 @@ func (creator *ipv6AddressCreator) createAddressInternal(section *AddressSection
 	return res
 }
 
+func (creator *ipv6AddressCreator) createAddressInternalFromBytes(bytes []byte, zone Zone) *IPAddress {
+	addr, _ := NewIPv6AddressFromZonedBytes(bytes, string(zone))
+	return addr.ToIP()
+}
+
+func (creator *ipv6AddressCreator) createAddressInternalFromSection(section *IPAddressSection, zone Zone, originator HostIdentifierString) *IPAddress {
+	res := newIPv6AddressZoned(section.ToIPv6(), string(zone)).ToIP()
+
+	if originator != nil {
+		// the originator is assigned to a parsedIPAddress struct in validateHostName or validateIPAddressStr
+		cache := res.cache
+		if cache != nil {
+			cache.identifierStr = &identifierStr{originator}
+		}
+	}
+
+	return res
+}
+
 type ipv4AddressCreator struct{}
 
 func (creator *ipv4AddressCreator) getMaxValuePerSegment() SegInt {
