@@ -53,6 +53,18 @@ func (addr *IPAddress) ToAddressBase() *Address {
 	return (*Address)(unsafe.Pointer(addr))
 }
 
+// IsIPv4 returns true if this address or subnet originated as an IPv4 address or subnet.
+// If so, use ToIPv4 to convert back to the IPv4-specific type.
+func (addr *IPAddress) IsIPv4() bool {
+	return addr != nil && addr.isIPv4()
+}
+
+// IsIPv6 returns true if this address or subnet originated as an IPv6 address or subnet.
+// If so, use ToIPv6 to convert back to the IPv6-specific type.
+func (addr *IPAddress) IsIPv6() bool {
+	return addr != nil && addr.isIPv6()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
