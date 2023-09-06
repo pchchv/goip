@@ -162,3 +162,15 @@ func NewIPv6AddressFromBytes(bytes []byte) (addr *IPv6Address, err address_error
 	}
 	return
 }
+
+// NewIPv6AddressFromZonedBytes constructs an IPv6 address from the given byte slice and zone.
+// An error is returned when the byte slice has too many bytes to match the IPv6 segment count of 8.
+// There should be 16 bytes or less, although extra leading zeros are tolerated.
+func NewIPv6AddressFromZonedBytes(bytes []byte, zone string) (addr *IPv6Address, err address_error.AddressValueError) {
+	addr, err = NewIPv6AddressFromBytes(bytes)
+	if err == nil {
+		addr.zone = Zone(zone)
+		assignIPv6Cache(addr.zone, addr.cache)
+	}
+	return
+}
