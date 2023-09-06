@@ -101,6 +101,14 @@ type IPv4AddressNetwork struct {
 	*ipv4AddressNetwork
 }
 
+func (network IPv4AddressNetwork) GetLoopback() *IPv4Address {
+	return ipv4loopback
+}
+
+func (network IPv4AddressNetwork) GetNetworkMask(prefLen BitCount) *IPv4Address {
+	return network.ipv4AddressNetwork.GetNetworkMask(prefLen).ToIPv4()
+}
+
 func createIPv4Loopback() *IPv4Address {
 	ipv4loopback, _ := NewIPv4AddressFromBytes([]byte{127, 0, 0, 1})
 	return ipv4loopback
