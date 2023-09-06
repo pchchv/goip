@@ -146,3 +146,9 @@ func newIPv6SectionFromBytes(bytes []byte, segmentCount int, prefixLength Prefix
 func NewIPv6SectionFromSegmentedBytes(bytes []byte, segmentCount int) (res *IPv6AddressSection, err address_error.AddressValueError) {
 	return newIPv6SectionFromBytes(bytes, segmentCount, nil, false)
 }
+
+func newIPv6SectionParsed(segments []*AddressDivision, isMultiple bool) (res *IPv6AddressSection) {
+	res = createIPv6Section(segments)
+	res.isMult = isMultiple
+	return
+}
