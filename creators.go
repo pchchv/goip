@@ -89,6 +89,23 @@ func (creator *ipv6AddressCreator) createRangeSegment(lower, upper SegInt) *Addr
 	return NewIPv6RangeSegment(IPv6SegInt(lower), IPv6SegInt(upper)).ToDiv()
 }
 
+func (creator *ipv6AddressCreator) createSegmentInternal(value SegInt, segmentPrefixLength PrefixLen, addressStr string,
+	originalVal SegInt, isStandardString bool, lowerStringStartIndex, lowerStringEndIndex int) *AddressDivision {
+	seg := NewIPv6PrefixedSegment(IPv6SegInt(value), segmentPrefixLength)
+	seg.setStandardString(addressStr, isStandardString, lowerStringStartIndex, lowerStringEndIndex, originalVal)
+	seg.setWildcardString(addressStr, isStandardString, lowerStringStartIndex, lowerStringEndIndex, originalVal)
+	return seg.ToDiv()
+}
+
+func (creator *ipv6AddressCreator) createRangeSegmentInternal(lower, upper SegInt, segmentPrefixLength PrefixLen, addressStr string,
+	originalLower, originalUpper SegInt, isStandardString, isStandardRangeString bool,
+	lowerStringStartIndex, lowerStringEndIndex, upperStringEndIndex int) *AddressDivision {
+	seg := NewIPv6RangePrefixedSegment(IPv6SegInt(lower), IPv6SegInt(upper), segmentPrefixLength)
+	seg.setRangeStandardString(addressStr, isStandardString, isStandardRangeString, lowerStringStartIndex, lowerStringEndIndex, upperStringEndIndex, originalLower, originalUpper)
+	seg.setRangeWildcardString(addressStr, isStandardRangeString, lowerStringStartIndex, upperStringEndIndex, originalLower, originalUpper)
+	return seg.ToDiv()
+}
+
 type ipv4AddressCreator struct{}
 
 func (creator *ipv4AddressCreator) getMaxValuePerSegment() SegInt {
