@@ -165,6 +165,25 @@ func (version IPVersion) GetBytesPerSegment() int {
 	return 0
 }
 
+// index returns an index starting from 0 with IndeterminateIPVersion being the highest
+func (version IPVersion) index() int {
+	if version.IsIPv4() {
+		return 0
+	} else if version.IsIPv6() {
+		return 1
+	}
+	return 2
+}
+
+func (version IPVersion) toType() (t addrType) {
+	if version.IsIPv6() {
+		t = ipv6Type
+	} else if version.IsIPv4() {
+		t = ipv4Type
+	}
+	return
+}
+
 // necessary to avoid direct access to IPAddress
 type ipAddressInternal struct {
 	addressInternal
