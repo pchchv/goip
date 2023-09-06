@@ -145,6 +145,26 @@ func (version IPVersion) GetMaxSegmentValue() SegInt {
 	return 0
 }
 
+// GetBitsPerSegment returns the number of bits comprising each segment for this address version, either 8 or 16 for IPv4 and IPv6 respectively.  Segments in the same address are equal length.
+func (version IPVersion) GetBitsPerSegment() BitCount {
+	if version.IsIPv4() {
+		return IPv4BitsPerSegment
+	} else if version.IsIPv6() {
+		return IPv6BitsPerSegment
+	}
+	return 0
+}
+
+// GetBytesPerSegment returns the number of bytes comprising each segment in this address or subnet.  Segments in the same address are equal length.
+func (version IPVersion) GetBytesPerSegment() int {
+	if version.IsIPv4() {
+		return IPv4BytesPerSegment
+	} else if version.IsIPv6() {
+		return IPv6BytesPerSegment
+	}
+	return 0
+}
+
 // necessary to avoid direct access to IPAddress
 type ipAddressInternal struct {
 	addressInternal
