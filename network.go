@@ -17,8 +17,9 @@ var (
 			make([]*IPAddress, IPv6BitCount+1),
 		},
 	}
-	IPv4Network = &IPv4AddressNetwork{ipv4Network}
-	IPv6Network = &IPv6AddressNetwork{ipv6Network}
+	IPv4Network  = &IPv4AddressNetwork{ipv4Network}
+	IPv6Network  = &IPv6AddressNetwork{ipv6Network}
+	ipv4loopback = createIPv4Loopback()
 )
 
 type addressNetwork interface {
@@ -71,4 +72,9 @@ func (network *ipv4AddressNetwork) getAddressCreator() parsedAddressCreator {
 // IPv4AddressNetwork is the implementation of IPAddressNetwork for IPv4
 type IPv4AddressNetwork struct {
 	*ipv4AddressNetwork
+}
+
+func createIPv4Loopback() *IPv4Address {
+	ipv4loopback, _ := NewIPv4AddressFromBytes([]byte{127, 0, 0, 1})
+	return ipv4loopback
 }
