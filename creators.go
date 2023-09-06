@@ -50,6 +50,18 @@ func (creator *ipv6AddressCreator) createPrefixedSectionInternalSingle(segments 
 	return newPrefixedIPv6SectionParsed(segments, isMultiple, prefixLength, true).ToIP()
 }
 
+func (creator *ipv6AddressCreator) createAddressInternal(section *AddressSection, originator HostIdentifierString) *Address {
+	res := newIPv6Address(section.ToIPv6()).ToAddressBase()
+	if originator != nil {
+		// the originator is assigned to a parsedIPAddress struct in validateHostName or validateIPAddressStr
+		cache := res.cache
+		if cache != nil {
+			cache.identifierStr = &identifierStr{originator}
+		}
+	}
+	return res
+}
+
 type ipv4AddressCreator struct{}
 
 func (creator *ipv4AddressCreator) getMaxValuePerSegment() SegInt {
