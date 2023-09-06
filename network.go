@@ -75,6 +75,18 @@ func (network *ipv4AddressNetwork) getAddressCreator() parsedAddressCreator {
 	return &network.creator
 }
 
+func (network *ipv4AddressNetwork) GetLoopback() *IPAddress {
+	return ipv4loopback.ToIP()
+}
+
+func (network *ipv4AddressNetwork) GetNetworkMask(prefLen BitCount) *IPAddress {
+	return getMask(IPv4, zeroIPv4Seg.ToDiv(), prefLen, network.subnetMasks, true, false)
+}
+
+func (network *ipv4AddressNetwork) GetHostMask(prefLen BitCount) *IPAddress {
+	return getMask(IPv4, zeroIPv4Seg.ToDiv(), prefLen, network.hostMasks, false, false)
+}
+
 // IPv4AddressNetwork is the implementation of IPAddressNetwork for IPv4
 type IPv4AddressNetwork struct {
 	*ipv4AddressNetwork
