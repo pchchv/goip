@@ -65,6 +65,28 @@ func (addr *IPAddress) IsIPv6() bool {
 	return addr != nil && addr.isIPv6()
 }
 
+// ToIPv4 converts to an IPv4Address if this address or subnet originated as an IPv4 address or subnet.
+// If not, ToIPv4 returns nil.
+//
+// ToIPv4 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (addr *IPAddress) ToIPv4() *IPv4Address {
+	if addr.IsIPv4() {
+		return (*IPv4Address)(addr)
+	}
+	return nil
+}
+
+// ToIPv6 converts to an IPv6Address if this address or subnet originated as an IPv6 address or subnet.
+// If not, ToIPv6 returns nil.
+//
+// ToIPv6 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (addr *IPAddress) ToIPv6() *IPv6Address {
+	if addr.IsIPv6() {
+		return (*IPv6Address)(addr)
+	}
+	return nil
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
