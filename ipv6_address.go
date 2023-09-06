@@ -151,3 +151,14 @@ func assignIPv6Cache(zoneVal Zone, cache *addressCache) {
 		cache.stringCache = &stringCache{ipv6StringCache: &ipv6StringCache{}, ipStringCache: &ipStringCache{}}
 	}
 }
+
+// NewIPv6AddressFromBytes constructs an IPv6 address from the given byte slice.
+// An error is returned when the byte slice has too many bytes to match the IPv6 segment count of 8.
+// There should be 16 bytes or less, although extra leading zeros are tolerated.
+func NewIPv6AddressFromBytes(bytes []byte) (addr *IPv6Address, err address_error.AddressValueError) {
+	section, err := NewIPv6SectionFromSegmentedBytes(bytes, IPv6SegmentCount)
+	if err == nil {
+		addr = newIPv6Address(section)
+	}
+	return
+}
