@@ -1,5 +1,7 @@
 package goip
 
+import "github.com/pchchv/goip/address_error"
+
 // IPv6AddressSection represents a section of an IPv6 address comprising 0 to 8 IPv6 address segments.
 // The zero values is a section with zero-segments.
 type IPv6AddressSection struct {
@@ -108,4 +110,32 @@ func createIPv6SectionFromSegs(orig []*IPv6AddressSegment, prefLen PrefixLen) (r
 // NewIPv6Section constructs an IPv6 address or subnet section from the given segments.
 func NewIPv6Section(segments []*IPv6AddressSegment) *IPv6AddressSection {
 	return createIPv6SectionFromSegs(segments, nil)
+}
+
+func newIPv6SectionFromBytes(bytes []byte, segmentCount int, prefixLength PrefixLen, singleOnly bool) (res *IPv6AddressSection, err address_error.AddressValueError) {
+	if segmentCount < 0 {
+		segmentCount = (len(bytes) + 1) >> 1
+	}
+	expectedByteCount := segmentCount << 1
+	segments, err := toSegments(
+		bytes,
+		segmentCount,
+		IPv6BytesPerSegment,
+		IPv6BitsPerSegment,
+		ipv6Network.getIPAddressCreator(),
+		prefixLength)
+	if err == nil {
+		res = createIPv6Section(segments)
+		if prefixLength != nil {
+			assignPrefix(prefixLength, segments, res.ToIP(), singleOnly, false, BitCount(segmentCount<<ipv6BitsToSegmentBitshift))
+		}
+		if expectedByteCount == len(bytes) && len(bytes) > 0 {
+			bytes = cloneBytes(bytes)
+			res.cache.bytesCache = &bytesCache{lowerBytes: bytes}
+			if !res.isMult { // not a prefix block
+				res.cache.bytesCache.upperBytes = bytes
+			}
+		}
+	}
+	return
 }
