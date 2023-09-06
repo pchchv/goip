@@ -105,6 +105,26 @@ func (version IPVersion) String() string {
 	return string(version)
 }
 
+// GetByteCount returns the number of bytes comprising an address of this IP Version.
+func (version IPVersion) GetByteCount() int {
+	if version.IsIPv4() {
+		return IPv4ByteCount
+	} else if version.IsIPv6() {
+		return IPv6ByteCount
+	}
+	return 0
+}
+
+// GetBitCount returns the number of bits comprising an address of this IP Version.
+func (version IPVersion) GetBitCount() BitCount {
+	if version.IsIPv4() {
+		return IPv4BitCount
+	} else if version.IsIPv6() {
+		return IPv6BitCount
+	}
+	return 0
+}
+
 // necessary to avoid direct access to IPAddress
 type ipAddressInternal struct {
 	addressInternal
