@@ -23,9 +23,10 @@ var (
 			make([]*IPAddress, IPv6BitCount+1),
 		},
 	}
-	IPv4Network  = &IPv4AddressNetwork{ipv4Network}
-	IPv6Network  = &IPv6AddressNetwork{ipv6Network}
-	ipv4loopback = createIPv4Loopback()
+	IPv4Network                   = &IPv4AddressNetwork{ipv4Network}
+	IPv6Network                   = &IPv6AddressNetwork{ipv6Network}
+	ipv4loopback                  = createIPv4Loopback()
+	_            IPAddressNetwork = &ipv4AddressNetwork{}
 )
 
 type addressNetwork interface {
@@ -85,6 +86,14 @@ func (network *ipv4AddressNetwork) GetNetworkMask(prefLen BitCount) *IPAddress {
 
 func (network *ipv4AddressNetwork) GetHostMask(prefLen BitCount) *IPAddress {
 	return getMask(IPv4, zeroIPv4Seg.ToDiv(), prefLen, network.hostMasks, false, false)
+}
+
+func (network *ipv4AddressNetwork) GetPrefixedNetworkMask(prefLen BitCount) *IPAddress {
+	return getMask(IPv4, zeroIPv4Seg.ToDiv(), prefLen, network.subnetsMasksWithPrefix, true, true)
+}
+
+func (network *ipv4AddressNetwork) GetPrefixedHostMask(prefLen BitCount) *IPAddress {
+	return getMask(IPv4, zeroIPv4Seg.ToDiv(), prefLen, network.hostMasksWithPrefix, false, true)
 }
 
 // IPv4AddressNetwork is the implementation of IPAddressNetwork for IPv4
