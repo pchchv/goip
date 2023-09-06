@@ -380,6 +380,20 @@ func (seg *IPv6AddressSegment) ToIP() *IPAddressSegment {
 	return (*IPAddressSegment)(seg.init())
 }
 
+// ToHostSegment returns a segment with the host bits matching this segment but the network bits converted to zero.
+// The new segment will have no assigned prefix length.
+func (seg *IPv6AddressSegment) ToHostSegment(segmentPrefixLength PrefixLen) *IPv6AddressSegment {
+	return seg.init().toHostDivision(segmentPrefixLength, false).ToIPv6()
+}
+
+// ToDiv converts to an AddressDivision, a polymorphic type usable with all address segments and divisions.
+// Afterwards, you can convert back with ToIPv6.
+//
+// ToDiv can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (seg *IPv6AddressSegment) ToDiv() *AddressDivision {
+	return seg.ToIP().ToDiv()
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
