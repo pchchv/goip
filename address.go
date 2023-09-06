@@ -229,6 +229,17 @@ func (addr *addressInternal) toPrefixBlockLen(prefLen BitCount) *Address {
 	return addr.checkIdentity(addr.section.toPrefixBlockLen(prefLen))
 }
 
+func (addr *addressInternal) getDivision(index int) *AddressDivision {
+	return addr.section.getDivision(index)
+}
+
+func (addr *addressInternal) getDivisionCount() int {
+	if addr.section == nil {
+		return 0
+	}
+	return addr.section.GetDivisionCount()
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
