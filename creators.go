@@ -81,6 +81,14 @@ func (creator *ipv6AddressCreator) createAddressInternalFromSection(section *IPA
 	return res
 }
 
+func (creator *ipv6AddressCreator) createSegment(lower, upper SegInt, segmentPrefixLength PrefixLen) *AddressDivision {
+	return NewIPv6RangePrefixedSegment(IPv6SegInt(lower), IPv6SegInt(upper), segmentPrefixLength).ToDiv()
+}
+
+func (creator *ipv6AddressCreator) createRangeSegment(lower, upper SegInt) *AddressDivision {
+	return NewIPv6RangeSegment(IPv6SegInt(lower), IPv6SegInt(upper)).ToDiv()
+}
+
 type ipv4AddressCreator struct{}
 
 func (creator *ipv4AddressCreator) getMaxValuePerSegment() SegInt {
