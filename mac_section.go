@@ -72,3 +72,49 @@ func newMACSectionParsed(segments []*AddressDivision, isMultiple bool) (res *MAC
 	res.isMult = isMultiple
 	return
 }
+
+func createMACSectionFromSegs(orig []*MACAddressSegment) *MACAddressSection {
+	var newPref PrefixLen
+	segCount := len(orig)
+	newSegs := make([]*AddressDivision, segCount)
+	isMultiple := false
+
+	if segCount != 0 {
+		isBlock := true
+		for i := segCount - 1; i >= 0; i-- {
+			segment := orig[i]
+			if segment == nil {
+				segment = zeroMACSeg
+				if isBlock && i != segCount-1 {
+					newPref = getNetworkPrefixLen(MACBitsPerSegment, MACBitsPerSegment, i)
+					isBlock = false
+				}
+			} else {
+				if isBlock {
+					minPref := segment.GetMinPrefixLenForBlock()
+					if minPref > 0 {
+						if minPref != MACBitsPerSegment || i != segCount-1 {
+							newPref = getNetworkPrefixLen(MACBitsPerSegment, minPref, i)
+						}
+						isBlock = false
+					}
+				}
+				isMultiple = isMultiple || segment.isMultiple()
+			}
+			newSegs[i] = segment.ToDiv()
+		}
+		if isBlock {
+			newPref = cacheBitCount(0)
+		}
+	}
+
+	res := createMACSection(newSegs)
+	res.isMult = isMultiple
+	res.prefixLength = newPref
+	return res
+}
+
+// NewMACSection constructs a MAC address or address collection section from the given segments.
+func NewMACSection(segments []*MACAddressSegment) *MACAddressSection {
+	return createMACSectionFromSegs(segments)
+}
