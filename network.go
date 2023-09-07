@@ -7,6 +7,8 @@ import (
 )
 
 var (
+	_           IPAddressNetwork = &ipv4AddressNetwork{}
+	_           IPAddressNetwork = &ipv6AddressNetwork{}
 	maskMutex   sync.Mutex
 	ipv4Network = &ipv4AddressNetwork{
 		ipAddressNetwork: ipAddressNetwork{
@@ -24,11 +26,10 @@ var (
 			make([]*IPAddress, IPv6BitCount+1),
 		},
 	}
-	IPv4Network                   = &IPv4AddressNetwork{ipv4Network}
-	IPv6Network                   = &IPv6AddressNetwork{ipv6Network}
-	ipv4loopback                  = createIPv4Loopback()
-	ipv6loopback                  = createIPv6Loopback()
-	_            IPAddressNetwork = &ipv4AddressNetwork{}
+	IPv4Network  = &IPv4AddressNetwork{ipv4Network}
+	IPv6Network  = &IPv6AddressNetwork{ipv6Network}
+	ipv4loopback = createIPv4Loopback()
+	ipv6loopback = createIPv6Loopback()
 )
 
 type addressNetwork interface {
@@ -82,6 +83,10 @@ func (network *ipv6AddressNetwork) GetHostMask(prefLen BitCount) *IPAddress {
 
 func (network *ipv6AddressNetwork) GetPrefixedHostMask(prefLen BitCount) *IPAddress {
 	return getMask(IPv6, zeroIPv6Seg.ToDiv(), prefLen, network.hostMasksWithPrefix, false, true)
+}
+
+func (network *ipv6AddressNetwork) GetLoopback() *IPAddress {
+	return ipv6loopback.ToIP()
 }
 
 // IPv6AddressNetwork is the implementation of IPAddressNetwork for IPv6
