@@ -189,3 +189,11 @@ func (creator *ipv4AddressCreator) createAddressInternal(section *AddressSection
 }
 
 type macAddressCreator struct{}
+
+func (creator *macAddressCreator) getMaxValuePerSegment() SegInt {
+	return MACMaxValuePerSegment
+}
+
+func (creator *macAddressCreator) createSegment(lower, upper SegInt, _ PrefixLen) *AddressDivision {
+	return NewMACRangeSegment(MACSegInt(lower), MACSegInt(upper)).ToDiv()
+}
