@@ -78,3 +78,7 @@ func getMacSegCount(isExtended bool) (segmentCount int) {
 	}
 	return
 }
+
+func newMACAddress(section *MACAddressSection) *MACAddress {
+	return createAddress(section.ToSectionBase(), NoZone).ToMAC()
+}
