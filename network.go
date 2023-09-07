@@ -66,6 +66,14 @@ func (network *ipv6AddressNetwork) getAddressCreator() parsedAddressCreator {
 	return &network.creator
 }
 
+func (network *ipv6AddressNetwork) GetNetworkMask(prefLen BitCount) *IPAddress {
+	return getMask(IPv6, zeroIPv6Seg.ToDiv(), prefLen, network.subnetMasks, true, false)
+}
+
+func (network *ipv6AddressNetwork) GetPrefixedNetworkMask(prefLen BitCount) *IPAddress {
+	return getMask(IPv6, zeroIPv6Seg.ToDiv(), prefLen, network.subnetsMasksWithPrefix, true, true)
+}
+
 // IPv6AddressNetwork is the implementation of IPAddressNetwork for IPv6
 type IPv6AddressNetwork struct {
 	*ipv6AddressNetwork
