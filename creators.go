@@ -220,3 +220,7 @@ func (creator *macAddressCreator) createRangeSegmentInternal(lower, upper SegInt
 func (creator *macAddressCreator) createPrefixSegment(value SegInt, _ PrefixLen) *AddressDivision {
 	return NewMACSegment(MACSegInt(value)).ToDiv()
 }
+
+func (creator *macAddressCreator) createSectionInternal(segments []*AddressDivision, isMultiple bool) *AddressSection {
+	return newMACSectionParsed(segments, isMultiple).ToSectionBase()
+}
