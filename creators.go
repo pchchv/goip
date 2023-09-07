@@ -197,3 +197,14 @@ func (creator *macAddressCreator) getMaxValuePerSegment() SegInt {
 func (creator *macAddressCreator) createSegment(lower, upper SegInt, _ PrefixLen) *AddressDivision {
 	return NewMACRangeSegment(MACSegInt(lower), MACSegInt(upper)).ToDiv()
 }
+
+func (creator *macAddressCreator) createRangeSegment(lower, upper SegInt) *AddressDivision {
+	return NewMACRangeSegment(MACSegInt(lower), MACSegInt(upper)).ToDiv()
+}
+
+func (creator *macAddressCreator) createSegmentInternal(value SegInt, _ PrefixLen, addressStr string,
+	originalVal SegInt, isStandardString bool, lowerStringStartIndex, lowerStringEndIndex int) *AddressDivision {
+	seg := NewMACSegment(MACSegInt(value))
+	seg.setString(addressStr, isStandardString, lowerStringStartIndex, lowerStringEndIndex, originalVal)
+	return seg.ToDiv()
+}
