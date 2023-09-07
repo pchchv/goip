@@ -24,6 +24,8 @@ const (
 	macBitsToSegmentBitshift                      = 3
 )
 
+var zeroMAC = createMACZero(false)
+
 // MACAddress represents a MAC address or a collection of multiple individual MAC addresses.
 // Each segment may represent a single byte value or a range of byte values.
 //
@@ -81,4 +83,13 @@ func getMacSegCount(isExtended bool) (segmentCount int) {
 
 func newMACAddress(section *MACAddressSection) *MACAddress {
 	return createAddress(section.ToSectionBase(), NoZone).ToMAC()
+}
+
+func createMACZero(extended bool) *MACAddress {
+	segs := []*MACAddressSegment{zeroMACSeg, zeroMACSeg, zeroMACSeg, zeroMACSeg, zeroMACSeg, zeroMACSeg}
+	if extended {
+		segs = append(segs, zeroMACSeg, zeroMACSeg)
+	}
+	section := NewMACSection(segs)
+	return newMACAddress(section)
 }
