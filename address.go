@@ -347,3 +347,10 @@ func (addr *Address) ToMAC() *MACAddress {
 	}
 	return nil
 }
+
+// ToAddressBase is an identity method.
+//
+// ToAddressBase can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (addr *Address) ToAddressBase() *Address {
+	return addr
+}
