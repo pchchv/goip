@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"net"
 	"sync"
 	"unsafe"
 )
@@ -26,6 +27,7 @@ var (
 	IPv4Network                   = &IPv4AddressNetwork{ipv4Network}
 	IPv6Network                   = &IPv6AddressNetwork{ipv6Network}
 	ipv4loopback                  = createIPv4Loopback()
+	ipv6loopback                  = createIPv6Loopback()
 	_            IPAddressNetwork = &ipv4AddressNetwork{}
 )
 
@@ -148,6 +150,11 @@ func (network IPv4AddressNetwork) GetPrefixedHostMask(prefLen BitCount) *IPv4Add
 func createIPv4Loopback() *IPv4Address {
 	ipv4loopback, _ := NewIPv4AddressFromBytes([]byte{127, 0, 0, 1})
 	return ipv4loopback
+}
+
+func createIPv6Loopback() *IPv6Address {
+	ipv6loopback, _ := NewIPv6AddressFromBytes(net.IPv6loopback)
+	return ipv6loopback
 }
 
 func getMask(version IPVersion, zeroSeg *AddressDivision, networkPrefixLength BitCount, cache []*IPAddress, network, withPrefixLength bool) *IPAddress {
