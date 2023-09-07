@@ -28,6 +28,7 @@ var (
 	}
 	IPv4Network  = &IPv4AddressNetwork{ipv4Network}
 	IPv6Network  = &IPv6AddressNetwork{ipv6Network}
+	macNetwork   = &macAddressNetwork{}
 	ipv4loopback = createIPv4Loopback()
 	ipv6loopback = createIPv6Loopback()
 )
@@ -170,6 +171,10 @@ func (network IPv4AddressNetwork) GetHostMask(prefLen BitCount) *IPv4Address {
 
 func (network IPv4AddressNetwork) GetPrefixedHostMask(prefLen BitCount) *IPv4Address {
 	return network.ipv4AddressNetwork.GetPrefixedHostMask(prefLen).ToIPv4()
+}
+
+type macAddressNetwork struct {
+	creator macAddressCreator
 }
 
 func createIPv4Loopback() *IPv4Address {
