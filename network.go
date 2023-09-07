@@ -102,6 +102,18 @@ func (network IPv6AddressNetwork) GetNetworkMask(prefLen BitCount) *IPv6Address 
 	return network.ipv6AddressNetwork.GetNetworkMask(prefLen).ToIPv6()
 }
 
+func (network IPv6AddressNetwork) GetPrefixedNetworkMask(prefLen BitCount) *IPv6Address {
+	return network.ipv6AddressNetwork.GetPrefixedNetworkMask(prefLen).ToIPv6()
+}
+
+func (network IPv6AddressNetwork) GetHostMask(prefLen BitCount) *IPv6Address {
+	return network.ipv6AddressNetwork.GetHostMask(prefLen).ToIPv6()
+}
+
+func (network IPv6AddressNetwork) GetPrefixedHostMask(prefLen BitCount) *IPv6Address {
+	return network.ipv6AddressNetwork.GetPrefixedHostMask(prefLen).ToIPv6()
+}
+
 type ipv4AddressNetwork struct {
 	ipAddressNetwork
 	creator ipv4AddressCreator
