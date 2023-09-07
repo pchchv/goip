@@ -144,6 +144,56 @@ func (section *addressSectionInternal) toPrefixBlockLen(prefLen BitCount) *Addre
 	return createSectionMultiple(newSegs, cacheBitCount(prefLen), section.getAddrType(), section.isMultiple() || prefLen < section.GetBitCount())
 }
 
+func (section *addressSectionInternal) initImplicitPrefLen(bitsPerSegment BitCount) {
+	segCount := section.GetSegmentCount()
+	if segCount != 0 {
+		for i := segCount - 1; i >= 0; i-- {
+			segment := section.GetSegment(i)
+			minPref := segment.GetMinPrefixLenForBlock()
+			if minPref > 0 {
+				if minPref != bitsPerSegment || i != segCount-1 {
+					section.prefixLength = getNetworkPrefixLen(bitsPerSegment, minPref, i)
+				}
+				return
+			}
+		}
+		section.prefixLength = cacheBitCount(0)
+	}
+}
+
+func (section *addressSectionInternal) initMultAndImplicitPrefLen(bitsPerSegment BitCount) {
+	segCount := section.GetSegmentCount()
+	if segCount != 0 {
+		isMultiple := false
+		isBlock := true
+		for i := segCount - 1; i >= 0; i-- {
+			segment := section.GetSegment(i)
+			if isBlock {
+				minPref := segment.GetMinPrefixLenForBlock()
+				if minPref > 0 {
+					if minPref != bitsPerSegment || i != segCount-1 {
+						section.prefixLength = getNetworkPrefixLen(bitsPerSegment, minPref, i)
+					}
+					isBlock = false
+					if isMultiple { // nothing left to do
+						return
+					}
+				}
+			}
+			if !isMultiple && segment.isMultiple() {
+				isMultiple = true
+				section.isMult = true
+				if !isBlock { // nothing left to do
+					return
+				}
+			}
+		}
+		if isBlock {
+			section.prefixLength = cacheBitCount(0)
+		}
+	}
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
