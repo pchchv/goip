@@ -187,3 +187,5 @@ func (creator *ipv4AddressCreator) createAddressInternal(section *AddressSection
 	}
 	return res
 }
+
+type macAddressCreator struct{}
