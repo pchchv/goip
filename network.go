@@ -9,6 +9,7 @@ import (
 var (
 	_           IPAddressNetwork = &ipv4AddressNetwork{}
 	_           IPAddressNetwork = &ipv6AddressNetwork{}
+	_           addressNetwork   = &macAddressNetwork{}
 	maskMutex   sync.Mutex
 	ipv4Network = &ipv4AddressNetwork{
 		ipAddressNetwork: ipAddressNetwork{
@@ -175,6 +176,10 @@ func (network IPv4AddressNetwork) GetPrefixedHostMask(prefLen BitCount) *IPv4Add
 
 type macAddressNetwork struct {
 	creator macAddressCreator
+}
+
+func (network *macAddressNetwork) getAddressCreator() parsedAddressCreator {
+	return &network.creator
 }
 
 func createIPv4Loopback() *IPv4Address {
