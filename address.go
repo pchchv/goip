@@ -330,3 +330,20 @@ func (addr *Address) ToIPv6() *IPv6Address {
 	}
 	return nil
 }
+
+// IsMAC returns true if this address or address collection originated as a MAC address or address collection.
+// If so, use ToMAC to convert back to the MAC-specific type.
+func (addr *Address) IsMAC() bool {
+	return addr != nil && addr.isMAC()
+}
+
+// ToMAC converts to a MACAddress if this address or subnet originated as a MAC address or subnet.
+// If not, ToMAC returns nil.
+//
+// ToMAC can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (addr *Address) ToMAC() *MACAddress {
+	if addr.IsMAC() {
+		return (*MACAddress)(addr)
+	}
+	return nil
+}
