@@ -41,6 +41,16 @@ type MACAddress struct {
 // GetCount returns the count of addresses that this address or address collection represents.
 //
 // If just a single address, not a collection of multiple addresses, returns 1.
+func (addr *MACAddress) init() *MACAddress {
+	if addr.section == nil {
+		return zeroMAC
+	}
+	return addr
+}
+
+// GetCount returns the count of addresses that this address or address collection represents.
+//
+// If just a single address, not a collection of multiple addresses, returns 1.
 //
 // Use IsMultiple if you simply want to know if the count is greater than 1.
 func (addr *MACAddress) GetCount() *big.Int {
@@ -70,6 +80,17 @@ func (addr *MACAddress) GetBitsPerSegment() BitCount {
 // Segments in the same address are equal length.
 func (addr *MACAddress) GetBytesPerSegment() int {
 	return MACBytesPerSegment
+}
+
+// ToAddressBase converts to an Address, a polymorphic type usable with all addresses and subnets.
+// Afterwards, you can convert back with ToMAC.
+//
+// ToAddressBase can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (addr *MACAddress) ToAddressBase() *Address {
+	if addr != nil {
+		addr = addr.init()
+	}
+	return (*Address)(addr)
 }
 
 func getMacSegCount(isExtended bool) (segmentCount int) {
