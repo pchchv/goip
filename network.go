@@ -74,6 +74,14 @@ func (network *ipv6AddressNetwork) GetPrefixedNetworkMask(prefLen BitCount) *IPA
 	return getMask(IPv6, zeroIPv6Seg.ToDiv(), prefLen, network.subnetsMasksWithPrefix, true, true)
 }
 
+func (network *ipv6AddressNetwork) GetHostMask(prefLen BitCount) *IPAddress {
+	return getMask(IPv6, zeroIPv6Seg.ToDiv(), prefLen, network.hostMasks, false, false)
+}
+
+func (network *ipv6AddressNetwork) GetPrefixedHostMask(prefLen BitCount) *IPAddress {
+	return getMask(IPv6, zeroIPv6Seg.ToDiv(), prefLen, network.hostMasksWithPrefix, false, true)
+}
+
 // IPv6AddressNetwork is the implementation of IPAddressNetwork for IPv6
 type IPv6AddressNetwork struct {
 	*ipv6AddressNetwork
