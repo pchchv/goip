@@ -208,3 +208,15 @@ func (creator *macAddressCreator) createSegmentInternal(value SegInt, _ PrefixLe
 	seg.setString(addressStr, isStandardString, lowerStringStartIndex, lowerStringEndIndex, originalVal)
 	return seg.ToDiv()
 }
+
+func (creator *macAddressCreator) createRangeSegmentInternal(lower, upper SegInt, _ PrefixLen, addressStr string,
+	originalLower, originalUpper SegInt, isStandardString, isStandardRangeString bool,
+	lowerStringStartIndex, lowerStringEndIndex, upperStringEndIndex int) *AddressDivision {
+	seg := NewMACRangeSegment(MACSegInt(lower), MACSegInt(upper))
+	seg.setRangeString(addressStr, isStandardRangeString, lowerStringStartIndex, upperStringEndIndex, originalLower, originalUpper)
+	return seg.ToDiv()
+}
+
+func (creator *macAddressCreator) createPrefixSegment(value SegInt, _ PrefixLen) *AddressDivision {
+	return NewMACSegment(MACSegInt(value)).ToDiv()
+}
