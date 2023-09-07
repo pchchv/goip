@@ -94,6 +94,14 @@ type IPv6AddressNetwork struct {
 	*ipv6AddressNetwork
 }
 
+func (network IPv6AddressNetwork) GetLoopback() *IPv6Address {
+	return ipv6loopback
+}
+
+func (network IPv6AddressNetwork) GetNetworkMask(prefLen BitCount) *IPv6Address {
+	return network.ipv6AddressNetwork.GetNetworkMask(prefLen).ToIPv6()
+}
+
 type ipv4AddressNetwork struct {
 	ipAddressNetwork
 	creator ipv4AddressCreator
