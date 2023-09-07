@@ -106,6 +106,14 @@ func (creator *ipv6AddressCreator) createRangeSegmentInternal(lower, upper SegIn
 	return seg.ToDiv()
 }
 
+func (creator *ipv6AddressCreator) createPrefixSegment(value SegInt, segmentPrefixLength PrefixLen) *AddressDivision {
+	return NewIPv6PrefixedSegment(IPv6SegInt(value), segmentPrefixLength).ToDiv()
+}
+
+func (creator *ipv6AddressCreator) createSectionInternal(segments []*AddressDivision, isMultiple bool) *AddressSection {
+	return newIPv6SectionParsed(segments, isMultiple).ToSectionBase()
+}
+
 type ipv4AddressCreator struct{}
 
 func (creator *ipv4AddressCreator) getMaxValuePerSegment() SegInt {
