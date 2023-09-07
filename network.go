@@ -58,6 +58,14 @@ type ipv6AddressNetwork struct {
 	creator ipv6AddressCreator
 }
 
+func (network *ipv6AddressNetwork) getIPAddressCreator() ipAddressCreator {
+	return &network.creator
+}
+
+func (network *ipv6AddressNetwork) getAddressCreator() parsedAddressCreator {
+	return &network.creator
+}
+
 // IPv6AddressNetwork is the implementation of IPAddressNetwork for IPv6
 type IPv6AddressNetwork struct {
 	*ipv6AddressNetwork
