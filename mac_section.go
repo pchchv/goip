@@ -65,3 +65,10 @@ func createMACSection(segments []*AddressDivision) *MACAddressSection {
 		},
 	}
 }
+
+func newMACSectionParsed(segments []*AddressDivision, isMultiple bool) (res *MACAddressSection) {
+	res = createMACSection(segments)
+	res.initImplicitPrefLen(MACBitsPerSegment)
+	res.isMult = isMultiple
+	return
+}
