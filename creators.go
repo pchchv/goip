@@ -224,3 +224,25 @@ func (creator *macAddressCreator) createPrefixSegment(value SegInt, _ PrefixLen)
 func (creator *macAddressCreator) createSectionInternal(segments []*AddressDivision, isMultiple bool) *AddressSection {
 	return newMACSectionParsed(segments, isMultiple).ToSectionBase()
 }
+
+func (creator *macAddressCreator) createAddressInternal(section *AddressSection, originator HostIdentifierString) *Address {
+	res := newMACAddress(section.ToMAC()).ToAddressBase()
+	if originator != nil {
+		cache := res.cache
+		if cache != nil {
+			cache.identifierStr = &identifierStr{originator}
+		}
+	}
+	return res
+}
+
+func (creator *macAddressCreator) createAddressInternalFromSection(section *MACAddressSection, originator HostIdentifierString) *MACAddress {
+	res := newMACAddress(section)
+	if originator != nil {
+		cache := res.cache
+		if cache != nil {
+			cache.identifierStr = &identifierStr{originator}
+		}
+	}
+	return res
+}
