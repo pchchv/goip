@@ -313,3 +313,31 @@ func getPrefixLength(qualifier *parsedHostIdentifierStringQualifier) PrefixLen {
 	return qualifier.getEquivalentPrefixLen()
 }
 
+// When expanding a set of segments into multiple, it is possible that the new segments do not accurately
+// cover the same ranges of values.  This occurs when there is a range in the upper segments and the lower
+// segments do not cover the full range (as is the case in the original unexpanded segment).
+//
+// This does not include compressed 0 segments or compressed '*' segments, as neither can have the issue.
+//
+// Returns true if the expansion was invalid.
+func checkExpandedValues(section *IPAddressSection, start, end int) bool {
+	if section != nil && start < end {
+		seg := section.GetSegment(start)
+		lastWasRange := seg.isMultiple()
+		for {
+			start++
+			seg = section.GetSegment(start)
+			if lastWasRange {
+				if !seg.IsFullRange() {
+					return true
+				}
+			} else {
+				lastWasRange = seg.isMultiple()
+			}
+			if start >= end {
+				break
+			}
+		}
+	}
+	return false
+}
