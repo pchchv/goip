@@ -204,6 +204,34 @@ func (seg *addressSegmentInternal) GetUpper() *AddressSegment {
 	return seg.getUpper()
 }
 
+func (section *addressSectionInternal) createLowestHighestSections() (lower, upper *AddressSection) {
+	var highSegs []*AddressDivision
+	segmentCount := section.GetSegmentCount()
+	lowSegs := createSegmentArray(segmentCount)
+
+	if section.isMultiple() {
+		highSegs = createSegmentArray(segmentCount)
+	}
+
+	for i := 0; i < segmentCount; i++ {
+		seg := section.GetSegment(i)
+		lowSegs[i] = seg.GetLower().ToDiv()
+		if highSegs != nil {
+			highSegs[i] = seg.GetUpper().ToDiv()
+		}
+	}
+
+	lower = deriveAddressSection(section.toAddressSection(), lowSegs)
+
+	if highSegs == nil {
+		upper = lower
+	} else {
+		upper = deriveAddressSection(section.toAddressSection(), highSegs)
+	}
+
+	return
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
