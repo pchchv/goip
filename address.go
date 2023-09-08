@@ -254,6 +254,36 @@ func (addr *addressInternal) GetBitsPerSegment() BitCount {
 	return section.GetBitsPerSegment()
 }
 
+func (addr *addressInternal) createLowestHighestAddrs() (lower, upper *Address) {
+	lower = addr.checkIdentity(addr.section.GetLower())
+	upper = addr.checkIdentity(addr.section.GetUpper())
+	return
+}
+
+func (addr *addressInternal) getLowestHighestAddrs() (lower, upper *Address) {
+	if !addr.isMultiple() {
+		lower = addr.toAddress()
+		upper = lower
+		return
+	}
+
+	cache := addr.cache
+	if cache == nil {
+		return addr.createLowestHighestAddrs()
+	}
+
+	cached := (*addrsCache)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.addrsCache))))
+	if cached == nil {
+		cached = &addrsCache{}
+		cached.lower, cached.upper = addr.createLowestHighestAddrs()
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.addrsCache))
+		atomicStorePointer(dataLoc, unsafe.Pointer(cached))
+	}
+
+	lower, upper = cached.lower, cached.upper
+	return
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
