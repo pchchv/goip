@@ -284,6 +284,16 @@ func (addr *addressInternal) getLowestHighestAddrs() (lower, upper *Address) {
 	return
 }
 
+func (addr *addressInternal) getLower() *Address {
+	lower, _ := addr.getLowestHighestAddrs()
+	return lower
+}
+
+func (addr *addressInternal) getUpper() *Address {
+	_, upper := addr.getLowestHighestAddrs()
+	return upper
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
