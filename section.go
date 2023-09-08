@@ -566,3 +566,15 @@ func toSegments(
 	}
 	return
 }
+
+// callers to this function supply segments with prefix length consistent with the supplied prefix length
+func deriveAddressSectionPrefLen(from *AddressSection, segments []*AddressDivision, prefixLength PrefixLen) *AddressSection {
+	result := createSection(segments, prefixLength, from.getAddrType())
+	result.initMultiple() // assigns isMultiple
+	return result
+}
+
+// callers to this function supply segments with prefix length consistent with the prefix length of this section
+func deriveAddressSection(from *AddressSection, segments []*AddressDivision) (res *AddressSection) {
+	return deriveAddressSectionPrefLen(from, segments, from.prefixLength)
+}
