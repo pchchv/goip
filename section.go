@@ -232,6 +232,32 @@ func (section *addressSectionInternal) createLowestHighestSections() (lower, upp
 	return
 }
 
+func (section *addressSectionInternal) getLowestHighestSections() (lower, upper *AddressSection) {
+	if !section.isMultiple() {
+		lower = section.toAddressSection()
+		upper = lower
+		return
+	}
+
+	cache := section.cache
+	if cache == nil {
+		return section.createLowestHighestSections()
+	}
+
+	cached := (*groupingCache)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.sectionCache))))
+	if cached == nil {
+		cached = &groupingCache{}
+		cached.lower, cached.upper = section.createLowestHighestSections()
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.sectionCache))
+		atomicStorePointer(dataLoc, unsafe.Pointer(cached))
+	}
+
+	lower = cached.lower
+	upper = cached.upper
+
+	return
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
