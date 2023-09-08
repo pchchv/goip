@@ -236,6 +236,25 @@ func (grouping *addressDivisionGroupingInternal) copySubDivisions(start, end int
 	return
 }
 
+func (grouping *addressDivisionGroupingInternal) getDivisionCount() int {
+	if divArray := grouping.getDivArray(); divArray != nil {
+		return divArray.getDivisionCount()
+	}
+	return 0
+}
+
+func (grouping *addressDivisionGroupingInternal) initMultiple() {
+	divCount := grouping.getDivisionCount()
+	for i := divCount - 1; i >= 0; i-- {
+		div := grouping.getDivision(i)
+		if div.isMultiple() {
+			grouping.isMult = true
+			return
+		}
+	}
+	return
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
