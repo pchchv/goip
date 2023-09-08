@@ -399,6 +399,20 @@ func (section *AddressSection) ToPrefixBlockLen(prefLen BitCount) *AddressSectio
 	return section.toPrefixBlockLen(prefLen)
 }
 
+// GetLower returns the section in the range with the lowest numeric value,
+// which will be the same section if it represents a single value.
+// For example, for "1.2-3.4.5-6", the section "1.2.4.5" is returned.
+func (section *AddressSection) GetLower() *AddressSection {
+	return section.getLower()
+}
+
+// GetUpper returns the section in the range with the highest numeric value,
+// which will be the same section if it represents a single value.
+// For example, for "1.2-3.4.5-6", the section "1.3.4.6" is returned.
+func (section *AddressSection) GetUpper() *AddressSection {
+	return section.getUpper()
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
