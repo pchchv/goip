@@ -87,6 +87,18 @@ func (addr *IPAddress) ToIPv6() *IPv6Address {
 	return nil
 }
 
+// GetSegment returns the segment at the given index.
+// The first segment is at index 0.
+// GetSegment will panic given a negative index or an index matching or larger than the segment count.
+func (addr *IPAddress) GetSegment(index int) *IPAddressSegment {
+	return addr.getSegment(index).ToIP()
+}
+
+// GetSegmentCount returns the segment count, the number of segments in this address.
+func (addr *IPAddress) GetSegmentCount() int {
+	return addr.getDivisionCount()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
