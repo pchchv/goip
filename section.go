@@ -258,6 +258,16 @@ func (section *addressSectionInternal) getLowestHighestSections() (lower, upper 
 	return
 }
 
+func (section *addressSectionInternal) getLower() *AddressSection {
+	lower, _ := section.getLowestHighestSections()
+	return lower
+}
+
+func (section *addressSectionInternal) getUpper() *AddressSection {
+	_, upper := section.getLowestHighestSections()
+	return upper
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
