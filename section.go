@@ -194,6 +194,16 @@ func (section *addressSectionInternal) initMultAndImplicitPrefLen(bitsPerSegment
 	}
 }
 
+// GetLower returns a segment representing just the lowest value in the range, which will be the same segment if it represents a single value.
+func (seg *addressSegmentInternal) GetLower() *AddressSegment {
+	return seg.getLower()
+}
+
+// GetUpper returns a segment representing just the highest value in the range, which will be the same segment if it represents a single value.
+func (seg *addressSegmentInternal) GetUpper() *AddressSegment {
+	return seg.getUpper()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
