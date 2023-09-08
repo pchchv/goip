@@ -311,6 +311,20 @@ func (section *AddressSection) IsAdaptiveZero() bool {
 	return section != nil && section.matchesZeroGrouping()
 }
 
+// ToPrefixBlock returns the section with the same prefix as this section while the remaining bits span all values.
+// The returned section will be the block of all sections with the same prefix.
+//
+// If this section has no prefix, this section is returned.
+func (section *AddressSection) ToPrefixBlock() *AddressSection {
+	return section.toPrefixBlock()
+}
+
+// ToPrefixBlockLen returns the section with the same prefix of the given length as this section while the remaining bits span all values.
+// The returned section will be the block of all sections with the same prefix.
+func (section *AddressSection) ToPrefixBlockLen(prefLen BitCount) *AddressSection {
+	return section.toPrefixBlockLen(prefLen)
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
