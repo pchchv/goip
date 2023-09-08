@@ -240,6 +240,20 @@ func (addr *addressInternal) getDivisionCount() int {
 	return addr.section.GetDivisionCount()
 }
 
+func (addr *addressInternal) getSegment(index int) *AddressSegment {
+	return addr.section.GetSegment(index)
+}
+
+// GetBitsPerSegment returns the number of bits comprising each segment in this address or subnet.
+// Segments in the same address are equal length.
+func (addr *addressInternal) GetBitsPerSegment() BitCount {
+	section := addr.section
+	if section == nil {
+		return 0
+	}
+	return section.GetBitsPerSegment()
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
