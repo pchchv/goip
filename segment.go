@@ -674,6 +674,30 @@ func (seg *AddressSegment) ToIPv6() *IPv6AddressSegment {
 	return nil
 }
 
+// ToIP converts to an IPAddressSegment if this division originated as an IPv4 or IPv6 segment,
+// or an implicitly zero-valued IP segment.
+// If not, ToIP returns nil.
+//
+// ToIP can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (seg *AddressSegment) ToIP() *IPAddressSegment {
+	if seg.IsIP() {
+		return (*IPAddressSegment)(unsafe.Pointer(seg))
+	}
+	return nil
+}
+
+// Iterator provides an iterator to iterate through the individual address segments of this address segment.
+//
+// Call IsMultiple to determine if this instance represents multiple address segments,
+// or GetValueCount for the count.
+func (seg *AddressSegment) Iterator() Iterator[*AddressSegment] {
+	if seg == nil {
+		return nilSegIterator()
+	}
+	return seg.iterator()
+}
+
 func segsSame(onePref, twoPref PrefixLen, oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return onePref.Equal(twoPref) &&
 		oneVal == twoVal && oneUpperVal == twoUpperVal
