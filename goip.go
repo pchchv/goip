@@ -113,6 +113,27 @@ func (addr *IPAddress) GetUpper() *IPAddress {
 	return addr.init().getUpper().ToIP()
 }
 
+// ToPrefixBlock returns the subnet associated with the prefix length of this address.
+// If this address has no prefix length, this address is returned.
+//
+// The subnet will include all addresses with the same prefix as this one, the prefix "block".
+// The network prefix will match the prefix of this address or subnet, and the host values will span all values.
+//
+// For example, if the address is "1.2.3.4/16" it returns the subnet "1.2.0.0/16", which can also be written as "1.2.*.*/16".
+func (addr *IPAddress) ToPrefixBlock() *IPAddress {
+	return addr.init().toPrefixBlock().ToIP()
+}
+
+// ToPrefixBlockLen returns the subnet associated with the given prefix length.
+//
+// The subnet will include all addresses with the same prefix as this one, the prefix "block" for that prefix length.
+// The network prefix will match the prefix of this address or subnet, and the host values will span all values.
+//
+// For example, if the address is "1.2.3.4" and the prefix length provided is 16, it returns the subnet "1.2.0.0/16", which can also be written as "1.2.*.*/16".
+func (addr *IPAddress) ToPrefixBlockLen(prefLen BitCount) *IPAddress {
+	return addr.init().toPrefixBlockLen(prefLen).ToIP()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
