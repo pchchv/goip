@@ -308,6 +308,23 @@ func (addr *Address) GetUpper() *Address {
 	return addr.init().getUpper()
 }
 
+// ToPrefixBlock returns the address collection associated with the prefix of this address or address collection,
+// the address whose prefix matches the prefix of this address, and the remaining bits span all values.
+// If this address has no prefix length, this address is returned.
+//
+// The returned address collection will include all addresses with the same prefix as this one, the prefix "block".
+func (addr *Address) ToPrefixBlock() *Address {
+	return addr.init().toPrefixBlock()
+}
+
+// ToPrefixBlockLen returns the address associated with the prefix length provided,
+// the address collection whose prefix of that length matches the prefix of this address, and the remaining bits span all values.
+//
+// The returned address will include all addresses with the same prefix as this one, the prefix "block".
+func (addr *Address) ToPrefixBlockLen(prefLen BitCount) *Address {
+	return addr.init().toPrefixBlockLen(prefLen)
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
