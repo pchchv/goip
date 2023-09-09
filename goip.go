@@ -99,6 +99,20 @@ func (addr *IPAddress) GetSegmentCount() int {
 	return addr.getDivisionCount()
 }
 
+// GetLower returns the lowest address in the subnet range,
+// which will be the receiver if it represents a single address.
+// For example, for the subnet "1.2-3.4.5-6", the address "1.2.4.5" is returned.
+func (addr *IPAddress) GetLower() *IPAddress {
+	return addr.init().getLower().ToIP()
+}
+
+// GetUpper returns the highest address in the subnet range,
+// which will be the receiver if it represents a single address.
+// For example, for "1.2-3.4.5-6", the series "1.3.4.6" is returned.
+func (addr *IPAddress) GetUpper() *IPAddress {
+	return addr.init().getUpper().ToIP()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
