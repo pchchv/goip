@@ -294,6 +294,10 @@ func (addr *addressInternal) getUpper() *Address {
 	return upper
 }
 
+func (addr *addressInternal) toBlock(segmentIndex int, lower, upper SegInt) *Address {
+	return addr.checkIdentity(addr.section.toBlock(segmentIndex, lower, upper))
+}
+
 // GetLower returns the address in the subnet or address collection with the lowest numeric value,
 // which will be the receiver if it represents a single address.
 // For example, for "1.2-3.4.5-6", the series "1.2.4.5" is returned.
@@ -323,6 +327,12 @@ func (addr *Address) ToPrefixBlock() *Address {
 // The returned address will include all addresses with the same prefix as this one, the prefix "block".
 func (addr *Address) ToPrefixBlockLen(prefLen BitCount) *Address {
 	return addr.init().toPrefixBlockLen(prefLen)
+}
+
+// ToBlock creates a new block of addresses by changing the segment at the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (addr *Address) ToBlock(segmentIndex int, lower, upper SegInt) *Address {
+	return addr.init().toBlock(segmentIndex, lower, upper)
 }
 
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
