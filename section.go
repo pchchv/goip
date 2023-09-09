@@ -268,6 +268,68 @@ func (section *addressSectionInternal) getUpper() *AddressSection {
 	return upper
 }
 
+// GetMaxSegmentValue returns the maximum possible segment value for this type of address.
+//
+// Note this is not the maximum of the range of segment values in this specific address,
+// this is the maximum value of any segment for this address type and version, determined by the number of bits per segment.
+func (section *addressSectionInternal) GetMaxSegmentValue() SegInt {
+	addrType := section.getAddrType()
+	if addrType.isIPv4() {
+		return IPv4MaxValuePerSegment
+	} else if addrType.isIPv6() {
+		return IPv6MaxValuePerSegment
+	} else if addrType.isMAC() {
+		return MACMaxValuePerSegment
+	}
+
+	divLen := section.GetDivisionCount()
+	if divLen == 0 {
+		return 0
+	}
+	return section.GetSegment(0).GetMaxValue()
+}
+
+func (section *addressSectionInternal) toBlock(segmentIndex int, lower, upper SegInt) *AddressSection {
+	segCount := section.GetSegmentCount()
+	i := segmentIndex
+	if i < 0 {
+		i = 0
+	}
+
+	maxSegVal := section.GetMaxSegmentValue()
+
+	for ; i < segCount; i++ {
+		seg := section.GetSegment(segmentIndex)
+		var lowerVal, upperVal SegInt
+		if i == segmentIndex {
+			lowerVal, upperVal = lower, upper
+		} else {
+			upperVal = maxSegVal
+		}
+		if !segsSame(nil, seg.getDivisionPrefixLength(), lowerVal, seg.GetSegmentValue(), upperVal, seg.GetUpperSegmentValue()) {
+			newSegs := createSegmentArray(segCount)
+			section.copySubDivisions(0, i, newSegs)
+			newSeg := createAddressDivision(seg.deriveNewMultiSeg(lowerVal, upperVal, nil))
+			newSegs[i] = newSeg
+			var allSeg *AddressDivision
+			if j := i + 1; j < segCount {
+				if i == segmentIndex {
+					allSeg = createAddressDivision(seg.deriveNewMultiSeg(0, maxSegVal, nil))
+				} else {
+					allSeg = newSeg
+				}
+				newSegs[j] = allSeg
+				for j++; j < segCount; j++ {
+					newSegs[j] = allSeg
+				}
+			}
+			return createSectionMultiple(newSegs, nil, section.getAddrType(),
+				segmentIndex < segCount-1 || lower != upper)
+		}
+	}
+	return section.toAddressSection()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
