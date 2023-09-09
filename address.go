@@ -294,6 +294,20 @@ func (addr *addressInternal) getUpper() *Address {
 	return upper
 }
 
+// GetLower returns the address in the subnet or address collection with the lowest numeric value,
+// which will be the receiver if it represents a single address.
+// For example, for "1.2-3.4.5-6", the series "1.2.4.5" is returned.
+func (addr *Address) GetLower() *Address {
+	return addr.init().getLower()
+}
+
+// GetUpper returns the address in the subnet or address collection with the highest numeric value,
+// which will be the receiver if it represents a single address.
+// For example, for the subnet "1.2-3.4.5-6", the address "1.3.4.6" is returned.
+func (addr *Address) GetUpper() *Address {
+	return addr.init().getUpper()
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
