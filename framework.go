@@ -575,3 +575,25 @@ type IPv6AddressSegmentSeries interface {
 	// GetSegment will panic given a negative index or an index matching or larger than the segment count.
 	GetSegment(index int) *IPv6AddressSegment
 }
+
+// MACAddressSegmentSeries serves as a common interface to all MAC address sections and MAC addresses.
+type MACAddressSegmentSeries interface {
+	AddressSegmentSeries
+	// GetTrailingSection returns an ending subsection of the full address section.
+	GetTrailingSection(index int) *MACAddressSection
+	// GetSubSection returns a subsection of the full address section.
+	GetSubSection(index, endIndex int) *MACAddressSection
+	// GetSegments returns a slice with the address segments.
+	// The returned slice is not backed by the same array as the receiver.
+	GetSegments() []*MACAddressSegment
+	// CopySegments copies the existing segments into the given slice,
+	// as much as can be fit into the slice, returning the number of segments copied.
+	CopySegments(segs []*MACAddressSegment) (count int)
+	// CopySubSegments copies the existing segments from the given start index until but not including the segment at the given end index,
+	// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+	CopySubSegments(start, end int, segs []*MACAddressSegment) (count int)
+	// GetSegment returns the segment at the given index.
+	// The first segment is at index 0.
+	// GetSegment will panic given a negative index or an index matching or larger than the segment count.
+	GetSegment(index int) *MACAddressSegment
+}
