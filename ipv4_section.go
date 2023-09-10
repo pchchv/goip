@@ -23,6 +23,42 @@ func (section *IPv4AddressSection) ToSectionBase() *AddressSection {
 	return section.ToIP().ToSectionBase()
 }
 
+// Uint32Value returns the lowest address in the address section range as a uint32.
+func (section *IPv4AddressSection) Uint32Value() uint32 {
+	segCount := section.GetSegmentCount()
+	if segCount == 0 {
+		return 0
+	}
+
+	arr := section.getDivArray()
+	val := uint32(arr[0].getDivisionValue())
+	bitsPerSegment := section.GetBitsPerSegment()
+
+	for i := 1; i < segCount; i++ {
+		val = (val << uint(bitsPerSegment)) | uint32(arr[i].getDivisionValue())
+	}
+
+	return val
+}
+
+// UpperUint32Value returns the highest address in the address section range as a uint32.
+func (section *IPv4AddressSection) UpperUint32Value() uint32 {
+	segCount := section.GetSegmentCount()
+	if segCount == 0 {
+		return 0
+	}
+
+	arr := section.getDivArray()
+	val := uint32(arr[0].getUpperDivisionValue())
+	bitsPerSegment := section.GetBitsPerSegment()
+
+	for i := 1; i < segCount; i++ {
+		val = (val << uint(bitsPerSegment)) | uint32(arr[i].getUpperDivisionValue())
+	}
+
+	return val
+}
+
 func createIPv4Section(segments []*AddressDivision) *IPv4AddressSection {
 	return &IPv4AddressSection{
 		ipAddressSectionInternal{
