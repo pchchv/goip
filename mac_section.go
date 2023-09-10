@@ -84,6 +84,18 @@ func (section *MACAddressSection) ToPrefixBlock() *MACAddressSection {
 	return section.toPrefixBlock().ToMAC()
 }
 
+// ToPrefixBlockLen returns the section with the same prefix of the given length as this section while the remaining bits span all values.
+// The returned section will be the block of all sections with the same prefix.
+func (section *MACAddressSection) ToPrefixBlockLen(prefLen BitCount) *MACAddressSection {
+	return section.toPrefixBlockLen(prefLen).ToMAC()
+}
+
+// ToBlock creates a new block of address sections by changing the segment at the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (section *MACAddressSection) ToBlock(segmentIndex int, lower, upper SegInt) *MACAddressSection {
+	return section.toBlock(segmentIndex, lower, upper).ToMAC()
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
