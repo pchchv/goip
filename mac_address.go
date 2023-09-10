@@ -107,6 +107,20 @@ func (addr *MACAddress) ToPrefixBlock() *MACAddress {
 	return addr.init().toPrefixBlock().ToMAC()
 }
 
+// ToPrefixBlockLen returns the address associated with the prefix length provided,
+// the address collection whose prefix of that length matches the prefix of this address, and the remaining bits span all values.
+//
+// The returned address will include all addresses with the same prefix as this one, the prefix "block".
+func (addr *MACAddress) ToPrefixBlockLen(prefLen BitCount) *MACAddress {
+	return addr.init().toPrefixBlockLen(prefLen).ToMAC()
+}
+
+// ToBlock creates a new block of addresses by changing the segment at the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (addr *MACAddress) ToBlock(segmentIndex int, lower, upper SegInt) *MACAddress {
+	return addr.init().toBlock(segmentIndex, lower, upper).ToMAC()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
