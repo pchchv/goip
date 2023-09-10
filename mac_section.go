@@ -48,6 +48,42 @@ func (section *MACAddressSection) IsAdaptiveZero() bool {
 	return section != nil && section.matchesZeroGrouping()
 }
 
+func (section *MACAddressSection) getLongValue(lower bool) (result uint64) {
+	segCount := section.GetSegmentCount()
+	if segCount == 0 {
+		return
+	}
+
+	seg := section.GetSegment(0)
+	if lower {
+		result = uint64(seg.GetSegmentValue())
+	} else {
+		result = uint64(seg.GetUpperSegmentValue())
+	}
+
+	bitsPerSegment := section.GetBitsPerSegment()
+
+	for i := 1; i < segCount; i++ {
+		result = result << uint(bitsPerSegment)
+		seg = section.GetSegment(i)
+		if lower {
+			result |= uint64(seg.GetSegmentValue())
+		} else {
+			result |= uint64(seg.GetUpperSegmentValue())
+		}
+	}
+
+	return
+}
+
+// ToPrefixBlock returns the section with the same prefix as this section while the remaining bits span all values.
+// The returned section will be the block of all sections with the same prefix.
+//
+// If this section has no prefix, this section is returned.
+func (section *MACAddressSection) ToPrefixBlock() *MACAddressSection {
+	return section.toPrefixBlock().ToMAC()
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
