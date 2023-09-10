@@ -23,7 +23,8 @@ func (section *IPv6AddressSection) ToSectionBase() *AddressSection {
 	return section.ToIP().ToSectionBase()
 }
 
-// ForEachSegment visits each segment in order from most-significant to least, the most significant with index 0, calling the given function for each, terminating early if the function returns true.
+// ForEachSegment visits each segment in order from most-significant to least, the most significant with index 0,
+// calling the given function for each, terminating early if the function returns true.
 // Returns the number of visited segments.
 func (section *IPv6AddressSection) ForEachSegment(consumer func(segmentIndex int, segment *IPv6AddressSegment) (stop bool)) int {
 	divArray := section.getDivArray()
@@ -47,6 +48,23 @@ func (section *IPv6AddressSection) CopySegments(segs []*IPv6AddressSegment) (cou
 		return
 	})
 }
+
+// GetSegments returns a slice with the address segments.
+// The returned slice is not backed by the same array as this section.
+func (section *IPv6AddressSection) GetSegments() (res []*IPv6AddressSegment) {
+	res = make([]*IPv6AddressSegment, section.GetSegmentCount())
+	section.CopySegments(res)
+	return
+}
+
+// ToPrefixBlock returns the section with the same prefix as this section while the remaining bits span all values.
+// The returned section will be the block of all sections with the same prefix.
+//
+// If this section has no prefix, this section is returned.
+func (section *IPv6AddressSection) ToPrefixBlock() *IPv6AddressSection {
+	return section.toPrefixBlock().ToIPv6()
+}
+
 
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
