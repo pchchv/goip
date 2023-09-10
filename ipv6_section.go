@@ -65,6 +65,17 @@ func (section *IPv6AddressSection) ToPrefixBlock() *IPv6AddressSection {
 	return section.toPrefixBlock().ToIPv6()
 }
 
+// ToPrefixBlockLen returns the section with the same prefix of the given length as this section while the remaining bits span all values.
+// The returned section will be the block of all sections with the same prefix.
+func (section *IPv6AddressSection) ToPrefixBlockLen(prefLen BitCount) *IPv6AddressSection {
+	return section.toPrefixBlockLen(prefLen).ToIPv6()
+}
+
+// ToBlock creates a new block of address sections by changing the segment at the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (section *IPv6AddressSection) ToBlock(segmentIndex int, lower, upper SegInt) *IPv6AddressSection {
+	return section.toBlock(segmentIndex, lower, upper).ToIPv6()
+}
 
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
