@@ -93,6 +93,20 @@ func (addr *MACAddress) ToAddressBase() *Address {
 	return (*Address)(addr)
 }
 
+// GetDivisionCount returns the segment count, implementing the interface AddressDivisionSeries.
+func (addr *MACAddress) GetDivisionCount() int {
+	return addr.init().getDivisionCount()
+}
+
+// ToPrefixBlock returns the address associated with the prefix of this address or address collection,
+// the address whose prefix matches the prefix of this address, and the remaining bits span all values.
+// If this address has no prefix length, this address is returned.
+//
+// The returned address collection will include all addresses with the same prefix as this one, the prefix "block".
+func (addr *MACAddress) ToPrefixBlock() *MACAddress {
+	return addr.init().toPrefixBlock().ToMAC()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
