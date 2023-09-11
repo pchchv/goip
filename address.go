@@ -3,6 +3,8 @@ package goip
 import (
 	"math/big"
 	"unsafe"
+
+	"github.com/pchchv/goip/address_error"
 )
 
 const (
@@ -296,6 +298,18 @@ func (addr *addressInternal) getUpper() *Address {
 
 func (addr *addressInternal) toBlock(segmentIndex int, lower, upper SegInt) *Address {
 	return addr.checkIdentity(addr.section.toBlock(segmentIndex, lower, upper))
+}
+
+func (addr *addressInternal) adjustPrefixLen(prefixLen BitCount) *Address {
+	return addr.checkIdentity(addr.section.adjustPrefixLen(prefixLen))
+}
+
+func (addr *addressInternal) adjustPrefixLenZeroed(prefixLen BitCount) (res *Address, err address_error.IncompatibleAddressError) {
+	section, err := addr.section.adjustPrefixLenZeroed(prefixLen)
+	if err == nil {
+		res = addr.checkIdentity(section)
+	}
+	return
 }
 
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
