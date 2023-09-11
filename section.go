@@ -507,6 +507,21 @@ func (section *addressSectionInternal) setPrefixLength(networkPrefixLength BitCo
 	)
 }
 
+func (section *addressSectionInternal) setPrefixLen(prefixLen BitCount) *AddressSection {
+	// no zeroing
+	res, _ := section.setPrefixLength(prefixLen, false)
+	return res
+}
+
+func (section *addressSectionInternal) adjustPrefixLength(adjustment BitCount, withZeros bool) (*AddressSection, address_error.IncompatibleAddressError) {
+	if adjustment == 0 && section.isPrefixed() {
+		return section.toAddressSection(), nil
+	}
+
+	prefix := section.getAdjustedPrefix(adjustment)
+	return section.setPrefixLength(prefix, withZeros)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
