@@ -330,6 +330,100 @@ func (section *addressSectionInternal) toBlock(segmentIndex int, lower, upper Se
 	return section.toAddressSection()
 }
 
+func (section *addressSectionInternal) getAdjustedPrefix(adjustment BitCount) BitCount {
+	var result BitCount
+	bitCount := section.GetBitCount()
+	prefix := section.getPrefixLen()
+	if prefix == nil {
+		if adjustment > 0 { // start from 0
+			if adjustment > bitCount {
+				result = bitCount
+			} else {
+				result = adjustment
+			}
+		} else { // start from end
+			if -adjustment < bitCount {
+				result = bitCount + adjustment
+			}
+		}
+	} else {
+		result = prefix.bitCount() + adjustment
+		if result > bitCount {
+			result = bitCount
+		} else if result < 0 {
+			result = 0
+		}
+	}
+	return result
+}
+
+// getSubnetSegments called by methods to adjust/remove/set prefix length, masking methods, zero host and zero network methods
+func (section *addressSectionInternal) getSubnetSegments(startIndex int, networkPrefixLength PrefixLen, verifyMask bool, segProducer func(int) *AddressDivision, segmentMaskProducer func(int) SegInt) (res *AddressSection, err address_error.IncompatibleAddressError) {
+	networkPrefixLength = checkPrefLen(networkPrefixLength, section.GetBitCount())
+	bitsPerSegment := section.GetBitsPerSegment()
+	count := section.GetSegmentCount()
+	for i := startIndex; i < count; i++ {
+		segmentPrefixLength := getSegmentPrefixLength(bitsPerSegment, networkPrefixLength, i)
+		seg := segProducer(i)
+		//note that the mask can represent a range (for example a CIDR mask),
+		//but we use the lowest value (maskSegment.value) in the range when masking (ie we discard the range)
+		maskValue := segmentMaskProducer(i)
+		origValue, origUpperValue := seg.getSegmentValue(), seg.getUpperSegmentValue()
+		value, upperValue := origValue, origUpperValue
+		if verifyMask {
+			mask64 := uint64(maskValue)
+			val64 := uint64(value)
+			upperVal64 := uint64(upperValue)
+			masker := MaskRange(val64, upperVal64, mask64, seg.GetMaxValue())
+			if !masker.IsSequential() {
+				err = &incompatibleAddressError{addressError{key: "ipaddress.error.maskMismatch"}}
+				return
+			}
+			value = SegInt(masker.GetMaskedLower(val64, mask64))
+			upperValue = SegInt(masker.GetMaskedUpper(upperVal64, mask64))
+		} else {
+			value &= maskValue
+			upperValue &= maskValue
+		}
+		if !segsSame(segmentPrefixLength, seg.getDivisionPrefixLength(), value, origValue, upperValue, origUpperValue) {
+			newSegments := createSegmentArray(count)
+			section.copySubDivisions(0, i, newSegments)
+			newSegments[i] = createAddressDivision(seg.deriveNewMultiSeg(value, upperValue, segmentPrefixLength))
+			for i++; i < count; i++ {
+				segmentPrefixLength = getSegmentPrefixLength(bitsPerSegment, networkPrefixLength, i)
+				seg = segProducer(i)
+				maskValue = segmentMaskProducer(i)
+				origValue, origUpperValue = seg.getSegmentValue(), seg.getUpperSegmentValue()
+				value, upperValue = origValue, origUpperValue
+				if verifyMask {
+					mask64 := uint64(maskValue)
+					val64 := uint64(value)
+					upperVal64 := uint64(upperValue)
+					masker := MaskRange(val64, upperVal64, mask64, seg.GetMaxValue())
+					if !masker.IsSequential() {
+						err = &incompatibleAddressError{addressError{key: "ipaddress.error.maskMismatch"}}
+						return
+					}
+					value = SegInt(masker.GetMaskedLower(val64, mask64))
+					upperValue = SegInt(masker.GetMaskedUpper(upperVal64, mask64))
+				} else {
+					value &= maskValue
+					upperValue &= maskValue
+				}
+				if !segsSame(segmentPrefixLength, seg.getDivisionPrefixLength(), value, origValue, upperValue, origUpperValue) {
+					newSegments[i] = createAddressDivision(seg.deriveNewMultiSeg(value, upperValue, segmentPrefixLength))
+				} else {
+					newSegments[i] = seg
+				}
+			}
+			res = deriveAddressSectionPrefLen(section.toAddressSection(), newSegments, networkPrefixLength)
+			return
+		}
+	}
+	res = section.toAddressSection()
+	return
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
