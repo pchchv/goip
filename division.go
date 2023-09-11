@@ -575,6 +575,13 @@ func (div *AddressDivision) CompareSize(other AddressItem) int {
 	return div.compareSize(other)
 }
 
+// GetMaxValue gets the maximum possible value for this type of division, determined by the number of bits.
+//
+// For the highest range value of this particular segment, use GetUpperDivisionValue.
+func (div *AddressDivision) GetMaxValue() DivInt {
+	return div.getMaxValue()
+}
+
 func testRange(lowerValue, upperValue, finalUpperValue, networkMask, hostMask DivInt) bool {
 	return lowerValue == (lowerValue&networkMask) && finalUpperValue == (upperValue|hostMask)
 }
