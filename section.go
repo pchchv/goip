@@ -424,6 +424,89 @@ func (section *addressSectionInternal) getSubnetSegments(startIndex int, network
 	return
 }
 
+func (section *addressSectionInternal) setPrefixLength(networkPrefixLength BitCount, withZeros bool) (res *AddressSection, err address_error.IncompatibleAddressError) {
+	existingPrefixLength := section.getPrefixLen()
+	if existingPrefixLength != nil && networkPrefixLength == existingPrefixLength.bitCount() {
+		res = section.toAddressSection()
+		return
+	}
+
+	var appliedPrefixLen PrefixLen // purposely nil when there are no segments
+	var segmentMaskProducer func(int) SegInt
+	var startIndex int
+	verifyMask := false
+	segmentCount := section.GetSegmentCount()
+	if segmentCount != 0 {
+		maxVal := section.GetMaxSegmentValue()
+		appliedPrefixLen = cacheBitCount(networkPrefixLength)
+		var minPrefIndex, maxPrefIndex int
+		var minPrefLen, maxPrefLen BitCount
+		bitsPerSegment := section.GetBitsPerSegment()
+		bytesPerSegment := section.GetBytesPerSegment()
+		prefIndex := getNetworkSegmentIndex(networkPrefixLength, bytesPerSegment, bitsPerSegment)
+		if existingPrefixLength != nil {
+			verifyMask = true
+			existingPrefLen := existingPrefixLength.bitCount()
+			existingPrefIndex := getNetworkSegmentIndex(existingPrefLen, bytesPerSegment, bitsPerSegment) // can be -1 if existingPrefLen is 0
+			if prefIndex > existingPrefIndex {
+				maxPrefIndex = prefIndex
+				minPrefIndex = existingPrefIndex
+			} else {
+				maxPrefIndex = existingPrefIndex
+				minPrefIndex = prefIndex
+			}
+			if withZeros {
+				if networkPrefixLength < existingPrefLen {
+					minPrefLen = networkPrefixLength
+					maxPrefLen = existingPrefLen
+				} else {
+					minPrefLen = existingPrefLen
+					maxPrefLen = networkPrefixLength
+				}
+				startIndex = minPrefIndex
+				segmentMaskProducer = func(i int) SegInt {
+					if i >= minPrefIndex {
+						if i <= maxPrefIndex {
+							minSegPrefLen := getPrefixedSegmentPrefixLength(bitsPerSegment, minPrefLen, i).bitCount()
+							minMask := maxVal << uint(bitsPerSegment-minSegPrefLen)
+							maxSegPrefLen := getPrefixedSegmentPrefixLength(bitsPerSegment, maxPrefLen, i)
+							if maxSegPrefLen != nil {
+								maxMask := maxVal << uint(bitsPerSegment-maxSegPrefLen.bitCount())
+								return minMask | ^maxMask
+							}
+							return minMask
+						}
+					}
+					return maxVal
+				}
+			} else {
+				startIndex = minPrefIndex
+			}
+		} else {
+			startIndex = prefIndex
+		}
+		if segmentMaskProducer == nil {
+			segmentMaskProducer = func(i int) SegInt {
+				return maxVal
+			}
+		}
+	}
+
+	if startIndex < 0 {
+		startIndex = 0
+	}
+
+	return section.getSubnetSegments(
+		startIndex,
+		appliedPrefixLen,
+		verifyMask,
+		func(i int) *AddressDivision {
+			return section.getDivision(i)
+		},
+		segmentMaskProducer,
+	)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
