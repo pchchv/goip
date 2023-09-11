@@ -463,3 +463,13 @@ func (addr *Address) ToMAC() *MACAddress {
 func (addr *Address) ToAddressBase() *Address {
 	return addr
 }
+
+// Bytes returns the lowest address in this subnet or address collection as a byte slice.
+func (addr *Address) Bytes() []byte {
+	return addr.init().section.Bytes()
+}
+
+// UpperBytes returns the highest address in this subnet or address collection as a byte slice.
+func (addr *Address) UpperBytes() []byte {
+	return addr.init().section.UpperBytes()
+}
