@@ -131,6 +131,19 @@ func (grouping *largeDivisionGroupingInternal) GetUpperValue() *big.Int {
 	return res.SetBytes(grouping.getUpperBytes())
 }
 
+func (grouping *largeDivisionGroupingInternal) getBytes() (bytes []byte) {
+	bytes, _ = grouping.getCachedBytes(grouping.calcBytes)
+	return
+}
+
+// Bytes returns the lowest individual division grouping in this grouping as a byte slice.
+func (grouping *largeDivisionGroupingInternal) Bytes() []byte {
+	if grouping.hasNoDivisions() {
+		return emptyBytes
+	}
+	return cloneBytes(grouping.getBytes())
+}
+
 type IPAddressLargeDivisionGrouping struct {
 	largeDivisionGroupingInternal
 }
