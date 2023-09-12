@@ -677,7 +677,6 @@ func (section *AddressSection) GetUpper() *AddressSection {
 	return section.getUpper()
 }
 
-/*
 // AdjustPrefixLen increases or decreases the prefix length by the given increment.
 //
 // A prefix length will not be adjusted lower than zero or beyond the bit length of the address section.
@@ -703,7 +702,6 @@ func (section *AddressSection) AdjustPrefixLenZeroed(prefixLen BitCount) (*Addre
 	res, err := section.adjustPrefixLenZeroed(prefixLen)
 	return res.ToSectionBase(), err
 }
-*/
 
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
