@@ -110,6 +110,37 @@ func (comp AddressComparator) CompareSegments(one, two AddressSegmentType) int {
 	return comp.getCompComp().compareSegValues(oneSeg.GetUpperSegmentValue(), oneSeg.GetSegmentValue(),
 		twoSeg.GetUpperSegmentValue(), twoSeg.GetSegmentValue())
 }
+
+// CompareAddresses compares any two addresses (including different versions or address types)
+// It returns a negative integer, zero, or a positive integer if address item one is less than, equal, or greater than address item two.
+func (comp AddressComparator) CompareAddresses(one, two AddressType) int {
+	if one == nil || one.ToAddressBase() == nil {
+		if two == nil || two.ToAddressBase() == nil {
+			return 0
+		}
+		return -1
+	} else if two == nil || two.ToAddressBase() == nil {
+		return 1
+	}
+	oneAddr := one.ToAddressBase()
+	twoAddr := two.ToAddressBase()
+	result := comp.CompareAddressSections(oneAddr.GetSection(), twoAddr.GetSection())
+	if result == 0 {
+		if oneIPv6 := oneAddr.ToIPv6(); oneIPv6 != nil {
+			twoIPv6 := twoAddr.ToIPv6()
+			oneZone := oneIPv6.zone
+			twoZone := twoIPv6.zone
+			if oneZone == twoZone {
+				return 0
+			} else if oneZone < twoZone {
+				return -1
+			}
+			return 1
+		}
+	}
+	return result
+}
+
 type countComparator struct{}
 
 func (countComparator) compareLargeValues(oneUpper, oneLower, twoUpper, twoLower *big.Int) (result int) {
