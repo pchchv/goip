@@ -245,6 +245,16 @@ func (addr *IPAddress) AdjustPrefixLenZeroed(prefixLen BitCount) (*IPAddress, ad
 	return res.ToIP(), err
 }
 
+// Bytes returns the lowest address in this subnet or address as a byte slice.
+func (addr *IPAddress) Bytes() []byte {
+	return addr.init().section.Bytes()
+}
+
+// UpperBytes returns the highest address in this subnet or address as a byte slice.
+func (addr *IPAddress) UpperBytes() []byte {
+	return addr.init().section.UpperBytes()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
