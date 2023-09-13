@@ -361,6 +361,16 @@ func (grouping *AddressDivisionGrouping) IsMixedIPv6v4() bool {
 	return grouping != nil && grouping.matchesIPv6v4MixedGroupingType()
 }
 
+// IsIPv4 returns true if this grouping originated as an IPv4 section.  If so, use ToIPv4 to convert back to the IPv4-specific type.
+func (grouping *AddressDivisionGrouping) IsIPv4() bool {
+	return grouping.ToSectionBase().IsIPv4()
+}
+
+// IsIPv6 returns true if this grouping originated as an IPv6 section.  If so, use ToIPv6 to convert back to the IPv6-specific type.
+func (grouping *AddressDivisionGrouping) IsIPv6() bool {
+	return grouping.ToSectionBase().IsIPv6()
+}
+
 func adjust1To1StartIndices(sourceStart, sourceEnd, sourceCount, targetCount int) (newSourceStart, newSourceEnd, newTargetStart int) {
 	// both sourceCount and targetCount are lengths of their respective slices, so never negative
 	targetStart := 0
