@@ -346,6 +346,21 @@ func (grouping *AddressDivisionGrouping) IsSectionBase() bool {
 	return grouping != nil && grouping.isAddressSection()
 }
 
+// IsIP returns true if this address division grouping originated as an IPv4 or IPv6 section, or a zero-length IP section.  If so, use ToIP to convert back to the IP-specific type.
+func (grouping *AddressDivisionGrouping) IsIP() bool {
+	return grouping.ToSectionBase().IsIP()
+}
+
+// IsMAC returns true if this grouping originated as a MAC section.  If so, use ToMAC to convert back to the MAC-specific type.
+func (grouping *AddressDivisionGrouping) IsMAC() bool {
+	return grouping.ToSectionBase().IsMAC()
+}
+
+// IsMixedIPv6v4 returns true if this grouping originated as a mixed IPv6-IPv4 grouping.  If so, use ToMixedIPv6v4 to convert back to the more specific grouping type.
+func (grouping *AddressDivisionGrouping) IsMixedIPv6v4() bool {
+	return grouping != nil && grouping.matchesIPv6v4MixedGroupingType()
+}
+
 func adjust1To1StartIndices(sourceStart, sourceEnd, sourceCount, targetCount int) (newSourceStart, newSourceEnd, newTargetStart int) {
 	// both sourceCount and targetCount are lengths of their respective slices, so never negative
 	targetStart := 0
