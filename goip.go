@@ -202,6 +202,17 @@ func (addr *IPAddress) GetUpperIPAddress() *IPAddress {
 	return addr.GetUpper()
 }
 
+// ToBlock creates a new block of addresses by changing the segment at the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (addr *IPAddress) ToBlock(segmentIndex int, lower, upper SegInt) *IPAddress {
+	return addr.init().toBlock(segmentIndex, lower, upper).ToIP()
+}
+
+// IsPrefixed returns whether this address has an associated prefix length.
+func (addr *IPAddress) IsPrefixed() bool {
+	return addr != nil && addr.isPrefixed()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
