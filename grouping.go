@@ -331,6 +331,21 @@ func (grouping *AddressDivisionGrouping) ToDivGrouping() *AddressDivisionGroupin
 	return grouping
 }
 
+// IsAdaptiveZero returns true if this is an adaptive zero grouping.
+// The adaptive zero grouping, produced by zero sections like IPv4AddressSection{} or AddressDivisionGrouping{},
+// can represent a zero-length section of any address type.
+// It is not considered equal to constructions of specific zero length sections or
+// groupings like NewIPv4Section(nil) which can only represent a zero-length section of a single address type.
+func (grouping *AddressDivisionGrouping) IsAdaptiveZero() bool {
+	return grouping != nil && grouping.matchesZeroGrouping()
+}
+
+// IsSectionBase returns true if this address division grouping originated as an address section.
+// If so, use ToSectionBase to convert back to the section type.
+func (grouping *AddressDivisionGrouping) IsSectionBase() bool {
+	return grouping != nil && grouping.isAddressSection()
+}
+
 func adjust1To1StartIndices(sourceStart, sourceEnd, sourceCount, targetCount int) (newSourceStart, newSourceEnd, newTargetStart int) {
 	// both sourceCount and targetCount are lengths of their respective slices, so never negative
 	targetStart := 0
