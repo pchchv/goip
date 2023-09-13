@@ -4,6 +4,8 @@ import (
 	"math/big"
 	"strings"
 	"unsafe"
+
+	"github.com/pchchv/goip/address_error"
 )
 
 const (
@@ -211,6 +213,36 @@ func (addr *IPAddress) ToBlock(segmentIndex int, lower, upper SegInt) *IPAddress
 // IsPrefixed returns whether this address has an associated prefix length.
 func (addr *IPAddress) IsPrefixed() bool {
 	return addr != nil && addr.isPrefixed()
+}
+
+// AdjustPrefixLen increases or decreases the prefix length by the given increment.
+//
+// A prefix length will not be adjusted lower than zero or beyond the bit length of the address.
+//
+// If this address has no prefix length, then the prefix length will be set to the adjustment if positive,
+// or it will be set to the adjustment added to the bit count if negative.
+func (addr *IPAddress) AdjustPrefixLen(prefixLen BitCount) *IPAddress {
+	return addr.init().adjustPrefixLen(prefixLen).ToIP()
+}
+
+// AdjustPrefixLenZeroed increases or decreases the prefix length by
+// the given increment while zeroing out the bits that have moved into or outside the prefix.
+//
+// A prefix length will not be adjusted lower than zero or beyond the bit length of the address.
+//
+// If this address has no prefix length, then the prefix length will be set to the adjustment if positive,
+// or it will be set to the adjustment added to the bit count if negative.
+//
+// When prefix length is increased, the bits moved within the prefix become zero.
+// When a prefix length is decreased, the bits moved outside the prefix become zero.
+//
+// For example, "1.2.0.0/16" adjusted by -8 becomes "1.0.0.0/8".
+// "1.2.0.0/16" adjusted by 8 becomes "1.2.0.0/24".
+//
+// If the result cannot be zeroed because zeroing out bits results in a non-contiguous segment, an error is returned.
+func (addr *IPAddress) AdjustPrefixLenZeroed(prefixLen BitCount) (*IPAddress, address_error.IncompatibleAddressError) {
+	res, err := addr.init().adjustPrefixLenZeroed(prefixLen)
+	return res.ToIP(), err
 }
 
 // IPVersion is the version type used by IP address types.
