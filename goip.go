@@ -154,6 +154,16 @@ func (addr *IPAddress) IsMultiple() bool {
 	return addr != nil && addr.isMultiple()
 }
 
+// GetSection returns the backing section for this address or subnet, comprising all segments.
+func (addr *IPAddress) GetSection() *IPAddressSection {
+	return addr.init().section.ToIP()
+}
+
+// GetDivisionCount returns the segment count.
+func (addr *IPAddress) GetDivisionCount() int {
+	return addr.getDivisionCount()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
