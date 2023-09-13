@@ -186,6 +186,22 @@ func (addr *IPAddress) GetByteCount() int {
 	return addr.addressInternal.GetByteCount()
 }
 
+// GetLowerIPAddress returns the address in the subnet or address collection with the lowest numeric value,
+// which will be the receiver if it represents a single address.
+// For example, for "1.2-3.4.5-6", the series "1.2.4.5" is returned.
+// GetLowerIPAddress implements the IPAddressRange interface, and is equivalent to GetLower.
+func (addr *IPAddress) GetLowerIPAddress() *IPAddress {
+	return addr.GetLower()
+}
+
+// GetUpperIPAddress returns the address in the subnet or address collection with the highest numeric value,
+// which will be the receiver if it represents a single address.
+// For example, for the subnet "1.2-3.4.5-6", the address "1.3.4.6" is returned.
+// GetUpperIPAddress implements the IPAddressRange interface, and is equivalent to GetUpper.
+func (addr *IPAddress) GetUpperIPAddress() *IPAddress {
+	return addr.GetUpper()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
