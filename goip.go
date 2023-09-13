@@ -2,6 +2,7 @@ package goip
 
 import (
 	"math/big"
+	"net"
 	"strings"
 	"unsafe"
 
@@ -253,6 +254,16 @@ func (addr *IPAddress) Bytes() []byte {
 // UpperBytes returns the highest address in this subnet or address as a byte slice.
 func (addr *IPAddress) UpperBytes() []byte {
 	return addr.init().section.UpperBytes()
+}
+
+// GetNetIP returns the lowest address in this subnet or address as a net.IP.
+func (addr *IPAddress) GetNetIP() net.IP {
+	return addr.Bytes()
+}
+
+// GetUpperNetIP returns the highest address in this subnet or address as a net.IP.
+func (addr *IPAddress) GetUpperNetIP() net.IP {
+	return addr.UpperBytes()
 }
 
 // IPVersion is the version type used by IP address types.
