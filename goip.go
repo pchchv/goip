@@ -164,6 +164,28 @@ func (addr *IPAddress) GetDivisionCount() int {
 	return addr.getDivisionCount()
 }
 
+// GetBitCount returns the number of bits comprising this address,
+// or each address in the range if a subnet, which is 32 for IPv4 and 128 for IPv6.
+func (addr *IPAddress) GetBitCount() BitCount {
+	if address := addr.ToIPv4(); address != nil {
+		return address.GetBitCount()
+	} else if address := addr.ToIPv6(); address != nil {
+		return address.GetBitCount()
+	}
+	return addr.addressInternal.GetBitCount()
+}
+
+// GetByteCount returns the number of bytes required for this address,
+// or each address in the range if a subnet, which is 4 for IPv4 and 16 for IPv6.
+func (addr *IPAddress) GetByteCount() int {
+	if address := addr.ToIPv4(); address != nil {
+		return address.GetByteCount()
+	} else if address := addr.ToIPv6(); address != nil {
+		return address.GetByteCount()
+	}
+	return addr.addressInternal.GetByteCount()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
