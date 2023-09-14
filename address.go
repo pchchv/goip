@@ -323,6 +323,20 @@ func (addr *addressInternal) getBytes() []byte {
 	return addr.section.getBytes()
 }
 
+func (addr *addressInternal) getUpperBytes() []byte {
+	return addr.section.getUpperBytes()
+}
+
+// GetBytesPerSegment returns the number of bytes comprising each segment in this address or subnet.
+// Segments in the same address are equal length.
+func (addr *addressInternal) GetBytesPerSegment() int {
+	section := addr.section
+	if section == nil {
+		return 0
+	}
+	return section.GetBytesPerSegment()
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
