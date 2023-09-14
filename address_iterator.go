@@ -59,3 +59,11 @@ type multiAddrIterator struct {
 	Iterator[*AddressSection]
 	zone Zone
 }
+
+func (it multiAddrIterator) Next() (res *Address) {
+	if it.HasNext() {
+		sect := it.Iterator.Next()
+		res = createAddress(sect, it.zone)
+	}
+	return
+}
