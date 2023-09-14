@@ -26,3 +26,24 @@ type multiSegmentsIterator struct {
 	segIteratorProducer     func(int) Iterator[*AddressSegment]
 	hostSegIteratorProducer func(int) Iterator[*AddressSegment]
 }
+
+func (it *multiSegmentsIterator) HasNext() bool {
+	return !it.done
+}
+
+func (it *multiSegmentsIterator) updateVariations(start int) {
+	i := start
+	nextSet := it.nextSet
+	variations := it.variations
+	segIteratorProducer := it.segIteratorProducer
+
+	for ; i < it.hostSegmentIndex; i++ {
+		variations[i] = segIteratorProducer(i)
+		nextSet[i] = variations[i].Next().ToDiv()
+	}
+
+	if i == it.networkSegmentIndex {
+		variations[i] = it.hostSegIteratorProducer(i)
+		nextSet[i] = variations[i].Next().ToDiv()
+	}
+}
