@@ -266,6 +266,19 @@ func (addr *IPAddress) GetUpperNetIP() net.IP {
 	return addr.UpperBytes()
 }
 
+// GetUpperNetIPAddr returns the highest address in this subnet or address as a net.IPAddr.
+func (addr *IPAddress) GetUpperNetIPAddr() *net.IPAddr {
+	return &net.IPAddr{
+		IP:   addr.GetUpperNetIP(),
+		Zone: string(addr.zone),
+	}
+}
+
+// toAddressBase is needed for tries, it skips the init() call
+func (addr *IPAddress) toAddressBase() *Address {
+	return (*Address)(unsafe.Pointer(addr))
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
