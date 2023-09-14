@@ -75,3 +75,11 @@ type ipv4AddressIterator struct {
 func (iter ipv4AddressIterator) Next() *IPv4Address {
 	return iter.Iterator.Next().ToIPv4()
 }
+
+type ipv6AddressIterator struct {
+	Iterator[*Address]
+}
+
+func (iter ipv6AddressIterator) Next() *IPv6Address {
+	return iter.Iterator.Next().ToIPv6()
+}
