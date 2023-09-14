@@ -91,3 +91,11 @@ type macAddressIterator struct {
 func (iter macAddressIterator) Next() *MACAddress {
 	return iter.Iterator.Next().ToMAC()
 }
+
+func nilAddrIterator() Iterator[*Address] {
+	return &singleIterator[*Address]{}
+}
+
+func nilIterator[T any]() Iterator[T] {
+	return &singleIterator[T]{}
+}
