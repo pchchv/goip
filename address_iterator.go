@@ -67,3 +67,7 @@ func (it multiAddrIterator) Next() (res *Address) {
 	}
 	return
 }
+
+type ipv4AddressIterator struct {
+	Iterator[*Address]
+}
