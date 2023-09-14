@@ -236,9 +236,10 @@ func segmentsIterator(
 // allSegmentsIterator used by addresses and segment arrays, for iterators that are not prefix or prefix block iterators
 func allSegmentsIterator(
 	divCount int,
-	segSupplier func() []*AddressDivision, // only useful for a segment iterator.  Address/section iterators use address/section for single valued iterator.
+	segSupplier func() []*AddressDivision, // only useful for a segment iterator. Address/section iterators use address/section for single valued iterator.
 	segIteratorProducer func(int) Iterator[*AddressSegment],
-	excludeFunc func([]*AddressDivision) bool /* can be nil */) Iterator[[]*AddressDivision] {
+	excludeFunc func([]*AddressDivision) bool, // can be nil.
+) Iterator[[]*AddressDivision] {
 	return segmentsIterator(divCount, segSupplier, segIteratorProducer, excludeFunc, divCount-1, divCount, nil)
 }
 
@@ -261,4 +262,27 @@ func rangeSegmentsIterator(
 
 func nilSectIterator() Iterator[*AddressSection] {
 	return &singleSectionIterator{}
+}
+
+func sectIterator(useOriginal bool, original *AddressSection, valsAreMultiple bool, iterator Iterator[[]*AddressDivision]) Iterator[*AddressSection] {
+	if useOriginal {
+		return &singleSectionIterator{original: original}
+	}
+	return &multiSectionIterator{
+		original:        original,
+		iterator:        iterator,
+		valsAreMultiple: valsAreMultiple,
+		prefixLen:       original.getPrefixLen(),
+	}
+}
+
+func prefixSectIterator(useOriginal bool, original *AddressSection, iterator Iterator[[]*AddressDivision]) Iterator[*AddressSection] {
+	if useOriginal {
+		return &singleSectionIterator{original: original}
+	}
+	return &prefixSectionIterator{
+		original:  original,
+		iterator:  iterator,
+		prefixLen: original.getPrefixLen(),
+	}
 }
