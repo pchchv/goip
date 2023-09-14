@@ -9,3 +9,7 @@ type Iterator[T any] interface {
 type ipAddrIterator struct {
 	Iterator[*Address]
 }
+
+func (iter ipAddrIterator) Next() *IPAddress {
+	return iter.Iterator.Next().ToIP()
+}
