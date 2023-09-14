@@ -17,3 +17,15 @@ func (iter ipAddrIterator) Next() *IPAddress {
 type sliceIterator[T any] struct {
 	elements []T
 }
+
+func (iter *sliceIterator[T]) HasNext() bool {
+	return len(iter.elements) > 0
+}
+
+func (iter *sliceIterator[T]) Next() (res T) {
+	if iter.HasNext() {
+		res = iter.elements[0]
+		iter.elements = iter.elements[1:]
+	}
+	return
+}
