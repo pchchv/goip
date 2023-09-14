@@ -124,3 +124,24 @@ func (it *singleSectionIterator) Next() (res *AddressSection) {
 	}
 	return
 }
+
+type multiSectionIterator struct {
+	original        *AddressSection
+	iterator        Iterator[[]*AddressDivision]
+	valsAreMultiple bool
+	prefixLen       PrefixLen
+}
+
+func (it *multiSectionIterator) HasNext() bool {
+	return it.iterator.HasNext()
+}
+
+func (it *multiSectionIterator) Next() (res *AddressSection) {
+	if it.HasNext() {
+		segs := it.iterator.Next()
+		original := it.original
+		res = createSection(segs, it.prefixLen, original.addrType)
+		res.isMult = it.valsAreMultiple
+	}
+	return
+}
