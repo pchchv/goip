@@ -119,3 +119,24 @@ func addrIterator(single bool, original *Address, prefixLen PrefixLen, valsAreMu
 func rangeAddrIterator(single bool, original *Address, prefixLen PrefixLen, valsAreMultiple bool, iterator Iterator[[]*AddressDivision]) Iterator[*Address] {
 	return addrIterator(single, original, prefixLen, valsAreMultiple, iterator)
 }
+
+func prefixAddrIterator(single bool, original *Address, prefixLen PrefixLen, iterator Iterator[[]*AddressDivision]) Iterator[*Address] {
+	var zone Zone
+
+	if single {
+		return &singleIterator[*Address]{original: original}
+	}
+
+	if original != nil {
+		zone = original.zone
+	}
+
+	return multiAddrIterator{
+		Iterator: &prefixSectionIterator{
+			original:  original.section,
+			iterator:  iterator,
+			prefixLen: prefixLen,
+		},
+		zone: zone,
+	}
+}
