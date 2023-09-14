@@ -514,3 +514,7 @@ func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 		},
 	}
 }
+
+func versionsMatch(one, two *IPAddress) bool {
+	return one.getAddrType() == two.getAddrType()
+}
