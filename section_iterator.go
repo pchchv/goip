@@ -15,3 +15,14 @@ func (it *singleSegmentsIterator) Next() (res []*AddressDivision) {
 	}
 	return
 }
+
+type multiSegmentsIterator struct {
+	done                    bool
+	hostSegmentIndex        int
+	networkSegmentIndex     int
+	nextSet                 []*AddressDivision
+	variations              []Iterator[*AddressSegment]
+	excludeFunc             func([]*AddressDivision) bool
+	segIteratorProducer     func(int) Iterator[*AddressSegment]
+	hostSegIteratorProducer func(int) Iterator[*AddressSegment]
+}
