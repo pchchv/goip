@@ -233,11 +233,32 @@ func segmentsIterator(
 	return iterator
 }
 
-// this iterator function used by addresses and segment arrays, for iterators that are not prefix or prefix block iterators
+// allSegmentsIterator used by addresses and segment arrays, for iterators that are not prefix or prefix block iterators
 func allSegmentsIterator(
 	divCount int,
 	segSupplier func() []*AddressDivision, // only useful for a segment iterator.  Address/section iterators use address/section for single valued iterator.
 	segIteratorProducer func(int) Iterator[*AddressSegment],
 	excludeFunc func([]*AddressDivision) bool /* can be nil */) Iterator[[]*AddressDivision] {
 	return segmentsIterator(divCount, segSupplier, segIteratorProducer, excludeFunc, divCount-1, divCount, nil)
+}
+
+// rangeSegmentsIterator used by sequential ranges
+func rangeSegmentsIterator(
+	divCount int,
+	segIteratorProducer func(int) Iterator[*AddressSegment],
+	networkSegmentIndex,
+	hostSegmentIndex int,
+	prefixedSegIteratorProducer func(int) Iterator[*AddressSegment]) Iterator[[]*AddressDivision] {
+	return segmentsIterator(
+		divCount,
+		nil,
+		segIteratorProducer,
+		nil,
+		networkSegmentIndex,
+		hostSegmentIndex,
+		prefixedSegIteratorProducer)
+}
+
+func nilSectIterator() Iterator[*AddressSection] {
+	return &singleSectionIterator{}
 }
