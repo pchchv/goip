@@ -173,3 +173,11 @@ func (it *prefixSectionIterator) Next() (res *AddressSection) {
 	}
 	return
 }
+
+type ipSectionIterator struct {
+	Iterator[*AddressSection]
+}
+
+func (iter ipSectionIterator) Next() *IPAddressSection {
+	return iter.Iterator.Next().ToIP()
+}
