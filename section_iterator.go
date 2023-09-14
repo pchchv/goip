@@ -205,3 +205,39 @@ type macSectionIterator struct {
 func (iter macSectionIterator) Next() *MACAddressSection {
 	return iter.Iterator.Next().ToMAC()
 }
+
+// segmentsIterator used to produce regular iterators with or without zero-host values,
+// and prefix block iterators
+func segmentsIterator(
+	divCount int,
+	segSupplier func() []*AddressDivision,
+	segIteratorProducer func(int) Iterator[*AddressSegment], // unused at this time, since we do not have a public segments iterator
+	excludeFunc func([]*AddressDivision) bool, // can be nil
+	networkSegmentIndex,
+	hostSegmentIndex int,
+	hostSegIteratorProducer func(int) Iterator[*AddressSegment]) Iterator[[]*AddressDivision] {
+	if segSupplier != nil {
+		return &singleSegmentsIterator{segSupplier()}
+	}
+
+	iterator := &multiSegmentsIterator{
+		variations:              make([]Iterator[*AddressSegment], divCount),
+		nextSet:                 make([]*AddressDivision, divCount),
+		segIteratorProducer:     segIteratorProducer,
+		hostSegIteratorProducer: hostSegIteratorProducer,
+		networkSegmentIndex:     networkSegmentIndex,
+		hostSegmentIndex:        hostSegmentIndex,
+		excludeFunc:             excludeFunc,
+	}
+	iterator.init()
+	return iterator
+}
+
+// this iterator function used by addresses and segment arrays, for iterators that are not prefix or prefix block iterators
+func allSegmentsIterator(
+	divCount int,
+	segSupplier func() []*AddressDivision, // only useful for a segment iterator.  Address/section iterators use address/section for single valued iterator.
+	segIteratorProducer func(int) Iterator[*AddressSegment],
+	excludeFunc func([]*AddressDivision) bool /* can be nil */) Iterator[[]*AddressDivision] {
+	return segmentsIterator(divCount, segSupplier, segIteratorProducer, excludeFunc, divCount-1, divCount, nil)
+}
