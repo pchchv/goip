@@ -37,3 +37,8 @@ func (iter *sliceIterator[T]) Next() (res T) {
 	}
 	return
 }
+
+type singleIterator[T any] struct {
+	empty    bool
+	original T
+}
