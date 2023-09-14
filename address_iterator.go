@@ -54,3 +54,8 @@ func (it *singleIterator[T]) Next() (res T) {
 	}
 	return
 }
+
+type multiAddrIterator struct {
+	Iterator[*AddressSection]
+	zone Zone
+}
