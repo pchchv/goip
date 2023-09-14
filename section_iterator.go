@@ -197,3 +197,11 @@ type ipv6SectionIterator struct {
 func (iter ipv6SectionIterator) Next() *IPv6AddressSection {
 	return iter.Iterator.Next().ToIPv6()
 }
+
+type macSectionIterator struct {
+	Iterator[*AddressSection]
+}
+
+func (iter macSectionIterator) Next() *MACAddressSection {
+	return iter.Iterator.Next().ToMAC()
+}
