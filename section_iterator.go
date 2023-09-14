@@ -83,3 +83,28 @@ func (it *multiSegmentsIterator) increment() (res []*AddressDivision) {
 	// so we must return the set that was created prior to that.
 	return previousSegs
 }
+
+func (it *multiSegmentsIterator) init() {
+	it.updateVariations(0)
+	nextSet := it.nextSet
+	variations := it.variations
+	divCount := len(variations)
+	hostSegIteratorProducer := it.hostSegIteratorProducer
+
+	for i := it.networkSegmentIndex + 1; i < divCount; i++ {
+		variations[i] = hostSegIteratorProducer(i)
+		nextSet[i] = variations[i].Next().ToDiv()
+	}
+
+	excludeFunc := it.excludeFunc
+	if excludeFunc != nil && excludeFunc(it.nextSet) {
+		it.increment()
+	}
+}
+
+func (it *multiSegmentsIterator) Next() (res []*AddressDivision) {
+	if it.HasNext() {
+		res = it.increment()
+	}
+	return
+}
