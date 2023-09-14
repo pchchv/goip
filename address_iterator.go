@@ -83,3 +83,11 @@ type ipv6AddressIterator struct {
 func (iter ipv6AddressIterator) Next() *IPv6Address {
 	return iter.Iterator.Next().ToIPv6()
 }
+
+type macAddressIterator struct {
+	Iterator[*Address]
+}
+
+func (iter macAddressIterator) Next() *MACAddress {
+	return iter.Iterator.Next().ToMAC()
+}
