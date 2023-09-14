@@ -189,3 +189,11 @@ type ipv4SectionIterator struct {
 func (iter ipv4SectionIterator) Next() *IPv4AddressSection {
 	return iter.Iterator.Next().ToIPv4()
 }
+
+type ipv6SectionIterator struct {
+	Iterator[*AddressSection]
+}
+
+func (iter ipv6SectionIterator) Next() *IPv6AddressSection {
+	return iter.Iterator.Next().ToIPv6()
+}
