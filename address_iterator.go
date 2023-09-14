@@ -71,3 +71,7 @@ func (it multiAddrIterator) Next() (res *Address) {
 type ipv4AddressIterator struct {
 	Iterator[*Address]
 }
+
+func (iter ipv4AddressIterator) Next() *IPv4Address {
+	return iter.Iterator.Next().ToIPv4()
+}
