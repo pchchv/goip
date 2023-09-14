@@ -2,8 +2,16 @@ package goip
 
 // Iterator iterates collections such as subnets and consecutive address ranges.
 type Iterator[T any] interface {
-	HasNext() bool // returns true if there is another element to iterate, false otherwise
+	HasNext() bool // returns true if there is another item to iterate, false otherwise
 	Next() T       // returns the next item, or the zero value for T if there is none left
+}
+
+// IteratorWithRemove is an iterator that provides a removal operation.
+type IteratorWithRemove[T any] interface {
+	Iterator[T]
+	// Remove removes the last iterated item from the underlying data structure or collection, and returns that element.
+	// If there is no such element, it returns the zero value for T.
+	Remove() T
 }
 
 type ipAddrIterator struct {
