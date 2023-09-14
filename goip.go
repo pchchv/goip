@@ -279,6 +279,20 @@ func (addr *IPAddress) toAddressBase() *Address {
 	return (*Address)(unsafe.Pointer(addr))
 }
 
+// Wrap wraps this IP address, returning a WrappedIPAddress, an implementation of ExtendedIPSegmentSeries,
+// which can be used to write code that works with both IP addresses and IP address sections.
+// Wrap can be called with a nil receiver, wrapping a nil address.
+func (addr *IPAddress) Wrap() WrappedIPAddress {
+	return wrapIPAddress(addr)
+}
+
+// WrapAddress wraps this IP address, returning a WrappedAddress, an implementation of ExtendedSegmentSeries,
+// which can be used to write code that works with both addresses and address sections.
+// WrapAddress can be called with a nil receiver, wrapping a nil address.
+func (addr *IPAddress) WrapAddress() WrappedAddress {
+	return wrapAddress(addr.ToAddressBase())
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
