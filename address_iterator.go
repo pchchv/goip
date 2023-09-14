@@ -42,3 +42,15 @@ type singleIterator[T any] struct {
 	empty    bool
 	original T
 }
+
+func (it *singleIterator[T]) HasNext() bool {
+	return !it.empty
+}
+
+func (it *singleIterator[T]) Next() (res T) {
+	if it.HasNext() {
+		res = it.original
+		it.empty = true
+	}
+	return
+}
