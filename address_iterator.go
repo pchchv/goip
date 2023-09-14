@@ -99,3 +99,23 @@ func nilAddrIterator() Iterator[*Address] {
 func nilIterator[T any]() Iterator[T] {
 	return &singleIterator[T]{}
 }
+
+func addrIterator(single bool, original *Address, prefixLen PrefixLen, valsAreMultiple bool, iterator Iterator[[]*AddressDivision]) Iterator[*Address] {
+	if single {
+		return &singleIterator[*Address]{original: original}
+	}
+	return multiAddrIterator{
+		Iterator: &multiSectionIterator{
+			original:        original.section,
+			iterator:        iterator,
+			valsAreMultiple: valsAreMultiple,
+			prefixLen:       prefixLen,
+		},
+		zone: original.zone,
+	}
+}
+
+// rangeAddrIterator used by the sequential ranges
+func rangeAddrIterator(single bool, original *Address, prefixLen PrefixLen, valsAreMultiple bool, iterator Iterator[[]*AddressDivision]) Iterator[*Address] {
+	return addrIterator(single, original, prefixLen, valsAreMultiple, iterator)
+}
