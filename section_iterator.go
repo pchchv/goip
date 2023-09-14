@@ -108,3 +108,7 @@ func (it *multiSegmentsIterator) Next() (res []*AddressDivision) {
 	}
 	return
 }
+
+type singleSectionIterator struct {
+	original *AddressSection
+}
