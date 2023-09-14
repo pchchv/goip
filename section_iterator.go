@@ -152,3 +152,24 @@ type prefixSectionIterator struct {
 	isNotFirst bool
 	prefixLen  PrefixLen
 }
+
+func (it *prefixSectionIterator) HasNext() bool {
+	return it.iterator.HasNext()
+}
+
+func (it *prefixSectionIterator) Next() (res *AddressSection) {
+	if it.HasNext() {
+		segs := it.iterator.Next()
+		original := it.original
+		res = createSection(segs, it.prefixLen, original.addrType)
+		if !it.isNotFirst {
+			res.initMultiple() // sets isMultiple
+			it.isNotFirst = true
+		} else if !it.HasNext() {
+			res.initMultiple() // sets isMultiple
+		} else {
+			res.isMult = true
+		}
+	}
+	return
+}
