@@ -13,3 +13,7 @@ type ipAddrIterator struct {
 func (iter ipAddrIterator) Next() *IPAddress {
 	return iter.Iterator.Next().ToIP()
 }
+
+type sliceIterator[T any] struct {
+	elements []T
+}
