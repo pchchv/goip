@@ -353,6 +353,14 @@ func (addr *addressInternal) hasZone() bool {
 	return addr.zone != NoZone
 }
 
+func (addr *addressInternal) getStringCache() *stringCache {
+	cache := addr.cache
+	if cache == nil {
+		return nil
+	}
+	return addr.cache.stringCache
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
