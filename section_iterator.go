@@ -145,3 +145,10 @@ func (it *multiSectionIterator) Next() (res *AddressSection) {
 	}
 	return
 }
+
+type prefixSectionIterator struct {
+	original   *AddressSection
+	iterator   Iterator[[]*AddressDivision]
+	isNotFirst bool
+	prefixLen  PrefixLen
+}
