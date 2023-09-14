@@ -293,6 +293,19 @@ func (addr *IPAddress) WrapAddress() WrappedAddress {
 	return wrapAddress(addr.ToAddressBase())
 }
 
+func (addr *IPAddress) getLowestHighestAddrs() (lower, upper *IPAddress) {
+	l, u := addr.ipAddressInternal.getLowestHighestAddrs()
+	return l.ToIP(), u.ToIP()
+}
+
+// GetNetIPAddr returns the lowest address in this subnet or address as a net.IPAddr.
+func (addr *IPAddress) GetNetIPAddr() *net.IPAddr {
+	return &net.IPAddr{
+		IP:   addr.GetNetIP(),
+		Zone: string(addr.zone),
+	}
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion string
 
