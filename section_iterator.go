@@ -112,3 +112,15 @@ func (it *multiSegmentsIterator) Next() (res []*AddressDivision) {
 type singleSectionIterator struct {
 	original *AddressSection
 }
+
+func (it *singleSectionIterator) HasNext() bool {
+	return it.original != nil
+}
+
+func (it *singleSectionIterator) Next() (res *AddressSection) {
+	if it.HasNext() {
+		res = it.original
+		it.original = nil
+	}
+	return
+}
