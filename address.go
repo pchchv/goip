@@ -204,8 +204,7 @@ func (addr *addressInternal) isIPv6() bool {
 	return addr.section != nil && addr.section.matchesIPv6AddressType()
 }
 
-// isIPv6 returns whether this matches an IPv6 address.
-// we allow nil receivers to allow this to be called following a failed conversion like ToIP()
+// isMAC returns whether this matches an MAC address.
 func (addr *addressInternal) isMAC() bool {
 	return addr.section != nil && addr.section.matchesMACAddressType()
 }

@@ -247,7 +247,6 @@ func (countComparator) compareLargeValues(oneUpper, oneLower, twoUpper, twoLower
 func (countComparator) compareValues(oneUpper, oneLower, twoUpper, twoLower uint64) int {
 	size1 := oneUpper - oneLower
 	size2 := twoUpper - twoLower
-
 	if size1 == size2 {
 		if oneLower == twoLower {
 			return 0
@@ -486,14 +485,10 @@ func (comp countComparator) compareEqualSizedSections(one, two *AddressSection) 
 }
 
 func (comp countComparator) compareSectionParts(one, two *AddressSection) int {
-	//result := int(one.GetBitCount() - two.GetBitCount())
-	//if result == 0 {
-	//result := compareSectionCount(one, two)
 	result := compareCount(one, two)
 	if result == 0 {
 		result = comp.compareEqualSizedSections(one, two)
 	}
-	//}
 	return result
 }
 
