@@ -96,6 +96,8 @@ type valueCache struct {
 	cachedPrefixCount   *big.Int
 	cachedMaskLens      *maskLenSetting
 	bytesCache          *bytesCache
+	uint128Cache        *uint128Cache
+	uint32Cache         *uint32
 	stringCache         stringCache
 	sectionCache        *groupingCache
 	mixed               *mixedCache
