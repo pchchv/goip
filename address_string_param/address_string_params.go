@@ -63,7 +63,11 @@ type AddressStringParams interface {
 }
 
 type rangeParameters struct {
-	noWildcard, noValueRange, noReverseRange, noSingleWildcard, noInferredBoundary bool
+	noWildcard         bool
+	noValueRange       bool
+	noReverseRange     bool
+	noSingleWildcard   bool
+	noInferredBoundary bool
 }
 
 // AllowsWildcard indicates whether '*' is allowed to denote segments covering all possible segment values.

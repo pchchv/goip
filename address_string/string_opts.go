@@ -924,6 +924,7 @@ func getMACDefaults(hasSeparator *bool, separator byte) (*bool, byte) {
 	if hasSeparator == nil {
 		hasSeparator = &trueVal
 	}
+
 	if separator == 0 {
 		separator = macColonSegmentSeparator
 	}
@@ -935,7 +936,6 @@ func getIPDefaults(zoneSeparator string) string {
 	if len(zoneSeparator) == 0 {
 		zoneSeparator = ipv6ZoneSeparatorStr
 	}
-
 	return zoneSeparator
 }
 
@@ -943,9 +943,11 @@ func getIPv4Defaults(hasSeparator *bool, separator byte, radix int) (*bool, byte
 	if hasSeparator == nil {
 		hasSeparator = &trueVal
 	}
+
 	if radix == 0 {
 		radix = 10
 	}
+
 	if separator == 0 {
 		separator = ipv4SegmentSeparator
 	}
@@ -957,6 +959,7 @@ func getIPv6Defaults(hasSeparator *bool, separator byte) (*bool, byte) {
 	if hasSeparator == nil {
 		hasSeparator = &trueVal
 	}
+
 	if separator == 0 {
 		separator = ipv6SegmentSeparator
 	}

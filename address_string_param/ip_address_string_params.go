@@ -609,8 +609,11 @@ func (version IPVersion) String() string {
 
 type ipv6AddressStringParameters struct {
 	ipAddressStringFormatParameters
-	noMixed, noZone, noBase85, noEmptyZone bool
-	embeddedParams                         *ipAddressStringParameters
+	embeddedParams *ipAddressStringParameters
+	noZone         bool
+	noMixed        bool
+	noBase85       bool
+	noEmptyZone    bool
 }
 
 // AllowsMixed allows mixed-in embedded IPv4 like "a:b:c:d:e:f:1.2.3.4".
