@@ -294,10 +294,6 @@ func (grouping *AddressDivisionGrouping) ToIP() *IPAddressSection {
 	return grouping.ToSectionBase().ToIP()
 }
 
-func createSegmentArray(length int) []*AddressDivision {
-	return make([]*AddressDivision, length)
-}
-
 // ToIPv4 converts to an IPv4AddressSection if this grouping originated as an IPv4 section.
 // If not, ToIPv4 returns nil.
 //
@@ -399,4 +395,8 @@ func adjust1To1Indices(sourceStart, sourceEnd, sourceCount, targetCount int) (ne
 		sourceEnd = limitEnd
 	}
 	return sourceStart, sourceEnd, targetStart
+}
+
+func createSegmentArray(length int) []*AddressDivision {
+	return make([]*AddressDivision, length)
 }
