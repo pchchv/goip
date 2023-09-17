@@ -487,13 +487,6 @@ func (addr *ipAddressInternal) GetPrefixLen() PrefixLen {
 	return addr.addressInternal.GetPrefixLen()
 }
 
-// isIP returns whether this matches an IP address.
-// It must be IPv4, IPv6, or the zero IPAddress which has no segments
-// we allow nil receivers to allow this to be called following a failed conversion like ToIP()
-func (addr *addressInternal) isIP() bool {
-	return addr.section == nil || addr.section.matchesIPAddressType()
-}
-
 // GetBlockMaskPrefixLen returns the prefix length if this address is equivalent to the mask for a CIDR prefix block.
 // Otherwise, it returns nil.
 // A CIDR network mask is an address with all ones in the network section and then all zeros in the host section.
