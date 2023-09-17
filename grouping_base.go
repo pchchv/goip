@@ -87,6 +87,10 @@ type mixedCache struct {
 	embeddedIPv6Section        *EmbeddedIPv6AddressSection
 }
 
+type uint128Cache struct {
+	high, low uint64
+}
+
 type valueCache struct {
 	cachedCount         *big.Int
 	cachedPrefixCount   *big.Int
