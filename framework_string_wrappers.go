@@ -5,6 +5,6 @@ package goip
 type ExtendedIdentifierString interface {
 	HostIdentifierString
 	GetAddress() AddressType         // returns the identified address or nil if none
-	ToAddress() (AddressType, error) // returns the identified address or an error.
-	Unwrap() HostIdentifierString    // returns the wrapped IPAddressString, MACAddressString or HostName as an interface, HostIdentifierString.
+	ToAddress() (AddressType, error) // returns the identified address or an error
+	Unwrap() HostIdentifierString    // returns the wrapped IPAddressString, MACAddressString or HostName as an interface, HostIdentifierString
 }

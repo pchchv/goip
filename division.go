@@ -132,9 +132,10 @@ func (div *addressDivisionInternal) toNetworkDivision(divPrefixLength PrefixLen,
 	if vals == nil {
 		return div.toAddressDivision()
 	}
+
+	var newLower, newUpper DivInt
 	lower := div.getDivisionValue()
 	upper := div.getUpperDivisionValue()
-	var newLower, newUpper DivInt
 	hasPrefLen := divPrefixLength != nil
 	if hasPrefLen {
 		prefBits := divPrefixLength.bitCount()
@@ -155,7 +156,9 @@ func (div *addressDivisionInternal) toNetworkDivision(divPrefixLength PrefixLen,
 			return div.toAddressDivision()
 		}
 	}
+
 	newVals := div.deriveNew(newLower, newUpper, divPrefixLength)
+
 	return createAddressDivision(newVals)
 }
 
@@ -181,6 +184,7 @@ func (div *addressDivisionInternal) toHostDivision(divPrefixLength PrefixLen, wi
 	if vals == nil {
 		return div.toAddressDivision()
 	}
+
 	lower := div.getDivisionValue()
 	upper := div.getUpperDivisionValue()
 	hasPrefLen := divPrefixLength != nil
@@ -190,6 +194,7 @@ func (div *addressDivisionInternal) toHostDivision(divPrefixLength PrefixLen, wi
 		prefBits = checkBitCount(prefBits, bitCount)
 		mask = ^(^SegInt(0) << uint(bitCount-prefBits))
 	}
+
 	divMask := uint64(mask)
 	maxVal := uint64(^SegInt(0))
 	masker := MaskRange(lower, upper, divMask, maxVal)
@@ -202,7 +207,9 @@ func (div *addressDivisionInternal) toHostDivision(divPrefixLength PrefixLen, wi
 	if divsSame(divPrefixLength, div.getDivisionPrefixLength(), newLower, lower, newUpper, upper) {
 		return div.toAddressDivision()
 	}
+
 	newVals := div.deriveNew(newLower, newUpper, divPrefixLength)
+
 	return createAddressDivision(newVals)
 }
 
@@ -328,10 +335,12 @@ func (div *addressDivisionInternal) getCount() *big.Int {
 	if !div.isMultiple() {
 		return bigOne()
 	}
+
 	if div.IsFullRange() {
 		res := bigZero()
 		return res.SetUint64(0xffffffffffffffff).Add(res, bigOneConst())
 	}
+
 	return bigZero().SetUint64((div.getUpperDivisionValue() - div.getDivisionValue()) + 1)
 }
 
