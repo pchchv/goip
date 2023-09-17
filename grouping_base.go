@@ -13,6 +13,12 @@ var (
 	zeroLargeDivArray             = largeDivArray(zeroLargeDivs)
 	_                    divArray = standardDivArray{}
 	_                    divArray = largeDivArray{}
+	zeroStringCache               = stringCache{
+		ipv6StringCache: &ipv6StringCache{},
+		ipv4StringCache: &ipv4StringCache{},
+		ipStringCache:   &ipStringCache{},
+		macStringCache:  &macStringCache{},
+	}
 )
 
 type ipStringCache struct {
