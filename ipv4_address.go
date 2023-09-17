@@ -2,6 +2,7 @@ package goip
 
 import (
 	"net"
+	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
 )
@@ -94,7 +95,10 @@ func (addr *IPv4Address) GetSection() *IPv4AddressSection {
 //
 // ToAddressBase can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
 func (addr *IPv4Address) ToAddressBase() *Address {
-	return addr.ToIP().ToAddressBase()
+	if addr != nil {
+		addr = addr.init()
+	}
+	return (*Address)(unsafe.Pointer(addr))
 }
 
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
