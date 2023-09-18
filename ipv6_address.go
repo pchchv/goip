@@ -132,6 +132,8 @@ func initZeroIPv6() *IPv6Address {
 	return newIPv6Address(section)
 }
 
+// NewIPv6Address constructs an IPv6 address or subnet from the given address section.
+// If the section does not have 8 segments, an error is returned.
 func NewIPv6Address(section *IPv6AddressSection) (*IPv6Address, address_error.AddressValueError) {
 	if section == nil {
 		return zeroIPv6, nil
