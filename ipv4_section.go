@@ -24,7 +24,7 @@ func (section *IPv4AddressSection) ToSectionBase() *AddressSection {
 }
 
 // Uint32Value returns the lowest address in the address section range as a uint32.
-func (section *IPv4AddressSection) Uint32Value() uint32 {
+func (section *IPv4AddressSection) uint32Value() uint32 {
 	segCount := section.GetSegmentCount()
 	if segCount == 0 {
 		return 0
