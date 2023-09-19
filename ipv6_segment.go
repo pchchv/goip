@@ -22,7 +22,7 @@ var (
 	// In the third case, the 8 rightmost bits of the prefix give the index of a block of size ff,
 	// and the leftmost bits of the prefix select that block.
 	prefixBlocksCacheIPv6  = make([]*ipv6DivsPartition, IPv6BitsPerSegment+1)
-	segmentCacheIPv6       = make([]*ipv6DivsBlock, (IPv6MaxValuePerSegment>>8)+1) // single-valued no-prefix cache.
+	segmentCacheIPv6       = make([]*ipv6DivsBlock, (IPv6MaxValuePerSegment>>8)+1) // single-valued no-prefix cache
 	segmentPrefixCacheIPv6 = make([]*ipv6DivsPartition, IPv6BitsPerSegment+1)      // single-valued cache for each prefix
 	allPrefixedCacheIPv6   = makePrefixCacheIPv6()
 	allRangeValsIPv6       = &ipv6SegmentValues{

@@ -478,15 +478,7 @@ func (div *IPAddressLargeDivision) getSplitLowerString(radix int, choppedDigits 
 	}
 }
 
-func (div *IPAddressLargeDivision) getSplitRangeString(
-	rangeSeparator string,
-	wildcard string,
-	radix int,
-	uppercase bool,
-	splitDigitSeparator byte,
-	reverseSplitDigits bool,
-	stringPrefix string,
-	appendable *strings.Builder) address_error.IncompatibleAddressError {
+func (div *IPAddressLargeDivision) getSplitRangeString(rangeSeparator string, wildcard string, radix int, uppercase bool, splitDigitSeparator byte, reverseSplitDigits bool, stringPrefix string, appendable *strings.Builder) address_error.IncompatibleAddressError {
 	var lowerBuilder, upperBuilder strings.Builder
 	div.getLowerString(radix, uppercase, &lowerBuilder)
 	div.getUpperString(radix, uppercase, &upperBuilder)
@@ -561,15 +553,7 @@ func (div *IPAddressLargeDivision) getSplitRangeString(
 	return nil
 }
 
-func (div *IPAddressLargeDivision) getSplitRangeStringLength(
-	rangeSeparator string,
-	wildcard string,
-	leadingZeroCount int,
-	radix int,
-	uppercase bool,
-	splitDigitSeparator byte,
-	reverseSplitDigits bool,
-	stringPrefix string) int {
+func (div *IPAddressLargeDivision) getSplitRangeStringLength(rangeSeparator string, wildcard string, leadingZeroCount int, radix int, uppercase bool, splitDigitSeparator byte, reverseSplitDigits bool, stringPrefix string) int {
 	var lowerBuilder, upperBuilder strings.Builder
 	_, _, _ = rangeSeparator, splitDigitSeparator, reverseSplitDigits
 	digitsLength := -1
@@ -616,12 +600,15 @@ func (div *IPAddressLargeDivision) getDigitCount(val *BigDivInt, radix int) int 
 	if vals == nil {
 		return 1
 	}
+
 	var bigRadix *big.Int
+
 	if div.getDefaultTextualRadix() == radix {
 		bigRadix = div.getBigDefaultTextualRadix()
 	} else {
 		bigRadix = big.NewInt(int64(radix))
 	}
+
 	return getBigDigitCount(val, bigRadix)
 }
 
@@ -715,11 +702,11 @@ func (div *largeDivValues) isMultiple() bool {
 	return div.isMult
 }
 
-func (div *largeDivValues) calcBytesInternal() ([]byte, []byte) {
+func (div *largeDivValues) calcBytesInternal() (bytes, upperBytes []byte) {
 	return div.value.Bytes(), div.upperValue.Bytes()
 }
 
-func (div *largeDivValues) bytesInternal(upper bool) []byte {
+func (div *largeDivValues) bytesInternal(upper bool) (bytes []byte) {
 	if upper {
 		return div.upperValue.Bytes()
 	}
@@ -889,7 +876,7 @@ func setMax(assignedUpper *BigDivInt, bitCount BitCount) (max *BigDivInt) {
 		max = assignedUpper
 	}
 
-	return max
+	return
 }
 
 func setVal(valueBytes []byte, bitCount BitCount) (assignedValue *BigDivInt, assignedBitCount BitCount, maxVal *BigDivInt) {

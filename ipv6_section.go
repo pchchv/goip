@@ -1,6 +1,7 @@
 package goip
 
 import "github.com/pchchv/goip/address_error"
+
 var (
 	zeroEmbeddedIPv6AddressSection = &EmbeddedIPv6AddressSection{}
 	zeroIPv4AddressSection         = &IPv4AddressSection{}
