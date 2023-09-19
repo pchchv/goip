@@ -1,6 +1,11 @@
 package goip
 
 import "github.com/pchchv/goip/address_error"
+var (
+	zeroEmbeddedIPv6AddressSection = &EmbeddedIPv6AddressSection{}
+	zeroIPv4AddressSection         = &IPv4AddressSection{}
+	zeroIPv6AddressSection         = &IPv6AddressSection{}
+)
 
 // IPv6AddressSection represents a section of an IPv6 address comprising 0 to 8 IPv6 address segments.
 // The zero values is a section with zero-segments.
