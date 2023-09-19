@@ -77,3 +77,7 @@ type addressStringIndexError struct {
 func (a *addressStringIndexError) Error() string {
 	return lookupStr("ipaddress.address.error") + " " + lookupStr(a.key) + " " + strconv.Itoa(a.index)
 }
+
+type hostNameError struct {
+	addressError
+}
