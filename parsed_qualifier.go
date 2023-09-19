@@ -1,6 +1,9 @@
 package goip
 
-import "github.com/pchchv/goip/address_string_param"
+import (
+	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string_param"
+)
 
 type parsedHostIdentifierStringQualifier struct {
 	// if there is a port for the host, this will be its numeric value
@@ -94,4 +97,20 @@ func (parsedQual *parsedHostIdentifierStringQualifier) getEquivalentPrefixLen() 
 		}
 	}
 	return pref
+}
+
+func (parsedQual *parsedHostIdentifierStringQualifier) merge(other *parsedHostIdentifierStringQualifier) (err address_error.IncompatibleAddressError) {
+	if parsedQual.networkPrefixLength == nil ||
+		(other.networkPrefixLength != nil && other.networkPrefixLength.bitCount() < parsedQual.networkPrefixLength.bitCount()) {
+		parsedQual.networkPrefixLength = other.networkPrefixLength
+	}
+	if parsedQual.mask == nil {
+		parsedQual.mask = other.mask
+	} else {
+		otherMask := other.getMaskLower()
+		if otherMask != nil {
+			parsedQual.mergedMask, err = parsedQual.getMaskLower().Mask(otherMask)
+		}
+	}
+	return
 }

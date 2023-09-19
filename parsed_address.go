@@ -95,11 +95,9 @@ func (parseData *parsedIPAddress) getVersionedAddress(version IPVersion) (*IPAdd
 // isPrefixSubnet is not called with parsing data from inetAton or single-segment strings, so casting to int is acceptable.
 // This is only for addresses with the standard segment counts, although compressed addresses are allowed.
 func (parseData *parsedIPAddress) isPrefixSubnet(networkPrefixLength BitCount) bool {
-	var (
-		bytesPerSegment int
-		max             SegInt
-		bitsPerSegment  BitCount
-	)
+	var bytesPerSegment int
+	var max SegInt
+	var bitsPerSegment BitCount
 
 	if parseData.isProvidingIPv4() {
 		bytesPerSegment = IPv4BytesPerSegment
@@ -208,11 +206,9 @@ func createRangeSeg(
 	parsedSegIndex int,
 	segmentPrefixLength PrefixLen,
 	creator parsedAddressCreator) *AddressDivision {
-	var (
-		result *AddressDivision
-		lower  = stringLower
-		upper  = stringUpper
-	)
+	var result *AddressDivision
+	var lower = stringLower
+	var upper = stringUpper
 
 	if !useFlags {
 		result = creator.createSegment(lower, upper, segmentPrefixLength)
