@@ -123,6 +123,14 @@ type SegmentSequenceList struct {
 	ranges []SegmentSequence
 }
 
+func (list SegmentSequenceList) size() int {
+	return len(list.ranges)
+}
+
+func (list SegmentSequenceList) getRange(index int) SegmentSequence {
+	return list.ranges[index]
+}
+
 func createIPv6Section(segments []*AddressDivision) *IPv6AddressSection {
 	return &IPv6AddressSection{
 		ipAddressSectionInternal{
