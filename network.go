@@ -349,3 +349,25 @@ func getMask(version IPVersion, zeroSeg *AddressDivision, networkPrefixLength Bi
 
 	return subnet
 }
+
+func adjustBits(version IPVersion, bits BitCount) BitCount {
+	if bits < 0 {
+		bits = 0
+	} else {
+		addressBitLength := version.GetBitCount()
+		if bits > addressBitLength {
+			bits = addressBitLength
+		}
+	}
+	return bits
+}
+
+func populateNetwork(version IPVersion, network *ipAddressNetwork, zeroDiv *AddressDivision) {
+	addressBitLength := version.GetBitCount()
+	for i := 0; i <= addressBitLength; i++ {
+		_ = createMask(version, zeroDiv, i, network.subnetMasks, true, false)
+		_ = createMask(version, zeroDiv, i, network.subnetsMasksWithPrefix, true, true)
+		_ = createMask(version, zeroDiv, i, network.hostMasks, false, false)
+		_ = createMask(version, zeroDiv, i, network.hostMasksWithPrefix, false, true)
+	}
+}
