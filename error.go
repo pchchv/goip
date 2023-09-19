@@ -1,6 +1,10 @@
 package goip
 
-import "github.com/pchchv/goip/address_error"
+import (
+	"strconv"
+
+	"github.com/pchchv/goip/address_error"
+)
 
 type addressError struct {
 	key string // to look up the error message
@@ -63,4 +67,13 @@ type addressStringNestedError struct {
 
 func (a *addressStringNestedError) Error() string {
 	return a.addressError.Error() + ": " + a.nested.Error()
+}
+
+type addressStringIndexError struct {
+	addressStringError
+	index int // byte index location in string of the error
+}
+
+func (a *addressStringIndexError) Error() string {
+	return lookupStr("ipaddress.address.error") + " " + lookupStr(a.key) + " " + strconv.Itoa(a.index)
 }
