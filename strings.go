@@ -827,8 +827,8 @@ func toDefaultString(val uint64, radix int) string {
 	var length int
 	var quotient, remainder, value uint //we iterate on //value == quotient * radix + remainder
 
-	//0 and 1 are common segment values, and additionally they are the same regardless of radix (even binary)
-	//so we have a fast path for them
+	// 0 and 1 are common segment values, and additionally they are the same regardless of radix (even binary)
+	// so we have a fast path for them
 	if val == 0 {
 		return "0"
 	} else if val == 1 {

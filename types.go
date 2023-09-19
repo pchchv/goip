@@ -113,6 +113,74 @@ func (prefixBitCount *PrefixBitCount) copy() PrefixLen {
 	return &res
 }
 
+// PortNum is the port number for a non-nil Port.
+// For arithmetic, you might wish to use the signed integer type PortInt instead.
+type PortNum uint16
+
+func (portNum *PortNum) portNum() PortInt {
+	return PortInt(*portNum)
+}
+
+// Num converts to a PortPortIntNum, returning 0 if the receiver is nil.
+func (portNum *PortNum) Num() PortInt {
+	if portNum == nil {
+		return 0
+	}
+	return PortInt(*portNum)
+}
+
+// Port dereferences this PortNum, while returning 0 if the receiver is nil.
+func (portNum *PortNum) Port() PortNum {
+	if portNum == nil {
+		return 0
+	}
+	return *portNum
+}
+
+// Matches compares a Port value with a port number.
+func (portNum *PortNum) Matches(other PortInt) bool {
+	return portNum != nil && portNum.portNum() == other
+}
+
+// String returns the bit count as a base-10 positive integer string,
+// or "<nil>" if the receiver is a nil pointer.
+func (portNum *PortNum) String() string {
+	if portNum == nil {
+		return nilString()
+	}
+	return strconv.Itoa(portNum.portNum())
+}
+
+func (portNum *PortNum) copy() Port {
+	if portNum == nil {
+		return nil
+	}
+	return portNum
+}
+
+// Equal compares two Port values for equality.
+func (portNum *PortNum) Equal(other Port) bool {
+	if portNum == nil {
+		return other == nil
+	}
+	return other != nil && portNum.portNum() == other.portNum()
+}
+
+// Compare compares PrefixLen values,
+// returning -1, 0, or 1 if the receiver is less than,
+// equal to, or greater than the argument.
+func (portNum *PortNum) Compare(other Port) int {
+	if portNum == nil {
+		if other == nil {
+			return 0
+		}
+		return -1
+	} else if other == nil {
+		return 1
+	}
+	return portNum.portNum() - other.portNum()
+}
+
 func bigIsZero(val *BigDivInt) bool {
 	return len(val.Bits()) == 0 // slightly faster than div.value.BitLen() == 0
 }
@@ -204,7 +272,6 @@ func checkPrefLen(prefixLength PrefixLen, max BitCount) PrefixLen {
 		}
 	}
 	return prefixLength
-
 }
 
 func bigAbsIsOne(val *BigDivInt) bool {
@@ -214,74 +281,6 @@ func bigAbsIsOne(val *BigDivInt) bool {
 
 func bigIsOne(val *BigDivInt) bool {
 	return bigAbsIsOne(val) && val.Sign() > 0
-}
-
-// PortNum is the port number for a non-nil Port.
-// For arithmetic, you might wish to use the signed integer type PortInt instead.
-type PortNum uint16
-
-func (portNum *PortNum) portNum() PortInt {
-	return PortInt(*portNum)
-}
-
-// Num converts to a PortPortIntNum, returning 0 if the receiver is nil.
-func (portNum *PortNum) Num() PortInt {
-	if portNum == nil {
-		return 0
-	}
-	return PortInt(*portNum)
-}
-
-// Port dereferences this PortNum, while returning 0 if the receiver is nil.
-func (portNum *PortNum) Port() PortNum {
-	if portNum == nil {
-		return 0
-	}
-	return *portNum
-}
-
-// Matches compares a Port value with a port number.
-func (portNum *PortNum) Matches(other PortInt) bool {
-	return portNum != nil && portNum.portNum() == other
-}
-
-// String returns the bit count as a base-10 positive integer string,
-// or "<nil>" if the receiver is a nil pointer.
-func (portNum *PortNum) String() string {
-	if portNum == nil {
-		return nilString()
-	}
-	return strconv.Itoa(portNum.portNum())
-}
-
-func (portNum *PortNum) copy() Port {
-	if portNum == nil {
-		return nil
-	}
-	return portNum
-}
-
-// Equal compares two Port values for equality.
-func (portNum *PortNum) Equal(other Port) bool {
-	if portNum == nil {
-		return other == nil
-	}
-	return other != nil && portNum.portNum() == other.portNum()
-}
-
-// Compare compares PrefixLen values,
-// returning -1, 0, or 1 if the receiver is less than,
-// equal to, or greater than the argument.
-func (portNum *PortNum) Compare(other Port) int {
-	if portNum == nil {
-		if other == nil {
-			return 0
-		}
-		return -1
-	} else if other == nil {
-		return 1
-	}
-	return portNum.portNum() - other.portNum()
 }
 
 func cachePrefixLen(external PrefixLen) PrefixLen {

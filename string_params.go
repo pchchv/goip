@@ -819,15 +819,6 @@ func appendUppercase(str string, radix int, appendable *strings.Builder) {
 	}
 }
 
-func checkLengths(length int, builder *strings.Builder) {
-	//Note: reactivate during development
-	//calcMatch := length == builder.Len()
-	//capMatch := length == builder.Cap()
-	//if !calcMatch || !capMatch {
-	//	panic(fmt.Sprintf("length is %d, capacity is %d, expected length is %d", builder.Len(), builder.Cap(), length))
-	//}
-}
-
 func toParams(opts address_string.StringOptions) *addressStringParams {
 	return &addressStringParams{
 		radix:            opts.GetRadix(),

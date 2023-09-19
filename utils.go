@@ -216,4 +216,3 @@ func reverseUint32(i uint32) uint32 {
 	x = ((x & 0xff00ff00) >> 8) | ((x & 0x00ff00ff) << 8)
 	return (x >> 16) | (x << 16)
 }
-
