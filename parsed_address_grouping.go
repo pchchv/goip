@@ -2,14 +2,14 @@ package goip
 
 import "math/bits"
 
-type subnetOption int
-
 const (
 	zerosOnly = subnetOption(iota)
 	fullRangeOnly
 	zerosToFullRange
 	zerosOrFullRange
 )
+
+type subnetOption int
 
 // getNetworkSegmentIndex returns the index of the segment containing the last byte within the network prefix
 // When networkPrefixLength is zero (so there are no segments containing bytes within the network prefix), returns -1
@@ -72,10 +72,7 @@ func getSegmentPrefixLength(bitsPerSegment BitCount, prefixLength PrefixLen, seg
 }
 
 func getAdjustedPrefixLength(bitsPerSegment BitCount, prefixLength BitCount, fromIndex, endIndex int) PrefixLen {
-	var (
-		decrement int
-		totalBits int
-	)
+	var decrement, totalBits int
 
 	if bitsPerSegment == 8 {
 		decrement = fromIndex << ipv4BitsToSegmentBitshift
