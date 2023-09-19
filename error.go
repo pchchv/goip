@@ -104,3 +104,8 @@ type hostNameIndexError struct {
 func (a *hostNameIndexError) Error() string {
 	return getStr(a.str) + lookupStr("goip.host.error") + " " + lookupStr(a.key) + " " + strconv.Itoa(a.index)
 }
+
+type hostAddressNestedError struct {
+	hostNameIndexError
+	nested address_error.AddressError
+}
