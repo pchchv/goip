@@ -51,3 +51,7 @@ type mergedError struct {
 func (a *mergedError) GetMerged() []address_error.AddressError {
 	return a.merged
 }
+
+type addressStringError struct {
+	addressError
+}
