@@ -12,11 +12,11 @@ type addressError struct {
 }
 
 func (a *addressError) Error() string {
-	return getStr(a.str) + lookupStr("ipaddress.address.error") + " " + lookupStr(a.key)
+	return getStr(a.str) + lookupStr("goip.address.error") + " " + lookupStr(a.key)
 }
 
-// GetKey can be used to internationalize error strings in the IPAddress library.
-// The list of keys and their English translations are listed in the IPAddressResources.properties file.
+// GetKey can be used to internationalize error strings in the goip library.
+// The list of keys and their English translations are listed in the goipResources.properties file.
 // Use your own method to map keys to your translations.
 // One such method is golang.org/x/text, which provides language tags
 // (https://pkg.go.dev/golang.org/x/text/language?utm_source=godoc#Tag)
@@ -75,9 +75,18 @@ type addressStringIndexError struct {
 }
 
 func (a *addressStringIndexError) Error() string {
-	return lookupStr("ipaddress.address.error") + " " + lookupStr(a.key) + " " + strconv.Itoa(a.index)
+	return lookupStr("goip.address.error") + " " + lookupStr(a.key) + " " + strconv.Itoa(a.index)
 }
 
 type hostNameError struct {
 	addressError
+}
+
+// GetAddress_Erroror returns the nested address error which is nil for a host name error
+func (a *hostNameError) GetAddress_Erroror() address_error.AddressError {
+	return nil
+}
+
+func (a *hostNameError) Error() string {
+	return getStr(a.str) + lookupStr("goip.host.error") + " " + lookupStr(a.key)
 }
