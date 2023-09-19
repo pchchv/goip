@@ -55,3 +55,12 @@ func (a *mergedError) GetMerged() []address_error.AddressError {
 type addressStringError struct {
 	addressError
 }
+
+type addressStringNestedError struct {
+	addressStringError
+	nested address_error.AddressStringError
+}
+
+func (a *addressStringNestedError) Error() string {
+	return a.addressError.Error() + ": " + a.nested.Error()
+}
