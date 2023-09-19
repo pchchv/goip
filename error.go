@@ -90,3 +90,8 @@ func (a *hostNameError) GetAddress_Erroror() address_error.AddressError {
 func (a *hostNameError) Error() string {
 	return getStr(a.str) + lookupStr("goip.host.error") + " " + lookupStr(a.key)
 }
+
+type hostNameNestedError struct {
+	hostNameError
+	nested error
+}
