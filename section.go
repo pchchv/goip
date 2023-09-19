@@ -194,16 +194,6 @@ func (section *addressSectionInternal) initMultAndImplicitPrefLen(bitsPerSegment
 	}
 }
 
-func (section *addressSectionInternal) getLower() *AddressSection {
-	lower, _ := section.getLowestHighestSections()
-	return lower
-}
-
-func (section *addressSectionInternal) getUpper() *AddressSection {
-	_, upper := section.getLowestHighestSections()
-	return upper
-}
-
 func (section *addressSectionInternal) createLowestHighestSections() (lower, upper *AddressSection) {
 	var highSegs []*AddressDivision
 	segmentCount := section.GetSegmentCount()
