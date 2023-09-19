@@ -118,6 +118,11 @@ type SegmentSequence struct {
 	length int
 }
 
+// SegmentSequenceList represents a list of SegmentSequence instances.
+type SegmentSequenceList struct {
+	ranges []SegmentSequence
+}
+
 func createIPv6Section(segments []*AddressDivision) *IPv6AddressSection {
 	return &IPv6AddressSection{
 		ipAddressSectionInternal{
