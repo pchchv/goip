@@ -2,36 +2,22 @@ package goip
 
 import (
 	"net"
-	"sync"
 	"unsafe"
 )
 
 var (
-	_           IPAddressNetwork = &ipv4AddressNetwork{}
-	_           IPAddressNetwork = &ipv6AddressNetwork{}
-	_           addressNetwork   = &macAddressNetwork{}
-	maskMutex   sync.Mutex
-	ipv4Network = &ipv4AddressNetwork{
-		ipAddressNetwork: ipAddressNetwork{
-			make([]*IPAddress, IPv4BitCount+1),
-			make([]*IPAddress, IPv4BitCount+1),
-			make([]*IPAddress, IPv4BitCount+1),
-			make([]*IPAddress, IPv4BitCount+1),
-		},
-	}
-	ipv6Network = &ipv6AddressNetwork{
-		ipAddressNetwork: ipAddressNetwork{
-			make([]*IPAddress, IPv6BitCount+1),
-			make([]*IPAddress, IPv6BitCount+1),
-			make([]*IPAddress, IPv6BitCount+1),
-			make([]*IPAddress, IPv6BitCount+1),
-		},
-	}
-	IPv4Network  = &IPv4AddressNetwork{ipv4Network}
-	IPv6Network  = &IPv6AddressNetwork{ipv6Network}
-	macNetwork   = &macAddressNetwork{}
-	ipv4loopback = createIPv4Loopback()
-	ipv6loopback = createIPv6Loopback()
+	_                IPAddressNetwork = &ipv4AddressNetwork{}
+	_                IPAddressNetwork = &ipv6AddressNetwork{}
+	_                addressNetwork   = &macAddressNetwork{}
+	ipv4Network                       = createIPv4AddressNetwork()
+	ipv6Network                       = createIPv6AddressNetwork()
+	ipv4NetworkMasks [IPv4BitCount + 1]uint32
+	ipv6NetworkMasks [IPv6BitCount + 1][2]uint64
+	IPv4Network      = &IPv4AddressNetwork{ipv4Network}
+	IPv6Network      = &IPv6AddressNetwork{ipv6Network}
+	macNetwork       = &macAddressNetwork{}
+	ipv4loopback     = createIPv4Loopback()
+	ipv6loopback     = createIPv6Loopback()
 )
 
 type addressNetwork interface {
@@ -72,19 +58,19 @@ func (network *ipv6AddressNetwork) getAddressCreator() parsedAddressCreator {
 }
 
 func (network *ipv6AddressNetwork) GetNetworkMask(prefLen BitCount) *IPAddress {
-	return getMask(IPv6, zeroIPv6Seg.ToDiv(), prefLen, network.subnetMasks, true, false)
+	return network.subnetMasks[adjustBits(IPv6, prefLen)]
 }
 
 func (network *ipv6AddressNetwork) GetPrefixedNetworkMask(prefLen BitCount) *IPAddress {
-	return getMask(IPv6, zeroIPv6Seg.ToDiv(), prefLen, network.subnetsMasksWithPrefix, true, true)
+	return network.subnetsMasksWithPrefix[adjustBits(IPv6, prefLen)]
 }
 
 func (network *ipv6AddressNetwork) GetHostMask(prefLen BitCount) *IPAddress {
-	return getMask(IPv6, zeroIPv6Seg.ToDiv(), prefLen, network.hostMasks, false, false)
+	return network.hostMasks[adjustBits(IPv6, prefLen)]
 }
 
 func (network *ipv6AddressNetwork) GetPrefixedHostMask(prefLen BitCount) *IPAddress {
-	return getMask(IPv6, zeroIPv6Seg.ToDiv(), prefLen, network.hostMasksWithPrefix, false, true)
+	return network.hostMasksWithPrefix[adjustBits(IPv6, prefLen)]
 }
 
 func (network *ipv6AddressNetwork) GetLoopback() *IPAddress {
@@ -134,19 +120,19 @@ func (network *ipv4AddressNetwork) GetLoopback() *IPAddress {
 }
 
 func (network *ipv4AddressNetwork) GetNetworkMask(prefLen BitCount) *IPAddress {
-	return getMask(IPv4, zeroIPv4Seg.ToDiv(), prefLen, network.subnetMasks, true, false)
+	return network.subnetMasks[adjustBits(IPv4, prefLen)]
 }
 
 func (network *ipv4AddressNetwork) GetHostMask(prefLen BitCount) *IPAddress {
-	return getMask(IPv4, zeroIPv4Seg.ToDiv(), prefLen, network.hostMasks, false, false)
+	return network.hostMasks[adjustBits(IPv4, prefLen)]
 }
 
 func (network *ipv4AddressNetwork) GetPrefixedNetworkMask(prefLen BitCount) *IPAddress {
-	return getMask(IPv4, zeroIPv4Seg.ToDiv(), prefLen, network.subnetsMasksWithPrefix, true, true)
+	return network.subnetsMasksWithPrefix[adjustBits(IPv4, prefLen)]
 }
 
 func (network *ipv4AddressNetwork) GetPrefixedHostMask(prefLen BitCount) *IPAddress {
-	return getMask(IPv4, zeroIPv4Seg.ToDiv(), prefLen, network.hostMasksWithPrefix, false, true)
+	return network.hostMasksWithPrefix[adjustBits(IPv4, prefLen)]
 }
 
 // IPv4AddressNetwork is the implementation of IPAddressNetwork for IPv4
