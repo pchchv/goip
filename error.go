@@ -95,3 +95,12 @@ type hostNameNestedError struct {
 	hostNameError
 	nested error
 }
+
+type hostNameIndexError struct {
+	hostNameError
+	index int
+}
+
+func (a *hostNameIndexError) Error() string {
+	return getStr(a.str) + lookupStr("goip.host.error") + " " + lookupStr(a.key) + " " + strconv.Itoa(a.index)
+}
