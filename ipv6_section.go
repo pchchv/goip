@@ -111,6 +111,13 @@ func (grouping *IPv6v4MixedAddressGrouping) ToDivGrouping() *AddressDivisionGrou
 	return (*AddressDivisionGrouping)(grouping)
 }
 
+// SegmentSequence represents a sequence of consecutive segments with
+// the given length starting from the given segment index.
+type SegmentSequence struct {
+	index  int
+	length int
+}
+
 func createIPv6Section(segments []*AddressDivision) *IPv6AddressSection {
 	return &IPv6AddressSection{
 		ipAddressSectionInternal{
