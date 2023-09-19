@@ -371,3 +371,42 @@ func populateNetwork(version IPVersion, network *ipAddressNetwork, zeroDiv *Addr
 		_ = createMask(version, zeroDiv, i, network.hostMasksWithPrefix, false, true)
 	}
 }
+
+func createIPv6AddressNetwork() *ipv6AddressNetwork {
+	network := &ipv6AddressNetwork{
+		ipAddressNetwork: ipAddressNetwork{
+			make([]*IPAddress, IPv6BitCount+1),
+			make([]*IPAddress, IPv6BitCount+1),
+			make([]*IPAddress, IPv6BitCount+1),
+			make([]*IPAddress, IPv6BitCount+1),
+		},
+	}
+	populateNetwork(IPv6, &network.ipAddressNetwork, zeroIPv6Seg.ToDiv())
+
+	for i := 0; i <= IPv6BitCount; i++ {
+		addr := network.subnetMasks[i].ToIPv6()
+		high, low := addr.Uint64Values()
+		ipv6NetworkMasks[i] = [2]uint64{high, low}
+	}
+
+	return network
+}
+
+func createIPv4AddressNetwork() *ipv4AddressNetwork {
+	network := &ipv4AddressNetwork{
+		ipAddressNetwork: ipAddressNetwork{
+			make([]*IPAddress, IPv4BitCount+1),
+			make([]*IPAddress, IPv4BitCount+1),
+			make([]*IPAddress, IPv4BitCount+1),
+			make([]*IPAddress, IPv4BitCount+1),
+		},
+	}
+	populateNetwork(IPv4, &network.ipAddressNetwork, zeroIPv4Seg.ToDiv())
+
+	for i := 0; i <= IPv4BitCount; i++ {
+		addr := network.subnetMasks[i].ToIPv4()
+		ipv4NetworkMasks[i] = addr.Uint32Value()
+	}
+
+	return network
+}
