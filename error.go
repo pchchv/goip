@@ -109,3 +109,15 @@ type hostAddressNestedError struct {
 	hostNameIndexError
 	nested address_error.AddressError
 }
+
+// GetAddress_Erroror returns the nested address error
+func (a *hostAddressNestedError) GetAddress_Erroror() address_error.AddressError {
+	return a.nested
+}
+
+func (a *hostAddressNestedError) Error() string {
+	if a.hostNameIndexError.key != "" {
+		return getStr(a.str) + lookupStr("goip.host.error") + " " + a.hostNameIndexError.Error() + " " + a.nested.Error()
+	}
+	return getStr(a.str) + lookupStr("goip.host.error") + " " + a.nested.Error()
+}
