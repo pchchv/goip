@@ -3,11 +3,24 @@ package goip
 import "math/bits"
 
 var (
-	defaultMasker                = extendedMaskerBase{maskerBase{true}}
-	defaultNonSequentialMasker   = extendedMaskerBase{}
-	defaultOrMasker              = bitwiseOrerBase{true}
-	defaultNonSequentialOrMasker = bitwiseOrerBase{}
+	defaultMasker                            = extendedMaskerBase{maskerBase{true}}
+	defaultNonSequentialMasker               = extendedMaskerBase{}
+	defaultOrMasker                          = bitwiseOrerBase{true}
+	defaultNonSequentialOrMasker             = bitwiseOrerBase{}
+	_                            Masker      = maskerBase{}
+	_                            Masker      = extendedMaskerBase{}
+	_                            BitwiseOrer = bitwiseOrerBase{}
 )
+
+// BitwiseOrer is used for bitwise disjunction applied to division and segment values.
+type BitwiseOrer interface {
+	// GetOredLower provides the lowest value after the disjunction, which is not necessarily the lowest value apriori.
+	GetOredLower(value, maskValue uint64) uint64
+	// GetOredUpper provides the highest value after the disjunction, which is not necessarily the highest value apriori.
+	GetOredUpper(upperValue, maskValue uint64) uint64
+	// IsSequential returns whether applying bitwise disjunction to all values in the range results in a sequential set of values.
+	IsSequential() bool
+}
 
 // Masker is used to mask (apply a bitwise combination) the division and segment values.
 type Masker interface {

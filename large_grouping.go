@@ -191,7 +191,6 @@ func normalizeLargeDivisions(divs []*IPAddressLargeDivision) (newDivs []*IPAddre
 		}
 
 		var newDiv *IPAddressLargeDivision
-
 		// The final prefix length is the minimum amongst the divisions' own prefixes
 		divPrefix := div.getDivisionPrefixLength()
 		divIsPrefixed := divPrefix != nil
