@@ -1,5 +1,7 @@
 package goip
 
+import "github.com/pchchv/goip/address_error"
+
 type addressError struct {
 	key string // to look up the error message
 	str string // an optional string with the address
@@ -39,4 +41,13 @@ type sizeMismatchError struct {
 type addressValueError struct {
 	addressError
 	val int
+}
+
+type mergedError struct {
+	address_error.AddressError
+	merged []address_error.AddressError
+}
+
+func (a *mergedError) GetMerged() []address_error.AddressError {
+	return a.merged
 }
