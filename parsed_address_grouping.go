@@ -235,3 +235,13 @@ func isPrefixSubnet(
 	}
 	return true
 }
+
+func getTotalBits(segmentCount, bytesPerSegment int, bitsPerSegment BitCount) BitCount {
+	if bytesPerSegment != 1 {
+		if bytesPerSegment == 2 {
+			return BitCount(segmentCount << ipv6BitsToSegmentBitshift)
+		}
+		return BitCount(segmentCount * bitsPerSegment)
+	}
+	return BitCount(segmentCount << ipv4BitsToSegmentBitshift)
+}
