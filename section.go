@@ -194,14 +194,14 @@ func (section *addressSectionInternal) initMultAndImplicitPrefLen(bitsPerSegment
 	}
 }
 
-// GetLower returns a segment representing just the lowest value in the range, which will be the same segment if it represents a single value.
-func (seg *addressSegmentInternal) GetLower() *AddressSegment {
-	return seg.getLower()
+func (section *addressSectionInternal) getLower() *AddressSection {
+	lower, _ := section.getLowestHighestSections()
+	return lower
 }
 
-// GetUpper returns a segment representing just the highest value in the range, which will be the same segment if it represents a single value.
-func (seg *addressSegmentInternal) GetUpper() *AddressSegment {
-	return seg.getUpper()
+func (section *addressSectionInternal) getUpper() *AddressSection {
+	_, upper := section.getLowestHighestSections()
+	return upper
 }
 
 func (section *addressSectionInternal) createLowestHighestSections() (lower, upper *AddressSection) {
