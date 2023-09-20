@@ -2,6 +2,7 @@ package goip
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/pchchv/goip/address_error"
 )
@@ -138,4 +139,40 @@ func (wrappedErr *wrappedErr) Error() string {
 	wrappedErr.str = str
 
 	return str
+}
+
+type mergedErr struct {
+	mergedErrs []error
+	str        string
+}
+
+func (merged *mergedErr) Error() (str string) {
+	str = merged.str
+	if len(str) > 0 {
+		return
+	}
+
+	mergedErrs := merged.mergedErrs
+	errLen := len(mergedErrs)
+	strs := make([]string, errLen)
+	totalLen := 0
+
+	for i, err := range mergedErrs {
+		str := err.Error()
+		strs[i] = str
+		totalLen += len(str)
+	}
+
+	format := strings.Builder{}
+	format.Grow(totalLen + errLen*2)
+	format.WriteString(strs[0])
+
+	for _, str := range strs[1:] {
+		format.WriteString(", ")
+		format.WriteString(str)
+	}
+
+	str = format.String()
+	merged.str = str
+	return
 }
