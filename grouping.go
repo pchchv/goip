@@ -529,3 +529,22 @@ func normalizeDivisions(divs []*AddressDivision) (newDivs []*AddressDivision, ne
 	}
 	return
 }
+
+// callers to this function have segments/divisions with prefix length consistent with the supplied prefix length
+func createInitializedGrouping(divs []*AddressDivision, prefixLength PrefixLen) *AddressDivisionGrouping {
+	result := createGrouping(divs, prefixLength, zeroType)
+	result.initMultiple() // assigns isMultiple
+	return result
+}
+
+// NewDivisionGrouping creates an arbitrary grouping of divisions.
+// To create address sections or addresses,
+// use the constructors that are specific to the address version or type.
+// The AddressDivision instances can be created with
+// the NewDivision, NewRangeDivision, NewPrefixDivision or NewRangePrefixDivision functions.
+func NewDivisionGrouping(divs []*AddressDivision) *AddressDivisionGrouping {
+	newDivs, newPref, isMult := normalizeDivisions(divs)
+	result := createGrouping(newDivs, newPref, zeroType)
+	result.isMult = isMult
+	return result
+}
