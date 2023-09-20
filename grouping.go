@@ -270,6 +270,24 @@ func (grouping *addressDivisionGroupingInternal) getDivisionsInternal() []*Addre
 	return grouping.getDivArray()
 }
 
+func (grouping *addressDivisionGroupingInternal) forEachSubDivision(start, end int, target func(index int, div *AddressDivision), targetLen int) (count int) {
+	divArray := grouping.getDivArray()
+	if divArray != nil {
+		if targetEnd := start + targetLen; end > targetEnd {
+			end = targetEnd
+		}
+		divArray = divArray[start:end]
+		for i, div := range divArray {
+			target(i, div)
+		}
+	}
+	return len(divArray)
+}
+
+func (grouping *addressDivisionGroupingInternal) toAddressSection() *AddressSection {
+	return grouping.toAddressDivisionGrouping().ToSectionBase()
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
