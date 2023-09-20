@@ -472,3 +472,37 @@ func (grouping *addressDivisionGroupingBase) GetSequentialBlockIndex() int {
 	}
 	return divCount
 }
+
+func (grouping *addressDivisionGroupingBase) getPrefixCountLenBig(prefixLen BitCount) *big.Int {
+	if prefixLen <= 0 {
+		return bigOne()
+	} else if prefixLen >= grouping.GetBitCount() {
+		return grouping.getCountBig()
+	}
+
+	res := bigOne()
+
+	if grouping.isMultiple() {
+		divisionCount := grouping.GetDivisionCount()
+		divPrefixLength := prefixLen
+		for i := 0; i < divisionCount; i++ {
+			div := grouping.getDivision(i)
+			divBitCount := div.getBitCount()
+			if div.isMultiple() {
+				var divCount *big.Int
+				if divPrefixLength < divBitCount {
+					divCount = div.GetPrefixCountLen(divPrefixLength)
+				} else {
+					divCount = div.getCount()
+				}
+				res.Mul(res, divCount)
+			}
+			if divPrefixLength <= divBitCount {
+				break
+			}
+			divPrefixLength -= divBitCount
+		}
+	}
+
+	return res
+}
