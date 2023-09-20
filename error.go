@@ -187,3 +187,16 @@ func newError(str string) error {
 func errorF(format string, a ...interface{}) error {
 	return errors.New(fmt.Sprintf(format, a...))
 }
+
+func wrapper(nilIfFirstNil bool, err error, format string, a ...interface{}) error {
+	if err == nil {
+		if nilIfFirstNil {
+			return nil
+		}
+		return errorF(format, a...)
+	}
+	return &wrappedErr{
+		cause: err,
+		err:   errorF(format, a...),
+	}
+}
