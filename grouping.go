@@ -483,3 +483,49 @@ func createGroupingMultiple(divs []*AddressDivision, prefixLength PrefixLen, isM
 	result.isMult = isMultiple
 	return result
 }
+
+func normalizeDivisions(divs []*AddressDivision) (newDivs []*AddressDivision, newPref PrefixLen, isMultiple bool) {
+	var bits BitCount
+	var previousDivPrefixed bool
+	divCount := len(divs)
+	newDivs = make([]*AddressDivision, 0, divCount)
+
+	for _, div := range divs {
+		if div == nil || div.GetBitCount() == 0 {
+			// nil divisions are divisions with zero bit-length, which we ignore
+			continue
+		}
+
+		var newDiv *AddressDivision
+		// The final prefix length is the minimum amongst the divisions' own prefixes
+		divPrefix := div.getDivisionPrefixLength()
+		divIsPrefixed := divPrefix != nil
+
+		if previousDivPrefixed {
+			if !divIsPrefixed || divPrefix.bitCount() != 0 {
+				newDiv = createAddressDivision(
+					div.derivePrefixed(cacheBitCount(0))) // change prefix to 0
+			} else {
+				newDiv = div // div prefix is already 0
+			}
+		} else {
+			if divIsPrefixed {
+				if divPrefix.bitCount() == 0 && len(newDivs) > 0 {
+					// normalize boundaries by looking back
+					lastDiv := newDivs[len(newDivs)-1]
+					if !lastDiv.isPrefixed() {
+						newDivs[len(newDivs)-1] = createAddressDivision(
+							lastDiv.derivePrefixed(cacheBitCount(lastDiv.GetBitCount())))
+					}
+				}
+				newPref = cacheBitCount(bits + divPrefix.bitCount())
+				previousDivPrefixed = true
+			}
+			newDiv = div
+		}
+		newDivs = append(newDivs, newDiv)
+		bits += newDiv.GetBitCount()
+		isMultiple = isMultiple || newDiv.isMultiple()
+	}
+	return
+}
