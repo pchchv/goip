@@ -602,3 +602,37 @@ func (grouping *addressDivisionGroupingBase) getPrefixCountBig() *big.Int {
 	}
 	return grouping.getPrefixCountLenBig(prefixLen.bitCount())
 }
+
+func (grouping *addressDivisionGroupingBase) cacheUint64PrefixCount(counter func() uint64) uint64 {
+	cache := grouping.cache // isMultiple checks prior to this ensures cache not nil here
+	if cache == nil {
+		return grouping.calcUint64PrefixCount(counter)
+	}
+
+	count := (*big.Int)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.cachedPrefixCount))))
+	if count == nil {
+		count64 := grouping.calcUint64PrefixCount(counter)
+		count = new(big.Int).SetUint64(count64)
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.cachedPrefixCount))
+		atomicStorePointer(dataLoc, unsafe.Pointer(count))
+		return count64
+	}
+
+	return count.Uint64()
+}
+
+func (grouping *addressDivisionGroupingBase) cachePrefixCount(counter func() *big.Int) *big.Int {
+	cache := grouping.cache // isMultiple checks prior to this ensures cache not nil here
+	if cache == nil {
+		return grouping.calcPrefixCount(counter)
+	}
+
+	count := (*big.Int)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.cachedPrefixCount))))
+	if count == nil {
+		count = grouping.calcPrefixCount(counter)
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.cachedPrefixCount))
+		atomicStorePointer(dataLoc, unsafe.Pointer(count))
+	}
+
+	return new(big.Int).Set(count)
+}
