@@ -433,3 +433,31 @@ func adjust1To1Indices(sourceStart, sourceEnd, sourceCount, targetCount int) (ne
 func createSegmentArray(length int) []*AddressDivision {
 	return make([]*AddressDivision, length)
 }
+
+func adjustIndices(startIndex, endIndex, sourceCount, replacementStartIndex, replacementEndIndex, replacementSegmentCount int) (int, int, int, int) {
+	if startIndex < 0 {
+		startIndex = 0
+	} else if startIndex > sourceCount {
+		startIndex = sourceCount
+	}
+
+	if endIndex < startIndex {
+		endIndex = startIndex
+	} else if endIndex > sourceCount {
+		endIndex = sourceCount
+	}
+
+	if replacementStartIndex < 0 {
+		replacementStartIndex = 0
+	} else if replacementStartIndex > replacementSegmentCount {
+		replacementStartIndex = replacementSegmentCount
+	}
+
+	if replacementEndIndex < replacementStartIndex {
+		replacementEndIndex = replacementStartIndex
+	} else if replacementEndIndex > replacementSegmentCount {
+		replacementEndIndex = replacementSegmentCount
+	}
+
+	return startIndex, endIndex, replacementStartIndex, replacementEndIndex
+}
