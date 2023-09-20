@@ -345,3 +345,40 @@ func (grouping *addressDivisionGroupingBase) GetBitCount() (res BitCount) {
 func (grouping *addressDivisionGroupingBase) GetByteCount() int {
 	return (int(grouping.GetBitCount()) + 7) >> 3
 }
+
+// initMultAndPrefLen is used by methods that apply in both mac and ipv4/6,
+// even though prefix length assignment does not apply in MAC.
+// Large division groupings also use it.
+func (grouping *addressDivisionGroupingBase) initMultAndPrefLen() {
+	bitsSoFar := 0
+	segCount := grouping.GetDivisionCount()
+	if segCount != 0 {
+		var previousSegmentPrefix PrefixLen
+		isMultiple := false
+		for i := 0; i < segCount; i++ {
+			segment := grouping.getDivision(i)
+			if !isMultiple && segment.isMultiple() {
+				isMultiple = true
+				grouping.isMult = true
+				if grouping.prefixLength != nil { // nothing left to do
+					break
+				}
+			}
+
+			// Calculate the segment-level prefix.
+			segPrefix := segment.getDivisionPrefixLength()
+			if previousSegmentPrefix == nil {
+				if segPrefix != nil {
+					newPref := bitsSoFar + segPrefix.bitCount()
+					grouping.prefixLength = cacheBitCount(newPref)
+					if isMultiple { // nothing left to do
+						break
+					}
+				}
+			}
+			previousSegmentPrefix = segPrefix
+			bitsSoFar += segment.GetBitCount()
+		}
+	}
+	return
+}
