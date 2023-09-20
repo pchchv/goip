@@ -399,3 +399,25 @@ func (grouping *addressDivisionGroupingBase) GetPrefixLen() PrefixLen {
 func (grouping *addressDivisionGroupingBase) GetGenericDivision(index int) DivisionType {
 	return grouping.divisions.getGenericDivision(index)
 }
+
+// IsZero returns whether this grouping matches exactly the value of zero.
+func (grouping *addressDivisionGroupingBase) IsZero() bool {
+	divCount := grouping.GetDivisionCount()
+	for i := 0; i < divCount; i++ {
+		if !grouping.getDivision(i).IsZero() {
+			return false
+		}
+	}
+	return true
+}
+
+// IncludesZero returns whether this grouping includes the value of zero within its range.
+func (grouping *addressDivisionGroupingBase) IncludesZero() bool {
+	divCount := grouping.GetDivisionCount()
+	for i := 0; i < divCount; i++ {
+		if !grouping.getDivision(i).IncludesZero() {
+			return false
+		}
+	}
+	return true
+}
