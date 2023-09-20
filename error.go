@@ -121,3 +121,21 @@ func (a *hostAddressNestedError) Error() string {
 	}
 	return getStr(a.str) + lookupStr("goip.host.error") + " " + a.nested.Error()
 }
+
+type wrappedErr struct {
+	cause error // root cause
+	err   error // wrapper
+	str   string
+}
+
+func (wrappedErr *wrappedErr) Error() string {
+	str := wrappedErr.str
+	if len(str) > 0 {
+		return str
+	}
+
+	str = wrappedErr.err.Error() + ": " + wrappedErr.cause.Error()
+	wrappedErr.str = str
+
+	return str
+}
