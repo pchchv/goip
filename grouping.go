@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"math/big"
 	"unsafe"
 )
@@ -300,6 +301,18 @@ func (grouping *addressDivisionGroupingInternal) getSegmentStrings() []string {
 	}
 
 	return result
+}
+
+func (grouping addressDivisionGroupingInternal) defaultFormat(state fmt.State, verb rune) {
+	s := flagsFromState(state, verb)
+	_, _ = state.Write([]byte(fmt.Sprintf(s, grouping.initDivs().getDivArray())))
+}
+
+func (grouping *addressDivisionGroupingInternal) initDivs() *addressDivisionGroupingInternal {
+	if grouping.divisions == nil {
+		return &zeroSection.addressDivisionGroupingInternal
+	}
+	return grouping
 }
 
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
