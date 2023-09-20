@@ -561,3 +561,23 @@ func (grouping *addressDivisionGroupingBase) calcUint64PrefixCount(counter func(
 	}
 	return counter()
 }
+
+// IsSequential returns whether the grouping represents a range of values that are sequential.
+//
+// Generally, this means that any division covering a range of values must be followed by divisions that are full range, covering all values.
+func (grouping *addressDivisionGroupingBase) IsSequential() bool {
+	count := grouping.GetDivisionCount()
+	if count > 1 {
+		for i := 0; i < count; i++ {
+			if grouping.getDivision(i).isMultiple() {
+				for i++; i < count; i++ {
+					if !grouping.getDivision(i).IsFullRange() {
+						return false
+					}
+				}
+				return true
+			}
+		}
+	}
+	return true
+}
