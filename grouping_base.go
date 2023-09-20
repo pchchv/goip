@@ -382,3 +382,20 @@ func (grouping *addressDivisionGroupingBase) initMultAndPrefLen() {
 	}
 	return
 }
+
+// GetPrefixLen returns the prefix length or nil if there is no prefix length.
+//
+// The prefix length indicates the number of bits in the initial part of the address item that make up the prefix.
+//
+// A prefix is a part of an address item that is not specific to a given address but is common to a group of such items,
+// for example, the subnet of a CIDR prefix block.
+func (grouping *addressDivisionGroupingBase) GetPrefixLen() PrefixLen {
+	return grouping.getPrefixLen().copy()
+}
+
+// GetGenericDivision returns the division as a DivisionType,
+// allowing all division types and aggregated division types to be represented by a single type,
+// useful for comparisons and other common uses.
+func (grouping *addressDivisionGroupingBase) GetGenericDivision(index int) DivisionType {
+	return grouping.divisions.getGenericDivision(index)
+}
