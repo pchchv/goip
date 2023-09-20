@@ -229,3 +229,35 @@ func mergeErrs(err error, format string, a ...interface{}) error {
 
 	return &mergedErr{mergedErrs: merged}
 }
+
+// mergeErrors merges multiple errors
+func mergeAllErrs(errs ...error) error {
+	var all []error
+	allLen := len(errs)
+	if allLen <= 1 {
+		if allLen == 0 {
+			return nil
+		}
+		return errs[0]
+	}
+
+	for _, err := range errs {
+		if err != nil {
+			if merge, isMergedErr := err.(*mergedErr); isMergedErr {
+				all = append(all, merge.mergedErrs...)
+			} else {
+				all = append(all, err)
+			}
+		}
+	}
+
+	allLen = len(all)
+	if allLen <= 1 {
+		if allLen == 0 {
+			return nil
+		}
+		return all[0]
+	}
+
+	return &mergedErr{mergedErrs: all}
+}
