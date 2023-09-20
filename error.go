@@ -210,3 +210,22 @@ func wrapErrf(err error, format string, a ...interface{}) error {
 func wrapToErrf(err error, format string, a ...interface{}) error {
 	return wrapper(false, err, format, a...)
 }
+
+// mergeErrs merges an existing error with a new one
+func mergeErrs(err error, format string, a ...interface{}) error {
+	newErr := errorF(format, a...)
+
+	if err == nil {
+		return newErr
+	}
+
+	var merged []error
+
+	if merge, isMergedErr := err.(*mergedErr); isMergedErr {
+		merged = append(append([]error(nil), merge.mergedErrs...), newErr)
+	} else {
+		merged = []error{err, newErr}
+	}
+
+	return &mergedErr{mergedErrs: merged}
+}
