@@ -461,3 +461,25 @@ func adjustIndices(startIndex, endIndex, sourceCount, replacementStartIndex, rep
 
 	return startIndex, endIndex, replacementStartIndex, replacementEndIndex
 }
+
+func createGrouping(divs []*AddressDivision, prefixLength PrefixLen, addrType addrType) *AddressDivisionGrouping {
+	grouping := &AddressDivisionGrouping{
+		addressDivisionGroupingInternal{
+			addressDivisionGroupingBase: addressDivisionGroupingBase{
+				divisions:    standardDivArray(divs),
+				prefixLength: prefixLength,
+				addrType:     addrType,
+				cache:        &valueCache{},
+			},
+		},
+	}
+	assignStringCache(&grouping.addressDivisionGroupingBase, addrType)
+	return grouping
+}
+
+// callers to this function have segments/divisions with prefix length consistent with the supplied prefix length
+func createGroupingMultiple(divs []*AddressDivision, prefixLength PrefixLen, isMultiple bool) *AddressDivisionGrouping {
+	result := createGrouping(divs, prefixLength, zeroType)
+	result.isMult = isMultiple
+	return result
+}
