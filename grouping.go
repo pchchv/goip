@@ -288,6 +288,20 @@ func (grouping *addressDivisionGroupingInternal) toAddressSection() *AddressSect
 	return grouping.toAddressDivisionGrouping().ToSectionBase()
 }
 
+func (grouping *addressDivisionGroupingInternal) getSegmentStrings() []string {
+	if grouping.hasNoDivisions() {
+		return []string{}
+	}
+
+	result := make([]string, grouping.GetDivisionCount())
+
+	for i := range result {
+		result[i] = grouping.getDivision(i).GetWildcardString()
+	}
+
+	return result
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
