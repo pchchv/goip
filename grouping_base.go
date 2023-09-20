@@ -581,3 +581,24 @@ func (grouping *addressDivisionGroupingBase) IsSequential() bool {
 	}
 	return true
 }
+
+// GetSequentialBlockCount provides the count of elements from the sequential block iterator,
+// the minimal number of sequential address division groupings that comprise this address division grouping.
+func (grouping *addressDivisionGroupingBase) GetSequentialBlockCount() *big.Int {
+	sequentialSegCount := grouping.GetSequentialBlockIndex()
+	prefixLen := BitCount(0)
+
+	for i := 0; i < sequentialSegCount; i++ {
+		prefixLen += grouping.getDivision(i).GetBitCount()
+	}
+
+	return grouping.GetPrefixCountLen(prefixLen) // 0-1.0-1.*.* gives 1 as seq block index, and then you count only previous segments
+}
+
+func (grouping *addressDivisionGroupingBase) getPrefixCountBig() *big.Int {
+	prefixLen := grouping.prefixLength
+	if prefixLen == nil {
+		return grouping.getCountBig()
+	}
+	return grouping.getPrefixCountLenBig(prefixLen.bitCount())
+}
