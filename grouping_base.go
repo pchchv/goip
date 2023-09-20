@@ -506,3 +506,28 @@ func (grouping *addressDivisionGroupingBase) getPrefixCountLenBig(prefixLen BitC
 
 	return res
 }
+
+func (grouping *addressDivisionGroupingBase) getBlockCountBig(segmentCount int) *big.Int {
+	if segmentCount <= 0 {
+		return bigOne()
+	}
+
+	divCount := grouping.GetDivisionCount()
+
+	if segmentCount >= divCount {
+		return grouping.getCountBig()
+	}
+
+	res := bigOne()
+
+	if grouping.isMultiple() {
+		for i := 0; i < segmentCount; i++ {
+			division := grouping.getDivision(i)
+			if division.isMultiple() {
+				res.Mul(res, division.getCount())
+			}
+		}
+	}
+
+	return res
+}
