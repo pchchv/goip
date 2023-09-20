@@ -200,3 +200,13 @@ func wrapper(nilIfFirstNil bool, err error, format string, a ...interface{}) err
 		err:   errorF(format, a...),
 	}
 }
+
+// wrapErrf wraps the given error, but only if it is not nil.
+func wrapErrf(err error, format string, a ...interface{}) error {
+	return wrapper(true, err, format, a...)
+}
+
+// wrapToErrf is like wrapErrf but always returns an error
+func wrapToErrf(err error, format string, a ...interface{}) error {
+	return wrapper(false, err, format, a...)
+}
