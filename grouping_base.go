@@ -541,3 +541,23 @@ func (grouping *addressDivisionGroupingBase) GetPrefixCountLen(prefixLen BitCoun
 func (grouping *addressDivisionGroupingBase) GetBlockCount(divisionCount int) *big.Int {
 	return grouping.calcCount(func() *big.Int { return grouping.getBlockCountBig(divisionCount) })
 }
+
+func (grouping *addressDivisionGroupingBase) calcPrefixCount(counter func() *big.Int) *big.Int {
+	if !grouping.isMultiple() {
+		return bigOne()
+	}
+
+	prefixLen := grouping.prefixLength
+	if prefixLen == nil || prefixLen.bitCount() >= grouping.GetBitCount() {
+		return grouping.getCount()
+	}
+
+	return counter()
+}
+
+func (grouping *addressDivisionGroupingBase) calcUint64PrefixCount(counter func() uint64) uint64 {
+	if !grouping.isMultiple() {
+		return 1
+	}
+	return counter()
+}
