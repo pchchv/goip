@@ -445,3 +445,30 @@ func (grouping *addressDivisionGroupingBase) IncludesMax() bool {
 	}
 	return true
 }
+
+// IsFullRange returns whether this address item represents all possible values attainable by an address item of this type.
+//
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (grouping *addressDivisionGroupingBase) IsFullRange() bool {
+	divCount := grouping.GetDivisionCount()
+	for i := 0; i < divCount; i++ {
+		if !grouping.getDivision(i).IsFullRange() {
+			return false
+		}
+	}
+	return true
+}
+
+// GetSequentialBlockIndex gets the minimal index of a division for which all subsequent divisions are full-range blocks.
+//
+// The division at this index is not a full-range block if all divisions are not full-range blocks.
+// A division at this index and all subsequent divisions form a sequential range.
+// For a full-range grouping to be sequential, the preceding divisions must be single-valued.
+func (grouping *addressDivisionGroupingBase) GetSequentialBlockIndex() int {
+	divCount := grouping.GetDivisionCount()
+	if divCount > 0 {
+		for divCount--; divCount > 0 && grouping.getDivision(divCount).IsFullRange(); divCount-- {
+		}
+	}
+	return divCount
+}
