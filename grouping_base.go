@@ -636,3 +636,14 @@ func (grouping *addressDivisionGroupingBase) cachePrefixCount(counter func() *bi
 
 	return new(big.Int).Set(count)
 }
+
+// GetPrefixCount returns the number of distinct prefix values in this item.
+//
+// The prefix length is given by GetPrefixLen.
+//
+// If this has a non-nil prefix length, returns the number of distinct prefix values.
+//
+// If this has a nil prefix length, returns the same value as GetCount.
+func (grouping *addressDivisionGroupingBase) GetPrefixCount() *big.Int {
+	return grouping.cachePrefixCount(grouping.getPrefixCountBig)
+}
