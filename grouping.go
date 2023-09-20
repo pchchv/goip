@@ -255,6 +255,21 @@ func (grouping *addressDivisionGroupingInternal) initMultiple() {
 	return
 }
 
+func (grouping *addressDivisionGroupingInternal) getSubDivisions(start, end int) []*AddressDivision {
+	divArray := grouping.getDivArray()
+	if divArray != nil {
+		return divArray.getSubDivisions(start, end)
+	} else if start != 0 || end != 0 {
+		panic("invalid subslice")
+	}
+	return make([]*AddressDivision, 0)
+}
+
+// getDivisionsInternal returns the divisions slice, only to be used internally
+func (grouping *addressDivisionGroupingInternal) getDivisionsInternal() []*AddressDivision {
+	return grouping.getDivArray()
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
