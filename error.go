@@ -1,6 +1,8 @@
 package goip
 
 import (
+	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -175,4 +177,13 @@ func (merged *mergedErr) Error() (str string) {
 	str = format.String()
 	merged.str = str
 	return
+}
+
+func newError(str string) error {
+	return errors.New(str)
+}
+
+// errorF returns a formatted error
+func errorF(format string, a ...interface{}) error {
+	return errors.New(fmt.Sprintf(format, a...))
 }
