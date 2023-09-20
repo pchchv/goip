@@ -531,3 +531,13 @@ func (grouping *addressDivisionGroupingBase) getBlockCountBig(segmentCount int) 
 
 	return res
 }
+
+// GetPrefixCountLen returns the number of distinct prefix values in this item for the given prefix length.
+func (grouping *addressDivisionGroupingBase) GetPrefixCountLen(prefixLen BitCount) *big.Int {
+	return grouping.calcCount(func() *big.Int { return grouping.getPrefixCountLenBig(prefixLen) })
+}
+
+// GetBlockCount returns the count of distinct values in the given number of initial (more significant) divisions.
+func (grouping *addressDivisionGroupingBase) GetBlockCount(divisionCount int) *big.Int {
+	return grouping.calcCount(func() *big.Int { return grouping.getBlockCountBig(divisionCount) })
+}
