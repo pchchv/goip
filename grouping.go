@@ -438,6 +438,18 @@ func (grouping *addressDivisionGroupingInternal) IncludesMax() bool {
 	return grouping.addressDivisionGroupingBase.IncludesMax()
 }
 
+// IsMax returns whether this grouping matches exactly the maximum possible value, the value whose bits are all ones.
+func (grouping *addressDivisionGroupingInternal) IsMax() bool {
+	return grouping.addressDivisionGroupingBase.IsMax()
+}
+
+// IsFullRange returns whether this address item represents all possible values attainable by an address item of this type.
+//
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (grouping *addressDivisionGroupingInternal) IsFullRange() bool {
+	return grouping.addressDivisionGroupingBase.IsFullRange()
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
