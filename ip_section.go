@@ -205,6 +205,43 @@ func (section *ipAddressSectionInternal) IncludesZeroHostLen(networkPrefixLength
 	return true
 }
 
+// IncludesMaxHost returns whether the address section contains an individual address section with a host of all one-bits.
+// If the address section has no prefix length it returns false.
+// If the prefix length matches the bit count, then it returns true.
+//
+// Otherwise, it checks whether it contains an individual address section for which all bits past the prefix are one.
+func (section *ipAddressSectionInternal) IncludesMaxHost() bool {
+	networkPrefixLength := section.getPrefixLen()
+	return networkPrefixLength != nil && section.IncludesMaxHostLen(networkPrefixLength.bitCount())
+}
+
+// IncludesMaxHostLen returns whether the address section contains an individual address section with a host of all one-bits,
+// an address section for which all bits past the given prefix length are all ones.
+func (section *ipAddressSectionInternal) IncludesMaxHostLen(networkPrefixLength BitCount) bool {
+	networkPrefixLength = checkSubnet(section, networkPrefixLength)
+	bitsPerSegment := section.GetBitsPerSegment()
+	bytesPerSegment := section.GetBytesPerSegment()
+	prefixedSegmentIndex := getHostSegmentIndex(networkPrefixLength, bytesPerSegment, bitsPerSegment)
+	divCount := section.GetSegmentCount()
+	for i := prefixedSegmentIndex; i < divCount; i++ {
+		div := section.GetSegment(i)
+		segmentPrefixLength := getPrefixedSegmentPrefixLength(bitsPerSegment, networkPrefixLength, i)
+		if segmentPrefixLength != nil {
+			mask := div.GetSegmentHostMask(segmentPrefixLength.bitCount())
+			if (mask & div.getUpperSegmentValue()) != mask {
+				return false
+			}
+			for i++; i < divCount; i++ {
+				div = section.GetSegment(i)
+				if !div.includesMax() {
+					return false
+				}
+			}
+		}
+	}
+	return true
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
