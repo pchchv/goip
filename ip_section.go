@@ -170,6 +170,41 @@ func (section *ipAddressSectionInternal) ForEachSegment(consumer func(segmentInd
 	return len(divArray)
 }
 
+// GetIPVersion returns the IP version of this IP address section.
+func (section *ipAddressSectionInternal) GetIPVersion() IPVersion {
+	addrType := section.getAddrType()
+	if addrType.isIPv4() {
+		return IPv4
+	} else if addrType.isIPv6() {
+		return IPv6
+	}
+	return IndeterminateIPVersion
+}
+
+// IncludesZeroHostLen returns whether the address section contains an individual section with a host of zero, a section for which all bits past the given prefix length are zero.
+func (section *ipAddressSectionInternal) IncludesZeroHostLen(networkPrefixLength BitCount) bool {
+	networkPrefixLength = checkSubnet(section, networkPrefixLength)
+	bitsPerSegment := section.GetBitsPerSegment()
+	bytesPerSegment := section.GetBytesPerSegment()
+	prefixedSegmentIndex := getHostSegmentIndex(networkPrefixLength, bytesPerSegment, bitsPerSegment)
+	divCount := section.GetSegmentCount()
+	for i := prefixedSegmentIndex; i < divCount; i++ {
+		div := section.GetSegment(i)
+		segmentPrefixLength := getPrefixedSegmentPrefixLength(bitsPerSegment, networkPrefixLength, i)
+		mask := div.GetSegmentHostMask(segmentPrefixLength.bitCount())
+		if (mask & div.GetSegmentValue()) != 0 {
+			return false
+		}
+		for i++; i < divCount; i++ {
+			div = section.GetSegment(i)
+			if !div.includesZero() {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
