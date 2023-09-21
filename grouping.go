@@ -417,6 +417,16 @@ func (grouping *addressDivisionGroupingInternal) GetGenericDivision(index int) D
 	return grouping.addressDivisionGroupingBase.GetGenericDivision(index)
 }
 
+// GetDivisionCount returns the number of divisions in this grouping.
+func (grouping *addressDivisionGroupingInternal) GetDivisionCount() int {
+	return grouping.addressDivisionGroupingBase.GetDivisionCount()
+}
+
+// IsZero returns whether this grouping matches exactly the value of zero.
+func (grouping *addressDivisionGroupingInternal) IsZero() bool {
+	return grouping.addressDivisionGroupingBase.IsZero()
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
