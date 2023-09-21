@@ -418,3 +418,11 @@ func (all *allCreator) isSequential() bool {
 	}
 	return false
 }
+
+func (all *allCreator) providerCompare(other ipAddressProvider) (int, address_error.IncompatibleAddressError) {
+	return providerCompare(all, other)
+}
+
+func (all *allCreator) providerEquals(other ipAddressProvider) (bool, address_error.IncompatibleAddressError) {
+	return providerEquals(all, other)
+}
