@@ -670,6 +670,19 @@ func (grouping *AddressDivisionGrouping) IsPrefixed() bool {
 	return grouping.isPrefixed()
 }
 
+// CopySubDivisions copies the existing divisions from
+// the given start index until but not including the division at the given end index,
+// into the given slice, as much as can be fit into the slice,
+// returning the number of divisions copied.
+func (grouping *AddressDivisionGrouping) CopySubDivisions(start, end int, divs []*AddressDivision) (count int) {
+	return grouping.copySubDivisions(start, end, divs)
+}
+
+// GetDivision returns the division at the given index.
+func (grouping *AddressDivisionGrouping) GetDivision(index int) *AddressDivision {
+	return grouping.getDivision(index)
+}
+
 func cachePrefLenSingleBlock(cache *valueCache, prefLen PrefixLen, calc func() *PrefixLen) PrefixLen {
 	if cache == nil {
 		return *calc()
