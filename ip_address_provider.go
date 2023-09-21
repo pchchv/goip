@@ -479,3 +479,8 @@ func newMaskCreator(options address_string_param.IPAddressStringParams, adjusted
 		},
 	}
 }
+
+// Wraps an IPAddress for IPAddressString in the cases where no parsing is provided, the address exists already
+func getProviderFor(address, hostAddress *IPAddress) ipAddressProvider {
+	return &cachedAddressProvider{addresses: &addressResult{address: address, hostAddress: hostAddress}}
+}
