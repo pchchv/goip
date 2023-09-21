@@ -372,6 +372,30 @@ func (grouping *addressDivisionGroupingInternal) GetValue() *big.Int {
 	return bigZero().SetBytes(grouping.getBytes())
 }
 
+// GetUpperValue returns the highest individual address division grouping in this address division grouping as an integer value.
+func (grouping *addressDivisionGroupingInternal) GetUpperValue() *big.Int {
+	if grouping.hasNoDivisions() {
+		return bigZero()
+	}
+	return bigZero().SetBytes(grouping.getUpperBytes())
+}
+
+// CopyBytes copies the value of the lowest division grouping in the range into a byte slice.
+//
+// If the value can fit into the given slice, it is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice with the value is created and returned.
+//
+// To determine the required length of the byte array, it is possible to use the GetByteCount.
+func (grouping *addressDivisionGroupingInternal) CopyBytes(bytes []byte) []byte {
+	if grouping.hasNoDivisions() {
+		if bytes != nil {
+			return bytes[:0]
+		}
+		return emptyBytes
+	}
+	return getBytesCopy(bytes, grouping.getBytes())
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
