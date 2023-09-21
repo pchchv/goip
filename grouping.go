@@ -351,6 +351,27 @@ func (grouping *addressDivisionGroupingInternal) ContainsPrefixBlock(prefixLen B
 	return true
 }
 
+// IsPrefixBlock returns whether the given address division series has
+// a prefix length and whether it includes the block associated with its prefix length.
+// If the prefix length matches the bit count, true is returned.
+//
+// This method differs from the ContainsPrefixBlock method in that it returns
+// false if the series has no prefix length or the prefix length is different from
+// the prefix length for which the ContainsPrefixBlock method returns true.
+// Note that for any given prefix length, you can perform a comparison with GetMinPrefixLenForBlock.
+func (grouping *addressDivisionGroupingInternal) IsPrefixBlock() bool {
+	prefLen := grouping.getPrefixLen()
+	return prefLen != nil && grouping.ContainsPrefixBlock(prefLen.bitCount())
+}
+
+// GetValue returns the lowest individual address division grouping in this address division grouping as an integer value.
+func (grouping *addressDivisionGroupingInternal) GetValue() *big.Int {
+	if grouping.hasNoDivisions() {
+		return bigZero()
+	}
+	return bigZero().SetBytes(grouping.getBytes())
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
