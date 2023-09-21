@@ -434,3 +434,48 @@ func (all *allCreator) getProviderNetworkPrefixLen() PrefixLen {
 func (all *allCreator) getProviderMask() *IPAddress {
 	return all.qualifier.getMaskLower()
 }
+
+func newMaskCreator(options address_string_param.IPAddressStringParams, adjustedVersion IPVersion, networkPrefixLength PrefixLen) *maskCreator {
+	if adjustedVersion == IndeterminateIPVersion {
+		adjustedVersion = IPVersion(options.GetPreferredVersion())
+	}
+
+	createVersionedMask := func(version IPVersion, prefLen PrefixLen, withPrefixLength bool) *IPAddress {
+		if version == IPv4 {
+			network := ipv4Network
+			return network.GetNetworkMask(prefLen.bitCount())
+		} else if version == IPv6 {
+			network := ipv6Network
+			return network.GetNetworkMask(prefLen.bitCount())
+		}
+		return nil
+	}
+
+	versionedAddressCreatorFunc := func(version IPVersion) (*IPAddress, address_error.IncompatibleAddressError) {
+		return createVersionedMask(version, networkPrefixLength, true), nil
+	}
+
+	maskCreatorFunc := func() (address, hostAddress *IPAddress) {
+		prefLen := networkPrefixLength
+		return createVersionedMask(adjustedVersion, prefLen, true),
+			createVersionedMask(adjustedVersion, prefLen, false)
+	}
+
+	addrCreator := func() (address, hostAddress *IPAddress, address_Error, hosterr address_error.IncompatibleAddressError) {
+		address, hostAddress = maskCreatorFunc()
+		return
+	}
+
+	cached := cachedAddressProvider{addressCreator: addrCreator}
+	return &maskCreator{
+		adjustedAddressCreator{
+			networkPrefixLength: networkPrefixLength,
+			versionedAddressCreator: versionedAddressCreator{
+				adjustedVersion:             adjustedVersion,
+				parameters:                  options,
+				cachedAddressProvider:       cached,
+				versionedAddressCreatorFunc: versionedAddressCreatorFunc,
+			},
+		},
+	}
+}
