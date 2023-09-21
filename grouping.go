@@ -762,3 +762,19 @@ func NewDivisionGrouping(divs []*AddressDivision) *AddressDivisionGrouping {
 	result.isMult = isMult
 	return result
 }
+
+func cacheMinPrefix(cache *valueCache, calc func() BitCount) BitCount {
+	if cache == nil {
+		return calc()
+	}
+
+	res := (PrefixLen)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.minPrefix))))
+	if res == nil {
+		val := calc()
+		res = cacheBitCount(val)
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.minPrefix))
+		atomicStorePointer(dataLoc, unsafe.Pointer(res))
+	}
+
+	return res.bitCount()
+}
