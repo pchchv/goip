@@ -276,6 +276,53 @@ func (section *ipAddressSectionInternal) IsSingleNetwork() bool {
 	return (div.GetSegmentValue() >> uint(shift)) == (div.GetUpperSegmentValue() >> uint(shift))
 }
 
+// IsMaxHost returns whether this section has a prefix length and if so,
+// whether the host is all all one-bits, the max value, for all individual sections in this address section.
+//
+// If the host section is zero length (there are zero host bits), IsMaxHost returns true.
+func (section *ipAddressSectionInternal) IsMaxHost() bool {
+	if !section.isPrefixed() {
+		return false
+	}
+	return section.IsMaxHostLen(section.getNetworkPrefixLen().bitCount())
+}
+
+// IsMaxHostLen returns whether the host host is all one-bits,
+// the max value, for all individual sections in this address section,
+// for the given prefix length, the host being the bits following the prefix.
+//
+// If the host section is zero length (there are zero host bits), IsMaxHostLen returns true.
+func (section *ipAddressSectionInternal) IsMaxHostLen(prefLen BitCount) bool {
+	divCount := section.GetSegmentCount()
+	if divCount == 0 {
+		return true
+	} else if prefLen < 0 {
+		prefLen = 0
+	}
+
+	bytesPerSegment := section.GetBytesPerSegment()
+	bitsPerSegment := section.GetBitsPerSegment()
+	// Note: 1.2.3.4/32 has a max host
+	prefixedSegmentIndex := getHostSegmentIndex(prefLen, bytesPerSegment, bitsPerSegment)
+	if prefixedSegmentIndex < divCount {
+		segmentPrefixLength := getPrefixedSegmentPrefixLength(bitsPerSegment, prefLen, prefixedSegmentIndex)
+		i := prefixedSegmentIndex
+		div := section.GetSegment(i)
+		mask := div.GetSegmentHostMask(segmentPrefixLength.bitCount())
+		if div.isMultiple() || (mask&div.getSegmentValue()) != mask {
+			return false
+		}
+		i++
+		for ; i < divCount; i++ {
+			div = section.GetSegment(i)
+			if !div.IsMax() {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
