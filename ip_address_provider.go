@@ -426,3 +426,11 @@ func (all *allCreator) providerCompare(other ipAddressProvider) (int, address_er
 func (all *allCreator) providerEquals(other ipAddressProvider) (bool, address_error.IncompatibleAddressError) {
 	return providerEquals(all, other)
 }
+
+func (all *allCreator) getProviderNetworkPrefixLen() PrefixLen {
+	return all.qualifier.getEquivalentPrefixLen()
+}
+
+func (all *allCreator) getProviderMask() *IPAddress {
+	return all.qualifier.getMaskLower()
+}
