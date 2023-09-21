@@ -683,6 +683,21 @@ func (grouping *AddressDivisionGrouping) GetDivision(index int) *AddressDivision
 	return grouping.getDivision(index)
 }
 
+// ForEachDivision visits each segment in order from most significant to least, most significant with index 0,
+// calling the given function for each and terminating early if the function returns true.
+// ForEachDivision returns the number of visited segments.
+func (grouping *AddressDivisionGrouping) ForEachDivision(consumer func(divisionIndex int, division *AddressDivision) (stop bool)) int {
+	divArray := grouping.getDivArray()
+	if divArray != nil {
+		for i, div := range divArray {
+			if consumer(i, div) {
+				return i + 1
+			}
+		}
+	}
+	return len(divArray)
+}
+
 func cachePrefLenSingleBlock(cache *valueCache, prefLen PrefixLen, calc func() *PrefixLen) PrefixLen {
 	if cache == nil {
 		return *calc()
