@@ -581,6 +581,39 @@ func (grouping *AddressDivisionGrouping) IsIPv6() bool {
 	return grouping.ToSectionBase().IsIPv6()
 }
 
+func cachePrefLenSingleBlock(cache *valueCache, prefLen PrefixLen, calc func() *PrefixLen) PrefixLen {
+	if cache == nil {
+		return *calc()
+	}
+
+	res := (*PrefixLen)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.equivalentPrefix))))
+	if res == nil {
+		res = calc()
+		if *res == nil {
+			// we can also set related cache fields
+			dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.isSinglePrefixBlock))
+			atomicStorePointer(dataLoc, unsafe.Pointer(&falseVal))
+		} else {
+			// we can also set related cache fields
+			var isSingleBlock *bool
+			if prefLen != nil && (*res).Equal(prefLen) {
+				isSingleBlock = &trueVal
+			} else {
+				isSingleBlock = &falseVal
+			}
+			dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.isSinglePrefixBlock))
+			atomicStorePointer(dataLoc, unsafe.Pointer(isSingleBlock))
+
+			dataLoc = (*unsafe.Pointer)(unsafe.Pointer(&cache.minPrefix))
+			atomicStorePointer(dataLoc, unsafe.Pointer(*res))
+		}
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.equivalentPrefix))
+		atomicStorePointer(dataLoc, unsafe.Pointer(res))
+	}
+
+	return *res
+}
+
 func adjust1To1StartIndices(sourceStart, sourceEnd, sourceCount, targetCount int) (newSourceStart, newSourceEnd, newTargetStart int) {
 	// both sourceCount and targetCount are lengths of their respective slices, so never negative
 	targetStart := 0
