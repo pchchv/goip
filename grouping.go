@@ -634,6 +634,29 @@ func (grouping *AddressDivisionGrouping) IsIPv6() bool {
 	return grouping.ToSectionBase().IsIPv6()
 }
 
+// ToMixedIPv6v4 converts to a mixed IPv6/4 address section if this grouping originated as a mixed IPv6/4 address section.
+// Otherwise, the result will be nil.
+//
+// ToMixedIPv6v4 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (grouping *AddressDivisionGrouping) ToMixedIPv6v4() *IPv6v4MixedAddressGrouping {
+	if grouping.matchesIPv6v4MixedGroupingType() {
+		return (*IPv6v4MixedAddressGrouping)(grouping)
+	}
+	return nil
+}
+
+// GetCount returns the count of possible distinct values for this division grouping.
+// If not representing multiple values, the count is 1,
+// unless this is a division grouping with no divisions, or an address section with no segments, in which case it is 0.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (grouping *AddressDivisionGrouping) GetCount() *big.Int {
+	if grouping == nil {
+		return bigZero()
+	}
+	return grouping.getCount()
+}
+
 func cachePrefLenSingleBlock(cache *valueCache, prefLen PrefixLen, calc func() *PrefixLen) PrefixLen {
 	if cache == nil {
 		return *calc()
