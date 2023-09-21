@@ -323,6 +323,48 @@ func (section *ipAddressSectionInternal) IsMaxHostLen(prefLen BitCount) bool {
 	return true
 }
 
+// IsZeroHost returns whether this section has a prefix length and if so,
+// whether the host section is always zero for all individual sections in this address section.
+//
+// If the host section is zero length (there are zero host bits), IsZeroHost returns true.
+func (section *ipAddressSectionInternal) IsZeroHost() bool {
+	if !section.isPrefixed() {
+		return false
+	}
+	return section.IsZeroHostLen(section.getNetworkPrefixLen().bitCount())
+}
+
+// IsZeroHostLen returns whether the host section is always zero for all individual sections in this address section,
+// for the given prefix length.
+//
+// If the host section is zero length (there are zero host bits), IsZeroHostLen returns true.
+func (section *ipAddressSectionInternal) IsZeroHostLen(prefLen BitCount) bool {
+	segmentCount := section.GetSegmentCount()
+	if segmentCount == 0 {
+		return true
+	} else if prefLen < 0 {
+		prefLen = 0
+	}
+	bitsPerSegment := section.GetBitsPerSegment()
+	// Note: 1.2.3.4/32 has a zero host
+	prefixedSegmentIndex := getHostSegmentIndex(prefLen, section.GetBytesPerSegment(), bitsPerSegment)
+	if prefixedSegmentIndex < segmentCount {
+		segmentPrefixLength := getPrefixedSegmentPrefixLength(bitsPerSegment, prefLen, prefixedSegmentIndex)
+		i := prefixedSegmentIndex
+		div := section.GetSegment(i)
+		if div.isMultiple() || (div.GetSegmentHostMask(segmentPrefixLength.bitCount())&div.getSegmentValue()) != 0 {
+			return false
+		}
+		for i++; i < segmentCount; i++ {
+			div := section.GetSegment(i)
+			if !div.IsZero() {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
