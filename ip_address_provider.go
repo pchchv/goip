@@ -276,6 +276,14 @@ func (cached *cachedAddressProvider) getProviderAddress() (res *IPAddress, err a
 	return
 }
 
+func (cached *cachedAddressProvider) providerCompare(other ipAddressProvider) (int, address_error.IncompatibleAddressError) {
+	return providerCompare(cached, other)
+}
+
+func (cached *cachedAddressProvider) providerEquals(other ipAddressProvider) (bool, address_error.IncompatibleAddressError) {
+	return providerEquals(cached, other)
+}
+
 type versionedAddressCreator struct {
 	cachedAddressProvider
 	adjustedVersion             IPVersion
