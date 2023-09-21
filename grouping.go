@@ -657,6 +657,19 @@ func (grouping *AddressDivisionGrouping) GetCount() *big.Int {
 	return grouping.getCount()
 }
 
+// IsMultiple returns whether this grouping represents multiple values rather than a single value
+func (grouping *AddressDivisionGrouping) IsMultiple() bool {
+	return grouping != nil && grouping.isMultiple()
+}
+
+// IsPrefixed returns whether this grouping has an associated prefix length.
+func (grouping *AddressDivisionGrouping) IsPrefixed() bool {
+	if grouping == nil {
+		return false
+	}
+	return grouping.isPrefixed()
+}
+
 func cachePrefLenSingleBlock(cache *valueCache, prefLen PrefixLen, calc func() *PrefixLen) PrefixLen {
 	if cache == nil {
 		return *calc()
