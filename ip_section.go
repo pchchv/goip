@@ -242,6 +242,40 @@ func (section *ipAddressSectionInternal) IncludesMaxHostLen(networkPrefixLength 
 	return true
 }
 
+// IsSingleNetwork returns whether the network section of the address,
+// the prefix, consists of a single value.
+//
+// If it has no prefix length, it returns true if not multiple,
+// if it contains only a single individual address section.
+func (section *ipAddressSectionInternal) IsSingleNetwork() bool {
+	networkPrefixLength := section.getNetworkPrefixLen()
+	if networkPrefixLength == nil {
+		return !section.isMultiple()
+	}
+
+	prefLen := networkPrefixLength.bitCount()
+	if prefLen >= section.GetBitCount() {
+		return !section.isMultiple()
+	}
+
+	bitsPerSegment := section.GetBitsPerSegment()
+	prefixedSegmentIndex := getNetworkSegmentIndex(prefLen, section.GetBytesPerSegment(), bitsPerSegment)
+	if prefixedSegmentIndex < 0 {
+		return true
+	}
+
+	for i := 0; i < prefixedSegmentIndex; i++ {
+		if section.getDivision(i).isMultiple() {
+			return false
+		}
+	}
+
+	div := section.GetSegment(prefixedSegmentIndex)
+	divPrefLen := getPrefixedSegmentPrefixLength(bitsPerSegment, prefLen, prefixedSegmentIndex)
+	shift := bitsPerSegment - divPrefLen.bitCount()
+	return (div.GetSegmentValue() >> uint(shift)) == (div.GetUpperSegmentValue() >> uint(shift))
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
