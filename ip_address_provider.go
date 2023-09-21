@@ -284,6 +284,16 @@ func (cached *cachedAddressProvider) providerEquals(other ipAddressProvider) (bo
 	return providerEquals(cached, other)
 }
 
+func (cached *cachedAddressProvider) isProvidingIPv4() bool {
+	addr, _ := cached.getProviderAddress()
+	return addr.IsIPv4()
+}
+
+func (cached *cachedAddressProvider) isProvidingIPv6() bool {
+	addr, _ := cached.getProviderAddress()
+	return addr.IsIPv6()
+}
+
 type versionedAddressCreator struct {
 	cachedAddressProvider
 	adjustedVersion             IPVersion
