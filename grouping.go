@@ -427,6 +427,17 @@ func (grouping *addressDivisionGroupingInternal) IsZero() bool {
 	return grouping.addressDivisionGroupingBase.IsZero()
 }
 
+// IncludesZero returns whether this grouping includes the value of zero within its range.
+func (grouping *addressDivisionGroupingInternal) IncludesZero() bool {
+	return grouping.addressDivisionGroupingBase.IncludesZero()
+}
+
+// IncludesMax returns whether this grouping includes the max value,
+// the value whose bits are all ones, within its range.
+func (grouping *addressDivisionGroupingInternal) IncludesMax() bool {
+	return grouping.addressDivisionGroupingBase.IncludesMax()
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
