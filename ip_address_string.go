@@ -1,6 +1,10 @@
 package goip
 
-import "github.com/pchchv/goip/address_error"
+import (
+	"fmt"
+
+	"github.com/pchchv/goip/address_error"
+)
 
 // IPAddressString parses the string representation of an IP address.
 // Such a string can represent just a single address like "1.2.3.4" or "1:2:3:4:6:7:8",
@@ -113,4 +117,22 @@ type IPAddressString struct {
 	str             string
 	addressProvider ipAddressProvider
 	validateError   address_error.AddressStringError
+}
+
+// String implements the [fmt.Stringer] interface,
+// returning the original string used to create this IPAddressString (altered by strings.TrimSpace),
+// or "<nil>" if the receiver is a nil pointer.
+func (addrStr *IPAddressString) String() string {
+	if addrStr == nil {
+		return nilString()
+	}
+	return addrStr.str
+}
+
+// Format implements the [fmt.Formatter] interface.
+// It accepts the verbs hat are applicable to strings,
+// namely the verbs %s, %q, %x and %X.
+func (addrStr IPAddressString) Format(state fmt.State, verb rune) {
+	s := flagsFromState(state, verb)
+	_, _ = state.Write([]byte(fmt.Sprintf(s, addrStr.str)))
 }
