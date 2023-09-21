@@ -199,6 +199,14 @@ func (p *nullProvider) getType() ipType {
 	return p.ipType
 }
 
+func (p *nullProvider) providerCompare(other ipAddressProvider) (int, address_error.IncompatibleAddressError) {
+	return providerCompare(p, other)
+}
+
+func (p *nullProvider) providerEquals(other ipAddressProvider) (bool, address_error.IncompatibleAddressError) {
+	return providerEquals(p, other)
+}
+
 type addressResult struct {
 	address       *IPAddress
 	hostAddress   *IPAddress
