@@ -326,6 +326,28 @@ func (versioned *versionedAddressCreator) getType() ipType {
 	return fromVersion(versioned.adjustedVersion)
 }
 
+func (versioned *versionedAddressCreator) getVersionedAddress(version IPVersion) (addr *IPAddress, err address_error.IncompatibleAddressError) {
+	index := version.index()
+	if index >= IndeterminateIPVersion.index() {
+		return
+	}
+
+	if versioned.versionedAddressCreatorFunc != nil {
+		addr = (*IPAddress)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&versioned.versionedValues[index]))))
+		if addr == nil {
+			addr, err = versioned.versionedAddressCreatorFunc(version)
+			if err == nil {
+				dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&versioned.versionedValues[index]))
+				atomicStorePointer(dataLoc, unsafe.Pointer(addr))
+			}
+		}
+		return
+	}
+
+	addr = versioned.versionedValues[index]
+	return
+}
+
 type emptyAddrCreator struct {
 	versionedAddressCreator
 	zone Zone
