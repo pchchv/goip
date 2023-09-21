@@ -357,6 +357,14 @@ func (loop *emptyAddrCreator) getProviderNetworkPrefixLen() PrefixLen {
 	return nil
 }
 
+func (loop *emptyAddrCreator) providerCompare(other ipAddressProvider) (int, address_error.IncompatibleAddressError) {
+	return providerCompare(loop, other)
+}
+
+func (loop *emptyAddrCreator) providerEquals(other ipAddressProvider) (bool, address_error.IncompatibleAddressError) {
+	return providerEquals(loop, other)
+}
+
 type adjustedAddressCreator struct {
 	versionedAddressCreator
 	networkPrefixLength PrefixLen
