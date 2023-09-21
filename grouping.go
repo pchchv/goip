@@ -491,6 +491,37 @@ func (grouping *addressDivisionGroupingInternal) GetPrefixCountLen(prefixLen Bit
 	return grouping.addressDivisionGroupingBase.GetPrefixCountLen(prefixLen)
 }
 
+// GetMinPrefixLenForBlock returns the smallest prefix length such that the given grouping includes a block of all values for that prefix length.
+//
+// If the entire range can be described this way, this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// For the returned prefix length, there can be either a single prefix or multiple possible prefix values in this block.
+// To avoid the case of multiple prefix values, use the GetPrefixLenForSingleBlock.
+//
+// If this grouping represents a single value, a bit count is returned.
+func (grouping *addressDivisionGroupingInternal) GetMinPrefixLenForBlock() BitCount {
+	calc := func() BitCount {
+		count := grouping.GetDivisionCount()
+		totalPrefix := grouping.GetBitCount()
+		for i := count - 1; i >= 0; i-- {
+			div := grouping.getDivision(i)
+			segBitCount := div.getBitCount()
+			segPrefix := div.GetMinPrefixLenForBlock()
+			if segPrefix == segBitCount {
+				break
+			} else {
+				totalPrefix -= segBitCount
+				if segPrefix != 0 {
+					totalPrefix += segPrefix
+					break
+				}
+			}
+		}
+		return totalPrefix
+	}
+	return cacheMinPrefix(grouping.cache, calc)
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
