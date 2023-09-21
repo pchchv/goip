@@ -469,6 +469,28 @@ func (grouping *addressDivisionGroupingInternal) GetBlockCount(divisionCount int
 	return grouping.addressDivisionGroupingBase.GetBlockCount(divisionCount)
 }
 
+// GetPrefixCount returns the number of distinct prefix values in this item.
+//
+// The prefix length is given by GetPrefixLen.
+//
+// If this has a non-nil prefix length, returns the number of distinct prefix values.
+//
+// If this has a nil prefix length, returns the same value as GetCount.
+func (grouping *addressDivisionGroupingInternal) GetPrefixCount() *big.Int {
+	if section := grouping.toAddressSection(); section != nil {
+		return section.GetPrefixCount()
+	}
+	return grouping.addressDivisionGroupingBase.GetPrefixCount()
+}
+
+// GetPrefixCountLen returns the number of distinct prefix values in this item for the given prefix length.
+func (grouping *addressDivisionGroupingInternal) GetPrefixCountLen(prefixLen BitCount) *big.Int {
+	if section := grouping.toAddressSection(); section != nil {
+		return section.GetPrefixCountLen(prefixLen)
+	}
+	return grouping.addressDivisionGroupingBase.GetPrefixCountLen(prefixLen)
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
