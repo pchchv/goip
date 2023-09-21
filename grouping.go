@@ -315,6 +315,42 @@ func (grouping *addressDivisionGroupingInternal) initDivs() *addressDivisionGrou
 	return grouping
 }
 
+// ContainsPrefixBlock returns whether the values of this item contains a block of values for the given prefix length.
+//
+// Unlike ContainsSinglePrefixBlock, whether this item contains multiple prefix values for a given prefix length is irrelevant.
+//
+// Use GetMinPrefixLenForBlock to determine the smallest prefix length for which this method returns true.
+func (grouping *addressDivisionGroupingInternal) ContainsPrefixBlock(prefixLen BitCount) bool {
+	if section := grouping.toAddressSection(); section != nil {
+		return section.ContainsPrefixBlock(prefixLen)
+	}
+
+	var prevBitCount BitCount
+	prefixLen = checkSubnet(grouping, prefixLen)
+	divisionCount := grouping.GetDivisionCount()
+	for i := 0; i < divisionCount; i++ {
+		division := grouping.getDivision(i)
+		bitCount := division.GetBitCount()
+		totalBitCount := bitCount + prevBitCount
+		if prefixLen < totalBitCount {
+			divPrefixLen := prefixLen - prevBitCount
+			if !division.containsPrefixBlock(divPrefixLen) {
+				return false
+			}
+			for i++; i < divisionCount; i++ {
+				division = grouping.getDivision(i)
+				if !division.IsFullRange() {
+					return false
+				}
+			}
+			return true
+		}
+		prevBitCount = totalBitCount
+	}
+
+	return true
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
