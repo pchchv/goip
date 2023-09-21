@@ -4,7 +4,10 @@ import (
 	"fmt"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string_param"
 )
+
+var defaultIPAddrParameters = new(address_string_param.IPAddressStringParamsBuilder).ToParams()
 
 // IPAddressString parses the string representation of an IP address.
 // Such a string can represent just a single address like "1.2.3.4" or "1:2:3:4:6:7:8",
