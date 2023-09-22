@@ -3,6 +3,7 @@ package goip
 import (
 	"unsafe"
 
+	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/address_string"
 )
 
@@ -363,6 +364,20 @@ func (section *ipAddressSectionInternal) IsZeroHostLen(prefLen BitCount) bool {
 		}
 	}
 	return true
+}
+
+func (section *ipAddressSectionInternal) adjustPrefixLength(adjustment BitCount, withZeros bool) (*IPAddressSection, address_error.IncompatibleAddressError) {
+	if adjustment == 0 && section.isPrefixed() {
+		return section.toIPAddressSection(), nil
+	}
+	prefix := section.getAdjustedPrefix(adjustment)
+	sec, err := section.setPrefixLength(prefix, withZeros)
+	return sec.ToIP(), err
+}
+
+func (section *ipAddressSectionInternal) adjustPrefixLen(adjustment BitCount) *IPAddressSection {
+	res, _ := section.adjustPrefixLength(adjustment, false)
+	return res
 }
 
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
