@@ -436,6 +436,37 @@ func (section *ipAddressSectionInternal) toIPAddressSection() *IPAddressSection 
 	return (*IPAddressSection)(unsafe.Pointer(section))
 }
 
+func (section *ipAddressSectionInternal) getNetworkSectionLen(networkPrefixLength BitCount) *IPAddressSection {
+	segmentCount := section.GetSegmentCount()
+	if segmentCount == 0 {
+		return section.toIPAddressSection()
+	}
+
+	var newSegments []*AddressDivision
+	bitsPerSegment := section.GetBitsPerSegment()
+	networkPrefixLength = checkBitCount(networkPrefixLength, section.GetBitCount())
+	prefixedSegmentIndex := getNetworkSegmentIndex(networkPrefixLength, section.GetBytesPerSegment(), bitsPerSegment)
+	if prefixedSegmentIndex >= 0 {
+		segPrefLength := getPrefixedSegmentPrefixLength(bitsPerSegment, networkPrefixLength, prefixedSegmentIndex) // prefixedSegmentIndex of -1 already handled
+		lastSeg := section.GetSegment(prefixedSegmentIndex)
+		prefBits := segPrefLength.bitCount()
+		mask := ^SegInt(0) << uint(bitsPerSegment-prefBits)
+		lower, upper := lastSeg.getSegmentValue()&mask, lastSeg.getUpperSegmentValue()|^mask
+		networkSegmentCount := prefixedSegmentIndex + 1
+		if networkSegmentCount == segmentCount && segsSame(segPrefLength, lastSeg.GetSegmentPrefixLen(), lower, lastSeg.getSegmentValue(), upper, lastSeg.getUpperSegmentValue()) {
+			// the segment count and prefixed segment matches
+			return section.toIPAddressSection()
+		}
+		newSegments = createSegmentArray(networkSegmentCount)
+		section.copySubDivisions(0, prefixedSegmentIndex, newSegments)
+		newSegments[prefixedSegmentIndex] = createAddressDivision(lastSeg.deriveNewMultiSeg(lower, upper, segPrefLength))
+	} else {
+		newSegments = createSegmentArray(0)
+	}
+
+	return deriveIPAddressSectionPrefLen(section.toIPAddressSection(), newSegments, cacheBitCount(networkPrefixLength))
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
