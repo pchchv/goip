@@ -573,3 +573,19 @@ func createIPSection(segments []*AddressDivision, prefixLength PrefixLen, addrTy
 	assignStringCache(&sect.addressDivisionGroupingBase, addrType)
 	return sect
 }
+
+// Callers to this function have already initialized the segments to have consistent prefix lengths,
+// but in here we need to determine what that prefix length might be.
+func deriveIPAddressSection(from *IPAddressSection, segments []*AddressDivision) (res *IPAddressSection) {
+	res = createIPSection(segments, nil, from.getAddrType())
+	res.initMultAndPrefLen()
+	return
+}
+
+// Callers to this function have already initialized the segments to have prefix lengths corresponding to the supplied argument prefixLength
+// So we need only check if multiple and assign the prefix length.
+func deriveIPAddressSectionPrefLen(from *IPAddressSection, segments []*AddressDivision, prefixLength PrefixLen) (res *IPAddressSection) {
+	res = createIPSection(segments, prefixLength, from.getAddrType())
+	res.initMultiple()
+	return
+}
