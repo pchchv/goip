@@ -554,3 +554,22 @@ func assignPrefix(prefixLength PrefixLen, segments []*AddressDivision, res *IPAd
 	res.prefixLength = prefixLength
 	return
 }
+
+func createIPSection(segments []*AddressDivision, prefixLength PrefixLen, addrType addrType) *IPAddressSection {
+	sect := &IPAddressSection{
+		ipAddressSectionInternal{
+			addressSectionInternal{
+				addressDivisionGroupingInternal{
+					addressDivisionGroupingBase: addressDivisionGroupingBase{
+						divisions:    standardDivArray(segments),
+						addrType:     addrType,
+						cache:        &valueCache{},
+						prefixLength: prefixLength,
+					},
+				},
+			},
+		},
+	}
+	assignStringCache(&sect.addressDivisionGroupingBase, addrType)
+	return sect
+}
