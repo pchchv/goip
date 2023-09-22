@@ -529,6 +529,28 @@ func (section *ipAddressSectionInternal) getHostSectionLen(networkPrefixLength B
 	return deriveIPAddressSectionPrefLen(section.toIPAddressSection(), newSegments, prefLen)
 }
 
+// getSubnetSegments called by methods to adjust/remove/set prefix length,
+// masking methods, zero host and zero network methods
+func (section *ipAddressSectionInternal) getSubnetSegments(
+	startIndex int,
+	networkPrefixLength PrefixLen,
+	verifyMask bool,
+	segProducer func(int) *AddressDivision,
+	segmentMaskProducer func(int) SegInt,
+) (*IPAddressSection, address_error.IncompatibleAddressError) {
+	newSect, err := section.addressSectionInternal.getSubnetSegments(startIndex, networkPrefixLength, verifyMask, segProducer, segmentMaskProducer)
+	return newSect.ToIP(), err
+}
+
+func (section *ipAddressSectionInternal) getNetwork() IPAddressNetwork {
+	if addrType := section.getAddrType(); addrType.isIPv4() {
+		return ipv4Network
+	} else if addrType.isIPv6() {
+		return ipv6Network
+	}
+	return nil
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
