@@ -632,3 +632,39 @@ func createSegmentsUint64(
 
 	return newSegs
 }
+
+// createSegments called prior to check for prefix subnet.
+// The segments must be created first before that can happen.
+func createSegments(
+	lowerValueProvider,
+	upperValueProvider SegmentValueProvider,
+	segmentCount int,
+	bitsPerSegment BitCount,
+	creator addressSegmentCreator,
+	prefixLength PrefixLen) (segments []*AddressDivision, isMultiple bool) {
+	segments = createSegmentArray(segmentCount)
+
+	for segmentIndex := 0; segmentIndex < segmentCount; segmentIndex++ {
+		segmentPrefixLength := getSegmentPrefixLength(bitsPerSegment, prefixLength, segmentIndex)
+		var value, value2 SegInt
+		if lowerValueProvider == nil {
+			value = upperValueProvider(segmentIndex)
+			value2 = value
+		} else {
+			value = lowerValueProvider(segmentIndex)
+			if upperValueProvider != nil {
+				value2 = upperValueProvider(segmentIndex)
+				if !isMultiple && value2 != value {
+					isMultiple = true
+
+				}
+			} else {
+				value2 = value
+			}
+		}
+		seg := creator.createSegment(value, value2, segmentPrefixLength)
+		segments[segmentIndex] = seg
+	}
+
+	return
+}
