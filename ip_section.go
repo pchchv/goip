@@ -380,6 +380,17 @@ func (section *ipAddressSectionInternal) adjustPrefixLen(adjustment BitCount) *I
 	return res
 }
 
+func (section *ipAddressSectionInternal) adjustPrefixLenZeroed(adjustment BitCount) (*IPAddressSection, address_error.IncompatibleAddressError) {
+	return section.adjustPrefixLength(adjustment, true)
+}
+
+func (section *ipAddressSectionInternal) checkSectionCount(other *IPAddressSection) address_error.SizeMismatchError {
+	if other.GetSegmentCount() < section.GetSegmentCount() {
+		return &sizeMismatchError{incompatibleAddressError{addressError{key: "ipaddress.error.sizeMismatch"}}}
+	}
+	return nil
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
