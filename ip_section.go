@@ -467,6 +467,68 @@ func (section *ipAddressSectionInternal) getNetworkSectionLen(networkPrefixLengt
 	return deriveIPAddressSectionPrefLen(section.toIPAddressSection(), newSegments, cacheBitCount(networkPrefixLength))
 }
 
+func (section *ipAddressSectionInternal) getHostSectionLen(networkPrefixLength BitCount) *IPAddressSection {
+	segmentCount := section.GetSegmentCount()
+	if segmentCount == 0 {
+		return section.toIPAddressSection()
+	}
+
+	var prefLen PrefixLen
+	var newSegments []*AddressDivision
+	bitsPerSegment := section.GetBitsPerSegment()
+	bytesPerSegment := section.GetBytesPerSegment()
+	networkPrefixLength = checkBitCount(networkPrefixLength, section.GetBitCount())
+	prefixedSegmentIndex := getHostSegmentIndex(networkPrefixLength, bytesPerSegment, bitsPerSegment)
+	if prefixedSegmentIndex < segmentCount {
+		firstSeg := section.GetSegment(prefixedSegmentIndex)
+		segPrefLength := getPrefixedSegmentPrefixLength(bitsPerSegment, networkPrefixLength, prefixedSegmentIndex)
+		prefLen = segPrefLength
+		prefBits := segPrefLength.bitCount()
+		// mask the boundary segment
+		mask := ^(^SegInt(0) << uint(bitsPerSegment-prefBits))
+		divLower := uint64(firstSeg.getDivisionValue())
+		divUpper := uint64(firstSeg.getUpperDivisionValue())
+		divMask := uint64(mask)
+		maxVal := uint64(^SegInt(0))
+		masker := MaskRange(divLower, divUpper, divMask, maxVal)
+		lower, upper := masker.GetMaskedLower(divLower, divMask), masker.GetMaskedUpper(divUpper, divMask)
+		segLower, segUpper := SegInt(lower), SegInt(upper)
+
+		if prefixedSegmentIndex == 0 && segsSame(segPrefLength, firstSeg.GetSegmentPrefixLen(), segLower, firstSeg.getSegmentValue(), segUpper, firstSeg.getUpperSegmentValue()) {
+			// the segment count and prefixed segment matches
+			return section.toIPAddressSection()
+		}
+
+		hostSegmentCount := segmentCount - prefixedSegmentIndex
+		newSegments = createSegmentArray(hostSegmentCount)
+		newSegments[0] = createAddressDivision(firstSeg.deriveNewMultiSeg(segLower, segUpper, segPrefLength))
+
+		// the remaining segments each must have zero-segment prefix length
+		var zeroPrefixIndex int
+
+		if section.isPrefixed() {
+			zeroPrefixIndex = getNetworkSegmentIndex(section.GetPrefixLen().bitCount(), bytesPerSegment, bitsPerSegment) + 1
+		} else {
+			zeroPrefixIndex = segmentCount
+		}
+
+		zeroPrefixIndex -= prefixedSegmentIndex
+		zeroPrefixIndex = max(zeroPrefixIndex, 1)
+		for i := 1; i < zeroPrefixIndex; i++ {
+			seg := section.GetSegment(prefixedSegmentIndex + i)
+			newSegments[i] = createAddressDivision(seg.derivePrefixed(cacheBitCount(0)))
+		}
+
+		// the rest already have zero-segment prefix length, just copy them
+		section.copySubDivisions(prefixedSegmentIndex+zeroPrefixIndex, prefixedSegmentIndex+hostSegmentCount, newSegments[zeroPrefixIndex:])
+	} else {
+		prefLen = cacheBitCount(0)
+		newSegments = createSegmentArray(0)
+	}
+
+	return deriveIPAddressSectionPrefLen(section.toIPAddressSection(), newSegments, prefLen)
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
