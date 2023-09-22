@@ -391,6 +391,29 @@ func (section *ipAddressSectionInternal) checkSectionCount(other *IPAddressSecti
 	return nil
 }
 
+func (section *ipAddressSectionInternal) matchesWithMask(other *IPAddressSection, mask *IPAddressSection) bool {
+	if err := section.checkSectionCount(other); err != nil {
+		return false
+	} else if err := section.checkSectionCount(mask); err != nil {
+		return false
+	}
+
+	divCount := section.GetSegmentCount()
+	for i := 0; i < divCount; i++ {
+		seg := section.GetSegment(i)
+		maskSegment := mask.GetSegment(i)
+		otherSegment := other.GetSegment(i)
+		if !seg.MatchesValsWithMask(
+			otherSegment.getSegmentValue(),
+			otherSegment.getUpperSegmentValue(),
+			maskSegment.getSegmentValue()) {
+			return false
+		}
+	}
+
+	return true
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
