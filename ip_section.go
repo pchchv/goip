@@ -414,6 +414,28 @@ func (section *ipAddressSectionInternal) matchesWithMask(other *IPAddressSection
 	return true
 }
 
+func (section *ipAddressSectionInternal) createDiffSection(seg *IPAddressSegment, lower SegInt, upper SegInt, diffIndex int, intersectingValues []*AddressDivision) *IPAddressSection {
+	segCount := section.GetSegmentCount()
+	segments := createSegmentArray(segCount)
+
+	for j := 0; j < diffIndex; j++ {
+		segments[j] = intersectingValues[j]
+	}
+
+	diff := createAddressDivision(seg.deriveNewMultiSeg(lower, upper, nil))
+	segments[diffIndex] = diff
+
+	for j := diffIndex + 1; j < segCount; j++ {
+		segments[j] = section.getDivision(j)
+	}
+
+	return deriveIPAddressSection(section.toIPAddressSection(), segments)
+}
+
+func (section *ipAddressSectionInternal) toIPAddressSection() *IPAddressSection {
+	return (*IPAddressSection)(unsafe.Pointer(section))
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
