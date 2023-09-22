@@ -668,3 +668,44 @@ func createSegments(
 
 	return
 }
+
+func createIPSectionFromSegs(isIPv4 bool, orig []*IPAddressSegment, prefLen PrefixLen) (result *IPAddressSection) {
+	var isMultiple bool
+	var newPref PrefixLen
+	var divs []*AddressDivision
+	segProvider := func(index int) *IPAddressSegment {
+		return orig[index]
+	}
+
+	if isIPv4 {
+		divs, newPref, isMultiple = createDivisionsFromSegs(
+			segProvider,
+			len(orig),
+			ipv4BitsToSegmentBitshift,
+			IPv4BitsPerSegment,
+			IPv4BytesPerSegment,
+			IPv4MaxValuePerSegment,
+			zeroIPv4Seg.ToIP(),
+			zeroIPv4SegZeroPrefix.ToIP(),
+			zeroIPv4SegPrefixBlock.ToIP(),
+			prefLen)
+		result = createIPv4Section(divs).ToIP()
+	} else {
+		divs, newPref, isMultiple = createDivisionsFromSegs(
+			segProvider,
+			len(orig),
+			ipv6BitsToSegmentBitshift,
+			IPv6BitsPerSegment,
+			IPv6BytesPerSegment,
+			IPv6MaxValuePerSegment,
+			zeroIPv6Seg.ToIP(),
+			zeroIPv6SegZeroPrefix.ToIP(),
+			zeroIPv6SegPrefixBlock.ToIP(),
+			prefLen)
+		result = createIPv6Section(divs).ToIP()
+	}
+
+	result.prefixLength = newPref
+	result.isMult = isMultiple
+	return result
+}
