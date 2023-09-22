@@ -551,6 +551,22 @@ func (section *ipAddressSectionInternal) getNetwork() IPAddressNetwork {
 	return nil
 }
 
+// Wrap wraps this IP address section, returning a WrappedIPAddressSection,
+// an implementation of ExtendedIPSegmentSeries that can be used to write code that works with both IP addresses and IP address sections.
+// Wrap can be called with a nil receiver, wrapping a nil address section.
+func (section *ipAddressSectionInternal) Wrap() WrappedIPAddressSection {
+	return wrapIPSection(section.toIPAddressSection())
+}
+
+// WrapSection wraps this IP address section, returning a WrappedAddressSection,
+//
+//	an implementation of ExtendedSegmentSeries that can be used to write code that works with both addresses and address sections.
+//
+// WrapSection can be called with a nil receiver, wrapping a nil address section.
+func (section *ipAddressSectionInternal) WrapSection() WrappedAddressSection {
+	return wrapSection(section.toAddressSection())
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
