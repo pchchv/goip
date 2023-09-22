@@ -567,6 +567,16 @@ func (section *ipAddressSectionInternal) WrapSection() WrappedAddressSection {
 	return wrapSection(section.toAddressSection())
 }
 
+// GetBitCount returns the number of bits in each value comprising this address item.
+func (section *ipAddressSectionInternal) GetBitCount() BitCount {
+	return section.addressSectionInternal.GetBitCount()
+}
+
+// GetByteCount returns the number of bytes required for each value comprising this address item.
+func (section *ipAddressSectionInternal) GetByteCount() int {
+	return section.addressSectionInternal.GetByteCount()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
