@@ -589,3 +589,46 @@ func deriveIPAddressSectionPrefLen(from *IPAddressSection, segments []*AddressDi
 	res.initMultiple()
 	return
 }
+
+// createSegmentsUint64 called prior to check for prefix subnet.
+// The segments must be created first before that can happen.
+func createSegmentsUint64(
+	segLen int,
+	highBytes,
+	lowBytes uint64,
+	bytesPerSegment int,
+	bitsPerSegment BitCount,
+	creator addressSegmentCreator,
+	assignedPrefixLength PrefixLen) []*AddressDivision {
+	segmentMask := ^(^SegInt(0) << uint(bitsPerSegment))
+	lowSegCount := getHostSegmentIndex(64, bytesPerSegment, bitsPerSegment)
+	newSegs := make([]*AddressDivision, segLen)
+	lowIndex := segLen - lowSegCount
+	if lowIndex < 0 {
+		lowIndex = 0
+	}
+
+	segmentIndex := segLen - 1
+	bytes := lowBytes
+
+	for {
+		for {
+			segmentPrefixLength := getSegmentPrefixLength(bitsPerSegment, assignedPrefixLength, segmentIndex)
+			value := segmentMask & SegInt(bytes)
+			seg := creator.createSegment(value, value, segmentPrefixLength)
+			newSegs[segmentIndex] = seg
+			segmentIndex--
+			if segmentIndex < lowIndex {
+				break
+			}
+			bytes >>= uint(bitsPerSegment)
+		}
+		if lowIndex == 0 {
+			break
+		}
+		lowIndex = 0
+		bytes = highBytes
+	}
+
+	return newSegs
+}
