@@ -981,6 +981,25 @@ func (section *IPAddressSection) GetNetworkSection() *IPAddressSection {
 	return section.getNetworkSection()
 }
 
+// GetNetworkSectionLen returns a subsection containing the segments with the network of the address section,
+// the prefix bits according to the given prefix length.
+// The returned section will have only as many segments as needed to contain the network.
+//
+// The new section will be assigned the given prefix length,
+// unless the existing prefix length is smaller, in which case the existing prefix length will be retained.
+func (section *IPAddressSection) GetNetworkSectionLen(prefLen BitCount) *IPAddressSection {
+	return section.getNetworkSectionLen(prefLen)
+}
+
+// GetHostSection returns a subsection containing the segments with the host of the address section,
+// the bits beyond the CIDR network prefix length.
+// The returned section will have only as many segments as needed to contain the host.
+//
+// If this series has no prefix length, the returned host section will be the full section.
+func (section *IPAddressSection) GetHostSection() *IPAddressSection {
+	return section.getHostSection()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
