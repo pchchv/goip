@@ -905,6 +905,16 @@ func isPrefixSubnetDivs(sectionSegments []*AddressDivision, networkPrefixLength 
 		zerosOnly)
 }
 
+// IsMultiple returns whether this section represents multiple values.
+func (section *IPAddressSection) IsMultiple() bool {
+	return section != nil && section.isMultiple()
+}
+
+// IsPrefixed returns whether this section has an associated prefix length.
+func (section *IPAddressSection) IsPrefixed() bool {
+	return section != nil && section.isPrefixed()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
