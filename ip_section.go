@@ -599,6 +599,22 @@ func (section *ipAddressSectionInternal) IncludesMax() bool {
 	return section.addressSectionInternal.IncludesMax()
 }
 
+// IsFullRange returns whether this address item represents all possible values attainable by an address item of this type.
+//
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (section *ipAddressSectionInternal) IsFullRange() bool {
+	return section.addressSectionInternal.IsFullRange()
+}
+
+// GetSequentialBlockIndex gets the minimal segment index for which all following segments are full-range blocks.
+//
+// The segment at this index is not a full-range block itself, unless all segments are full-range.
+// The segment at this index and all following segments form a sequential range.
+// For the full address section to be sequential, the preceding segments must be single-valued.
+func (section *ipAddressSectionInternal) GetSequentialBlockIndex() int {
+	return section.addressSectionInternal.GetSequentialBlockIndex()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
