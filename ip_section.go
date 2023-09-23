@@ -663,6 +663,16 @@ func (section *ipAddressSectionInternal) GetUpperValue() *big.Int {
 	return section.addressSectionInternal.GetUpperValue()
 }
 
+// Bytes returns the lowest individual address section in this address section as a byte slice.
+func (section *ipAddressSectionInternal) Bytes() []byte {
+	return section.addressSectionInternal.Bytes()
+}
+
+// UpperBytes returns the highest individual address section in this address section as a byte slice.
+func (section *ipAddressSectionInternal) UpperBytes() []byte {
+	return section.addressSectionInternal.UpperBytes()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
