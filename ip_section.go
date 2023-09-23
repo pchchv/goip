@@ -800,6 +800,24 @@ func (section *ipAddressSectionInternal) mask(msk *IPAddressSection, retainPrefi
 		func(i int) SegInt { return msk.GetSegment(i).GetSegmentValue() })
 }
 
+func (section *ipAddressSectionInternal) getNetworkSection() *IPAddressSection {
+	var prefLen BitCount
+	if section.isPrefixed() {
+		prefLen = section.getPrefixLen().bitCount()
+	} else {
+		prefLen = section.GetBitCount()
+	}
+	return section.getNetworkSectionLen(prefLen)
+}
+
+func (section *ipAddressSectionInternal) getHostSection() *IPAddressSection {
+	var prefLen BitCount
+	if section.isPrefixed() {
+		prefLen = section.getPrefixLen().bitCount()
+	}
+	return section.getHostSectionLen(prefLen)
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
