@@ -962,6 +962,25 @@ func (section *IPAddressSection) IsAdaptiveZero() bool {
 	return section != nil && section.matchesZeroGrouping()
 }
 
+// ToDivGrouping converts to an AddressDivisionGrouping,
+// a polymorphic type usable with all address sections and division groupings.
+// Afterwards, you can convert back with ToIP.
+//
+// ToDivGrouping can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (section *IPAddressSection) ToDivGrouping() *AddressDivisionGrouping {
+	return section.ToSectionBase().ToDivGrouping()
+}
+
+// GetNetworkSection returns a subsection containing the segments with the network bits of the address section.
+// The returned section will have only as many segments as needed as determined by the existing CIDR network prefix length.
+//
+// If this series has no CIDR prefix length, the returned network section will
+// be the entire series as a prefixed section with prefix length matching the address bit length.
+func (section *IPAddressSection) GetNetworkSection() *IPAddressSection {
+	return section.getNetworkSection()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
