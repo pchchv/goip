@@ -577,6 +577,16 @@ func (section *ipAddressSectionInternal) GetByteCount() int {
 	return section.addressSectionInternal.GetByteCount()
 }
 
+// IsZero returns whether this section matches exactly the value of zero.
+func (section *ipAddressSectionInternal) IsZero() bool {
+	return section.addressSectionInternal.IsZero()
+}
+
+// IncludesZero returns whether this section includes the value of zero within its range.
+func (section *ipAddressSectionInternal) IncludesZero() bool {
+	return section.addressSectionInternal.IncludesZero()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
