@@ -653,6 +653,16 @@ func (section *ipAddressSectionInternal) GetMinPrefixLenForBlock() BitCount {
 	return section.addressSectionInternal.GetMinPrefixLenForBlock()
 }
 
+// GetValue returns the lowest individual address section in this address section as an integer value.
+func (section *ipAddressSectionInternal) GetValue() *big.Int {
+	return section.addressSectionInternal.GetValue()
+}
+
+// GetUpperValue returns the highest individual address section in this address section as an integer value.
+func (section *ipAddressSectionInternal) GetUpperValue() *big.Int {
+	return section.addressSectionInternal.GetUpperValue()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
