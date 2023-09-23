@@ -630,6 +630,29 @@ func (section *ipAddressSectionInternal) ContainsPrefixBlock(prefixLen BitCount)
 	return section.addressSectionInternal.ContainsPrefixBlock(prefixLen)
 }
 
+// IsPrefixBlock returns whether the given series of address segments has
+// a prefix length and whether it includes the block associated with its prefix length.
+// If the prefix length matches the bit count, true is returned.
+//
+// This method differs from the ContainsPrefixBlock method in that it returns false if
+// the series has no prefix length or the prefix length differs from
+// the prefix length for which the ContainsPrefixBlock returns true.
+func (section *ipAddressSectionInternal) IsPrefixBlock() bool {
+	return section.addressSectionInternal.IsPrefixBlock()
+}
+
+// GetMinPrefixLenForBlock returns the smallest prefix length such that this section includes a block of all values for that prefix length.
+//
+// If the entire range can be described in this way, this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// For the returned prefix length, there can be either a single prefix or multiple possible prefix values in this block.
+// To avoid the case of multiple prefix values, use the GetPrefixLenForSingleBlock.
+//
+// If this section represents a single value, a bit count is returned.
+func (section *ipAddressSectionInternal) GetMinPrefixLenForBlock() BitCount {
+	return section.addressSectionInternal.GetMinPrefixLenForBlock()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
