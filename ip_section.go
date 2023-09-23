@@ -702,6 +702,24 @@ func (section *ipAddressSectionInternal) GetSegmentCount() int {
 	return section.addressSectionInternal.GetSegmentCount()
 }
 
+// GetMaxSegmentValue returns the maximum possible segment value for this type of address.
+//
+// Note this is not the maximum of the range of segment values in this specific address,
+// this is the maximum value of any segment for this address type and version, determined by the number of bits per segment.
+func (section *ipAddressSectionInternal) GetMaxSegmentValue() SegInt {
+	return section.addressSectionInternal.GetMaxSegmentValue()
+}
+
+// IncludesZeroHost returns whether the address section contains an individual address section with a host of zero.
+// If the address section has no prefix length it returns false.
+// If the prefix length matches the bit count, then it returns true.
+//
+// Otherwise, it checks whether it contains an individual address section for which all bits past the prefix are zero.
+func (section *ipAddressSectionInternal) IncludesZeroHost() bool {
+	networkPrefixLength := section.getPrefixLen()
+	return networkPrefixLength != nil && section.IncludesZeroHostLen(networkPrefixLength.bitCount())
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
