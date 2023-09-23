@@ -941,6 +941,27 @@ func (section *IPAddressSection) GetPrefixCountLen(prefixLen BitCount) *big.Int 
 	return section.addressDivisionGroupingBase.GetPrefixCountLen(prefixLen)
 }
 
+// GetBlockCount returns the count of distinct values in the given number of initial (more significant) segments.
+func (section *IPAddressSection) GetBlockCount(segments int) *big.Int {
+	if sect := section.ToIPv4(); sect != nil {
+		return sect.GetBlockCount(segments)
+	} else if sect := section.ToIPv6(); sect != nil {
+		return sect.GetBlockCount(segments)
+	}
+	return section.addressDivisionGroupingBase.GetBlockCount(segments)
+}
+
+// IsAdaptiveZero returns true if a grouping with divisions was originally created as
+// an implicitly zero-valued section or grouping (e.g., IPv4AddressSection{}),
+// that is, it was not constructed using a constructor function.
+// Such a grouping that has no divisions or segments is convertible to
+// an implicitly zero-valued grouping of any type or version, whether IPv6, IPv4, MAC, or other.
+// In other words, if a section or grouping is null, it is equivalent and
+// convertible to the null value of any other section or grouping of any type.
+func (section *IPAddressSection) IsAdaptiveZero() bool {
+	return section != nil && section.matchesZeroGrouping()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
