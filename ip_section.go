@@ -673,6 +673,22 @@ func (section *ipAddressSectionInternal) UpperBytes() []byte {
 	return section.addressSectionInternal.UpperBytes()
 }
 
+// CopyBytes copies the value of the lowest individual address section in the section into a byte slice.
+//
+// If the value can fit in the given slice, it is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (section *ipAddressSectionInternal) CopyBytes(bytes []byte) []byte {
+	return section.addressSectionInternal.CopyBytes(bytes)
+}
+
+// CopyUpperBytes copies the value of the highest individual address in the section into a byte slice.
+//
+// If the value can fit into the given slice, it is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (section *ipAddressSectionInternal) CopyUpperBytes(bytes []byte) []byte {
+	return section.addressSectionInternal.CopyUpperBytes(bytes)
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
