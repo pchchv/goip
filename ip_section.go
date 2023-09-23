@@ -915,6 +915,32 @@ func (section *IPAddressSection) IsPrefixed() bool {
 	return section != nil && section.isPrefixed()
 }
 
+// GetPrefixCount returns the number of distinct prefix values in this item.
+//
+// The prefix length is given by GetPrefixLen.
+//
+// If this has a non-nil prefix length, returns the number of distinct prefix values.
+//
+// If this has a nil prefix length, it returns the same value as GetCount.
+func (section *IPAddressSection) GetPrefixCount() *big.Int {
+	if sect := section.ToIPv4(); sect != nil {
+		return sect.GetPrefixCount()
+	} else if sect := section.ToIPv6(); sect != nil {
+		return sect.GetPrefixCount()
+	}
+	return section.addressDivisionGroupingBase.GetPrefixCount()
+}
+
+// GetPrefixCountLen returns the number of distinct prefix values in this item for the given prefix length.
+func (section *IPAddressSection) GetPrefixCountLen(prefixLen BitCount) *big.Int {
+	if sect := section.ToIPv4(); sect != nil {
+		return sect.GetPrefixCountLen(prefixLen)
+	} else if sect := section.ToIPv6(); sect != nil {
+		return sect.GetPrefixCountLen(prefixLen)
+	}
+	return section.addressDivisionGroupingBase.GetPrefixCountLen(prefixLen)
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
