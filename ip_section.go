@@ -781,6 +781,25 @@ func (section *ipAddressSectionInternal) withoutPrefixLen() *IPAddressSection {
 	return res
 }
 
+func (section *ipAddressSectionInternal) mask(msk *IPAddressSection, retainPrefix bool) (*IPAddressSection, address_error.IncompatibleAddressError) {
+	if err := section.checkSectionCount(msk); err != nil {
+		return nil, err
+	}
+
+	var prefLen PrefixLen
+
+	if retainPrefix {
+		prefLen = section.getPrefixLen()
+	}
+
+	return section.getSubnetSegments(
+		0,
+		prefLen,
+		true,
+		section.getDivision,
+		func(i int) SegInt { return msk.GetSegment(i).GetSegmentValue() })
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
