@@ -736,6 +736,18 @@ func (section *ipAddressSectionInternal) createZeroHost(prefLen BitCount, bounda
 		func(i int) SegInt { return mask.GetSegment(i).GetSegmentValue() })
 }
 
+func (section *ipAddressSectionInternal) createZeroNetwork() *IPAddressSection {
+	prefixLength := section.getNetworkPrefixLen()
+	mask := section.addrType.getIPNetwork().GetHostMask(prefixLength.bitCount())
+	res, _ := section.getSubnetSegments(
+		0,
+		prefixLength,
+		false,
+		section.getDivision,
+		func(i int) SegInt { return mask.GetSegment(i).GetSegmentValue() })
+	return res
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
