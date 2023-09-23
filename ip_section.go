@@ -720,6 +720,22 @@ func (section *ipAddressSectionInternal) IncludesZeroHost() bool {
 	return networkPrefixLength != nil && section.IncludesZeroHostLen(networkPrefixLength.bitCount())
 }
 
+// boundariesOnly: whether it is important to us that masking works for all values in the range.
+// For example, 1.2.3.2-4/31 cannot be a null host,
+// because when applied to bounds we get 1.2.3.2-4/31, and that includes 1.2.3.3/31,
+// which does not have a null host. So in this case, we usually get a boundaries_error.IncompatibleAddressError.
+// BoundariesOnly as true avoids an exception if we are really only interested in getting the boundaries of the null host,
+// and we are not interested in the other values in between.
+func (section *ipAddressSectionInternal) createZeroHost(prefLen BitCount, boundariesOnly bool) (*IPAddressSection, address_error.IncompatibleAddressError) {
+	mask := section.addrType.getIPNetwork().GetNetworkMask(prefLen)
+	return section.getSubnetSegments(
+		getNetworkSegmentIndex(prefLen, section.GetBytesPerSegment(), section.GetBitsPerSegment()),
+		cacheBitCount(prefLen),
+		!boundariesOnly, //verifyMask
+		section.getDivision,
+		func(i int) SegInt { return mask.GetSegment(i).GetSegmentValue() })
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
