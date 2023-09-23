@@ -587,6 +587,18 @@ func (section *ipAddressSectionInternal) IncludesZero() bool {
 	return section.addressSectionInternal.IncludesZero()
 }
 
+// IsMax returns whether this section matches exactly the maximum possible value,
+// the value whose bits are all ones.
+func (section *ipAddressSectionInternal) IsMax() bool {
+	return section.addressSectionInternal.IsMax()
+}
+
+// IncludesMax returns whether this section includes the max value,
+// the value whose bits are all ones, within its range.
+func (section *ipAddressSectionInternal) IncludesMax() bool {
+	return section.addressSectionInternal.IncludesMax()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
