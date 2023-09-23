@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"math/big"
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
@@ -613,6 +614,20 @@ func (section *ipAddressSectionInternal) IsFullRange() bool {
 // For the full address section to be sequential, the preceding segments must be single-valued.
 func (section *ipAddressSectionInternal) GetSequentialBlockIndex() int {
 	return section.addressSectionInternal.GetSequentialBlockIndex()
+}
+
+// GetSequentialBlockCount provides the count of elements from the sequential block iterator, the minimal number of sequential address sections that comprise this address section.
+func (section *ipAddressSectionInternal) GetSequentialBlockCount() *big.Int {
+	return section.addressSectionInternal.GetSequentialBlockCount()
+}
+
+// ContainsPrefixBlock returns whether the values of this item contains the block of values for the given prefix length.
+//
+// Unlike ContainsSinglePrefixBlock, whether there are multiple prefix values in this item for the given prefix length makes no difference.
+//
+// Use GetMinPrefixLenForBlock to determine the smallest prefix length for which this method returns true.
+func (section *ipAddressSectionInternal) ContainsPrefixBlock(prefixLen BitCount) bool {
+	return section.addressSectionInternal.ContainsPrefixBlock(prefixLen)
 }
 
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
