@@ -689,6 +689,19 @@ func (section *ipAddressSectionInternal) CopyUpperBytes(bytes []byte) []byte {
 	return section.addressSectionInternal.CopyUpperBytes(bytes)
 }
 
+// IsSequential returns whether the section represents a range of values that are sequential.
+//
+// Generally, this means that any segment covering a range of
+// values must be followed by segment that are full range, covering all values.
+func (section *ipAddressSectionInternal) IsSequential() bool {
+	return section.addressSectionInternal.IsSequential()
+}
+
+// GetSegmentCount returns the segment/division count.
+func (section *ipAddressSectionInternal) GetSegmentCount() int {
+	return section.addressSectionInternal.GetSegmentCount()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
