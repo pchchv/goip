@@ -748,6 +748,39 @@ func (section *ipAddressSectionInternal) createZeroNetwork() *IPAddressSection {
 	return res
 }
 
+func (section *ipAddressSectionInternal) withoutPrefixLen() *IPAddressSection {
+	if !section.isPrefixed() {
+		return section.toIPAddressSection()
+	}
+
+	if section.hasNoDivisions() {
+		return createIPSection(section.getDivisionsInternal(), nil, section.getAddrType())
+	}
+
+	var startIndex int
+	maxVal := section.GetMaxSegmentValue()
+	existingPrefixLength := section.getPrefixLen().bitCount()
+	if existingPrefixLength > 0 {
+		bitsPerSegment := section.GetBitsPerSegment()
+		bytesPerSegment := section.GetBytesPerSegment()
+		startIndex = getNetworkSegmentIndex(existingPrefixLength, bytesPerSegment, bitsPerSegment)
+	}
+
+	res, _ := section.getSubnetSegments(
+		startIndex,
+		nil,
+		false,
+		func(i int) *AddressDivision {
+			return section.getDivision(i)
+		},
+		func(i int) SegInt {
+			return maxVal
+		},
+	)
+
+	return res
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
