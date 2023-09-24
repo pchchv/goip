@@ -1068,6 +1068,24 @@ func (section *IPAddressSection) WithoutPrefixLen() *IPAddressSection {
 	return section.withoutPrefixLen()
 }
 
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address section.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (section *IPAddressSection) SetPrefixLen(prefixLen BitCount) *IPAddressSection {
+	return section.setPrefixLen(prefixLen).ToIP()
+}
+
+// AdjustPrefixLen increases or decreases the prefix length by the given increment.
+//
+// A prefix length will not be adjusted lower than zero or beyond the bit length of the address section.
+//
+// If this address section has no prefix length, then the prefix length will be set to the adjustment if positive,
+// or it will be set to the adjustment added to the bit count if negative.
+func (section *IPAddressSection) AdjustPrefixLen(prefixLen BitCount) *IPAddressSection {
+	return section.adjustPrefixLen(prefixLen)
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
