@@ -197,3 +197,17 @@ func NewIPv4Address(section *IPv4AddressSection) (*IPv4Address, address_error.Ad
 	}
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4(), nil
 }
+
+// NewIPv4AddressFromSegs constructs an IPv4 address or subnet from the given segments.
+// If the given slice does not have 4 segments, an error is returned.
+func NewIPv4AddressFromSegs(segments []*IPv4AddressSegment) (*IPv4Address, address_error.AddressValueError) {
+	segCount := len(segments)
+	if segCount != IPv4SegmentCount {
+		return nil, &addressValueError{
+			addressError: addressError{key: "ipaddress.error.invalid.size"},
+			val:          segCount,
+		}
+	}
+	section := NewIPv4Section(segments)
+	return createAddress(section.ToSectionBase(), NoZone).ToIPv4(), nil
+}
