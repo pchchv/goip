@@ -567,3 +567,27 @@ func (seg *IPAddressSegment) WithoutPrefixLen() *IPAddressSegment {
 	}
 	return seg.withoutPrefixLen()
 }
+
+// ToIPv4 converts to an IPv4AddressSegment if this segment originated as an IPv4 segment.
+// If not, ToIPv4 returns nil.
+//
+// ToIPv4 can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (seg *IPAddressSegment) ToIPv4() *IPv4AddressSegment {
+	if seg.IsIPv4() {
+		return (*IPv4AddressSegment)(seg)
+	}
+	return nil
+}
+
+// ToIPv6 converts to an IPv6AddressSegment if this segment originated as an IPv6 segment.
+// If not, ToIPv6 returns nil.
+//
+// ToIPv6 can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (seg *IPAddressSegment) ToIPv6() *IPv6AddressSegment {
+	if seg.IsIPv6() {
+		return (*IPv6AddressSegment)(seg)
+	}
+	return nil
+}
