@@ -1124,6 +1124,15 @@ func (section *IPAddressSection) ToBlock(segmentIndex int, lower, upper SegInt) 
 	return section.toBlock(segmentIndex, lower, upper).ToIP()
 }
 
+// GetSegmentStrings returns a slice with the string for each segment being
+// the string that is normalized with wildcards.
+func (section *IPAddressSection) GetSegmentStrings() []string {
+	if section == nil {
+		return nil
+	}
+	return section.getSegmentStrings()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
