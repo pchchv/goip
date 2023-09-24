@@ -121,3 +121,17 @@ func getMinPrefixLenForBlock(lower, upper DivInt, bitCount BitCount) BitCount {
 
 	return result
 }
+
+func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
+	anyt := any(t)
+
+	if _, ok := anyt.(*IPv6Address); ok {
+		t = any(zeroIPv6).(T)
+	} else if _, ok := anyt.(*IPv4Address); ok {
+		t = any(zeroIPv4).(T)
+	} else if _, ok := anyt.(*IPAddress); ok {
+		t = any(zeroIPAddr).(T)
+	}
+
+	return
+}
