@@ -121,6 +121,18 @@ func (addr *IPv4Address) IsMultiple() bool {
 	return addr != nil && addr.isMultiple()
 }
 
+// IsPrefixed returns whether this address has an associated prefix length.
+func (addr *IPv4Address) IsPrefixed() bool {
+	return addr != nil && addr.isPrefixed()
+}
+
+// IsFullRange returns whether this address covers the entire IPv4 address space.
+//
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (addr *IPv4Address) IsFullRange() bool {
+	return addr.GetSection().IsFullRange()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
