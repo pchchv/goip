@@ -1110,6 +1110,20 @@ func (section *IPAddressSection) ToPrefixBlock() *IPAddressSection {
 	return section.toPrefixBlock().ToIP()
 }
 
+// ToPrefixBlockLen returns the section with the same prefix of
+// the given length as this section while the remaining bits span all values.
+// The returned section will be the block of all sections with the same prefix.
+func (section *IPAddressSection) ToPrefixBlockLen(prefLen BitCount) *IPAddressSection {
+	return section.toPrefixBlockLen(prefLen).ToIP()
+}
+
+// ToBlock creates a new block of address sections by changing the segment at
+// the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (section *IPAddressSection) ToBlock(segmentIndex int, lower, upper SegInt) *IPAddressSection {
+	return section.toBlock(segmentIndex, lower, upper).ToIP()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
