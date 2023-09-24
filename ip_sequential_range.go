@@ -135,3 +135,16 @@ func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 
 	return
 }
+
+func newSequRangeUnchecked[T SequentialRangeConstraint[T]](lower, upper T, isMult bool) *SequentialRange[T] {
+	return &SequentialRange[T]{
+		lower:      lower,
+		upper:      upper,
+		isMultiple: isMult,
+		cache:      &rangeCache{},
+	}
+}
+
+func newSequRangeCheckSize[T SequentialRangeConstraint[T]](lower, upper T) *SequentialRange[T] {
+	return newSequRangeUnchecked(lower, upper, !lower.equalsSameVersion(upper))
+}
