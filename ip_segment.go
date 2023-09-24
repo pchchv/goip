@@ -2,6 +2,7 @@ package goip
 
 import (
 	"math/big"
+	"strings"
 	"unsafe"
 )
 
@@ -378,6 +379,24 @@ func (seg *ipAddressSegmentInternal) IsOneBit(segmentBitIndex BitCount) bool {
 
 func (seg *ipAddressSegmentInternal) toIPAddressSegment() *IPAddressSegment {
 	return (*IPAddressSegment)(unsafe.Pointer(seg))
+}
+
+func (seg *ipAddressSegmentInternal) withoutPrefixLen() *IPAddressSegment {
+	if seg.isPrefixed() {
+		return createAddressDivision(seg.derivePrefixed(nil)).ToIP()
+	}
+	return seg.toIPAddressSegment()
+}
+
+func (seg *ipAddressSegmentInternal) getUpperStringMasked(radix int, uppercase bool, appendable *strings.Builder) {
+	if seg.isPrefixed() {
+		upperValue := seg.GetUpperSegmentValue()
+		mask := seg.GetSegmentNetworkMask(seg.GetSegmentPrefixLen().bitCount())
+		upperValue &= mask
+		toUnsignedStringCased(DivInt(upperValue), radix, 0, uppercase, appendable)
+	} else {
+		seg.getUpperString(radix, uppercase, appendable)
+	}
 }
 
 // IPAddressSegment represents a single IP address segment.
