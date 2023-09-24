@@ -591,3 +591,15 @@ func (seg *IPAddressSegment) ToIPv6() *IPv6AddressSegment {
 	}
 	return nil
 }
+
+// GetLower returns a segment representing just the lowest value in the range,
+// which will be the same segment if it represents a single value.
+func (seg *IPAddressSegment) GetLower() *IPAddressSegment {
+	return seg.getLower().ToIP()
+}
+
+// GetUpper returns a segment representing just the highest value in the range,
+// which will be the same segment if it represents a single value.
+func (seg *IPAddressSegment) GetUpper() *IPAddressSegment {
+	return seg.getUpper().ToIP()
+}
