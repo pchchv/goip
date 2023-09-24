@@ -9,6 +9,18 @@ import (
 // DefaultSeqRangeSeparator is the low to high value separator used when creating strings for IP ranges.
 const DefaultSeqRangeSeparator = " -> "
 
+var (
+	_ SequentialRange[*IPAddress]
+	_ SequentialRange[*IPv4Address]
+	_ SequentialRange[*IPv6Address]
+)
+
+type IPAddressSeqRange = SequentialRange[*IPAddress]
+
+type IPv4AddressSeqRange = SequentialRange[*IPv4Address]
+
+type IPv6AddressSeqRange = SequentialRange[*IPv6Address]
+
 type rangeCache struct {
 	cachedCount *big.Int
 }
