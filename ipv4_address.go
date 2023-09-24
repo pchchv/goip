@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"math/big"
 	"net"
 	"unsafe"
 
@@ -99,6 +100,25 @@ func (addr *IPv4Address) ToAddressBase() *Address {
 		addr = addr.init()
 	}
 	return (*Address)(unsafe.Pointer(addr))
+}
+
+// GetCount returns the count of addresses that this address or subnet represents.
+//
+// If just a single address, not a subnet of multiple addresses, returns 1.
+//
+// For instance, the IP address subnet "1.2.0.0/15" has the count of 2 to the power of 17.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (addr *IPv4Address) GetCount() *big.Int {
+	if addr == nil {
+		return bigZero()
+	}
+	return addr.getCount()
+}
+
+// IsMultiple returns true if this represents more than a single individual address, whether it is a subnet of multiple addresses.
+func (addr *IPv4Address) IsMultiple() bool {
+	return addr != nil && addr.isMultiple()
 }
 
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
