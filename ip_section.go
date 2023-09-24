@@ -1017,6 +1017,25 @@ func (section *IPAddressSection) CopySubSegments(start, end int, segs []*IPAddre
 	}, len(segs))
 }
 
+// CopySegments copies the existing segments into the given slice,
+// as much as can be fit into the slice, returning the number of segments copied.
+func (section *IPAddressSection) CopySegments(segs []*IPAddressSegment) (count int) {
+	return section.ForEachSegment(func(index int, seg *IPAddressSegment) (stop bool) {
+		if stop = index >= len(segs); !stop {
+			segs[index] = seg
+		}
+		return
+	})
+}
+
+// GetSegments returns a slice with the address segments.
+// The returned slice is not backed by the same array as this section.
+func (section *IPAddressSection) GetSegments() (res []*IPAddressSegment) {
+	res = make([]*IPAddressSegment, section.GetSegmentCount())
+	section.CopySegments(res)
+	return
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
