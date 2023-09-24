@@ -559,3 +559,11 @@ func (seg *IPAddressSegment) ToPrefixedHostSegment(segmentPrefixLength PrefixLen
 func (seg *IPAddressSegment) ToHostSegment(segmentPrefixLength PrefixLen) *IPAddressSegment {
 	return seg.toHostDivision(segmentPrefixLength, false).ToIP()
 }
+
+// WithoutPrefixLen returns a segment with the same value range but without a prefix length.
+func (seg *IPAddressSegment) WithoutPrefixLen() *IPAddressSegment {
+	if !seg.IsPrefixed() {
+		return seg
+	}
+	return seg.withoutPrefixLen()
+}
