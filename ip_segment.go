@@ -399,6 +399,30 @@ func (seg *ipAddressSegmentInternal) getUpperStringMasked(radix int, uppercase b
 	}
 }
 
+func (seg *ipAddressSegmentInternal) getStringAsLower() string {
+	if seg.divisionValues != nil {
+		if cache := seg.getCache(); cache != nil {
+			return cacheStr(&cache.cachedString, seg.getDefaultLowerString)
+		}
+	}
+	return seg.getDefaultLowerString()
+}
+
+// GetMinPrefixLenForBlock returns the smallest prefix length such that
+// this segment includes the block of all values for that prefix length.
+//
+// If the entire range can be described this way,
+// then this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// There may be a single prefix, or multiple possible prefix values in
+// this item for the returned prefix length.
+// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values.
+//
+// If this segment represents a single value, this returns the bit count.
+func (seg *ipAddressSegmentInternal) GetMinPrefixLenForBlock() BitCount {
+	return seg.addressSegmentInternal.GetMinPrefixLenForBlock()
+}
+
 // IPAddressSegment represents a single IP address segment.
 // An IP segment contains a single value or a range of sequential values,
 // a prefix length, and has an assigned bit length.
