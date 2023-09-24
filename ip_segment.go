@@ -531,3 +531,17 @@ func (seg *IPAddressSegment) GetWildcardString() string {
 	}
 	return seg.getWildcardString()
 }
+
+// ToPrefixedNetworkSegment returns a segment with
+// the network bits matching this segment but the host bits converted to zero.
+// The new segment will be assigned the given prefix length.
+func (seg *IPAddressSegment) ToPrefixedNetworkSegment(segmentPrefixLength PrefixLen) *IPAddressSegment {
+	return seg.toPrefixedNetworkDivision(segmentPrefixLength).ToIP()
+}
+
+// ToNetworkSegment returns a segment with
+// the network bits matching this segment but the host bits converted to zero.
+// The new segment will have no assigned prefix length.
+func (seg *IPAddressSegment) ToNetworkSegment(segmentPrefixLength PrefixLen) *IPAddressSegment {
+	return seg.toNetworkDivision(segmentPrefixLength, false).ToIP()
+}
