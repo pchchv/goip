@@ -211,3 +211,18 @@ func NewIPv4AddressFromSegs(segments []*IPv4AddressSegment) (*IPv4Address, addre
 	section := NewIPv4Section(segments)
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4(), nil
 }
+
+// NewIPv4AddressFromPrefixedSegs constructs an IPv4 address or subnet from the given segments and prefix length.
+// If the given slice does not have 4 segments, an error is returned.
+// If the address has a zero host for its prefix length, the returned address will be the prefix block.
+func NewIPv4AddressFromPrefixedSegs(segments []*IPv4AddressSegment, prefixLength PrefixLen) (*IPv4Address, address_error.AddressValueError) {
+	segCount := len(segments)
+	if segCount != IPv4SegmentCount {
+		return nil, &addressValueError{
+			addressError: addressError{key: "ipaddress.error.invalid.size"},
+			val:          segCount,
+		}
+	}
+	section := NewIPv4PrefixedSection(segments, prefixLength)
+	return createAddress(section.ToSectionBase(), NoZone).ToIPv4(), nil
+}
