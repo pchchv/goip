@@ -133,6 +133,18 @@ func (addr *IPv4Address) IsFullRange() bool {
 	return addr.GetSection().IsFullRange()
 }
 
+// GetBitCount returns the number of bits comprising this address,
+// or each address in the range if a subnet, which is 32.
+func (addr *IPv4Address) GetBitCount() BitCount {
+	return IPv4BitCount
+}
+
+// GetByteCount returns the number of bytes required for this address,
+// or each address in the range if a subnet, which is 4.
+func (addr *IPv4Address) GetByteCount() int {
+	return IPv4ByteCount
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
