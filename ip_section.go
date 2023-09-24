@@ -1050,6 +1050,24 @@ func (section *IPAddressSection) GetUpper() *IPAddressSection {
 	return section.getUpper().ToIP()
 }
 
+// ToZeroHostLen converts the address section to one in which all individual sections have a host of zero,
+// the host being the bits following the given prefix length.
+// If this address section has the same prefix length, then the returned one will too, otherwise the returned section will have no prefix length.
+//
+// This returns an error if the section is a range of which cannot be converted to a range in which all sections have zero hosts,
+// because the conversion results in a segment that is not a sequential range of values.
+func (section *IPAddressSection) ToZeroHostLen(prefixLength BitCount) (*IPAddressSection, address_error.IncompatibleAddressError) {
+	return section.ToZeroHostLen(prefixLength)
+}
+
+// WithoutPrefixLen provides the same address section but with no prefix length.  The values remain unchanged.
+func (section *IPAddressSection) WithoutPrefixLen() *IPAddressSection {
+	if !section.IsPrefixed() {
+		return section
+	}
+	return section.withoutPrefixLen()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
