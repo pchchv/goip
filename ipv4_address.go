@@ -145,6 +145,18 @@ func (addr *IPv4Address) GetByteCount() int {
 	return IPv4ByteCount
 }
 
+// GetBitsPerSegment returns the number of bits comprising each segment in this address.
+// Segments in the same address are equal length.
+func (addr *IPv4Address) GetBitsPerSegment() BitCount {
+	return IPv4BitsPerSegment
+}
+
+// GetBytesPerSegment returns the number of bytes comprising each segment in this address or subnet.
+// Segments in the same address are equal length.
+func (addr *IPv4Address) GetBytesPerSegment() int {
+	return IPv4BytesPerSegment
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
