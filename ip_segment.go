@@ -545,3 +545,17 @@ func (seg *IPAddressSegment) ToPrefixedNetworkSegment(segmentPrefixLength Prefix
 func (seg *IPAddressSegment) ToNetworkSegment(segmentPrefixLength PrefixLen) *IPAddressSegment {
 	return seg.toNetworkDivision(segmentPrefixLength, false).ToIP()
 }
+
+// ToPrefixedHostSegment returns a segment with
+// the host bits matching this segment but the network bits converted to zero.
+// The new segment will be assigned the given prefix length.
+func (seg *IPAddressSegment) ToPrefixedHostSegment(segmentPrefixLength PrefixLen) *IPAddressSegment {
+	return seg.toPrefixedHostDivision(segmentPrefixLength).ToIP()
+}
+
+// ToHostSegment returns a segment with
+// the host bits matching this segment but the network bits converted to zero.
+// The new segment will have no assigned prefix length.
+func (seg *IPAddressSegment) ToHostSegment(segmentPrefixLength PrefixLen) *IPAddressSegment {
+	return seg.toHostDivision(segmentPrefixLength, false).ToIP()
+}
