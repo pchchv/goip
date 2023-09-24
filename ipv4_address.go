@@ -181,3 +181,19 @@ func NewIPv4AddressFromBytes(bytes []byte) (addr *IPv4Address, err address_error
 	}
 	return
 }
+
+// NewIPv4Address constructs an IPv4 address or subnet from the given address section.
+// If the section does not have 4 segments, an error is returned.
+func NewIPv4Address(section *IPv4AddressSection) (*IPv4Address, address_error.AddressValueError) {
+	if section == nil {
+		return zeroIPv4, nil
+	}
+	segCount := section.GetSegmentCount()
+	if segCount != IPv4SegmentCount {
+		return nil, &addressValueError{
+			addressError: addressError{key: "ipaddress.error.invalid.size"},
+			val:          segCount,
+		}
+	}
+	return createAddress(section.ToSectionBase(), NoZone).ToIPv4(), nil
+}
