@@ -1036,6 +1036,20 @@ func (section *IPAddressSection) GetSegments() (res []*IPAddressSegment) {
 	return
 }
 
+// GetLower returns the section in the range with the lowest numeric value,
+// which will be the same section if it represents a single value.
+// For example, for "1.2-3.4.5-6", the section "1.2.4.5" is returned.
+func (section *IPAddressSection) GetLower() *IPAddressSection {
+	return section.getLower().ToIP()
+}
+
+// GetUpper returns the section in the range with the highest numeric value,
+// which will be the same section if it represents a single value.
+// For example, for "1.2-3.4.5-6", the section "1.3.4.6" is returned.
+func (section *IPAddressSection) GetUpper() *IPAddressSection {
+	return section.getUpper().ToIP()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
