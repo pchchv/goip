@@ -368,6 +368,16 @@ func (addr *IPv4Address) IsMulticast() bool {
 	return addr.GetSegment(0).MatchesWithPrefixMask(0xe0, 4)
 }
 
+// IsLoopback returns whether this address is a loopback address, such as "127.0.0.1".
+func (addr *IPv4Address) IsLoopback() bool {
+	return addr.section != nil && addr.GetSegment(0).Matches(127)
+}
+
+// GetNetwork returns the singleton IPv4 network instance.
+func (addr *IPv4Address) GetNetwork() IPAddressNetwork {
+	return ipv4Network
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
