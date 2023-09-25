@@ -214,3 +214,29 @@ func newIPv4SectionFromBytes(bytes []byte, segmentCount int, prefixLength Prefix
 func NewIPv4SectionFromSegmentedBytes(bytes []byte, segmentCount int) (res *IPv4AddressSection, err address_error.AddressValueError) {
 	return newIPv4SectionFromBytes(bytes, segmentCount, nil, false)
 }
+
+// NewIPv4SectionFromPrefixedUint32 constructs an IPv4 address or prefix block section of
+// the given segment count from the given value and prefix length.
+func NewIPv4SectionFromPrefixedUint32(value uint32, segmentCount int, prefixLength PrefixLen) (res *IPv4AddressSection) {
+	if segmentCount < 0 {
+		segmentCount = IPv4SegmentCount
+	}
+
+	segments := createSegmentsUint64(
+		segmentCount,
+		0,
+		uint64(value),
+		IPv4BytesPerSegment,
+		IPv4BitsPerSegment,
+		ipv4Network.getIPAddressCreator(),
+		prefixLength)
+	res = createIPv4Section(segments)
+
+	if prefixLength != nil {
+		assignPrefix(prefixLength, segments, res.ToIP(), false, false, BitCount(segmentCount<<ipv4BitsToSegmentBitshift))
+	} else {
+		res.cache.uint32Cache = &value
+	}
+
+	return
+}
