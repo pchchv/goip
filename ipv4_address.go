@@ -294,6 +294,16 @@ func (addr *IPv4Address) GetUpperValue() *big.Int {
 	return addr.init().section.GetUpperValue()
 }
 
+// Bytes returns the lowest address in this subnet or address as a byte slice.
+func (addr *IPv4Address) Bytes() []byte {
+	return addr.init().section.Bytes()
+}
+
+// UpperBytes returns the highest address in this subnet or address as a byte slice.
+func (addr *IPv4Address) UpperBytes() []byte {
+	return addr.init().section.UpperBytes()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
