@@ -320,6 +320,21 @@ func (addr *IPv4Address) CopyUpperBytes(bytes []byte) []byte {
 	return addr.init().section.CopyUpperBytes(bytes)
 }
 
+// UpperUint32Value returns the highest address in the subnet range as a uint32.
+func (addr *IPv4Address) UpperUint32Value() uint32 {
+	return addr.GetSection().UpperUint32Value()
+}
+
+// IsMax returns whether this address matches exactly the maximum possible value, the address whose bits are all ones.
+func (addr *IPv4Address) IsMax() bool {
+	return addr.init().section.IsMax()
+}
+
+// IncludesMax returns whether this address includes the max address, the address whose bits are all ones, within its range.
+func (addr *IPv4Address) IncludesMax() bool {
+	return addr.init().section.IncludesMax()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
