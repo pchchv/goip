@@ -79,6 +79,9 @@ func (section *IPv4AddressSection) ToBlock(segmentIndex int, lower, upper SegInt
 	return section.toBlock(segmentIndex, lower, upper).ToIPv4()
 }
 
+// InetAtonRadix represents a radix for printing an address string.
+type InetAtonRadix int
+
 func createIPv4Section(segments []*AddressDivision) *IPv4AddressSection {
 	return &IPv4AddressSection{
 		ipAddressSectionInternal{
