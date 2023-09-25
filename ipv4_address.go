@@ -207,6 +207,29 @@ func (addr *IPv4Address) GetLower() *IPv4Address {
 	return addr.init().getLower().ToIPv4()
 }
 
+// GetUpper returns the highest address in the subnet range,
+// which will be the receiver if it represents a single address.
+// For example, for "1.2-3.4.5-6", the address "1.3.4.6" is returned.
+func (addr *IPv4Address) GetUpper() *IPv4Address {
+	return addr.init().getUpper().ToIPv4()
+}
+
+// GetLowerIPAddress returns the address in the subnet or address collection with the lowest numeric value,
+// which will be the receiver if it represents a single address.
+// For example, for "1.2-3.4.5-6", the series "1.2.4.5" is returned.
+// GetLowerIPAddress implements the IPAddressRange interface
+func (addr *IPv4Address) GetLowerIPAddress() *IPAddress {
+	return addr.GetLower().ToIP()
+}
+
+// GetUpperIPAddress returns the address in the subnet or address collection with the highest numeric value,
+// which will be the receiver if it represents a single address.
+// For example, for the subnet "1.2-3.4.5-6", the address "1.3.4.6" is returned.
+// GetUpperIPAddress implements the IPAddressRange interface
+func (addr *IPv4Address) GetUpperIPAddress() *IPAddress {
+	return addr.GetUpper().ToIP()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
