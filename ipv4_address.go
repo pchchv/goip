@@ -378,6 +378,11 @@ func (addr *IPv4Address) GetNetwork() IPAddressNetwork {
 	return ipv4Network
 }
 
+// toAddressBase is needed for tries, it skips the init() call
+func (addr *IPv4Address) toAddressBase() *Address {
+	return (*Address)(unsafe.Pointer(addr))
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
