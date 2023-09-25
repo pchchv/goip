@@ -284,6 +284,16 @@ func (addr *IPv4Address) AdjustPrefixLenZeroed(prefixLen BitCount) (*IPv4Address
 	return res.ToIPv4(), err
 }
 
+// GetValue returns the lowest address in this subnet or address as an integer value.
+func (addr *IPv4Address) GetValue() *big.Int {
+	return addr.init().section.GetValue()
+}
+
+// GetUpperValue returns the highest address in this subnet or address as an integer value.
+func (addr *IPv4Address) GetUpperValue() *big.Int {
+	return addr.init().section.GetUpperValue()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
