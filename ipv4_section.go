@@ -274,3 +274,15 @@ func newIPv4SectionFromPrefixedSingle(vals, upperVals IPv4SegmentValueProvider, 
 
 	return
 }
+
+// NewIPv4SectionFromPrefixedBytes constructs an IPv4 address or prefix block section from the given byte slice and prefix length.
+// It allows you to specify the segment count for the supplied bytes.
+// If the slice is too large for the given number of segments, an error is returned, although leading zeros are tolerated.
+func NewIPv4SectionFromPrefixedBytes(bytes []byte, segmentCount int, prefixLength PrefixLen) (res *IPv4AddressSection, err address_error.AddressValueError) {
+	return newIPv4SectionFromBytes(bytes, segmentCount, prefixLength, false)
+}
+
+// NewIPv4SectionFromPrefixedRange constructs an IPv4 subnet section of the given segment count from the given values and prefix length.
+func NewIPv4SectionFromPrefixedRange(vals, upperVals IPv4SegmentValueProvider, segmentCount int, prefixLength PrefixLen) (res *IPv4AddressSection) {
+	return newIPv4SectionFromPrefixedSingle(vals, upperVals, segmentCount, prefixLength, false)
+}
