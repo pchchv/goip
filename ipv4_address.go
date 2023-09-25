@@ -230,6 +230,23 @@ func (addr *IPv4Address) GetUpperIPAddress() *IPAddress {
 	return addr.GetUpper().ToIP()
 }
 
+// ToPrefixBlock returns the subnet associated with the prefix length of this address.
+// If this address has no prefix length, this address is returned.
+//
+// The subnet will include all addresses with the same prefix as this one, the prefix "block".
+// The network prefix will match the prefix of this address or subnet, and the host values will span all values.
+//
+// For example, if the address is "1.2.3.4/16" it returns the subnet "1.2.0.0/16", which can also be written as "1.2.*.* /16".
+func (addr *IPv4Address) ToPrefixBlock() *IPv4Address {
+	return addr.init().toPrefixBlock().ToIPv4()
+}
+
+// ToBlock creates a new block of addresses by changing the segment at the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (addr *IPv4Address) ToBlock(segmentIndex int, lower, upper SegInt) *IPv4Address {
+	return addr.init().toBlock(segmentIndex, lower, upper).ToIPv4()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
