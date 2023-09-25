@@ -189,6 +189,24 @@ func (addr *IPv4Address) GetIPVersion() IPVersion {
 	return IPv4
 }
 
+func (addr *IPv4Address) checkIdentity(section *IPv4AddressSection) *IPv4Address {
+	if section == nil {
+		return nil
+	}
+	sec := section.ToSectionBase()
+	if sec == addr.section {
+		return addr
+	}
+	return newIPv4Address(section)
+}
+
+// GetLower returns the lowest address in the subnet range,
+// which will be the receiver if it represents a single address.
+// For example, for "1.2-3.4.5-6", the series "1.2.4.5" is returned.
+func (addr *IPv4Address) GetLower() *IPv4Address {
+	return addr.init().getLower().ToIPv4()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
