@@ -335,6 +335,19 @@ func (addr *IPv4Address) IncludesMax() bool {
 	return addr.init().section.IncludesMax()
 }
 
+// GetMaxSegmentValue returns the maximum possible segment value for this type of address.
+//
+// Note this is not the maximum of the range of segment values in this specific address,
+// this is the maximum value of any segment for this address type and version, determined by the number of bits per segment.
+func (addr *IPv4Address) GetMaxSegmentValue() SegInt {
+	return addr.init().getMaxSegmentValue()
+}
+
+func (addr *IPv4Address) getLowestHighestAddrs() (lower, upper *IPv4Address) {
+	l, u := addr.ipAddressInternal.getLowestHighestAddrs()
+	return l.ToIPv4(), u.ToIPv4()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
