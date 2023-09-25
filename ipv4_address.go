@@ -348,6 +348,26 @@ func (addr *IPv4Address) getLowestHighestAddrs() (lower, upper *IPv4Address) {
 	return l.ToIPv4(), u.ToIPv4()
 }
 
+// IsPrivate returns whether this is a unicast addresses allocated for private use,
+// as defined by RFC 1918.
+func (addr *IPv4Address) IsPrivate() bool {
+	// refer to RFC 1918
+	// 10/8 prefix
+	// 172.16/12 prefix (172.16.0.0 – 172.31.255.255)
+	// 192.168/16 prefix
+	seg0, seg1 := addr.GetSegment(0), addr.GetSegment(1)
+	return seg0.Matches(10) ||
+		(seg0.Matches(172) && seg1.MatchesWithPrefixMask(16, 4)) ||
+		(seg0.Matches(192) && seg1.Matches(168))
+}
+
+// IsMulticast returns whether this address or subnet is entirely multicast.
+func (addr *IPv4Address) IsMulticast() bool {
+	// 1110...
+	// 224.0.0.0/4
+	return addr.GetSegment(0).MatchesWithPrefixMask(0xe0, 4)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
