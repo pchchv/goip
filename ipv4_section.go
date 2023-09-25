@@ -2,6 +2,12 @@ package goip
 
 import "github.com/pchchv/goip/address_error"
 
+const (
+	InetAtonRadixHex     InetAtonRadix = 16
+	InetAtonRadixOctal   InetAtonRadix = 8
+	InetAtonRadixDecimal InetAtonRadix = 10
+)
+
 // IPv4AddressSection represents a section of an IPv4 address comprising 0 to 4 IPv4 address segments.
 // The zero values is a section with zero-segments.
 type IPv4AddressSection struct {
@@ -85,6 +91,26 @@ type InetAtonRadix int
 // GetRadix converts the radix to an int.
 func (rad InetAtonRadix) GetRadix() int {
 	return int(rad)
+}
+
+// GetSegmentStrPrefix returns the string prefix used to identify the radix.
+func (rad InetAtonRadix) GetSegmentStrPrefix() string {
+	if rad == InetAtonRadixOctal {
+		return OctalPrefix
+	} else if rad == InetAtonRadixHex {
+		return HexPrefix
+	}
+	return ""
+}
+
+// String returns the name of the radix.
+func (rad InetAtonRadix) String() string {
+	if rad == InetAtonRadixOctal {
+		return "octal"
+	} else if rad == InetAtonRadixHex {
+		return "hexadecimal"
+	}
+	return "decimal"
 }
 
 func createIPv4Section(segments []*AddressDivision) *IPv4AddressSection {
