@@ -240,3 +240,15 @@ func NewIPv4SectionFromPrefixedUint32(value uint32, segmentCount int, prefixLeng
 
 	return
 }
+
+// NewIPv4SectionFromUint32 constructs an IPv4 address section of the given segment count from the given value.
+func NewIPv4SectionFromUint32(value uint32, segmentCount int) (res *IPv4AddressSection) {
+	return NewIPv4SectionFromPrefixedUint32(value, segmentCount, nil)
+}
+
+// NewIPv4SectionFromBytes constructs an IPv4 address section from the given byte slice.
+// The segment count is determined by the slice length, even if the segment count exceeds 4 segments.
+func NewIPv4SectionFromBytes(bytes []byte) *IPv4AddressSection {
+	res, _ := newIPv4SectionFromBytes(bytes, len(bytes), nil, false)
+	return res
+}
