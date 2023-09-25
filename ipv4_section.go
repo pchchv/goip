@@ -252,3 +252,25 @@ func NewIPv4SectionFromBytes(bytes []byte) *IPv4AddressSection {
 	res, _ := newIPv4SectionFromBytes(bytes, len(bytes), nil, false)
 	return res
 }
+
+func newIPv4SectionFromPrefixedSingle(vals, upperVals IPv4SegmentValueProvider, segmentCount int, prefixLength PrefixLen, singleOnly bool) (res *IPv4AddressSection) {
+	if segmentCount < 0 {
+		segmentCount = 0
+	}
+
+	segments, isMultiple := createSegments(
+		WrapIPv4SegmentValueProvider(vals),
+		WrapIPv4SegmentValueProvider(upperVals),
+		segmentCount,
+		IPv4BitsPerSegment,
+		ipv4Network.getIPAddressCreator(),
+		prefixLength)
+	res = createIPv4Section(segments)
+	res.isMult = isMultiple
+
+	if prefixLength != nil {
+		assignPrefix(prefixLength, segments, res.ToIP(), singleOnly, false, BitCount(segmentCount<<ipv4BitsToSegmentBitshift))
+	}
+
+	return
+}
