@@ -297,3 +297,9 @@ func NewIPv4SectionFromVals(vals IPv4SegmentValueProvider, segmentCount int) (re
 func NewIPv4SectionFromPrefixedVals(vals IPv4SegmentValueProvider, segmentCount int, prefixLength PrefixLen) (res *IPv4AddressSection) {
 	return NewIPv4SectionFromPrefixedRange(vals, nil, segmentCount, prefixLength)
 }
+
+// NewIPv4SectionFromRange constructs an IPv4 subnet section of the given segment count from the given values.
+func NewIPv4SectionFromRange(vals, upperVals IPv4SegmentValueProvider, segmentCount int) (res *IPv4AddressSection) {
+	res = NewIPv4SectionFromPrefixedRange(vals, upperVals, segmentCount, nil)
+	return
+}
