@@ -157,6 +157,28 @@ func (addr *IPv4Address) GetBytesPerSegment() int {
 	return IPv4BytesPerSegment
 }
 
+// GetNetworkMask returns the network mask associated with
+// the CIDR network prefix length of this address or subnet.
+// If this address or subnet has no prefix length,
+// then the all-ones mask is returned.
+func (addr *IPv4Address) GetNetworkMask() *IPv4Address {
+	var prefLen BitCount
+	if pref := addr.getPrefixLen(); pref != nil {
+		prefLen = pref.bitCount()
+	} else {
+		prefLen = IPv4BitCount
+	}
+	return ipv4Network.GetNetworkMask(prefLen).ToIPv4()
+}
+
+// GetSegment returns the segment at the given index.
+// The first segment is at index 0.
+// GetSegment will panic given a negative index or
+// an index matching or larger than the segment count.
+func (addr *IPv4Address) GetSegment(index int) *IPv4AddressSegment {
+	return addr.init().getSegment(index).ToIPv4()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
