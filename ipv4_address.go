@@ -247,6 +247,24 @@ func (addr *IPv4Address) ToBlock(segmentIndex int, lower, upper SegInt) *IPv4Add
 	return addr.init().toBlock(segmentIndex, lower, upper).ToIPv4()
 }
 
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (addr *IPv4Address) SetPrefixLen(prefixLen BitCount) *IPv4Address {
+	return addr.init().setPrefixLen(prefixLen).ToIPv4()
+}
+
+// AdjustPrefixLen increases or decreases the prefix length by the given increment.
+//
+// A prefix length will not be adjusted lower than zero or beyond the bit length of the address.
+//
+// If this address has no prefix length, then the prefix length will be set to the adjustment if positive,
+// or it will be set to the adjustment added to the bit count if negative.
+func (addr *IPv4Address) AdjustPrefixLen(prefixLen BitCount) *IPv4Address {
+	return addr.init().adjustPrefixLen(prefixLen).ToIPv4()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
