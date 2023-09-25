@@ -179,6 +179,16 @@ func (addr *IPv4Address) GetSegment(index int) *IPv4AddressSegment {
 	return addr.init().getSegment(index).ToIPv4()
 }
 
+// GetDivisionCount returns the segment count.
+func (addr *IPv4Address) GetDivisionCount() int {
+	return addr.init().getDivisionCount()
+}
+
+// GetIPVersion returns IPv4, the IP version of this address.
+func (addr *IPv4Address) GetIPVersion() IPVersion {
+	return IPv4
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
