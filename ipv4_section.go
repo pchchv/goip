@@ -426,6 +426,31 @@ func (section *IPv4AddressSection) AdjustPrefixLenZeroed(prefixLen BitCount) (*I
 	return res.ToIPv4(), err
 }
 
+// ToDivGrouping converts to an AddressDivisionGrouping,
+// a polymorphic type usable with all address sections and division groupings.
+// Afterwards, you can convert back with ToIPv4.
+//
+// ToDivGrouping can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (section *IPv4AddressSection) ToDivGrouping() *AddressDivisionGrouping {
+	return section.ToSectionBase().ToDivGrouping()
+}
+
+func (section *IPv4AddressSection) checkSectionCounts(sections []*IPv4AddressSection) address_error.SizeMismatchError {
+	segCount := section.GetSegmentCount()
+	length := len(sections)
+	for i := 0; i < length; i++ {
+		section2 := sections[i]
+		if section2 == nil {
+			continue
+		}
+		if section2.GetSegmentCount() != segCount {
+			return &sizeMismatchError{incompatibleAddressError{addressError{key: "ipaddress.error.sizeMismatch"}}}
+		}
+	}
+	return nil
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
