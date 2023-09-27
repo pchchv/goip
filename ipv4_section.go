@@ -383,6 +383,23 @@ func (section *IPv4AddressSection) GetUpper() *IPv4AddressSection {
 	return section.getUpper().ToIPv4()
 }
 
+// WithoutPrefixLen provides the same address section but with no prefix length.
+// The values remain unchanged.
+func (section *IPv4AddressSection) WithoutPrefixLen() *IPv4AddressSection {
+	if !section.IsPrefixed() {
+		return section
+	}
+	return section.withoutPrefixLen().ToIPv4()
+}
+
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address section.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (section *IPv4AddressSection) SetPrefixLen(prefixLen BitCount) *IPv4AddressSection {
+	return section.setPrefixLen(prefixLen).ToIPv4()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
