@@ -326,6 +326,25 @@ func (section *IPv4AddressSection) CopySubSegments(start, end int, segs []*IPv4A
 	}, len(segs))
 }
 
+// CopySegments copies the existing segments into the given slice,
+// as much as can be fit into the slice, returning the number of segments copied.
+func (section *IPv4AddressSection) CopySegments(segs []*IPv4AddressSegment) (count int) {
+	return section.ForEachSegment(func(index int, seg *IPv4AddressSegment) (stop bool) {
+		if stop = index >= len(segs); !stop {
+			segs[index] = seg
+		}
+		return
+	})
+}
+
+// GetSegments returns a slice with the address segments.
+// The returned slice is not backed by the same array as this section.
+func (section *IPv4AddressSection) GetSegments() (res []*IPv4AddressSegment) {
+	res = make([]*IPv4AddressSegment, section.GetSegmentCount())
+	section.CopySegments(res)
+	return
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
