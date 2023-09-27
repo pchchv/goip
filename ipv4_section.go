@@ -345,6 +345,24 @@ func (section *IPv4AddressSection) GetSegments() (res []*IPv4AddressSegment) {
 	return
 }
 
+// Mask applies the given mask to all address sections represented by this secction, returning the result.
+//
+// If the sections do not have a comparable number of segments, an error is returned.
+//
+// If this represents multiple addresses, and applying the mask to all addresses creates a set of addresses
+// that cannot be represented as a sequential range within each segment, then an error is returned.
+func (section *IPv4AddressSection) Mask(other *IPv4AddressSection) (res *IPv4AddressSection, err address_error.IncompatibleAddressError) {
+	return section.maskPrefixed(other, true)
+}
+
+func (section *IPv4AddressSection) maskPrefixed(other *IPv4AddressSection, retainPrefix bool) (res *IPv4AddressSection, err address_error.IncompatibleAddressError) {
+	sec, err := section.mask(other.ToIP(), retainPrefix)
+	if err == nil {
+		res = sec.ToIPv4()
+	}
+	return
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
