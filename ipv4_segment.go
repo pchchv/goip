@@ -422,6 +422,19 @@ func (seg *IPv4AddressSegment) ReverseBits(_ bool) (res *IPv4AddressSegment, err
 	return
 }
 
+// GetWildcardString produces a normalized string to represent the segment, favouring wildcards and range characters while ignoring any network prefix length.
+// The explicit range of a range-valued segment will be printed.
+//
+// The string returned is useful in the context of creating strings for address sections or full addresses,
+// in which case the radix and the bit-length can be deduced from the context.
+// The String method produces strings more appropriate when no context is provided.
+func (seg *IPv4AddressSegment) GetWildcardString() string {
+	if seg == nil {
+		return nilString()
+	}
+	return seg.init().getWildcardString()
+}
+
 type ipv4SegmentValues struct {
 	value      IPv4SegInt
 	upperValue IPv4SegInt
