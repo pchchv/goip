@@ -463,6 +463,25 @@ func (section *IPv4AddressSection) checkSectionCounts(sections []*IPv4AddressSec
 	return nil
 }
 
+// IsAdaptiveZero returns true if the division grouping was originally created as
+// an implicitly zero-valued section or grouping (e.g. IPv4AddressSection{}),
+// that is, it was not constructed using a constructor function.
+// Such a grouping that has no divisions or segments is converted to an implicitly zero-valued grouping of any type or version,
+// whether IPv6, IPv4, MAC, or other.
+// In other words, if a section or grouping is zero-value,
+// it is equivalent and convertible to the zero value of any other section or grouping of any type.
+func (section *IPv4AddressSection) IsAdaptiveZero() bool {
+	return section != nil && section.matchesZeroGrouping()
+}
+
+// GetSegmentStrings returns a slice with the string for each segment being the string that is normalized with wildcards.
+func (section *IPv4AddressSection) GetSegmentStrings() []string {
+	if section == nil {
+		return nil
+	}
+	return section.getSegmentStrings()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
