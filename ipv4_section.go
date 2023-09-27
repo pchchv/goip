@@ -1,6 +1,10 @@
 package goip
 
-import "github.com/pchchv/goip/address_error"
+import (
+	"unsafe"
+
+	"github.com/pchchv/goip/address_error"
+)
 
 const (
 	InetAtonRadixHex     InetAtonRadix = 16
@@ -83,6 +87,29 @@ func (section *IPv4AddressSection) ToPrefixBlockLen(prefLen BitCount) *IPv4Addre
 // and changing the following segments to be full-range.
 func (section *IPv4AddressSection) ToBlock(segmentIndex int, lower, upper SegInt) *IPv4AddressSection {
 	return section.toBlock(segmentIndex, lower, upper).ToIPv4()
+}
+
+// Uint32Value returns the lowest address in the address section range as a uint32.
+func (section *IPv4AddressSection) Uint32Value() uint32 {
+	cache := section.cache
+	if cache == nil {
+		return section.uint32Value()
+	}
+
+	res := (*uint32)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.uint32Cache))))
+	if res == nil {
+		val := section.uint32Value()
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.uint32Cache))
+		atomicStorePointer(dataLoc, unsafe.Pointer(&val))
+		return val
+	}
+
+	return *res
+}
+
+// GetBitsPerSegment returns the number of bits comprising each segment in this section.  Segments in the same address section are equal length.
+func (section *IPv4AddressSection) GetBitsPerSegment() BitCount {
+	return IPv4BitsPerSegment
 }
 
 // InetAtonRadix represents a radix for printing an address string.
