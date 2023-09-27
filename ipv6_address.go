@@ -159,6 +159,18 @@ func (addr *IPv6Address) GetSection() *IPv6AddressSection {
 	return addr.init().section.ToIPv6()
 }
 
+// GetBitCount returns the number of bits comprising this address,
+// or each address in the range if a subnet, which is 128.
+func (addr *IPv6Address) GetBitCount() BitCount {
+	return IPv6BitCount
+}
+
+// GetByteCount returns the number of bytes required for this address,
+// or each address in the range if a subnet, which is 16.
+func (addr *IPv6Address) GetByteCount() int {
+	return IPv6ByteCount
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
