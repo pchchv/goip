@@ -132,6 +132,27 @@ func (section *IPv4AddressSection) IsPrefixed() bool {
 	return section != nil && section.isPrefixed()
 }
 
+// GetIPv4Count returns the count of possible distinct values for this section.
+// It is the same as GetCount but returns the value as a uint64 instead of a big integer.
+// If not representing multiple values, the count is 1,
+// unless this is a division grouping with no divisions,
+// or an address section with no segments, in which case it is 0.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (section *IPv4AddressSection) GetIPv4Count() uint64 {
+	if section == nil {
+		return 0
+	}
+	return section.getCachedCount().Uint64()
+}
+
+func (section *IPv4AddressSection) getIPv4Count() uint64 {
+	if !section.isMultiple() {
+		return 1
+	}
+	return longCount(section.ToSectionBase(), section.GetSegmentCount())
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
