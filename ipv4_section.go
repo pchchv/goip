@@ -264,6 +264,31 @@ func (section *IPv4AddressSection) GetSegment(index int) *IPv4AddressSegment {
 	return section.getDivision(index).ToIPv4()
 }
 
+// ForEachSegment visits each segment in order from most-significant to least,
+// the most significant with index 0, calling the given function for each,
+// terminating early if the function returns true.
+// Returns the number of visited segments.
+func (section *IPv4AddressSection) ForEachSegment(consumer func(segmentIndex int, segment *IPv4AddressSegment) (stop bool)) int {
+	divArray := section.getDivArray()
+	if divArray != nil {
+		for i, div := range divArray {
+			if consumer(i, div.ToIPv4()) {
+				return i + 1
+			}
+		}
+	}
+	return len(divArray)
+}
+
+// GetNetworkSection returns a subsection containing the segments with the network bits of the section.
+// The returned section will have only as many segments as needed as determined by the existing CIDR network prefix length.
+//
+// If this series has no CIDR prefix length, the returned network section will
+// be the entire series as a prefixed section with prefix length matching the address bit length.
+func (section *IPv4AddressSection) GetNetworkSection() *IPv4AddressSection {
+	return section.getNetworkSection().ToIPv4()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
