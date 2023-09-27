@@ -171,6 +171,18 @@ func (addr *IPv6Address) GetByteCount() int {
 	return IPv6ByteCount
 }
 
+// GetBitsPerSegment returns the number of bits comprising each segment in this address.
+// Segments in the same address are equal length.
+func (addr *IPv6Address) GetBitsPerSegment() BitCount {
+	return IPv6BitsPerSegment
+}
+
+// GetBytesPerSegment returns the number of bytes comprising each segment in this address or subnet.
+// Segments in the same address are equal length.
+func (addr *IPv6Address) GetBytesPerSegment() int {
+	return IPv6BytesPerSegment
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
