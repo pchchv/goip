@@ -363,6 +363,26 @@ func (section *IPv4AddressSection) maskPrefixed(other *IPv4AddressSection, retai
 	return
 }
 
+// MatchesWithMask applies the mask to this address section and then compares the result with the given address section,
+// returning true if they match, false otherwise.  To match, both the given section and mask must have the same number of segments as this section.
+func (section *IPv4AddressSection) MatchesWithMask(other *IPv4AddressSection, mask *IPv4AddressSection) bool {
+	return section.matchesWithMask(other.ToIP(), mask.ToIP())
+}
+
+// GetLower returns the section in the range with the lowest numeric value,
+// which will be the same section if it represents a single value.
+// For example, for "1.2-3.4.5-6", the section "1.2.4.5" is returned.
+func (section *IPv4AddressSection) GetLower() *IPv4AddressSection {
+	return section.getLower().ToIPv4()
+}
+
+// GetUpper returns the section in the range with the highest numeric value,
+// which will be the same section if it represents a single value.
+// For example, for "1.2-3.4.5-6", the section "1.3.4.6" is returned.
+func (section *IPv4AddressSection) GetUpper() *IPv4AddressSection {
+	return section.getUpper().ToIPv4()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
