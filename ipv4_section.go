@@ -112,6 +112,16 @@ func (section *IPv4AddressSection) GetBitsPerSegment() BitCount {
 	return IPv4BitsPerSegment
 }
 
+// GetBytesPerSegment returns the number of bytes comprising each segment in this section.  Segments in the same address section are equal length.
+func (section *IPv4AddressSection) GetBytesPerSegment() int {
+	return IPv4BytesPerSegment
+}
+
+// GetIPVersion returns IPv4, the IP version of this address section.
+func (section *IPv4AddressSection) GetIPVersion() IPVersion {
+	return IPv4
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
