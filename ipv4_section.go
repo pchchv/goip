@@ -5,12 +5,24 @@ import (
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string"
 )
 
 const (
 	InetAtonRadixHex     InetAtonRadix = 16
 	InetAtonRadixOctal   InetAtonRadix = 8
 	InetAtonRadixDecimal InetAtonRadix = 10
+)
+
+var (
+	ipv4CanonicalParams          = new(address_string.IPv4StringOptionsBuilder).ToOptions()
+	ipv4NormalizedWildcardParams = new(address_string.IPv4StringOptionsBuilder).SetWildcardOptions(allWildcards).ToOptions()
+	ipv4SqlWildcardParams        = new(address_string.IPv4StringOptionsBuilder).SetWildcardOptions(allSQLWildcards).ToOptions()
+	ipv4FullParams               = new(address_string.IPv4StringOptionsBuilder).SetExpandedSegments(true).SetWildcardOptions(wildcardsRangeOnlyNetworkOnly).ToOptions()
+	ipv4SegmentedBinaryParams    = new(address_string.IPStringOptionsBuilder).SetRadix(2).SetSeparator(IPv4SegmentSeparator).SetSegmentStrPrefix(BinaryPrefix).ToOptions()
+	ipv4ReverseDNSParams         = new(address_string.IPv4StringOptionsBuilder).SetWildcardOptions(allWildcards).SetReverse(true).SetAddressSuffix(IPv4ReverseDnsSuffix).ToOptions()
+	inetAtonHexParams            = new(address_string.IPv4StringOptionsBuilder).SetRadix(InetAtonRadixHex.GetRadix()).SetSegmentStrPrefix(InetAtonRadixHex.GetSegmentStrPrefix()).ToOptions()
+	inetAtonOctalParams          = new(address_string.IPv4StringOptionsBuilder).SetRadix(InetAtonRadixOctal.GetRadix()).SetSegmentStrPrefix(InetAtonRadixOctal.GetSegmentStrPrefix()).ToOptions()
 )
 
 // IPv4AddressSection represents a section of an IPv4 address comprising 0 to 4 IPv4 address segments.
