@@ -308,6 +308,24 @@ func (section *IPv4AddressSection) GetHostSection() *IPv4AddressSection {
 	return section.getHostSection().ToIPv4()
 }
 
+// GetHostSectionLen returns a subsection containing the segments with the host of the address section,
+// the bits beyond the given CIDR network prefix length.
+// The returned section will have only as many segments as needed to contain the host.
+// The returned section will have an assigned prefix length indicating the beginning of the host.
+func (section *IPv4AddressSection) GetHostSectionLen(prefLen BitCount) *IPv4AddressSection {
+	return section.getHostSectionLen(prefLen).ToIPv4()
+}
+
+// CopySubSegments copies the existing segments from the given start index until but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (section *IPv4AddressSection) CopySubSegments(start, end int, segs []*IPv4AddressSegment) (count int) {
+	start, end, targetStart := adjust1To1StartIndices(start, end, section.GetDivisionCount(), len(segs))
+	segs = segs[targetStart:]
+	return section.forEachSubDivision(start, end, func(index int, div *AddressDivision) {
+		segs[index] = div.ToIPv4()
+	}, len(segs))
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
