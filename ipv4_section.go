@@ -201,6 +201,7 @@ func (section *IPv4AddressSection) getIPv4PrefixCount() uint64 {
 	}
 	return section.GetIPv4PrefixCountLen(prefixLength.bitCount())
 }
+
 // GetPrefixCount returns the number of distinct prefix values in this item.
 //
 // The prefix length is given by GetPrefixLen.
@@ -226,6 +227,25 @@ func (section *IPv4AddressSection) GetIPv4PrefixCount() uint64 {
 	return section.cacheUint64PrefixCount(func() uint64 {
 		return section.getIPv4PrefixCount()
 	})
+}
+
+// GetPrefixCountLen returns the number of distinct prefix values in this item for the given prefix length.
+func (section *IPv4AddressSection) GetPrefixCountLen(prefixLen BitCount) *big.Int {
+	if prefixLen <= 0 {
+		return bigOne()
+	} else if bc := section.GetBitCount(); prefixLen > bc {
+		prefixLen = bc
+	}
+	return section.calcCount(func() *big.Int { return new(big.Int).SetUint64(section.GetIPv4PrefixCountLen(prefixLen)) })
+}
+
+// GetIPv4BlockCount returns the count of distinct values in the given number of initial (more significant) segments.
+// It is similar to GetBlockCount but returns a uint64 instead of a big integer.
+func (section *IPv4AddressSection) GetIPv4BlockCount(segmentCount int) uint64 {
+	if !section.isMultiple() {
+		return 1
+	}
+	return longCount(section.ToSectionBase(), segmentCount)
 }
 
 // InetAtonRadix represents a radix for printing an address string.
