@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"math/big"
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
@@ -151,6 +152,31 @@ func (section *IPv4AddressSection) getIPv4Count() uint64 {
 		return 1
 	}
 	return longCount(section.ToSectionBase(), section.GetSegmentCount())
+}
+
+// GetCount returns the count of possible distinct values for this section.
+// It is the same as GetIPv4Count but returns the value as a big integer instead of a uint64.
+// If not representing multiple values, the count is 1,
+// unless this is a division grouping with no divisions,
+// or an address section with no segments, in which case it is 0.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (section *IPv4AddressSection) GetCount() *big.Int {
+	if section == nil {
+		return bigZero()
+	}
+	return section.cacheCount(func() *big.Int {
+		return bigZero().SetUint64(section.getIPv4Count())
+	})
+}
+
+func (section *IPv4AddressSection) getCachedCount() *big.Int {
+	if section == nil {
+		return bigZero()
+	}
+	return section.cachedCount(func() *big.Int {
+		return bigZero().SetUint64(section.getIPv4Count())
+	})
 }
 
 // InetAtonRadix represents a radix for printing an address string.
