@@ -142,6 +142,23 @@ func (addr *IPv6Address) IsMultiple() bool {
 	return addr != nil && addr.isMultiple()
 }
 
+// IsPrefixed returns whether this address has an associated prefix length.
+func (addr *IPv6Address) IsPrefixed() bool {
+	return addr != nil && addr.isPrefixed()
+}
+
+// IsFullRange returns whether this address covers the entire IPv6 address space.
+//
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (addr *IPv6Address) IsFullRange() bool {
+	return addr.GetSection().IsFullRange()
+}
+
+// GetSection returns the backing section for this address or subnet, comprising all segments.
+func (addr *IPv6Address) GetSection() *IPv6AddressSection {
+	return addr.init().section.ToIPv6()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
