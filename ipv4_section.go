@@ -248,6 +248,22 @@ func (section *IPv4AddressSection) GetIPv4BlockCount(segmentCount int) uint64 {
 	return longCount(section.ToSectionBase(), segmentCount)
 }
 
+// GetBlockCount returns the count of distinct values in the given number of initial (more significant) segments.
+// It is similar to GetIPv4BlockCount but returns a big integer instead of a uint64.
+func (section *IPv4AddressSection) GetBlockCount(segmentCount int) *big.Int {
+	if segmentCount <= 0 {
+		return bigOne()
+	}
+	return section.calcCount(func() *big.Int { return new(big.Int).SetUint64(section.GetIPv4BlockCount(segmentCount)) })
+}
+
+// GetSegment returns the segment at the given index.
+// The first segment is at index 0.
+// GetSegment will panic given a negative index or an index matching or larger than the segment count.
+func (section *IPv4AddressSection) GetSegment(index int) *IPv4AddressSegment {
+	return section.getDivision(index).ToIPv4()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
