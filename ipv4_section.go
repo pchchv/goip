@@ -289,6 +289,25 @@ func (section *IPv4AddressSection) GetNetworkSection() *IPv4AddressSection {
 	return section.getNetworkSection().ToIPv4()
 }
 
+// GetNetworkSectionLen returns a subsection containing the segments with the network of the section,
+// the prefix bits according to the given prefix length.
+// The returned section will have only as many segments as needed to contain the network.
+//
+// The new section will be assigned the given prefix length,
+// unless the existing prefix length is smaller, in which case the existing prefix length will be retained.
+func (section *IPv4AddressSection) GetNetworkSectionLen(prefLen BitCount) *IPv4AddressSection {
+	return section.getNetworkSectionLen(prefLen).ToIPv4()
+}
+
+// GetHostSection returns a subsection containing the segments with the host of the address section,
+// the bits beyond the CIDR network prefix length.
+// The returned section will have only as many segments as needed to contain the host.
+//
+// If this series has no prefix length, the returned host section will be the full section.
+func (section *IPv4AddressSection) GetHostSection() *IPv4AddressSection {
+	return section.getHostSection().ToIPv4()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
