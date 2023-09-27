@@ -122,6 +122,16 @@ func (section *IPv4AddressSection) GetIPVersion() IPVersion {
 	return IPv4
 }
 
+// IsMultiple returns  whether this section represents multiple values.
+func (section *IPv4AddressSection) IsMultiple() bool {
+	return section != nil && section.isMultiple()
+}
+
+// IsPrefixed returns whether this section has an associated prefix length.
+func (section *IPv4AddressSection) IsPrefixed() bool {
+	return section != nil && section.isPrefixed()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
