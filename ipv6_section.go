@@ -6,6 +6,8 @@ var (
 	zeroEmbeddedIPv6AddressSection = &EmbeddedIPv6AddressSection{}
 	zeroIPv4AddressSection         = &IPv4AddressSection{}
 	zeroIPv6AddressSection         = &IPv6AddressSection{}
+	ffMACSeg                       = NewMACSegment(0xff)
+	feMACSeg                       = NewMACSegment(0xfe)
 )
 
 // IPv6AddressSection represents a section of an IPv6 address comprising 0 to 8 IPv6 address segments.
@@ -81,6 +83,16 @@ func (section *IPv6AddressSection) ToPrefixBlockLen(prefLen BitCount) *IPv6Addre
 // and changing the following segments to be full-range.
 func (section *IPv6AddressSection) ToBlock(segmentIndex int, lower, upper SegInt) *IPv6AddressSection {
 	return section.toBlock(segmentIndex, lower, upper).ToIPv6()
+}
+
+// GetIPVersion returns IPv6, the IP version of this address section.
+func (section *IPv6AddressSection) GetIPVersion() IPVersion {
+	return IPv6
+}
+
+// GetBitsPerSegment returns the number of bits comprising each segment in this section.  Segments in the same address section are equal length.
+func (section *IPv6AddressSection) GetBitsPerSegment() BitCount {
+	return IPv6BitsPerSegment
 }
 
 type embeddedIPv6AddressSection struct {
