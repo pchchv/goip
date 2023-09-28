@@ -2,6 +2,7 @@ package goip
 
 import (
 	"math/big"
+	"net"
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
@@ -334,6 +335,16 @@ func (addr *IPv6Address) GetValue() *big.Int {
 // GetUpperValue returns the highest address in this subnet or address as an integer value.
 func (addr *IPv6Address) GetUpperValue() *big.Int {
 	return addr.init().section.GetUpperValue()
+}
+
+// GetNetIPAddr returns the lowest address in this subnet or address as a net.IPAddr.
+func (addr *IPv6Address) GetNetIPAddr() *net.IPAddr {
+	return addr.ToIP().GetNetIPAddr()
+}
+
+// GetUpperNetIPAddr returns the highest address in this subnet or address as a net.IPAddr.
+func (addr *IPv6Address) GetUpperNetIPAddr() *net.IPAddr {
+	return addr.ToIP().GetUpperNetIPAddr()
 }
 
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
