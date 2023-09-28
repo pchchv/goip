@@ -413,6 +413,28 @@ func (addr *IPv6Address) getLowestHighestAddrs() (lower, upper *IPv6Address) {
 	return l.ToIPv6(), u.ToIPv6()
 }
 
+// IsUniqueLocal returns true if the address is unique-local, or all addresses in the subnet are unique-local, see RFC 4193.
+func (addr *IPv6Address) IsUniqueLocal() bool {
+	// RFC 4193
+	return addr.GetSegment(0).MatchesWithPrefixMask(0xfc00, 7)
+}
+
+// IsIPv4Mapped returns whether the address or all addresses in the subnet are IPv4-mapped.
+//
+// "::ffff:x:x/96" indicates an IPv6 address mapped to IPv4.
+func (addr *IPv6Address) IsIPv4Mapped() bool {
+	//::ffff:x:x/96 indicates IPv6 address mapped to IPv4
+	if addr.GetSegment(5).Matches(IPv6MaxValuePerSegment) {
+		for i := 0; i < 5; i++ {
+			if !addr.GetSegment(i).IsZero() {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
