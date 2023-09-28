@@ -447,6 +447,20 @@ func (addr *IPv6Address) Is6To4() bool {
 	return addr.GetSegment(0).Matches(0x2002)
 }
 
+// Is6Over4 returns whether the address or all addresses in the subnet are 6over4.
+func (addr *IPv6Address) Is6Over4() bool {
+	return addr.GetSegment(0).Matches(0xfe80) &&
+		addr.GetSegment(1).IsZero() && addr.GetSegment(2).IsZero() &&
+		addr.GetSegment(3).IsZero() && addr.GetSegment(4).IsZero() &&
+		addr.GetSegment(5).IsZero()
+}
+
+// IsTeredo returns whether the address or all addresses in the subnet are Teredo.
+func (addr *IPv6Address) IsTeredo() bool {
+	// 2001::/32
+	return addr.GetSegment(0).Matches(0x2001) && addr.GetSegment(1).IsZero()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
