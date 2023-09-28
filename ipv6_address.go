@@ -183,6 +183,19 @@ func (addr *IPv6Address) GetBytesPerSegment() int {
 	return IPv6BytesPerSegment
 }
 
+// HasZone returns whether this IPv6 address includes a zone or scope.
+func (addr *IPv6Address) HasZone() bool {
+	return addr != nil && addr.zone != NoZone
+}
+
+// GetZone returns the zone it it has one, otherwise it returns NoZone, which is an empty string.
+func (addr *IPv6Address) GetZone() Zone {
+	if addr == nil {
+		return NoZone
+	}
+	return addr.zone
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
