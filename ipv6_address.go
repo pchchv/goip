@@ -484,6 +484,26 @@ func (addr *IPv6Address) IsIPv4Translatable() bool { //rfc 2765
 		addr.GetSegment(3).IsZero()
 }
 
+// IsWellKnownIPv4Translatable returns whether the address has the well-known prefix for IPv4-translatable addresses as in RFC 6052 and RFC 6144.
+func (addr *IPv6Address) IsWellKnownIPv4Translatable() bool { //rfc 6052 rfc 6144
+	//64:ff9b::/96 prefix for auto ipv4/ipv6 translation
+	if addr.GetSegment(0).Matches(0x64) && addr.GetSegment(1).Matches(0xff9b) {
+		for i := 2; i <= 5; i++ {
+			if !addr.GetSegment(i).IsZero() {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
+// IsMulticast returns whether this address or subnet is entirely multicast.
+func (addr *IPv6Address) IsMulticast() bool {
+	// 11111111...
+	return addr.GetSegment(0).MatchesWithPrefixMask(0xff00, 8)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
