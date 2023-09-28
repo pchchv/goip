@@ -597,3 +597,36 @@ func NewIPv6AddressFromZonedBytes(bytes []byte, zone string) (addr *IPv6Address,
 	}
 	return
 }
+
+// NewIPv6AddressZoned constructs an IPv6 address or subnet from the given address section and zone.
+// If the section does not have 8 segments, an error is returned.
+func NewIPv6AddressZoned(section *IPv6AddressSection, zone string) (*IPv6Address, address_error.AddressValueError) {
+	if section == nil {
+		return zeroIPv6.SetZone(zone), nil
+	}
+
+	segCount := section.GetSegmentCount()
+	if segCount != IPv6SegmentCount {
+		return nil, &addressValueError{
+			addressError: addressError{key: "ipaddress.error.invalid.size"},
+			val:          segCount,
+		}
+	}
+
+	return newIPv6AddressZoned(section, zone), nil
+}
+
+// NewIPv6AddressFromSegs constructs an IPv6 address or subnet from the given segments.
+// If the given slice does not have 8 segments, an error is returned.
+func NewIPv6AddressFromSegs(segments []*IPv6AddressSegment) (addr *IPv6Address, err address_error.AddressValueError) {
+	segCount := len(segments)
+	if segCount != IPv6SegmentCount {
+		return nil, &addressValueError{
+			addressError: addressError{key: "ipaddress.error.invalid.size"},
+			val:          segCount,
+		}
+	}
+
+	section := NewIPv6Section(segments)
+	return NewIPv6Address(section)
+}
