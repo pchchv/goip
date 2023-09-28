@@ -214,6 +214,19 @@ func (addr *IPv6Address) CopySegments(segs []*IPv6AddressSegment) (count int) {
 	return addr.GetSection().CopySegments(segs)
 }
 
+// GetSegments returns a slice with the address segments.
+// The returned slice is not backed by the same array as this address.
+func (addr *IPv6Address) GetSegments() []*IPv6AddressSegment {
+	return addr.GetSection().GetSegments()
+}
+
+// GetSegment returns the segment at the given index.
+// The first segment is at index 0.
+// GetSegment will panic given a negative index or an index matching or larger than the segment count.
+func (addr *IPv6Address) GetSegment(index int) *IPv6AddressSegment {
+	return addr.init().getSegment(index).ToIPv6()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
