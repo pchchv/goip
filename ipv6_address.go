@@ -196,6 +196,24 @@ func (addr *IPv6Address) GetZone() Zone {
 	return addr.zone
 }
 
+// GetNetworkMask returns the network mask associated with the CIDR network prefix length of this address or subnet.
+// If this address or subnet has no prefix length, then the all-ones mask is returned.
+func (addr *IPv6Address) GetNetworkMask() *IPv6Address {
+	var prefLen BitCount
+	if pref := addr.getPrefixLen(); pref != nil {
+		prefLen = pref.bitCount()
+	} else {
+		prefLen = IPv6BitCount
+	}
+	return ipv6Network.GetNetworkMask(prefLen).ToIPv6()
+}
+
+// CopySegments copies the existing segments into the given slice,
+// as much as can be fit into the slice, returning the number of segments copied.
+func (addr *IPv6Address) CopySegments(segs []*IPv6AddressSegment) (count int) {
+	return addr.GetSection().CopySegments(segs)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
