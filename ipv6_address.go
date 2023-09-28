@@ -256,6 +256,20 @@ func (addr *IPv6Address) checkIdentity(section *IPv6AddressSection) *IPv6Address
 	return newIPv6AddressZoned(section, string(addr.zone))
 }
 
+// GetLower returns the lowest address in the subnet range,
+// which will be the receiver if it represents a single address.
+// For example, for "1::1:2-3:4:5-6", the series "1::1:2:4:5" is returned.
+func (addr *IPv6Address) GetLower() *IPv6Address {
+	return addr.init().getLower().ToIPv6()
+}
+
+// GetUpper returns the highest address in the subnet range,
+// which will be the receiver if it represents a single address.
+// For example, for "1::1:2-3:4:5-6", the series "1::1:3:4:6" is returned.
+func (addr *IPv6Address) GetUpper() *IPv6Address {
+	return addr.init().getUpper().ToIPv6()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
