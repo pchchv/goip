@@ -528,6 +528,13 @@ func (addr *IPv6Address) Wrap() WrappedIPAddress {
 	return wrapIPAddress(addr.ToIP())
 }
 
+// WrapAddress wraps this IP address, returning a WrappedAddress, an implementation of ExtendedSegmentSeries,
+// which can be used to write code that works with both addresses and address sections.
+// WrapAddress can be called with a nil receiver, wrapping a nil address.
+func (addr *IPv6Address) WrapAddress() WrappedAddress {
+	return wrapAddress(addr.ToAddressBase())
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
