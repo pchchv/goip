@@ -326,6 +326,16 @@ func (addr *IPv6Address) AdjustPrefixLenZeroed(prefixLen BitCount) (*IPv6Address
 	return res.ToIPv6(), err
 }
 
+// GetValue returns the lowest address in this subnet or address as an integer value.
+func (addr *IPv6Address) GetValue() *big.Int {
+	return addr.init().section.GetValue()
+}
+
+// GetUpperValue returns the highest address in this subnet or address as an integer value.
+func (addr *IPv6Address) GetUpperValue() *big.Int {
+	return addr.init().section.GetUpperValue()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
