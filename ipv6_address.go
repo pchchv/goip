@@ -399,6 +399,20 @@ func (addr *IPv6Address) WithoutZone() *IPv6Address {
 	return addr
 }
 
+// SetZone returns the same address associated with the given zone.
+// The existing zone, if any, is replaced.
+func (addr *IPv6Address) SetZone(zone string) *IPv6Address {
+	if Zone(zone) == addr.GetZone() {
+		return addr
+	}
+	return newIPv6AddressZoned(addr.GetSection(), zone)
+}
+
+func (addr *IPv6Address) getLowestHighestAddrs() (lower, upper *IPv6Address) {
+	l, u := addr.ipAddressInternal.getLowestHighestAddrs()
+	return l.ToIPv6(), u.ToIPv6()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
