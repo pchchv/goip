@@ -270,6 +270,20 @@ func (addr *IPv6Address) GetUpper() *IPv6Address {
 	return addr.init().getUpper().ToIPv6()
 }
 
+// GetLowerIPAddress returns the address in the subnet or address collection with the lowest numeric value,
+// which will be the receiver if it represents a single address.
+// GetLowerIPAddress implements the IPAddressRange interface
+func (addr *IPv6Address) GetLowerIPAddress() *IPAddress {
+	return addr.GetLower().ToIP()
+}
+
+// GetUpperIPAddress returns the address in the subnet or address collection with the highest numeric value,
+// which will be the receiver if it represents a single address.
+// GetUpperIPAddress implements the IPAddressRange interface
+func (addr *IPv6Address) GetUpperIPAddress() *IPAddress {
+	return addr.GetUpper().ToIP()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
