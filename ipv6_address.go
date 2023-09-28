@@ -238,6 +238,24 @@ func (addr *IPv6Address) GetDivisionCount() int {
 	return addr.init().getDivisionCount()
 }
 
+// GetIPVersion returns IPv6, the IP version of this address.
+func (addr *IPv6Address) GetIPVersion() IPVersion {
+	return IPv6
+}
+
+func (addr *IPv6Address) checkIdentity(section *IPv6AddressSection) *IPv6Address {
+	if section == nil {
+		return nil
+	}
+
+	sec := section.ToSectionBase()
+	if sec == addr.section {
+		return addr
+	}
+
+	return newIPv6AddressZoned(section, string(addr.zone))
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
