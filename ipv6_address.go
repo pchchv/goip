@@ -227,6 +227,17 @@ func (addr *IPv6Address) GetSegment(index int) *IPv6AddressSegment {
 	return addr.init().getSegment(index).ToIPv6()
 }
 
+// ForEachSegment visits each segment in order from most-significant to least, the most significant with index 0, calling the given function for each, terminating early if the function returns true.
+// Returns the number of visited segments.
+func (addr *IPv6Address) ForEachSegment(consumer func(segmentIndex int, segment *IPv6AddressSegment) (stop bool)) int {
+	return addr.GetSection().ForEachSegment(consumer)
+}
+
+// GetDivisionCount returns the segment count.
+func (addr *IPv6Address) GetDivisionCount() int {
+	return addr.init().getDivisionCount()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
