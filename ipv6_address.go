@@ -461,6 +461,29 @@ func (addr *IPv6Address) IsTeredo() bool {
 	return addr.GetSegment(0).Matches(0x2001) && addr.GetSegment(1).IsZero()
 }
 
+// IsIsatap returns whether the address or all addresses in the subnet are ISATAP.
+func (addr *IPv6Address) IsIsatap() bool {
+	// 0,1,2,3 is fe80::
+	// 4 can be 0200
+	return addr.GetSegment(0).Matches(0xfe80) &&
+		addr.GetSegment(1).IsZero() &&
+		addr.GetSegment(2).IsZero() &&
+		addr.GetSegment(3).IsZero() &&
+		(addr.GetSegment(4).IsZero() || addr.GetSegment(4).Matches(0x200)) &&
+		addr.GetSegment(5).Matches(0x5efe)
+}
+
+// IsIPv4Translatable returns whether the address or subnet is IPv4 translatable as in RFC 2765.
+func (addr *IPv6Address) IsIPv4Translatable() bool { //rfc 2765
+	//::ffff:0:x:x/96 indicates IPv6 addresses translated from IPv4
+	return addr.GetSegment(4).Matches(0xffff) &&
+		addr.GetSegment(5).IsZero() &&
+		addr.GetSegment(0).IsZero() &&
+		addr.GetSegment(1).IsZero() &&
+		addr.GetSegment(2).IsZero() &&
+		addr.GetSegment(3).IsZero()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
