@@ -504,6 +504,18 @@ func (addr *IPv6Address) IsMulticast() bool {
 	return addr.GetSegment(0).MatchesWithPrefixMask(0xff00, 8)
 }
 
+// GetNetwork returns the singleton IPv6 network instance.
+func (addr *IPv6Address) GetNetwork() IPAddressNetwork {
+	return ipv6Network
+}
+
+// IsEUI64 returns whether this address is consistent with EUI64,
+// which means the 12th and 13th bytes of the address match 0xff and 0xfe.
+func (addr *IPv6Address) IsEUI64() bool {
+	return addr.GetSegment(6).MatchesWithPrefixMask(0xfe00, 8) &&
+		addr.GetSegment(5).MatchesWithMask(0xff, 0xff)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
