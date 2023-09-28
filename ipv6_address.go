@@ -435,6 +435,18 @@ func (addr *IPv6Address) IsIPv4Mapped() bool {
 	return false
 }
 
+// IsIPv4Compatible returns whether the address or all addresses in the subnet are IPv4-compatible.
+func (addr *IPv6Address) IsIPv4Compatible() bool {
+	return addr.GetSegment(0).IsZero() && addr.GetSegment(1).IsZero() && addr.GetSegment(2).IsZero() &&
+		addr.GetSegment(3).IsZero() && addr.GetSegment(4).IsZero() && addr.GetSegment(5).IsZero()
+}
+
+// Is6To4 returns whether the address or subnet is IPv6 to IPv4 relay.
+func (addr *IPv6Address) Is6To4() bool {
+	// 2002::/16
+	return addr.GetSegment(0).Matches(0x2002)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
