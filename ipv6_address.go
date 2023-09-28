@@ -383,6 +383,22 @@ func (addr *IPv6Address) IncludesMax() bool {
 	return addr.init().section.IncludesMax()
 }
 
+// GetMaxSegmentValue returns the maximum possible segment value for this type of address.
+//
+// Note this is not the maximum of the range of segment values in this specific address,
+// this is the maximum value of any segment for this address type and version, determined by the number of bits per segment.
+func (addr *IPv6Address) GetMaxSegmentValue() SegInt {
+	return addr.init().getMaxSegmentValue()
+}
+
+// WithoutZone returns the same address but with no zone.
+func (addr *IPv6Address) WithoutZone() *IPv6Address {
+	if addr.HasZone() {
+		return newIPv6Address(addr.GetSection())
+	}
+	return addr
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
