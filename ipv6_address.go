@@ -284,6 +284,21 @@ func (addr *IPv6Address) GetUpperIPAddress() *IPAddress {
 	return addr.GetUpper().ToIP()
 }
 
+// ToBlock creates a new block of addresses by changing
+// the segment at the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (addr *IPv6Address) ToBlock(segmentIndex int, lower, upper SegInt) *IPv6Address {
+	return addr.init().toBlock(segmentIndex, lower, upper).ToIPv6()
+}
+
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (addr *IPv6Address) SetPrefixLen(prefixLen BitCount) *IPv6Address {
+	return addr.init().setPrefixLen(prefixLen).ToIPv6()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
