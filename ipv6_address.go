@@ -347,6 +347,16 @@ func (addr *IPv6Address) GetUpperNetIPAddr() *net.IPAddr {
 	return addr.ToIP().GetUpperNetIPAddr()
 }
 
+// Bytes returns the lowest address in this subnet or address as a byte slice.
+func (addr *IPv6Address) Bytes() []byte {
+	return addr.init().section.Bytes()
+}
+
+// UpperBytes returns the highest address in this subnet or address as a byte slice.
+func (addr *IPv6Address) UpperBytes() []byte {
+	return addr.init().section.UpperBytes()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
