@@ -516,6 +516,18 @@ func (addr *IPv6Address) IsEUI64() bool {
 		addr.GetSegment(5).MatchesWithMask(0xff, 0xff)
 }
 
+// toAddressBase is needed for tries, it skips the init() call
+func (addr *IPv6Address) toAddressBase() *Address {
+	return (*Address)(unsafe.Pointer(addr))
+}
+
+// Wrap wraps this IP address, returning a WrappedIPAddress, an implementation of ExtendedIPSegmentSeries,
+// which can be used to write code that works with both IP addresses and IP address sections.
+// Wrap can be called with a nil receiver, wrapping a nil address.
+func (addr *IPv6Address) Wrap() WrappedIPAddress {
+	return wrapIPAddress(addr.ToIP())
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
