@@ -105,6 +105,19 @@ type EmbeddedIPv6AddressSection struct {
 	encompassingSection *IPv6AddressSection
 }
 
+// IsPrefixBlock returns whether this address segment series has a prefix length and includes the block associated with its prefix length.
+// If the prefix length matches the bit count, this returns true.
+//
+// This is different from ContainsPrefixBlock in that this method returns
+// false if the series has no prefix length, or a prefix length that differs from a prefix length for which ContainsPrefixBlock returns true.
+func (section *EmbeddedIPv6AddressSection) IsPrefixBlock() bool {
+	ipv6Sect := section.encompassingSection
+	if ipv6Sect == nil {
+		ipv6Sect = zeroIPv6AddressSection
+	}
+	return ipv6Sect.IsPrefixBlock()
+}
+
 // IPv6v4MixedAddressGrouping has divisions that are a mix of IPv6 and IPv4 sections.
 // It has an initial IPv6 section followed by an IPv4 section.
 type IPv6v4MixedAddressGrouping struct {
