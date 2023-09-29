@@ -1,6 +1,10 @@
 package goip
 
-import "github.com/pchchv/goip/address_error"
+import (
+	"math/big"
+
+	"github.com/pchchv/goip/address_error"
+)
 
 var (
 	zeroEmbeddedIPv6AddressSection = &EmbeddedIPv6AddressSection{}
@@ -90,9 +94,33 @@ func (section *IPv6AddressSection) GetIPVersion() IPVersion {
 	return IPv6
 }
 
-// GetBitsPerSegment returns the number of bits comprising each segment in this section.  Segments in the same address section are equal length.
+// GetBitsPerSegment returns the number of bits comprising each segment in this section.
+// Segments in the same address section are equal length.
 func (section *IPv6AddressSection) GetBitsPerSegment() BitCount {
 	return IPv6BitsPerSegment
+}
+
+// GetBytesPerSegment returns the number of bytes comprising each segment in this section.
+// Segments in the same address section are equal length.
+func (section *IPv6AddressSection) GetBytesPerSegment() int {
+	return IPv6BytesPerSegment
+}
+
+// GetCount returns the count of possible distinct values for this item.
+// If not representing multiple values, the count is 1,
+// unless this is a division grouping with no divisions,
+// or an address section with no segments, in which case it is 0.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (section *IPv6AddressSection) GetCount() *big.Int {
+	if section == nil {
+		return bigZero()
+	}
+	return section.cacheCount(func() *big.Int {
+		return count(func(index int) uint64 {
+			return section.GetSegment(index).GetValueCount()
+		}, section.GetSegmentCount(), 2, 0x7fffffffffff)
+	})
 }
 
 type embeddedIPv6AddressSection struct {
