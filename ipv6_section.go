@@ -226,6 +226,24 @@ func (section *IPv6AddressSection) GetHostSection() *IPv6AddressSection {
 	return section.getHostSection().ToIPv6()
 }
 
+// GetHostSectionLen returns a subsection containing the segments with the host of the address section,
+// the bits beyond the given CIDR network prefix length.
+// The returned section will have only as many segments as needed to contain the host.
+// The returned section will have an assigned prefix length indicating the beginning of the host.
+func (section *IPv6AddressSection) GetHostSectionLen(prefLen BitCount) *IPv6AddressSection {
+	return section.getHostSectionLen(prefLen).ToIPv6()
+}
+
+// CopySubSegments copies the existing segments from the given start index until but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (section *IPv6AddressSection) CopySubSegments(start, end int, segs []*IPv6AddressSegment) (count int) {
+	start, end, targetStart := adjust1To1StartIndices(start, end, section.GetDivisionCount(), len(segs))
+	segs = segs[targetStart:]
+	return section.forEachSubDivision(start, end, func(index int, div *AddressDivision) {
+		segs[index] = div.ToIPv6()
+	}, len(segs))
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
