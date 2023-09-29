@@ -139,6 +139,21 @@ func (section *IPv6AddressSection) IsMultiple() bool {
 	return section != nil && section.isMultiple()
 }
 
+// IsPrefixed returns whether this section has an associated prefix length.
+func (section *IPv6AddressSection) IsPrefixed() bool {
+	return section != nil && section.isPrefixed()
+}
+
+// GetBlockCount returns the count of distinct values in
+// the given number of initial (more significant) segments.
+func (section *IPv6AddressSection) GetBlockCount(segments int) *big.Int {
+	return section.calcCount(func() *big.Int {
+		return count(func(index int) uint64 {
+			return section.GetSegment(index).GetValueCount()
+		}, segments, 2, 0x7fffffffffff)
+	})
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
