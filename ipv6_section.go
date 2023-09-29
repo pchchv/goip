@@ -123,6 +123,22 @@ func (section *IPv6AddressSection) GetCount() *big.Int {
 	})
 }
 
+func (section *IPv6AddressSection) getCachedCount() *big.Int {
+	if section == nil {
+		return bigZero()
+	}
+	return section.cachedCount(func() *big.Int {
+		return count(func(index int) uint64 {
+			return section.GetSegment(index).GetValueCount()
+		}, section.GetSegmentCount(), 2, 0x7fffffffffff)
+	})
+}
+
+// IsMultiple returns  whether this section represents multiple values.
+func (section *IPv6AddressSection) IsMultiple() bool {
+	return section != nil && section.isMultiple()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
