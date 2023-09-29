@@ -191,6 +191,22 @@ func (section *IPv6AddressSection) GetPrefixCountLen(prefixLen BitCount) *big.In
 	})
 }
 
+// GetSegment returns the segment at the given index.
+// The first segment is at index 0.
+// GetSegment will panic given a negative index or an index matching or larger than the segment count.
+func (section *IPv6AddressSection) GetSegment(index int) *IPv6AddressSegment {
+	return section.getDivision(index).ToIPv6()
+}
+
+// GetNetworkSection returns a subsection containing the segments with the network bits of the section.
+// The returned section will have only as many segments as needed as determined by the existing CIDR network prefix length.
+//
+// If this series has no CIDR prefix length, the returned network section will
+// be the entire series as a prefixed section with prefix length matching the address bit length.
+func (section *IPv6AddressSection) GetNetworkSection() *IPv6AddressSection {
+	return section.getNetworkSection().ToIPv6()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
