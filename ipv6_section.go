@@ -244,6 +244,24 @@ func (section *IPv6AddressSection) CopySubSegments(start, end int, segs []*IPv6A
 	}, len(segs))
 }
 
+// Mask applies the given mask to all address sections represented by this secction, returning the result.
+//
+// If the sections do not have a comparable number of segments, an error is returned.
+//
+// If this represents multiple addresses, and applying the mask to all addresses creates a set of addresses
+// that cannot be represented as a sequential range within each segment, then an error is returned.
+func (section *IPv6AddressSection) Mask(other *IPv6AddressSection) (res *IPv6AddressSection, err address_error.IncompatibleAddressError) {
+	return section.maskPrefixed(other, true)
+}
+
+func (section *IPv6AddressSection) maskPrefixed(other *IPv6AddressSection, retainPrefix bool) (res *IPv6AddressSection, err address_error.IncompatibleAddressError) {
+	sec, err := section.mask(other.ToIP(), retainPrefix)
+	if err == nil {
+		res = sec.ToIPv6()
+	}
+	return
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
