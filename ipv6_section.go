@@ -615,6 +615,25 @@ func (section *IPv6AddressSection) ToDivGrouping() *AddressDivisionGrouping {
 	return section.ToSectionBase().ToDivGrouping()
 }
 
+func (section *IPv6AddressSection) createNonMixedSection() *EmbeddedIPv6AddressSection {
+	var result *IPv6AddressSection
+	nonMixedCount := IPv6MixedOriginalSegmentCount
+	mixedCount := section.GetSegmentCount() - nonMixedCount
+	if mixedCount <= 0 {
+		result = section
+	} else {
+		nonMixed := make([]*AddressDivision, nonMixedCount)
+		section.copySubDivisions(0, nonMixedCount, nonMixed)
+		result = createIPv6Section(nonMixed)
+		result.initMultAndPrefLen()
+	}
+
+	return &EmbeddedIPv6AddressSection{
+		embeddedIPv6AddressSection: embeddedIPv6AddressSection{*result},
+		encompassingSection:        section,
+	}
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
