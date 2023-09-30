@@ -721,6 +721,22 @@ func (grouping *IPv6v4MixedAddressGrouping) GetIPv4AddressSection() *IPv4Address
 	return cache.mixed.embeddedIPv4Section
 }
 
+// GetCount returns the count of possible distinct values for this item.
+// If not representing multiple values, the count is 1,
+// unless this is a division grouping with no divisions,
+// or an address section with no segments, in which case it is 0.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (grouping *IPv6v4MixedAddressGrouping) GetCount() *big.Int {
+	if grouping == nil {
+		return bigZero()
+	}
+
+	cnt := grouping.GetIPv6AddressSection().GetCount()
+
+	return cnt.Mul(cnt, grouping.GetIPv4AddressSection().GetCount())
+}
+
 // SegmentSequence represents a sequence of consecutive segments with
 // the given length starting from the given segment index.
 type SegmentSequence struct {
