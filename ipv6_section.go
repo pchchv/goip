@@ -2,6 +2,7 @@ package goip
 
 import (
 	"math/big"
+	"math/bits"
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
@@ -989,6 +990,30 @@ func toSegmentsFromWords(words []big.Word, segmentCount int, prefixLength Prefix
 				}
 			}
 			break
+		}
+	}
+	return
+}
+
+// NewIPv6SectionFromUint64 constructs an IPv6 address section of the given segment count from the given values.
+func NewIPv6SectionFromUint64(highBytes, lowBytes uint64, segmentCount int) (res *IPv6AddressSection) {
+	return NewIPv6SectionFromPrefixedUint64(highBytes, lowBytes, segmentCount, nil)
+}
+
+func newIPv6SectionFromWords(words []big.Word, segmentCount int, prefixLength PrefixLen, singleOnly bool) (res *IPv6AddressSection, err address_error.AddressValueError) {
+	if segmentCount < 0 {
+		wordBitSize := bits.UintSize
+		segmentCount = (len(words) * wordBitSize) >> 4
+	}
+
+	segments, err := toSegmentsFromWords(
+		words,
+		segmentCount,
+		prefixLength)
+	if err == nil {
+		res = createIPv6Section(segments)
+		if prefixLength != nil {
+			assignPrefix(prefixLength, segments, res.ToIP(), singleOnly, false, BitCount(segmentCount<<ipv6BitsToSegmentBitshift))
 		}
 	}
 	return
