@@ -910,3 +910,33 @@ func newIPv6SectionFromMixed(segments []*AddressDivision) (res *IPv6AddressSecti
 	res.initMultiple()
 	return
 }
+
+// NewIPv6PrefixedSection constructs an IPv6 address or subnet section from the given segments and prefix length.
+func NewIPv6PrefixedSection(segments []*IPv6AddressSegment, prefixLen PrefixLen) *IPv6AddressSection {
+	return createIPv6SectionFromSegs(segments, prefixLen)
+}
+
+// NewIPv6SectionFromPrefixedUint64 constructs an IPv6 address or prefix block section of the given segment count from the given values and prefix length.
+func NewIPv6SectionFromPrefixedUint64(highBytes, lowBytes uint64, segmentCount int, prefixLength PrefixLen) (res *IPv6AddressSection) {
+	if segmentCount < 0 {
+		segmentCount = IPv6SegmentCount
+	}
+
+	segments := createSegmentsUint64(
+		segmentCount,
+		highBytes,
+		lowBytes,
+		IPv6BytesPerSegment,
+		IPv6BitsPerSegment,
+		ipv6Network.getIPAddressCreator(),
+		prefixLength)
+	res = createIPv6Section(segments)
+
+	if prefixLength != nil {
+		assignPrefix(prefixLength, segments, res.ToIP(), false, false, BitCount(segmentCount<<ipv6BitsToSegmentBitshift))
+	} else {
+		res.cache.uint128Cache = &uint128Cache{high: highBytes, low: lowBytes}
+	}
+
+	return
+}
