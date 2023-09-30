@@ -900,3 +900,13 @@ func newIPv6v4MixedGrouping(ipv6Section *EmbeddedIPv6AddressSection, ipv4Section
 	})
 	return grouping
 }
+
+func newIPv6Section(segments []*AddressDivision) *IPv6AddressSection {
+	return createIPv6Section(segments)
+}
+
+func newIPv6SectionFromMixed(segments []*AddressDivision) (res *IPv6AddressSection) {
+	res = createIPv6Section(segments)
+	res.initMultiple()
+	return
+}
