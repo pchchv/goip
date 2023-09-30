@@ -1056,3 +1056,25 @@ func NewIPv6SectionFromBytes(bytes []byte) *IPv6AddressSection {
 func NewIPv6SectionFromPrefixedBytes(bytes []byte, segmentCount int, prefixLength PrefixLen) (res *IPv6AddressSection, err address_error.AddressValueError) {
 	return newIPv6SectionFromBytes(bytes, segmentCount, prefixLength, false)
 }
+
+func newIPv6SectionFromPrefixedSingle(vals, upperVals IPv6SegmentValueProvider, segmentCount int, prefixLength PrefixLen, singleOnly bool) (res *IPv6AddressSection) {
+	if segmentCount < 0 {
+		segmentCount = 0
+	}
+
+	segments, isMultiple := createSegments(
+		WrapIPv6SegmentValueProvider(vals),
+		WrapIPv6SegmentValueProvider(upperVals),
+		segmentCount,
+		IPv6BitsPerSegment,
+		ipv6Network.getIPAddressCreator(),
+		prefixLength)
+	res = createIPv6Section(segments)
+	res.isMult = isMultiple
+
+	if prefixLength != nil {
+		assignPrefix(prefixLength, segments, res.ToIP(), singleOnly, false, BitCount(segmentCount<<ipv6BitsToSegmentBitshift))
+	}
+
+	return
+}
