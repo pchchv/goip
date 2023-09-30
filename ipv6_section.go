@@ -681,6 +681,31 @@ func (grouping *IPv6v4MixedAddressGrouping) ToDivGrouping() *AddressDivisionGrou
 	return (*AddressDivisionGrouping)(grouping)
 }
 
+// IsAdaptiveZero returns true if the division grouping was originally created as
+// an implicitly zero-valued section or grouping (e.g. IPv4AddressSection{}),
+// meaning it was not constructed using a constructor function.
+// Such a grouping, which has no divisions or segments, is convertible to
+// an implicitly zero-valued grouping of any type or version, whether IPv6, IPv4, MAC, or other.
+// In other words, when a section or grouping is the zero-value, then it is equivalent and convertible to
+// the zero value of any other section or grouping type.
+func (grouping *IPv6v4MixedAddressGrouping) IsAdaptiveZero() bool {
+	return grouping != nil && grouping.matchesZeroGrouping()
+}
+
+// GetIPv6AddressSection returns the initial IPv6 section of the grouping.
+func (grouping *IPv6v4MixedAddressGrouping) GetIPv6AddressSection() *EmbeddedIPv6AddressSection {
+	if grouping == nil {
+		return nil
+	}
+
+	cache := grouping.cache
+	if cache == nil { // zero-valued
+		return zeroEmbeddedIPv6AddressSection
+	}
+
+	return cache.mixed.embeddedIPv6Section
+}
+
 // SegmentSequence represents a sequence of consecutive segments with
 // the given length starting from the given segment index.
 type SegmentSequence struct {
