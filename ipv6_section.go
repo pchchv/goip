@@ -365,6 +365,23 @@ func (section *IPv6AddressSection) Uint64Values() (high, low uint64) {
 	return res.high, res.low
 }
 
+// WithoutPrefixLen provides the same address section but with no prefix length.
+// The values remain unchanged.
+func (section *IPv6AddressSection) WithoutPrefixLen() *IPv6AddressSection {
+	if !section.IsPrefixed() {
+		return section
+	}
+	return section.withoutPrefixLen().ToIPv6()
+}
+
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address section.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (section *IPv6AddressSection) SetPrefixLen(prefixLen BitCount) *IPv6AddressSection {
+	return section.setPrefixLen(prefixLen).ToIPv6()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
