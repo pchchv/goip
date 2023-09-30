@@ -382,6 +382,33 @@ func (section *IPv6AddressSection) SetPrefixLen(prefixLen BitCount) *IPv6Address
 	return section.setPrefixLen(prefixLen).ToIPv6()
 }
 
+// AdjustPrefixLen increases or decreases the prefix length by the given increment.
+//
+// A prefix length will not be adjusted lower than zero or beyond the bit length of the address section.
+//
+// If this address section has no prefix length, then the prefix length will be set to the adjustment if positive,
+// or it will be set to the adjustment added to the bit count if negative.
+func (section *IPv6AddressSection) AdjustPrefixLen(prefixLen BitCount) *IPv6AddressSection {
+	return section.adjustPrefixLen(prefixLen).ToIPv6()
+}
+
+// AdjustPrefixLenZeroed increases or decreases the prefix length by
+// the given increment while zeroing out the bits that have moved into or outside the prefix.
+//
+// A prefix length will not be adjusted lower than zero or beyond the bit length of the address section.
+//
+// If this address section has no prefix length, then the prefix length will be set to the adjustment if positive,
+// or it will be set to the adjustment added to the bit count if negative.
+//
+// When prefix length is increased, the bits moved within the prefix become zero.
+// When a prefix length is decreased, the bits moved outside the prefix become zero.
+//
+// If the result cannot be zeroed because zeroing out bits results in a non-contiguous segment, an error is returned.
+func (section *IPv6AddressSection) AdjustPrefixLenZeroed(prefixLen BitCount) (*IPv6AddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.adjustPrefixLenZeroed(prefixLen)
+	return res.ToIPv6(), err
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
