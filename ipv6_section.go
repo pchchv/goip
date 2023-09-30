@@ -14,6 +14,17 @@ var (
 	zeroIPv6AddressSection         = &IPv6AddressSection{}
 	ffMACSeg                       = NewMACSegment(0xff)
 	feMACSeg                       = NewMACSegment(0xfe)
+	ipv6MaxValues                  = []*big.Int{
+		bigZero(),
+		new(big.Int).SetUint64(IPv6MaxValuePerSegment),
+		new(big.Int).SetUint64(0xffffffff),
+		new(big.Int).SetUint64(0xffffffffffff),
+		maxInt(4),
+		maxInt(5),
+		maxInt(6),
+		maxInt(7),
+		maxInt(8),
+	}
 )
 
 // IPv6AddressSection represents a section of an IPv6 address comprising 0 to 8 IPv6 address segments.
@@ -721,4 +732,13 @@ func compressMixedSect(m address_string.MixedCompressionOptions, addressSection 
 	default:
 		return true
 	}
+}
+
+func getIPv6MaxValue(segmentCount int) *big.Int {
+	return new(big.Int).Set(ipv6MaxValues[segmentCount])
+}
+
+func maxInt(segCount int) *big.Int {
+	res := new(big.Int).SetUint64(1)
+	return res.Lsh(res, 16*uint(segCount)).Sub(res, bigOneConst())
 }
