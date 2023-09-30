@@ -2,6 +2,7 @@ package goip
 
 import (
 	"math/big"
+	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
 )
@@ -336,6 +337,32 @@ func (section *IPv6AddressSection) UpperUint64Values() (high, low uint64) {
 	}
 
 	return
+}
+
+// GetUpper returns the section in the range with the highest numeric value,
+// which will be the same section if it represents a single value.
+// For example, for "1::1:2-3:4:5-6", the section "1::1:3:4:6" is returned.
+func (section *IPv6AddressSection) GetUpper() *IPv6AddressSection {
+	return section.getUpper().ToIPv6()
+}
+
+// Uint64Values returns the lowest address in the address section range as a pair of uint64s.
+func (section *IPv6AddressSection) Uint64Values() (high, low uint64) {
+	cache := section.cache
+	if cache == nil {
+		return section.uint64Values()
+	}
+
+	res := (*uint128Cache)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.uint128Cache))))
+	if res == nil {
+		val := uint128Cache{}
+		val.high, val.low = section.uint64Values()
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.uint128Cache))
+		atomicStorePointer(dataLoc, unsafe.Pointer(&val))
+		return val.high, val.low
+	}
+
+	return res.high, res.low
 }
 
 type embeddedIPv6AddressSection struct {
