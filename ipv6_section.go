@@ -940,3 +940,56 @@ func NewIPv6SectionFromPrefixedUint64(highBytes, lowBytes uint64, segmentCount i
 
 	return
 }
+
+func toSegmentsFromWords(words []big.Word, segmentCount int, prefixLength PrefixLen) (segments []*AddressDivision, err address_error.AddressValueError) {
+	var currentWord big.Word
+	wordBitSize := bits.UintSize
+	segments = createSegmentArray(segmentCount)
+	segmentsPerWord := wordBitSize >> ipv6BitsToSegmentBitshift
+	wordLen := len(words)
+	if wordLen > 0 {
+		currentWord = words[0]
+	}
+
+	// start with little end
+	for wordIndex, wordSegmentIndex, segmentIndex := 0, 0, segmentCount-1; ; segmentIndex-- {
+		var value IPv6SegInt
+		if wordIndex < wordLen {
+			value = IPv6SegInt(currentWord)
+			currentWord >>= uint(IPv6BitsPerSegment)
+			wordSegmentIndex++
+		}
+
+		segmentPrefixLength := getSegmentPrefixLength(IPv6BitsPerSegment, prefixLength, segmentIndex)
+		seg := NewIPv6PrefixedSegment(value, segmentPrefixLength)
+		segments[segmentIndex] = seg.ToDiv()
+
+		if wordSegmentIndex == segmentsPerWord {
+			wordSegmentIndex = 0
+			wordIndex++
+			if wordIndex < wordLen {
+				currentWord = words[wordIndex]
+			}
+		}
+
+		if segmentIndex == 0 {
+			// any remaining words should be zero
+			isErr := currentWord != 0
+			switch isErr {
+			case true:
+				err = &addressValueError{
+					addressError: addressError{key: "ipaddress.error.exceeds.size"},
+					val:          int(words[wordIndex]),
+				}
+			case false:
+				for wordIndex++; wordIndex < wordLen; wordIndex++ {
+					if isErr = words[wordIndex] != 0; isErr {
+						break
+					}
+				}
+			}
+			break
+		}
+	}
+	return
+}
