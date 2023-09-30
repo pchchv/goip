@@ -1042,3 +1042,17 @@ func NewIPv6SectionFromPrefixedBigInt(val *big.Int, segmentCount int, prefixLen 
 	}
 	return newIPv6SectionFromWords(val.Bits(), segmentCount, prefixLen, false)
 }
+
+// NewIPv6SectionFromBytes constructs an IPv6 address from the given byte slice.
+// The segment count is determined by the slice length, even if the segment count exceeds 8 segments.
+func NewIPv6SectionFromBytes(bytes []byte) *IPv6AddressSection {
+	res, _ := newIPv6SectionFromBytes(bytes, (len(bytes)+1)>>1, nil, false)
+	return res
+}
+
+// NewIPv6SectionFromPrefixedBytes constructs an IPv6 address or prefix block from the given byte slice and prefix length.
+// It allows you to specify the segment count for the supplied bytes.
+// If the slice is too large for the given number of segments, an error is returned, although leading zeros are tolerated.
+func NewIPv6SectionFromPrefixedBytes(bytes []byte, segmentCount int, prefixLength PrefixLen) (res *IPv6AddressSection, err address_error.AddressValueError) {
+	return newIPv6SectionFromBytes(bytes, segmentCount, prefixLength, false)
+}
