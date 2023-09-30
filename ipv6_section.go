@@ -1078,3 +1078,8 @@ func newIPv6SectionFromPrefixedSingle(vals, upperVals IPv6SegmentValueProvider, 
 
 	return
 }
+
+// NewIPv6SectionFromPrefixedRange constructs an IPv6 subnet section of the given segment count from the given values and prefix length.
+func NewIPv6SectionFromPrefixedRange(vals, upperVals IPv6SegmentValueProvider, segmentCount int, prefixLength PrefixLen) (res *IPv6AddressSection) {
+	return newIPv6SectionFromPrefixedSingle(vals, upperVals, segmentCount, prefixLength, false)
+}
