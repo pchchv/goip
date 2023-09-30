@@ -1018,3 +1018,27 @@ func newIPv6SectionFromWords(words []big.Word, segmentCount int, prefixLength Pr
 	}
 	return
 }
+
+// NewIPv6SectionFromBigInt creates an IPv6 address section from the given big integer,
+// returning an error if the value is too large for the given number of segments.
+func NewIPv6SectionFromBigInt(val *big.Int, segmentCount int) (res *IPv6AddressSection, err address_error.AddressValueError) {
+	if val.Sign() < 0 {
+		err = &addressValueError{
+			addressError: addressError{key: "ipaddress.error.negative"},
+		}
+		return
+	}
+	return newIPv6SectionFromWords(val.Bits(), segmentCount, nil, false)
+}
+
+// NewIPv6SectionFromPrefixedBigInt creates an IPv6 address or prefix block section from the given big integer,
+// returning an error if the value is too large for the given number of segments.
+func NewIPv6SectionFromPrefixedBigInt(val *big.Int, segmentCount int, prefixLen PrefixLen) (res *IPv6AddressSection, err address_error.AddressValueError) {
+	if val.Sign() < 0 {
+		err = &addressValueError{
+			addressError: addressError{key: "ipaddress.error.negative"},
+		}
+		return
+	}
+	return newIPv6SectionFromWords(val.Bits(), segmentCount, prefixLen, false)
+}
