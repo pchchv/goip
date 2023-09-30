@@ -14,7 +14,34 @@ var (
 	zeroIPv6AddressSection         = &IPv6AddressSection{}
 	ffMACSeg                       = NewMACSegment(0xff)
 	feMACSeg                       = NewMACSegment(0xfe)
-	ipv6MaxValues                  = []*big.Int{
+	compressAll                    = new(address_string.CompressOptionsBuilder).SetCompressSingle(true).SetCompressionChoiceOptions(address_string.ZerosOrHost).ToOptions()
+	compressMixed                  = new(address_string.CompressOptionsBuilder).SetCompressSingle(true).SetCompressionChoiceOptions(address_string.MixedPreferred).ToOptions()
+	compressAllNoSingles           = new(address_string.CompressOptionsBuilder).SetCompressionChoiceOptions(address_string.ZerosOrHost).ToOptions()
+	compressHostPreferred          = new(address_string.CompressOptionsBuilder).SetCompressSingle(true).SetCompressionChoiceOptions(address_string.HostPreferred).ToOptions()
+	compressZeros                  = new(address_string.CompressOptionsBuilder).SetCompressSingle(true).SetCompressionChoiceOptions(address_string.ZerosCompression).ToOptions()
+	compressZerosNoSingles         = new(address_string.CompressOptionsBuilder).SetCompressionChoiceOptions(address_string.ZerosCompression).ToOptions()
+	uncWildcards                   = new(address_string.WildcardOptionsBuilder).SetWildcardOptions(address_string.WildcardsNetworkOnly).SetWildcards(
+		new(address_string.WildcardsBuilder).SetRangeSeparator(IPv6UncRangeSeparatorStr).SetWildcard(SegmentWildcardStr).ToWildcards()).ToOptions()
+	base85Wildcards     = new(address_string.WildcardsBuilder).SetRangeSeparator(AlternativeRangeSeparatorStr).ToWildcards()
+	mixedParams         = new(address_string.IPv6StringOptionsBuilder).SetMixed(true).SetCompressOptions(compressMixed).ToOptions()
+	ipv6FullParams      = new(address_string.IPv6StringOptionsBuilder).SetExpandedSegments(true).SetWildcardOptions(wildcardsRangeOnlyNetworkOnly).ToOptions()
+	ipv6CanonicalParams = new(address_string.IPv6StringOptionsBuilder).SetCompressOptions(compressAllNoSingles).ToOptions()
+	uncParams           = new(address_string.IPv6StringOptionsBuilder).SetSeparator(IPv6UncSegmentSeparator).SetZoneSeparator(IPv6UncZoneSeparatorStr).
+				SetAddressSuffix(IPv6UncSuffix).SetWildcardOptions(uncWildcards).ToOptions()
+	ipv6CompressedParams         = new(address_string.IPv6StringOptionsBuilder).SetCompressOptions(compressAll).ToOptions()
+	ipv6normalizedParams         = new(address_string.IPv6StringOptionsBuilder).ToOptions()
+	canonicalWildcardParams      = new(address_string.IPv6StringOptionsBuilder).SetWildcardOptions(allWildcards).SetCompressOptions(compressZerosNoSingles).ToOptions()
+	ipv6NormalizedWildcardParams = new(address_string.IPv6StringOptionsBuilder).SetWildcardOptions(allWildcards).ToOptions()    //no compression
+	ipv6SqlWildcardParams        = new(address_string.IPv6StringOptionsBuilder).SetWildcardOptions(allSQLWildcards).ToOptions() //no compression
+	wildcardCompressedParams     = new(address_string.IPv6StringOptionsBuilder).SetWildcardOptions(allWildcards).SetCompressOptions(compressZeros).ToOptions()
+	networkPrefixLengthParams    = new(address_string.IPv6StringOptionsBuilder).SetCompressOptions(compressHostPreferred).ToOptions()
+	ipv6ReverseDNSParams         = new(address_string.IPv6StringOptionsBuilder).SetReverse(true).SetAddressSuffix(IPv6ReverseDnsSuffix).
+					SetSplitDigits(true).SetExpandedSegments(true).SetSeparator('.').ToOptions()
+	base85Params = new(address_string.IPStringOptionsBuilder).SetRadix(85).SetExpandedSegments(true).
+			SetWildcards(base85Wildcards).SetZoneSeparator(IPv6AlternativeZoneSeparatorStr).ToOptions()
+	ipv6SegmentedBinaryParams = new(address_string.IPStringOptionsBuilder).SetRadix(2).SetSeparator(IPv6SegmentSeparator).SetSegmentStrPrefix(BinaryPrefix).
+					SetExpandedSegments(true).ToOptions()
+	ipv6MaxValues = []*big.Int{
 		bigZero(),
 		new(big.Int).SetUint64(IPv6MaxValuePerSegment),
 		new(big.Int).SetUint64(0xffffffff),
