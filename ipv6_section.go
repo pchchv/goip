@@ -1094,3 +1094,9 @@ func NewIPv6SectionFromVals(vals IPv6SegmentValueProvider, segmentCount int) (re
 func NewIPv6SectionFromPrefixedVals(vals IPv6SegmentValueProvider, segmentCount int, prefixLength PrefixLen) (res *IPv6AddressSection) {
 	return NewIPv6SectionFromPrefixedRange(vals, nil, segmentCount, prefixLength)
 }
+
+// NewIPv6SectionFromRange constructs an IPv6 subnet section of the given segment count from the given values.
+func NewIPv6SectionFromRange(vals, upperVals IPv6SegmentValueProvider, segmentCount int) (res *IPv6AddressSection) {
+	res = NewIPv6SectionFromPrefixedRange(vals, upperVals, segmentCount, nil)
+	return
+}
