@@ -706,6 +706,20 @@ func (grouping *IPv6v4MixedAddressGrouping) GetIPv6AddressSection() *EmbeddedIPv
 	return cache.mixed.embeddedIPv6Section
 }
 
+// GetIPv4AddressSection returns the ending IPv4 section of the grouping.
+func (grouping *IPv6v4MixedAddressGrouping) GetIPv4AddressSection() *IPv4AddressSection {
+	if grouping == nil {
+		return nil
+	}
+
+	cache := grouping.cache
+	if cache == nil { // zero-valued
+		return zeroIPv4AddressSection
+	}
+
+	return cache.mixed.embeddedIPv4Section
+}
+
 // SegmentSequence represents a sequence of consecutive segments with
 // the given length starting from the given segment index.
 type SegmentSequence struct {
