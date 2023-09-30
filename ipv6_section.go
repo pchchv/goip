@@ -599,6 +599,22 @@ func (section *IPv6AddressSection) IsAdaptiveZero() bool {
 	return section != nil && section.matchesZeroGrouping()
 }
 
+// GetSegmentStrings returns a slice with the string for each segment being the string that is normalized with wildcards.
+func (section *IPv6AddressSection) GetSegmentStrings() []string {
+	if section == nil {
+		return nil
+	}
+	return section.getSegmentStrings()
+}
+
+// ToDivGrouping converts to an AddressDivisionGrouping, a polymorphic type usable with all address sections and division groupings.
+// Afterwards, you can convert back with ToIPv6.
+//
+// ToDivGrouping can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (section *IPv6AddressSection) ToDivGrouping() *AddressDivisionGrouping {
+	return section.ToSectionBase().ToDivGrouping()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
