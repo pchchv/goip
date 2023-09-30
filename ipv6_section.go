@@ -276,6 +276,68 @@ func (section *IPv6AddressSection) GetLower() *IPv6AddressSection {
 	return section.getLower().ToIPv6()
 }
 
+// uint64Values returns the lowest address in the address range as a pair of uint64 values.
+func (section *IPv6AddressSection) uint64Values() (high, low uint64) {
+	segCount := section.GetSegmentCount()
+	if segCount == 0 {
+		return
+	}
+
+	arr := section.getDivArray()
+	bitsPerSegment := section.GetBitsPerSegment()
+
+	if segCount <= 4 {
+		low = uint64(arr[0].getDivisionValue())
+		for i := 1; i < segCount; i++ {
+			low = (low << uint(bitsPerSegment)) | uint64(arr[i].getDivisionValue())
+		}
+	} else {
+		high = uint64(arr[0].getDivisionValue())
+		highCount := segCount - 4
+		i := 1
+		for ; i < highCount; i++ {
+			high = (high << uint(bitsPerSegment)) | uint64(arr[i].getDivisionValue())
+		}
+		low = uint64(arr[i].getDivisionValue())
+		for i++; i < segCount; i++ {
+			low = (low << uint(bitsPerSegment)) | uint64(arr[i].getDivisionValue())
+		}
+	}
+
+	return
+}
+
+// UpperUint64Values returns the highest address in the address section range as pair of uint64 values.
+func (section *IPv6AddressSection) UpperUint64Values() (high, low uint64) {
+	segCount := section.GetSegmentCount()
+	if segCount == 0 {
+		return
+	}
+
+	arr := section.getDivArray()
+	bitsPerSegment := section.GetBitsPerSegment()
+
+	if segCount <= 4 {
+		low = uint64(arr[0].getUpperDivisionValue())
+		for i := 1; i < segCount; i++ {
+			low = (low << uint(bitsPerSegment)) | uint64(arr[i].getUpperDivisionValue())
+		}
+	} else {
+		high = uint64(arr[0].getUpperDivisionValue())
+		highCount := segCount - 4
+		i := 1
+		for ; i < highCount; i++ {
+			high = (high << uint(bitsPerSegment)) | uint64(arr[i].getUpperDivisionValue())
+		}
+		low = uint64(arr[i].getUpperDivisionValue())
+		for i++; i < segCount; i++ {
+			low = (low << uint(bitsPerSegment)) | uint64(arr[i].getUpperDivisionValue())
+		}
+	}
+
+	return
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
