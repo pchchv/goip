@@ -485,6 +485,59 @@ func (section *IPv6AddressSection) GetZeroRangeSegments() SegmentSequenceList {
 	return section.getZeroSegments(false)
 }
 
+// GetCompressIndexAndCount chooses a single segment to be compressed in an IPv6 string.
+// If no segment could be chosen then count is 0.
+// If options is nil, no segment will be chosen.
+// If createMixed is true, will assume the address string will be mixed IPv6/v4.
+func (section *IPv6AddressSection) getCompressIndexAndCount(options address_string.CompressOptions, createMixed bool) (maxIndex, maxCount int) {
+	if options != nil {
+		rangeSelection := options.GetCompressionChoiceOptions()
+		var compressibleSegs SegmentSequenceList
+		if rangeSelection.CompressHost() {
+			compressibleSegs = section.GetZeroRangeSegments()
+		} else {
+			compressibleSegs = section.GetZeroSegments()
+		}
+		maxCount = 0
+		segmentCount := section.GetSegmentCount()
+		//compressMixed := createMixed && options.GetMixedCompressionOptions().compressMixed(section)
+		compressMixed := createMixed && compressMixedSect(options.GetMixedCompressionOptions(), section)
+		preferHost := rangeSelection == address_string.HostPreferred
+		preferMixed := createMixed && (rangeSelection == address_string.MixedPreferred)
+		for i := compressibleSegs.size() - 1; i >= 0; i-- {
+			rng := compressibleSegs.getRange(i)
+			index := rng.index
+			count := rng.length
+			if createMixed {
+				// so here we shorten the range to exclude the mixed part if necessary
+				mixedIndex := IPv6MixedOriginalSegmentCount
+				if !compressMixed ||
+					index > mixedIndex || index+count < segmentCount { //range does not include entire mixed part.  We never compress only part of a mixed part.
+					// the compressible range must stop at the mixed part
+					if val := mixedIndex - index; val < count {
+						count = val
+					}
+				}
+			}
+			// select this range if is the longest
+			if count > 0 && count >= maxCount && (options.CompressSingle() || count > 1) {
+				maxIndex = index
+				maxCount = count
+			}
+			if preferHost && section.IsPrefixed() &&
+				(BitCount(index+count)*section.GetBitsPerSegment()) > section.getNetworkPrefixLen().bitCount() { // this range contains the host
+				// since we are going backwards, this means we select as the maximum any zero-segment that includes the host
+				break
+			}
+			if preferMixed && index+count >= segmentCount { //this range contains the mixed section
+				// since we are going backwards, this means we select to compress the mixed segment
+				break
+			}
+		}
+	}
+	return
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
