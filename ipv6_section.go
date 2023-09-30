@@ -262,6 +262,20 @@ func (section *IPv6AddressSection) maskPrefixed(other *IPv6AddressSection, retai
 	return
 }
 
+// MatchesWithMask applies the mask to this address section and then compares the result with the given address section,
+// returning true if they match, false otherwise.
+// To match, both the given section and mask must have the same number of segments as this section.
+func (section *IPv6AddressSection) MatchesWithMask(other *IPv6AddressSection, mask *IPv6AddressSection) bool {
+	return section.matchesWithMask(other.ToIP(), mask.ToIP())
+}
+
+// GetLower returns the section in the range with the lowest numeric value,
+// which will be the same section if it represents a single value.
+// For example, for "1::1:2-3:4:5-6", the section "1::1:2:4:5" is returned.
+func (section *IPv6AddressSection) GetLower() *IPv6AddressSection {
+	return section.getLower().ToIPv6()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
