@@ -1083,3 +1083,14 @@ func newIPv6SectionFromPrefixedSingle(vals, upperVals IPv6SegmentValueProvider, 
 func NewIPv6SectionFromPrefixedRange(vals, upperVals IPv6SegmentValueProvider, segmentCount int, prefixLength PrefixLen) (res *IPv6AddressSection) {
 	return newIPv6SectionFromPrefixedSingle(vals, upperVals, segmentCount, prefixLength, false)
 }
+
+// NewIPv6SectionFromVals constructs an IPv6 address section of the given segment count from the given values.
+func NewIPv6SectionFromVals(vals IPv6SegmentValueProvider, segmentCount int) (res *IPv6AddressSection) {
+	res = NewIPv6SectionFromPrefixedRange(vals, nil, segmentCount, nil)
+	return
+}
+
+// NewIPv6SectionFromPrefixedVals constructs an IPv6 address or prefix block section of the given segment count from the given values and prefix length.
+func NewIPv6SectionFromPrefixedVals(vals IPv6SegmentValueProvider, segmentCount int, prefixLength PrefixLen) (res *IPv6AddressSection) {
+	return NewIPv6SectionFromPrefixedRange(vals, nil, segmentCount, prefixLength)
+}
