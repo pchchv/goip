@@ -467,6 +467,24 @@ func (section *IPv6AddressSection) getZeroSegments(includeRanges bool) SegmentSe
 	return SegmentSequenceList{ranges[:rangeCount]}
 }
 
+// GetZeroSegments returns the list of consecutive zero-segments.
+// Each element in the list will be an segment index and a total segment count for which
+// that count of consecutive segments starting from that index are all zero.
+func (section *IPv6AddressSection) GetZeroSegments() SegmentSequenceList {
+	return section.getZeroSegments(false)
+}
+
+// GetZeroRangeSegments returns the list of consecutive zero and zero prefix block segments.
+// Each element in the list will be an segment index and a total segment count for which
+// that count of consecutive segments starting from that index are all zero or
+// a prefix block segment with lowest segment value zero.
+func (section *IPv6AddressSection) GetZeroRangeSegments() SegmentSequenceList {
+	if section.IsPrefixed() {
+		return section.getZeroSegments(true)
+	}
+	return section.getZeroSegments(false)
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
