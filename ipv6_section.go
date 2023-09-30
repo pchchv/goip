@@ -827,3 +827,37 @@ func maxInt(segCount int) *big.Int {
 	res := new(big.Int).SetUint64(1)
 	return res.Lsh(res, 16*uint(segCount)).Sub(res, bigOneConst())
 }
+
+func createMixedAddressGrouping(divisions []*AddressDivision, mixedCache *mixedCache) *IPv6v4MixedAddressGrouping {
+	grouping := &IPv6v4MixedAddressGrouping{
+		addressDivisionGroupingInternal: addressDivisionGroupingInternal{
+			addressDivisionGroupingBase: addressDivisionGroupingBase{
+				divisions: standardDivArray(divisions),
+				addrType:  ipv6v4MixedType,
+				cache:     &valueCache{mixed: mixedCache},
+			},
+		},
+	}
+	ipv6Section := mixedCache.embeddedIPv6Section
+	ipv4Section := mixedCache.embeddedIPv4Section
+	grouping.isMult = ipv6Section.isMultiple() || ipv4Section.isMultiple()
+	if ipv6Section.IsPrefixed() {
+		grouping.prefixLength = ipv6Section.getPrefixLen()
+	} else if ipv4Section.IsPrefixed() {
+		grouping.prefixLength = cacheBitCount(ipv6Section.GetBitCount() + ipv4Section.getPrefixLen().bitCount())
+	}
+	return grouping
+}
+
+func newIPv6v4MixedGrouping(ipv6Section *EmbeddedIPv6AddressSection, ipv4Section *IPv4AddressSection) *IPv6v4MixedAddressGrouping {
+	ipv6Len := ipv6Section.GetSegmentCount()
+	ipv4Len := ipv4Section.GetSegmentCount()
+	allSegs := make([]*AddressDivision, ipv6Len+ipv4Len)
+	ipv6Section.copySubDivisions(0, ipv6Len, allSegs)
+	ipv4Section.copySubDivisions(0, ipv4Len, allSegs[ipv6Len:])
+	grouping := createMixedAddressGrouping(allSegs, &mixedCache{
+		embeddedIPv6Section: ipv6Section,
+		embeddedIPv4Section: ipv4Section,
+	})
+	return grouping
+}
