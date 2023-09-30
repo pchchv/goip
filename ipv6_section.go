@@ -5,6 +5,7 @@ import (
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string"
 )
 
 var (
@@ -407,6 +408,63 @@ func (section *IPv6AddressSection) AdjustPrefixLen(prefixLen BitCount) *IPv6Addr
 func (section *IPv6AddressSection) AdjustPrefixLenZeroed(prefixLen BitCount) (*IPv6AddressSection, address_error.IncompatibleAddressError) {
 	res, err := section.adjustPrefixLenZeroed(prefixLen)
 	return res.ToIPv6(), err
+}
+
+func (section *IPv6AddressSection) getZeroSegments(includeRanges bool) SegmentSequenceList {
+	var currentIndex, currentCount, rangeCount int
+	var ranges [IPv6SegmentCount >> 1]SegmentSequence
+	divisionCount := section.GetSegmentCount()
+	includeRanges = includeRanges && section.IsPrefixBlock() && section.GetPrefixLen().bitCount() < section.GetBitCount()
+	if includeRanges {
+		bitsPerSegment := section.GetBitsPerSegment()
+		networkIndex := getNetworkSegmentIndex(section.getPrefixLen().bitCount(), section.GetBytesPerSegment(), bitsPerSegment)
+		i := 0
+		for ; i <= networkIndex; i++ {
+			division := section.GetSegment(i)
+			isCompressible := division.IsZero() ||
+				(includeRanges && division.IsPrefixed() && division.isSinglePrefixBlock(0, division.getUpperDivisionValue(), division.getDivisionPrefixLength().bitCount()))
+			if isCompressible {
+				currentCount++
+				if currentCount == 1 {
+					currentIndex = i
+				}
+			} else if currentCount > 0 {
+				ranges[rangeCount] = SegmentSequence{index: currentIndex, length: currentCount}
+				rangeCount++
+				currentCount = 0
+			}
+		}
+		if currentCount > 0 {
+			// add all segments past the network segment index to the current sequence
+			ranges[rangeCount] = SegmentSequence{index: currentIndex, length: currentCount + divisionCount - i}
+			rangeCount++
+		} else if i < divisionCount {
+			// all segments past the network segment index are a new sequence
+			ranges[rangeCount] = SegmentSequence{index: i, length: divisionCount - i}
+			rangeCount++
+		} // else the very last segment was a network segment, and a prefix block segment, but the lowest segment value is not zero, eg ::100/120
+	} else {
+		for i := 0; i < divisionCount; i++ {
+			division := section.GetSegment(i)
+			if division.IsZero() {
+				currentCount++
+				if currentCount == 1 {
+					currentIndex = i
+				}
+			} else if currentCount > 0 {
+				ranges[rangeCount] = SegmentSequence{index: currentIndex, length: currentCount}
+				rangeCount++
+				currentCount = 0
+			}
+		}
+		if currentCount > 0 {
+			ranges[rangeCount] = SegmentSequence{index: currentIndex, length: currentCount}
+			rangeCount++
+		} else if rangeCount == 0 {
+			return SegmentSequenceList{}
+		}
+	}
+	return SegmentSequenceList{ranges[:rangeCount]}
 }
 
 type embeddedIPv6AddressSection struct {
