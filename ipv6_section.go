@@ -571,3 +571,25 @@ func newIPv6SectionParsed(segments []*AddressDivision, isMultiple bool) (res *IP
 	res.isMult = isMultiple
 	return
 }
+
+func compressMixedSect(m address_string.MixedCompressionOptions, addressSection *IPv6AddressSection) bool {
+	switch m {
+	case address_string.AllowMixedCompression:
+		return true
+	case address_string.NoMixedCompression:
+		return false
+	case address_string.MixedCompressionNoHost:
+		return !addressSection.IsPrefixed()
+	case address_string.MixedCompressionCoveredByHost:
+		if addressSection.IsPrefixed() {
+			mixedDistance := IPv6MixedOriginalSegmentCount
+			mixedCount := addressSection.GetSegmentCount() - mixedDistance
+			if mixedCount > 0 {
+				return (BitCount(mixedDistance) * addressSection.GetBitsPerSegment()) >= addressSection.getNetworkPrefixLen().bitCount()
+			}
+		}
+		return true
+	default:
+		return true
+	}
+}
