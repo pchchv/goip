@@ -406,6 +406,18 @@ func (seg *IPv6AddressSegment) GetUpper() *IPv6AddressSegment {
 	return seg.init().getUpper().ToIPv6()
 }
 
+// ToPrefixedNetworkSegment returns a segment with the network bits matching this segment but the host bits converted to zero.
+// The new segment will be assigned the given prefix length.
+func (seg *IPv6AddressSegment) ToPrefixedNetworkSegment(segmentPrefixLength PrefixLen) *IPv6AddressSegment {
+	return seg.init().toPrefixedNetworkDivision(segmentPrefixLength).ToIPv6()
+}
+
+// ToNetworkSegment returns a segment with the network bits matching this segment but the host bits converted to zero.
+// The new segment will have no assigned prefix length.
+func (seg *IPv6AddressSegment) ToNetworkSegment(segmentPrefixLength PrefixLen) *IPv6AddressSegment {
+	return seg.init().toNetworkDivision(segmentPrefixLength, false).ToIPv6()
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
