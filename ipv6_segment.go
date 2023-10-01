@@ -503,6 +503,22 @@ func (seg *IPv6AddressSegment) getSplitSegments(segs []*IPv4AddressSegment, star
 	})
 }
 
+func (seg *IPv6AddressSegment) splitIntoIPv4Segments(segs []*AddressDivision, startIndex int) address_error.IncompatibleAddressError {
+	return seg.visitSplitSegments(func(index int, value, upperValue SegInt, prefLen PrefixLen) {
+		if ind := startIndex + index; ind < len(segs) {
+			segs[ind] = NewIPv4RangePrefixedSegment(IPv4SegInt(value), IPv4SegInt(upperValue), prefLen).ToDiv()
+		}
+	})
+}
+
+func (seg *IPv6AddressSegment) splitIntoMACSegments(segs []*AddressDivision, startIndex int) address_error.IncompatibleAddressError {
+	return seg.visitSplitSegments(func(index int, value, upperValue SegInt, prefLen PrefixLen) {
+		if ind := startIndex + index; ind < len(segs) {
+			segs[ind] = NewMACRangeSegment(MACSegInt(value), MACSegInt(upperValue)).ToDiv()
+		}
+	})
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
