@@ -223,3 +223,32 @@ func normalizeLargeDivisions(divs []*IPAddressLargeDivision) (newDivs []*IPAddre
 	}
 	return
 }
+
+func createLargeGrouping(divs []*IPAddressLargeDivision) *IPAddressLargeDivisionGrouping {
+	addrType := zeroType
+	grouping := &IPAddressLargeDivisionGrouping{
+		largeDivisionGroupingInternal{
+			addressDivisionGroupingBase: addressDivisionGroupingBase{
+				divisions: largeDivArray(divs),
+				addrType:  addrType,
+				cache:     &valueCache{},
+			},
+		},
+	}
+	assignStringCache(&grouping.addressDivisionGroupingBase, addrType)
+	return grouping
+}
+
+// NewIPAddressLargeDivGrouping creates an arbitrary grouping of divisions of arbitrary size,
+// each division can have an arbitrarily large bit-length.
+// To create address sections or addresses, use the constructors that are specific to the address version or type.
+// The IPAddressLargeDivision instances can be created with the
+// NewLargeIPDivision, NewLargeIPRangeDivision, NewLargeIPPrefixDivision, NewLargeIPRangePrefixDivision functions.
+func NewIPAddressLargeDivGrouping(divs []*IPAddressLargeDivision) *IPAddressLargeDivisionGrouping {
+	// We do not check for prefix subnet because an explicit prefix length must be supplied for that
+	newDivs, newPref, isMult := normalizeLargeDivisions(divs)
+	result := createLargeGrouping(newDivs)
+	result.isMult = isMult
+	result.prefixLength = newPref
+	return result
+}
