@@ -519,6 +519,20 @@ func (seg *IPv6AddressSegment) splitIntoMACSegments(segs []*AddressDivision, sta
 	})
 }
 
+// GetWildcardString produces a normalized string to represent the segment,
+// favouring wildcards and range characters while ignoring any network prefix length.
+// The explicit range of a range-valued segment will be printed.
+//
+// The string returned is useful in the context of creating strings for address sections or full addresses,
+// in which case the radix and the bit-length can be deduced from the context.
+// The String method produces strings more appropriate when no context is provided.
+func (seg *IPv6AddressSegment) GetWildcardString() string {
+	if seg == nil {
+		return nilString()
+	}
+	return seg.init().getWildcardString()
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
