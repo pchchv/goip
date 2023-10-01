@@ -3,6 +3,8 @@ package goip
 import (
 	"math/big"
 	"unsafe"
+
+	"github.com/pchchv/goip/address_error"
 )
 
 const useIPv6SegmentCache = true
@@ -430,6 +432,37 @@ func (seg *IPv6AddressSegment) WithoutPrefixLen() *IPv6AddressSegment {
 		return seg
 	}
 	return seg.withoutPrefixLen().ToIPv6()
+}
+
+// Used to create both IPv4 and MAC segments
+func (seg *IPv6AddressSegment) visitSplitSegmentsMultiple(creator func(index int, value, upperValue SegInt, prefLen PrefixLen)) address_error.IncompatibleAddressError {
+	myPrefix := seg.GetSegmentPrefixLen()
+	bitSizeSplit := BitCount(IPv6BitsPerSegment >> 1)
+	highLower, highUpper, lowLower, lowUpper, err := seg.splitSegValues()
+	if err != nil {
+		return err
+	}
+
+	highPrefixBits := getSegmentPrefixLength(bitSizeSplit, myPrefix, 0)
+	lowPrefixBits := getSegmentPrefixLength(bitSizeSplit, myPrefix, 1)
+
+	creator(0, highLower, highUpper, highPrefixBits)
+	creator(1, lowLower, lowUpper, lowPrefixBits)
+
+	return nil
+}
+
+func (seg *IPv6AddressSegment) splitSegValues() (highLower, highUpper, lowLower, lowUpper SegInt, err address_error.IncompatibleAddressError) {
+	val := seg.GetSegmentValue()
+	upperVal := seg.GetUpperSegmentValue()
+	highLower = highByteIpv6(val)
+	highUpper = highByteIpv6(upperVal)
+	lowLower = lowByteIpv6(val)
+	lowUpper = lowByteIpv6(upperVal)
+	if (highLower != highUpper) && (lowLower != 0 || lowUpper != 0xff) {
+		err = &incompatibleAddressError{addressError{key: "ipaddress.error.splitSeg"}}
+	}
+	return
 }
 
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
