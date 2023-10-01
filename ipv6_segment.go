@@ -465,6 +465,44 @@ func (seg *IPv6AddressSegment) splitSegValues() (highLower, highUpper, lowLower,
 	return
 }
 
+// Converts this IPv6 address segment into smaller segments,
+// copying them into the given array starting at the given index.
+//
+// If a segment does not fit into the array because the segment index in the array is out of bounds of the array,
+// then it is not copied.
+//
+// It is used to create both IPv4 and MAC segments.
+func (seg *IPv6AddressSegment) visitSplitSegments(creator func(index int, value, upperValue SegInt, prefLen PrefixLen)) address_error.IncompatibleAddressError {
+	if seg.isMultiple() {
+		return seg.visitSplitSegmentsMultiple(creator)
+	} else {
+		index := 0
+		bitSizeSplit := IPv6BitsPerSegment >> 1
+		myPrefix := seg.GetSegmentPrefixLen()
+		val := seg.highByte()
+		highPrefixBits := getSegmentPrefixLength(bitSizeSplit, myPrefix, 0)
+		creator(index, val, val, highPrefixBits)
+		index++
+		val = seg.lowByte()
+		lowPrefixBits := getSegmentPrefixLength(bitSizeSplit, myPrefix, 1)
+		creator(index, val, val, lowPrefixBits)
+		return nil
+	}
+}
+
+// Converts this IPv6 address segment into smaller segments,
+// copying them into the given array starting at the given index.
+//
+// If a segment does not fit into the array because the segment index in the array is out of bounds of the array,
+// then it is not copied.
+func (seg *IPv6AddressSegment) getSplitSegments(segs []*IPv4AddressSegment, startIndex int) address_error.IncompatibleAddressError {
+	return seg.visitSplitSegments(func(index int, value, upperValue SegInt, prefLen PrefixLen) {
+		if ind := startIndex + index; ind < len(segs) {
+			segs[ind] = NewIPv4RangePrefixedSegment(IPv4SegInt(value), IPv4SegInt(upperValue), prefLen)
+		}
+	})
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
