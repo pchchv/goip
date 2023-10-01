@@ -656,6 +656,33 @@ func (div *IPAddressLargeDivision) String() string {
 	return div.toString()
 }
 
+// Compare returns a negative integer, zero,
+// or a positive integer if the given address division is less than,
+// equal, or greater than the given item.
+// Any address item is comparable to any other address element.
+// CountComparator is used to compare all address items.
+func (div *IPAddressLargeDivision) Compare(item AddressItem) int {
+	return CountComparator.Compare(div, item)
+}
+
+// CompareSize compares the counts of two items, the number of individual values within.
+//
+// Instead of calculating the count using GetCount,
+// there can be more efficient ways of determining that one represents more individual values than another.
+//
+// CompareSize returns a positive integer if the given division has a larger count than the given item,
+// zero if they are the same, or a negative integer if the other has a larger count.
+func (div *IPAddressLargeDivision) CompareSize(other AddressItem) int {
+	if div == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// we have size 0, other has size >= 1
+		return -1
+	}
+	return compareCount(div, other)
+}
+
 type largeDivValues struct {
 	bitCount         BitCount
 	value            *BigDivInt
