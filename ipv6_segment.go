@@ -394,6 +394,18 @@ func (seg *IPv6AddressSegment) ToDiv() *AddressDivision {
 	return seg.ToIP().ToDiv()
 }
 
+// GetLower returns a segment representing just the lowest value in the range,
+// which will be the same segment if it represents a single value.
+func (seg *IPv6AddressSegment) GetLower() *IPv6AddressSegment {
+	return seg.init().getLower().ToIPv6()
+}
+
+// GetUpper returns a segment representing just the highest value in the range,
+// which will be the same segment if it represents a single value.
+func (seg *IPv6AddressSegment) GetUpper() *IPv6AddressSegment {
+	return seg.init().getUpper().ToIPv6()
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
