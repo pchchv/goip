@@ -294,6 +294,44 @@ func (grouping *largeDivisionGroupingInternal) ContainsPrefixBlock(prefixLen Bit
 	return true
 }
 
+// ContainsSinglePrefixBlock returns whether the values of this grouping contains
+// a single prefix block for the given prefix length.
+//
+// This means there is only one prefix of the given length in this item,
+// and this item contains the prefix block for that given prefix.
+//
+// Use GetPrefixLenForSingleBlock to determine whether there is
+// a prefix length for which this method returns true.
+func (grouping *largeDivisionGroupingInternal) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	var prevBitCount BitCount
+	prefixLen = checkSubnet(grouping, prefixLen)
+	divisionCount := grouping.GetDivisionCount()
+	for i := 0; i < divisionCount; i++ {
+		division := grouping.getDivision(i)
+		bitCount := division.getBitCount()
+		totalBitCount := bitCount + prevBitCount
+		if prefixLen >= totalBitCount {
+			if division.isMultiple() {
+				return false
+			}
+		} else {
+			divPrefixLen := prefixLen - prevBitCount
+			if !division.ContainsSinglePrefixBlock(divPrefixLen) {
+				return false
+			}
+			for i++; i < divisionCount; i++ {
+				division = grouping.getDivision(i)
+				if !division.IsFullRange() {
+					return false
+				}
+			}
+			return true
+		}
+		prevBitCount = totalBitCount
+	}
+	return true
+}
+
 type IPAddressLargeDivisionGrouping struct {
 	largeDivisionGroupingInternal
 }
