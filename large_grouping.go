@@ -158,6 +158,23 @@ func (grouping *largeDivisionGroupingInternal) getDivisionCount() int {
 	return 0
 }
 
+// getDivision returns the division or panics if the index is negative or too large
+func (grouping *largeDivisionGroupingInternal) getDivision(index int) *IPAddressLargeDivision {
+	return grouping.getDivArray()[index]
+}
+
+func (grouping *largeDivisionGroupingInternal) initMultiple() {
+	divCount := grouping.getDivisionCount()
+	for i := divCount - 1; i >= 0; i-- {
+		div := grouping.getDivision(i)
+		if div.isMultiple() {
+			grouping.isMult = true
+			return
+		}
+	}
+	return
+}
+
 type IPAddressLargeDivisionGrouping struct {
 	largeDivisionGroupingInternal
 }
