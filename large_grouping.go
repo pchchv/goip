@@ -427,6 +427,18 @@ func (grouping *IPAddressLargeDivisionGrouping) ForEachDivision(consumer func(di
 	return len(divArray)
 }
 
+// CopySubDivisions copies the existing divisions from the given start index until but not including the division at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of divisions copied.
+func (grouping *IPAddressLargeDivisionGrouping) CopySubDivisions(start, end int, divs []*IPAddressLargeDivision) (count int) {
+	return grouping.copySubDivisions(start, end, divs)
+}
+
+// CopyDivisions copies the existing divisions from the given start index until but not including the division at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of divisions copied.
+func (grouping *IPAddressLargeDivisionGrouping) CopyDivisions(divs []*IPAddressLargeDivision) (count int) {
+	return grouping.copyDivisions(divs)
+}
+
 func normalizeLargeDivisions(divs []*IPAddressLargeDivision) (newDivs []*IPAddressLargeDivision, newPref PrefixLen, isMultiple bool) {
 	var previousDivPrefixed bool
 	var bits BitCount
