@@ -342,6 +342,25 @@ func (grouping *largeDivisionGroupingInternal) IsPrefixBlock() bool {
 	return prefLen != nil && grouping.ContainsPrefixBlock(prefLen.bitCount())
 }
 
+// copySubDivisions copies the existing segments from the given start index until but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (grouping *largeDivisionGroupingInternal) copySubDivisions(start, end int, divs []*IPAddressLargeDivision) (count int) {
+	if divArray := grouping.getDivArray(); divArray != nil {
+		start, end, targetIndex := adjust1To1Indices(start, end, grouping.GetDivisionCount(), len(divs))
+		return divArray.copySubDivisions(start, end, divs[targetIndex:])
+	}
+	return
+}
+
+// copyDivisions copies the existing segments from the given start index until but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (grouping *largeDivisionGroupingInternal) copyDivisions(divs []*IPAddressLargeDivision) (count int) {
+	if divArray := grouping.getDivArray(); divArray != nil {
+		return divArray.copyDivisions(divs)
+	}
+	return
+}
+
 type IPAddressLargeDivisionGrouping struct {
 	largeDivisionGroupingInternal
 }
