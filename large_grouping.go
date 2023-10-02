@@ -263,6 +263,37 @@ func (grouping *largeDivisionGroupingInternal) GetMinPrefixLenForBlock() BitCoun
 	return cacheMinPrefix(grouping.cache, calc)
 }
 
+// ContainsPrefixBlock returns whether the values of this item contains the block of values for the given prefix length.
+//
+// Unlike ContainsSinglePrefixBlock, whether there are multiple prefix values in this item for the given prefix length makes no difference.
+//
+// Use GetMinPrefixLenForBlock to determine the smallest prefix length for which this method returns true.
+func (grouping *largeDivisionGroupingInternal) ContainsPrefixBlock(prefixLen BitCount) bool {
+	var prevBitCount BitCount
+	prefixLen = checkSubnet(grouping, prefixLen)
+	divisionCount := grouping.GetDivisionCount()
+	for i := 0; i < divisionCount; i++ {
+		division := grouping.getDivision(i)
+		bitCount := division.GetBitCount()
+		totalBitCount := bitCount + prevBitCount
+		if prefixLen < totalBitCount {
+			divPrefixLen := prefixLen - prevBitCount
+			if !division.ContainsPrefixBlock(divPrefixLen) {
+				return false
+			}
+			for i++; i < divisionCount; i++ {
+				division = grouping.getDivision(i)
+				if !division.IsFullRange() {
+					return false
+				}
+			}
+			return true
+		}
+		prevBitCount = totalBitCount
+	}
+	return true
+}
+
 type IPAddressLargeDivisionGrouping struct {
 	largeDivisionGroupingInternal
 }
