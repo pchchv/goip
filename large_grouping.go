@@ -220,6 +220,49 @@ func (grouping *largeDivisionGroupingInternal) CopyBytes(bytes []byte) []byte {
 	return getBytesCopy(bytes, grouping.getBytes())
 }
 
+// GetValue returns the lowest individual address division grouping in this address division grouping as an integer value.
+func (grouping *largeDivisionGroupingInternal) GetValue() *big.Int {
+	res := big.Int{}
+	if grouping.hasNoDivisions() {
+		return &res
+	}
+	return res.SetBytes(grouping.getBytes())
+}
+
+// GetMinPrefixLenForBlock returns the smallest prefix length such that
+// this grouping includes the block of all values for that prefix length.
+//
+// If the entire range can be described this way,
+// then this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// There may be a single prefix,
+// or multiple possible prefix values in this item for the returned prefix length.
+// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values.
+//
+// If this grouping represents a single value, this returns the bit count.
+func (grouping *largeDivisionGroupingInternal) GetMinPrefixLenForBlock() BitCount {
+	calc := func() BitCount {
+		count := grouping.GetDivisionCount()
+		totalPrefix := grouping.GetBitCount()
+		for i := count - 1; i >= 0; i-- {
+			div := grouping.getDivision(i)
+			segBitCount := div.getBitCount()
+			segPrefix := div.GetMinPrefixLenForBlock()
+			if segPrefix == segBitCount {
+				break
+			} else {
+				totalPrefix -= segBitCount
+				if segPrefix != 0 {
+					totalPrefix += segPrefix
+					break
+				}
+			}
+		}
+		return totalPrefix
+	}
+	return cacheMinPrefix(grouping.cache, calc)
+}
+
 type IPAddressLargeDivisionGrouping struct {
 	largeDivisionGroupingInternal
 }
