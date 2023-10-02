@@ -144,6 +144,20 @@ func (grouping *largeDivisionGroupingInternal) Bytes() []byte {
 	return cloneBytes(grouping.getBytes())
 }
 
+func (grouping *largeDivisionGroupingInternal) getDivArray() largeDivArray {
+	if divsArray := grouping.divisions; divsArray != nil {
+		return divsArray.(largeDivArray)
+	}
+	return nil
+}
+
+func (grouping *largeDivisionGroupingInternal) getDivisionCount() int {
+	if divArray := grouping.getDivArray(); divArray != nil {
+		return divArray.getDivisionCount()
+	}
+	return 0
+}
+
 type IPAddressLargeDivisionGrouping struct {
 	largeDivisionGroupingInternal
 }
