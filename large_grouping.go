@@ -332,6 +332,16 @@ func (grouping *largeDivisionGroupingInternal) ContainsSinglePrefixBlock(prefixL
 	return true
 }
 
+// IsPrefixBlock returns whether this division grouping has a prefix length and includes the block associated with its prefix length.
+// If the prefix length matches the bit count, this returns true.
+//
+// This is different from ContainsPrefixBlock in that this method returns
+// false if the series has no prefix length, or a prefix length that differs from a prefix length for which ContainsPrefixBlock returns true.
+func (grouping *largeDivisionGroupingInternal) IsPrefixBlock() bool {
+	prefLen := grouping.getPrefixLen()
+	return prefLen != nil && grouping.ContainsPrefixBlock(prefLen.bitCount())
+}
+
 type IPAddressLargeDivisionGrouping struct {
 	largeDivisionGroupingInternal
 }
