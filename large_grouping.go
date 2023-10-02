@@ -396,6 +396,23 @@ func (grouping *IPAddressLargeDivisionGrouping) isNil() bool {
 	return grouping == nil
 }
 
+// String implements the [fmt.Stringer] interface.
+// It returns "<nil>" if the receiver is a nil pointer.
+// Otherwise, the string is printed like a slice,
+// with each division converted to a string by
+// its own String method (like "[ div0 div1 ... ]").
+func (grouping *IPAddressLargeDivisionGrouping) String() string {
+	if grouping == nil {
+		return nilString()
+	}
+	return grouping.toString()
+}
+
+// GetDivision returns the division at the given index.
+func (grouping *IPAddressLargeDivisionGrouping) GetDivision(index int) *IPAddressLargeDivision {
+	return grouping.getDivision(index)
+}
+
 func normalizeLargeDivisions(divs []*IPAddressLargeDivision) (newDivs []*IPAddressLargeDivision, newPref PrefixLen, isMultiple bool) {
 	var previousDivPrefixed bool
 	var bits BitCount
