@@ -413,6 +413,20 @@ func (grouping *IPAddressLargeDivisionGrouping) GetDivision(index int) *IPAddres
 	return grouping.getDivision(index)
 }
 
+// ForEachDivision visits each segment in order from most-significant to least, the most significant with index 0, calling the given function for each, terminating early if the function returns true.
+// ForEachDivision returns the number of visited segments.
+func (grouping *IPAddressLargeDivisionGrouping) ForEachDivision(consumer func(divisionIndex int, division *IPAddressLargeDivision) (stop bool)) int {
+	divArray := grouping.getDivArray()
+	if divArray != nil {
+		for i, div := range divArray {
+			if consumer(i, div) {
+				return i + 1
+			}
+		}
+	}
+	return len(divArray)
+}
+
 func normalizeLargeDivisions(divs []*IPAddressLargeDivision) (newDivs []*IPAddressLargeDivision, newPref PrefixLen, isMultiple bool) {
 	var previousDivPrefixed bool
 	var bits BitCount
