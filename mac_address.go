@@ -132,6 +132,19 @@ func (addr *MACAddress) GetBitCount() BitCount {
 	return addr.init().addressInternal.GetBitCount()
 }
 
+// GetByteCount returns the number of bytes required for this address,
+// or each address in the range.
+func (addr *MACAddress) GetByteCount() int {
+	return addr.init().addressInternal.GetByteCount()
+}
+
+// IsFullRange returns whether this address covers the entire MAC address space for its MAC bit length.
+//
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (addr *MACAddress) IsFullRange() bool {
+	return addr.GetSection().IsFullRange()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
