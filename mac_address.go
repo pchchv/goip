@@ -145,6 +145,29 @@ func (addr *MACAddress) IsFullRange() bool {
 	return addr.GetSection().IsFullRange()
 }
 
+func (addr *MACAddress) checkIdentity(section *MACAddressSection) *MACAddress {
+	if section == nil {
+		return nil
+	}
+
+	sec := section.ToSectionBase()
+	if sec == addr.section {
+		return addr
+	}
+
+	return newMACAddress(section)
+}
+
+// GetValue returns the lowest address in this subnet or address as an integer value.
+func (addr *MACAddress) GetValue() *big.Int {
+	return addr.init().section.GetValue()
+}
+
+// GetUpperValue returns the highest address in this subnet or address as an integer value.
+func (addr *MACAddress) GetUpperValue() *big.Int {
+	return addr.init().section.GetUpperValue()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
