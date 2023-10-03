@@ -121,6 +121,17 @@ func (addr *MACAddress) ToBlock(segmentIndex int, lower, upper SegInt) *MACAddre
 	return addr.init().toBlock(segmentIndex, lower, upper).ToMAC()
 }
 
+// GetSection returns the backing section for this address or address collection, comprising all segments.
+func (addr *MACAddress) GetSection() *MACAddressSection {
+	return addr.init().section.ToMAC()
+}
+
+// GetBitCount returns the number of bits comprising this address,
+// or each address in the range.
+func (addr *MACAddress) GetBitCount() BitCount {
+	return addr.init().addressInternal.GetBitCount()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
