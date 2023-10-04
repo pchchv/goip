@@ -335,6 +335,40 @@ func (addr *MACAddress) IsLocal() bool {
 	return addr.GetSegment(0).MatchesWithMask(2, 0x2)
 }
 
+// ToOUIPrefixBlock returns a section in which the range of values match the full block for the OUI (organizationally unique identifier) bytes
+func (addr *MACAddress) ToOUIPrefixBlock() *MACAddress {
+	segmentCount := addr.GetSegmentCount()
+	currentPref := addr.getPrefixLen()
+	newPref := BitCount(MACOrganizationalUniqueIdentifierSegmentCount) << 3 //ouiSegmentCount * MACAddress.BITS_PER_SEGMENT
+	createNew := currentPref == nil || currentPref.bitCount() > newPref
+	if !createNew {
+		newPref = currentPref.bitCount()
+		for i := MACOrganizationalUniqueIdentifierSegmentCount; i < segmentCount; i++ {
+			segment := addr.GetSegment(i)
+			if !segment.IsFullRange() {
+				createNew = true
+				break
+			}
+		}
+	}
+
+	if !createNew {
+		return addr
+	}
+
+	segmentIndex := MACOrganizationalUniqueIdentifierSegmentCount
+	newSegs := createSegmentArray(segmentCount)
+	addr.GetSection().copySubDivisions(0, segmentIndex, newSegs)
+	allRangeSegment := allRangeMACSeg.ToDiv()
+
+	for i := segmentIndex; i < segmentCount; i++ {
+		newSegs[i] = allRangeSegment
+	}
+
+	newSect := createSectionMultiple(newSegs, cacheBitCount(newPref), addr.getAddrType(), true).ToMAC()
+	return newMACAddress(newSect)
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
