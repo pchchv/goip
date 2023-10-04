@@ -1,6 +1,10 @@
 package goip
 
-import "math/big"
+import (
+	"math/big"
+
+	"github.com/pchchv/goip/address_error"
+)
 
 // MACAddressSection is a section of a MACAddress.
 //
@@ -187,6 +191,33 @@ func (section *MACAddressSection) GetBlockCount(segments int) *big.Int {
 // The provided prefix length will be adjusted to these boundaries if necessary.
 func (section *MACAddressSection) SetPrefixLen(prefixLen BitCount) *MACAddressSection {
 	return section.setPrefixLen(prefixLen).ToMAC()
+}
+
+// AdjustPrefixLen increases or decreases the prefix length by the given increment.
+//
+// A prefix length will not be adjusted lower than zero or beyond the bit length of the address section.
+//
+// If this address section has no prefix length, then the prefix length will be set to the adjustment if positive,
+// or it will be set to the adjustment added to the bit count if negative.
+func (section *MACAddressSection) AdjustPrefixLen(prefixLen BitCount) *AddressSection {
+	return section.adjustPrefixLen(prefixLen).ToSectionBase()
+}
+
+// AdjustPrefixLenZeroed increases or decreases the prefix length by
+// the given increment while zeroing out the bits that have moved into or outside the prefix.
+//
+// A prefix length will not be adjusted lower than zero or beyond the bit length of the address section.
+//
+// If this address section has no prefix length, then the prefix length will be set to the adjustment if positive,
+// or it will be set to the adjustment added to the bit count if negative.
+//
+// When prefix length is increased, the bits moved within the prefix become zero.
+// When a prefix length is decreased, the bits moved outside the prefix become zero.
+//
+// If the result cannot be zeroed because zeroing out bits results in a non-contiguous segment, an error is returned.
+func (section *MACAddressSection) AdjustPrefixLenZeroed(prefixLen BitCount) (*AddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.adjustPrefixLenZeroed(prefixLen)
+	return res.ToSectionBase(), err
 }
 
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
