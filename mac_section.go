@@ -338,3 +338,33 @@ func newMACSectionEUI(segments []*AddressDivision) (res *MACAddressSection) {
 	res.initMultAndImplicitPrefLen(MACBitsPerSegment)
 	return
 }
+
+// NewMACSectionFromBytes constructs a MAC address section from the given byte slice.
+// The segment count is determined by the slice length, even if the segment count exceeds 8 segments.
+func NewMACSectionFromBytes(bytes []byte, segmentCount int) (res *MACAddressSection, err address_error.AddressValueError) {
+	if segmentCount < 0 {
+		segmentCount = len(bytes)
+	}
+
+	expectedByteCount := segmentCount
+	segments, err := toSegments(
+		bytes,
+		segmentCount,
+		MACBytesPerSegment,
+		MACBitsPerSegment,
+		macNetwork.getAddressCreator(),
+		nil)
+	if err == nil {
+		// note prefix len is nil
+		res = createMACSection(segments)
+		if expectedByteCount == len(bytes) {
+			bytes = cloneBytes(bytes)
+			res.cache.bytesCache = &bytesCache{lowerBytes: bytes}
+			if !res.isMult { // not a prefix block
+				res.cache.bytesCache.upperBytes = bytes
+			}
+		}
+	}
+
+	return
+}
