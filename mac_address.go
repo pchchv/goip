@@ -254,6 +254,18 @@ func (addr *MACAddress) GetSegmentCount() int {
 	return addr.GetDivisionCount()
 }
 
+// IsMax returns whether this address matches exactly the maximum possible value,
+// the address whose bits are all ones.
+func (addr *MACAddress) IsMax() bool {
+	return addr.init().section.IsMax()
+}
+
+// IncludesMax returns whether this address includes the max address,
+// the address whose bits are all ones, within its range.
+func (addr *MACAddress) IncludesMax() bool {
+	return addr.init().section.IncludesMax()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
