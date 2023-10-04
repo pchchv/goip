@@ -195,6 +195,24 @@ func (addr *MACAddress) GetHardwareAddr() net.HardwareAddr {
 	return addr.Bytes()
 }
 
+// CopyBytes copies the value of the lowest individual address in the address collection into a byte slice.
+//
+// If the value can fit in the given slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (addr *MACAddress) CopyBytes(bytes []byte) []byte {
+	return addr.init().section.CopyBytes(bytes)
+}
+
+// CopyHardwareAddr copies the value of the lowest individual address in the address collection into a net.HardwareAddr.
+//
+// If the value can fit in the given net.HardwareAddr,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new net.HardwareAddr is created and returned with the value.
+func (addr *MACAddress) CopyHardwareAddr(bytes net.HardwareAddr) net.HardwareAddr {
+	return addr.CopyBytes(bytes)
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
