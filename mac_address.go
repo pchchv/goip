@@ -395,6 +395,12 @@ func (addr *MACAddress) toAddressBase() *Address {
 	return (*Address)(addr)
 }
 
+// Wrap wraps this address, returning a WrappedAddress, an implementation of ExtendedSegmentSeries,
+// which can be used to write code that works with both addresses and address sections.
+func (addr *MACAddress) Wrap() WrappedAddress {
+	return wrapAddress(addr.ToAddressBase())
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
