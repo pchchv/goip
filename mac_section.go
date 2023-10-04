@@ -368,3 +368,22 @@ func NewMACSectionFromBytes(bytes []byte, segmentCount int) (res *MACAddressSect
 
 	return
 }
+
+// NewMACSectionFromUint64 constructs a MAC address section of the given segment count from the given value.
+// The least significant bits of the given value will be used.
+func NewMACSectionFromUint64(val uint64, segmentCount int) (res *MACAddressSection) {
+	if segmentCount < 0 {
+		segmentCount = MediaAccessControlSegmentCount
+	}
+	segments := createSegmentsUint64(
+		segmentCount,
+		0,
+		val,
+		MACBytesPerSegment,
+		MACBitsPerSegment,
+		macNetwork.getAddressCreator(),
+		nil)
+	// note prefix len is nil
+	res = createMACSection(segments)
+	return
+}
