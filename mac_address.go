@@ -303,6 +303,20 @@ func (addr *MACAddress) AdjustPrefixLenZeroed(prefixLen BitCount) (*MACAddress, 
 	return res.ToMAC(), err
 }
 
+// GetMaxSegmentValue returns the maximum possible segment value for this type of address.
+//
+// Note this is not the maximum of the range of segment values in this specific address,
+// this is the maximum value of any segment for this address type and version, determined by the number of bits per segment.
+func (addr *MACAddress) GetMaxSegmentValue() SegInt {
+	return addr.init().getMaxSegmentValue()
+}
+
+// IsMulticast returns whether this address or collection of addresses is entirely multicast.
+// Multicast MAC addresses have the least significant bit of the first octet set to 1.
+func (addr *MACAddress) IsMulticast() bool {
+	return addr.GetSegment(0).MatchesWithMask(1, 0x1)
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
