@@ -234,6 +234,19 @@ func (section *MACAddressSection) GetLower() *MACAddressSection {
 	return section.getLower().ToMAC()
 }
 
+// GetUpper returns the section in the range with the highest numeric value,
+// which will be the same section if it represents a single value.
+// For example, for "1:1:1:2-3:4:5-6", the series "1:1:1:3:4:6" is returned.
+func (section *MACAddressSection) GetUpper() *MACAddressSection {
+	return section.getUpper().ToMAC()
+}
+
+// Uint64Value returns the lowest individual address section in
+// the address section collection as a uint64.
+func (section *MACAddressSection) Uint64Value() uint64 {
+	return section.getLongValue(true)
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
