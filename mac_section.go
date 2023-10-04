@@ -137,6 +137,40 @@ func (section *MACAddressSection) getCachedCount() *big.Int {
 	})
 }
 
+// GetPrefixCount returns the number of distinct prefix values in this item.
+//
+// The prefix length is given by GetPrefixLen.
+//
+// If this has a non-nil prefix length, returns the number of distinct prefix values.
+//
+// If this has a nil prefix length, returns the same value as GetCount.
+func (section *MACAddressSection) GetPrefixCount() *big.Int {
+	return section.cachePrefixCount(func() *big.Int {
+		return section.GetPrefixCountLen(section.getPrefixLen().bitCount())
+	})
+}
+
+// GetPrefixCountLen returns the number of distinct prefix values in this item for the given prefix length.
+func (section *MACAddressSection) GetPrefixCountLen(prefixLen BitCount) *big.Int {
+	if prefixLen <= 0 {
+		return bigOne()
+	} else if bc := section.GetBitCount(); prefixLen >= bc {
+		return section.GetCount()
+	}
+
+	networkSegmentIndex := getNetworkSegmentIndex(prefixLen, section.GetBytesPerSegment(), section.GetBitsPerSegment())
+	hostSegmentIndex := getHostSegmentIndex(prefixLen, section.GetBytesPerSegment(), section.GetBitsPerSegment())
+	return section.calcCount(func() *big.Int {
+		return count(func(index int) uint64 {
+			if (networkSegmentIndex == hostSegmentIndex) && index == networkSegmentIndex {
+				segmentPrefixLength := getPrefixedSegmentPrefixLength(section.GetBitsPerSegment(), prefixLen, index)
+				return getPrefixValueCount(section.GetSegment(index).ToSegmentBase(), segmentPrefixLength.bitCount())
+			}
+			return section.GetSegment(index).GetValueCount()
+		}, networkSegmentIndex+1, 6, 0x7fffffffffffff)
+	})
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
