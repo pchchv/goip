@@ -31,6 +31,8 @@ const (
 
 var (
 	zeroMAC             = createMACZero(false)
+	macAll              = zeroMAC.SetPrefixLen(0).ToPrefixBlock()
+	macAllExtended      = createMACZero(true).SetPrefixLen(0).ToPrefixBlock()
 	IPv6LinkLocalPrefix = createLinkLocalPrefix()
 )
 
@@ -432,4 +434,28 @@ func createLinkLocalPrefix() *IPv6AddressSection {
 		zeroSeg,
 	}
 	return newIPv6Section(segs)
+}
+
+// NewMACAddress constructs a MAC address or address collection from the given segments.
+func NewMACAddress(section *MACAddressSection) (*MACAddress, address_error.AddressValueError) {
+	segCount := section.GetSegmentCount()
+	if segCount != MediaAccessControlSegmentCount && segCount != ExtendedUniqueIdentifier64SegmentCount {
+		return nil, &addressValueError{
+			addressError: addressError{key: "ipaddress.error.invalid.size"},
+			val:          segCount,
+		}
+	}
+	return createAddress(section.ToSectionBase(), NoZone).ToMAC(), nil
+}
+
+// NewMACAddressFromSegs constructs a MAC address or address collection from the given segments.
+// If the given slice does not have either 6 or 8 segments, an error is returned.
+func NewMACAddressFromSegs(segments []*MACAddressSegment) (*MACAddress, address_error.AddressValueError) {
+	segsLen := len(segments)
+	if segsLen != MediaAccessControlSegmentCount && segsLen != ExtendedUniqueIdentifier64SegmentCount {
+		return nil, &addressValueError{val: segsLen, addressError: addressError{key: "ipaddress.error.mac.invalid.segment.count"}}
+	}
+
+	section := NewMACSection(segments)
+	return createAddress(section.ToSectionBase(), NoZone).ToMAC(), nil
 }
