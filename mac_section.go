@@ -4,9 +4,17 @@ import (
 	"math/big"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string"
 )
 
-var macMaxValues = []uint64{
+var (
+	macCanonicalParams   = new(address_string.MACStringOptionsBuilder).SetSeparator(MACDashSegmentSeparator).SetExpandedSegments(true).SetWildcards(canonicalWildcards).ToOptions()
+	canonicalWildcards   = new(address_string.WildcardsBuilder).SetRangeSeparator(MacDashedSegmentRangeSeparatorStr).SetWildcard(SegmentWildcardStr).ToWildcards()
+	dottedParams         = new(address_string.MACStringOptionsBuilder).SetSeparator(MacDottedSegmentSeparator).SetExpandedSegments(true).ToOptions()
+	spaceDelimitedParams = new(address_string.MACStringOptionsBuilder).SetSeparator(MacSpaceSegmentSeparator).SetExpandedSegments(true).ToOptions()
+	macNormalizedParams  = new(address_string.MACStringOptionsBuilder).SetExpandedSegments(true).ToOptions()
+	macCompressedParams  = new(address_string.MACStringOptionsBuilder).ToOptions()
+	macMaxValues         = []uint64{
 	0,
 	MACMaxValuePerSegment,
 	0xffff,
@@ -16,6 +24,7 @@ var macMaxValues = []uint64{
 	0xffffffffffff,
 	0xffffffffffffff,
 	0xffffffffffffffff}
+)
 
 // MACAddressSection is a section of a MACAddress.
 //
@@ -256,6 +265,19 @@ func (section *MACAddressSection) GetUpper() *MACAddressSection {
 // the address section collection as a uint64.
 func (section *MACAddressSection) Uint64Value() uint64 {
 	return section.getLongValue(true)
+}
+
+// UpperUint64Value returns the highest individual address section in the address section collection as a uint64.
+func (section *MACAddressSection) UpperUint64Value() uint64 {
+	return section.getLongValue(false)
+}
+
+// GetSegmentStrings returns a slice with the string for each segment being the string that is normalized with wildcards.
+func (section *MACAddressSection) GetSegmentStrings() []string {
+	if section == nil {
+		return nil
+	}
+	return section.getSegmentStrings()
 }
 
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
