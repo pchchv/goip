@@ -266,6 +266,24 @@ func (addr *MACAddress) IncludesMax() bool {
 	return addr.init().section.IncludesMax()
 }
 
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (addr *MACAddress) SetPrefixLen(prefixLen BitCount) *MACAddress {
+	return addr.init().setPrefixLen(prefixLen).ToMAC()
+}
+
+// AdjustPrefixLen increases or decreases the prefix length by the given increment.
+//
+// A prefix length will not be adjusted lower than zero or beyond the bit length of the address.
+//
+// If this address has no prefix length, then the prefix length will be set to the adjustment if positive,
+// or it will be set to the adjustment added to the bit count if negative.
+func (addr *MACAddress) AdjustPrefixLen(prefixLen BitCount) *MACAddress {
+	return addr.init().adjustPrefixLen(prefixLen).ToMAC()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
