@@ -171,6 +171,24 @@ func (section *MACAddressSection) GetPrefixCountLen(prefixLen BitCount) *big.Int
 	})
 }
 
+// GetBlockCount returns the count of distinct values in the given number of initial (more significant) segments.
+func (section *MACAddressSection) GetBlockCount(segments int) *big.Int {
+	return section.calcCount(func() *big.Int {
+		return count(func(index int) uint64 {
+			return section.GetSegment(index).GetValueCount()
+		},
+			segments, 6, 0x7fffffffffffff)
+	})
+}
+
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address section.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (section *MACAddressSection) SetPrefixLen(prefixLen BitCount) *MACAddressSection {
+	return section.setPrefixLen(prefixLen).ToMAC()
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
