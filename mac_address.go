@@ -241,6 +241,19 @@ func (addr *MACAddress) CopyUpperHardwareAddr(bytes net.HardwareAddr) net.Hardwa
 	return addr.CopyUpperBytes(bytes)
 }
 
+// GetSegment returns the segment at the given index.
+// The first segment is at index 0.
+// GetSegment will panic given a negative index or
+// an index matching or larger than the segment count.
+func (addr *MACAddress) GetSegment(index int) *MACAddressSegment {
+	return addr.init().getSegment(index).ToMAC()
+}
+
+// GetSegmentCount returns the segment/division count
+func (addr *MACAddress) GetSegmentCount() int {
+	return addr.GetDivisionCount()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
