@@ -6,6 +6,17 @@ import (
 	"github.com/pchchv/goip/address_error"
 )
 
+var macMaxValues = []uint64{
+	0,
+	MACMaxValuePerSegment,
+	0xffff,
+	0xffffff,
+	0xffffffff,
+	0xffffffffff,
+	0xffffffffffff,
+	0xffffffffffffff,
+	0xffffffffffffffff}
+
 // MACAddressSection is a section of a MACAddress.
 //
 // It is a series of 0 to 8 individual MAC address segments.
@@ -316,4 +327,14 @@ func createMACSectionFromSegs(orig []*MACAddressSegment) *MACAddressSection {
 // NewMACSection constructs a MAC address or address collection section from the given segments.
 func NewMACSection(segments []*MACAddressSegment) *MACAddressSection {
 	return createMACSectionFromSegs(segments)
+}
+
+func getMacMaxValueLong(segmentCount int) uint64 {
+	return macMaxValues[segmentCount]
+}
+
+func newMACSectionEUI(segments []*AddressDivision) (res *MACAddressSection) {
+	res = createMACSection(segments)
+	res.initMultAndImplicitPrefLen(MACBitsPerSegment)
+	return
 }
