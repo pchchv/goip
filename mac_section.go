@@ -387,3 +387,32 @@ func NewMACSectionFromUint64(val uint64, segmentCount int) (res *MACAddressSecti
 	res = createMACSection(segments)
 	return
 }
+
+// NewMACSectionFromVals constructs a MAC address section of the given segment count from the given values.
+func NewMACSectionFromVals(vals MACSegmentValueProvider, segmentCount int) (res *MACAddressSection) {
+	res = NewMACSectionFromRange(vals, nil, segmentCount)
+	return
+}
+
+// NewMACSectionFromRange constructs a MAC address collection section of the given segment count from the given values.
+func NewMACSectionFromRange(vals, upperVals MACSegmentValueProvider, segmentCount int) (res *MACAddressSection) {
+	if segmentCount < 0 {
+		segmentCount = 0
+	}
+
+	segments, isMultiple := createSegments(
+		WrapMACSegmentValueProvider(vals),
+		WrapMACSegmentValueProvider(upperVals),
+		segmentCount,
+		MACBitsPerSegment,
+		macNetwork.getAddressCreator(),
+		nil)
+	res = createMACSection(segments)
+
+	if isMultiple {
+		res.initImplicitPrefLen(MACBitsPerSegment)
+		res.isMult = true
+	}
+
+	return
+}
