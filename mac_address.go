@@ -317,6 +317,24 @@ func (addr *MACAddress) IsMulticast() bool {
 	return addr.GetSegment(0).MatchesWithMask(1, 0x1)
 }
 
+// IsUnicast returns whether this address or collection of addresses is entirely unicast.
+// Unicast MAC addresses have the least significant bit of the first octet set to 0.
+func (addr *MACAddress) IsUnicast() bool {
+	return !addr.IsMulticast()
+}
+
+// IsUniversal returns whether this is a universal address.
+// Universal MAC addresses have second the least significant bit of the first octet set to 0.
+func (addr *MACAddress) IsUniversal() bool {
+	return !addr.IsLocal()
+}
+
+// IsLocal returns whether this is a local address.
+// Local MAC addresses have the second least significant bit of the first octet set to 1.
+func (addr *MACAddress) IsLocal() bool {
+	return addr.GetSegment(0).MatchesWithMask(2, 0x2)
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
