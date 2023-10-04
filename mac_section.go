@@ -1,5 +1,7 @@
 package goip
 
+import "math/big"
+
 // MACAddressSection is a section of a MACAddress.
 //
 // It is a series of 0 to 8 individual MAC address segments.
@@ -106,6 +108,33 @@ func (section *MACAddressSection) GetBitsPerSegment() BitCount {
 // Segments in the same address section are equal length.
 func (section *MACAddressSection) GetBytesPerSegment() int {
 	return MACBytesPerSegment
+}
+
+// GetCount returns the count of possible distinct values for this item.
+// If not representing multiple values, the count is 1,
+// unless this is a division grouping with no divisions, or an address section with no segments, in which case it is 0.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (section *MACAddressSection) GetCount() *big.Int {
+	if section == nil {
+		return bigZero()
+	}
+	return section.cacheCount(func() *big.Int {
+		return count(func(index int) uint64 {
+			return section.GetSegment(index).GetValueCount()
+		}, section.GetSegmentCount(), 6, 0x7fffffffffffff)
+	})
+}
+
+func (section *MACAddressSection) getCachedCount() *big.Int {
+	if section == nil {
+		return bigZero()
+	}
+	return section.cachedCount(func() *big.Int {
+		return count(func(index int) uint64 {
+			return section.GetSegment(index).GetValueCount()
+		}, section.GetSegmentCount(), 6, 0x7fffffffffffff)
+	})
 }
 
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
