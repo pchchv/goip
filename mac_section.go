@@ -220,6 +220,20 @@ func (section *MACAddressSection) AdjustPrefixLenZeroed(prefixLen BitCount) (*Ad
 	return res.ToSectionBase(), err
 }
 
+// Wrap wraps this address section, returning a WrappedAddressSection,
+// an implementation of ExtendedSegmentSeries,
+// which can be used to write code that works with both addresses and address sections.
+func (section *MACAddressSection) Wrap() WrappedAddressSection {
+	return wrapSection(section.ToSectionBase())
+}
+
+// GetLower returns the section in the range with the lowest numeric value,
+// which will be the same section if it represents a single value.
+// For example, for "1:1:1:2-3:4:5-6", the series "1:1:1:2:4:5" is returned.
+func (section *MACAddressSection) GetLower() *MACAddressSection {
+	return section.getLower().ToMAC()
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
