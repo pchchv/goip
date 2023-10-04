@@ -29,7 +29,10 @@ const (
 	macBitsToSegmentBitshift                      = 3
 )
 
-var zeroMAC = createMACZero(false)
+var (
+	zeroMAC             = createMACZero(false)
+	IPv6LinkLocalPrefix = createLinkLocalPrefix()
+)
 
 // MACAddress represents a MAC address or a collection of multiple individual MAC addresses.
 // Each segment may represent a single byte value or a range of byte values.
@@ -389,4 +392,15 @@ func createMACZero(extended bool) *MACAddress {
 	}
 	section := NewMACSection(segs)
 	return newMACAddress(section)
+}
+
+func createLinkLocalPrefix() *IPv6AddressSection {
+	zeroSeg := zeroIPv6Seg.ToDiv()
+	segs := []*AddressDivision{
+		NewIPv6Segment(0xfe80).ToDiv(),
+		zeroSeg,
+		zeroSeg,
+		zeroSeg,
+	}
+	return newIPv6Section(segs)
 }
