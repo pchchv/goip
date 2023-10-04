@@ -168,6 +168,20 @@ func (addr *MACAddress) GetUpperValue() *big.Int {
 	return addr.init().section.GetUpperValue()
 }
 
+// GetLower returns the address in the collection with the lowest numeric value,
+// which will be the receiver if it represents a single address.
+// For example, for "1:1:1:2-3:4:5-6", the series "1:1:1:2:4:5" is returned.
+func (addr *MACAddress) GetLower() *MACAddress {
+	return addr.init().getLower().ToMAC()
+}
+
+// GetUpper returns the address in the collection with the highest numeric value,
+// which will be the receiver if it represents a single address.
+// For example, for "1:1:1:2-3:4:5-6", the series "1:1:1:3:4:6" is returned.
+func (addr *MACAddress) GetUpper() *MACAddress {
+	return addr.init().getUpper().ToMAC()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
