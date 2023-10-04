@@ -96,6 +96,18 @@ func (section *MACAddressSection) ToBlock(segmentIndex int, lower, upper SegInt)
 	return section.toBlock(segmentIndex, lower, upper).ToMAC()
 }
 
+// GetBitsPerSegment returns the number of bits comprising each segment in this section.
+// Segments in the same address section are equal length.
+func (section *MACAddressSection) GetBitsPerSegment() BitCount {
+	return MACBitsPerSegment
+}
+
+// GetBytesPerSegment returns the number of bytes comprising each segment in this section.
+// Segments in the same address section are equal length.
+func (section *MACAddressSection) GetBytesPerSegment() int {
+	return MACBytesPerSegment
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
