@@ -190,6 +190,20 @@ func (addr *MACAddress) Bytes() []byte {
 	return addr.init().section.Bytes()
 }
 
+// UpperBytes returns the highest address in this address or address collection as a byte slice.
+func (addr *MACAddress) UpperBytes() []byte {
+	return addr.init().section.UpperBytes()
+}
+
+// CopyUpperBytes copies the value of the highest individual address in the address collection into a byte slice.
+//
+// If the value can fit in the given slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (addr *MACAddress) CopyUpperBytes(bytes []byte) []byte {
+	return addr.init().section.CopyUpperBytes(bytes)
+}
+
 // GetHardwareAddr returns the lowest address in this address or address collection as a net.HardwareAddr.
 func (addr *MACAddress) GetHardwareAddr() net.HardwareAddr {
 	return addr.Bytes()
