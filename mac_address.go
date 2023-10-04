@@ -227,6 +227,20 @@ func (addr *MACAddress) CopyHardwareAddr(bytes net.HardwareAddr) net.HardwareAdd
 	return addr.CopyBytes(bytes)
 }
 
+// GetUpperHardwareAddr returns the highest address in this address or address collection as a net.HardwareAddr.
+func (addr *MACAddress) GetUpperHardwareAddr() net.HardwareAddr {
+	return addr.UpperBytes()
+}
+
+// CopyUpperHardwareAddr copies the value of the highest individual address in the address collection into a net.HardwareAddr.
+//
+// If the value can fit in the given net.HardwareAddr,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new net.HardwareAddr is created and returned with the value.
+func (addr *MACAddress) CopyUpperHardwareAddr(bytes net.HardwareAddr) net.HardwareAddr {
+	return addr.CopyUpperBytes(bytes)
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
