@@ -372,6 +372,29 @@ func (addr *MACAddress) ToOUIPrefixBlock() *MACAddress {
 	return newMACAddress(newSect)
 }
 
+// IsEUI64 returns whether this section is consistent with an IPv6 EUI64Size section,
+// which means it came from an extended 8 byte address,
+// and the corresponding segments in the middle match 0xff and 0xff/fe for MAC/not-MAC
+func (addr *MACAddress) IsEUI64(asMAC bool) bool {
+	if addr.GetSegmentCount() == ExtendedUniqueIdentifier64SegmentCount {
+		section := addr.GetSection()
+		seg3 := section.GetSegment(3)
+		seg4 := section.GetSegment(4)
+		if seg3.matches(0xff) {
+			if asMAC {
+				return seg4.matches(0xff)
+			}
+			return seg4.matches(0xfe)
+		}
+	}
+	return false
+}
+
+// toAddressBase is needed for tries, it skips the init() call
+func (addr *MACAddress) toAddressBase() *Address {
+	return (*Address)(addr)
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
