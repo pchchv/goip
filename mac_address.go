@@ -1,6 +1,9 @@
 package goip
 
-import "math/big"
+import (
+	"math/big"
+	"net"
+)
 
 const (
 	MACBitsPerSegment                             = 8
@@ -180,6 +183,16 @@ func (addr *MACAddress) GetLower() *MACAddress {
 // For example, for "1:1:1:2-3:4:5-6", the series "1:1:1:3:4:6" is returned.
 func (addr *MACAddress) GetUpper() *MACAddress {
 	return addr.init().getUpper().ToMAC()
+}
+
+// Bytes returns the lowest address in this address or address collection as a byte slice.
+func (addr *MACAddress) Bytes() []byte {
+	return addr.init().section.Bytes()
+}
+
+// GetHardwareAddr returns the lowest address in this address or address collection as a net.HardwareAddr.
+func (addr *MACAddress) GetHardwareAddr() net.HardwareAddr {
+	return addr.Bytes()
 }
 
 func getMacSegCount(isExtended bool) (segmentCount int) {
