@@ -594,6 +594,187 @@ func (parseData *parsedIPAddress) skipContains() bool {
 	return false
 }
 
+func (parseData *parsedIPAddress) containsProv(other *parsedIPAddress, networkOnly, equals bool) (res boolSetting) {
+	pd := parseData.getAddressParseData()
+	otherParseData := other.getAddressParseData()
+	otherSegmentData := otherParseData.getSegmentData() // grab this field for thread safety, other threads can make it disappear
+	segmentData := pd.getSegmentData()                  // grab this field for thread safety, other threads can make it disappear
+	if segmentData == nil || otherSegmentData == nil {
+		return
+	} else if parseData.skipContains() || other.skipContains() { // this excludes mixed addresses, amongst others
+		return
+	}
+
+	ipVersion := parseData.getProviderIPVersion()
+	if ipVersion != other.getProviderIPVersion() {
+		return boolSetting{true, false}
+	}
+
+	var max SegInt
+	var bitsPerSegment BitCount
+	var expectedSegCount, bytesPerSegment int
+	var compressedAlready, otherCompressedAlready bool
+	otherSegmentCount := otherParseData.getSegmentCount()
+	segmentCount := pd.getSegmentCount()
+
+	if parseData.isProvidingIPv4() {
+		max = IPv4MaxValuePerSegment
+		expectedSegCount = IPv4SegmentCount
+		bitsPerSegment = IPv4BitsPerSegment
+		bytesPerSegment = IPv4BytesPerSegment
+		compressedAlready = true
+		otherCompressedAlready = true
+	} else {
+		max = IPv6MaxValuePerSegment
+		expectedSegCount = IPv6SegmentCount
+		bitsPerSegment = IPv6BitsPerSegment
+		bytesPerSegment = IPv6BytesPerSegment
+		compressedAlready = expectedSegCount == segmentCount
+		otherCompressedAlready = expectedSegCount == otherSegmentCount
+	}
+
+	var networkSegIndex, hostSegIndex, endIndex, otherHostAllSegIndex, hostAllSegIndex int
+	otherPref := other.getProviderNetworkPrefixLen()
+	pref := parseData.getProviderNetworkPrefixLen()
+	endIndex = segmentCount
+
+	// determine what indexes to use for network, host, and prefix block adjustments (hostAllSegIndex and otherHostAllSegIndex)
+	var adjustedOtherPref PrefixLen
+	if pref == nil {
+		networkOnly = false
+		hostAllSegIndex = expectedSegCount
+		otherHostAllSegIndex = expectedSegCount
+		hostSegIndex = expectedSegCount
+		networkSegIndex = hostSegIndex - 1
+	} else {
+		prefLen := pref.bitCount()
+		if networkOnly {
+			hostSegIndex = getHostSegmentIndex(prefLen, bytesPerSegment, bitsPerSegment)
+			hostAllSegIndex = hostSegIndex
+			otherHostAllSegIndex = hostSegIndex
+			networkSegIndex = getNetworkSegmentIndex(prefLen, bytesPerSegment, bitsPerSegment)
+			// we treat the other as if it were a prefix block of the same prefix length
+			// this allows us to compare entire segments for prefixEquals, ignoring the host values
+			adjustedOtherPref = pref
+		} else {
+			otherHostAllSegIndex = expectedSegCount
+			hostSegIndex = getHostSegmentIndex(prefLen, bytesPerSegment, bitsPerSegment)
+			networkSegIndex = getNetworkSegmentIndex(prefLen, bytesPerSegment, bitsPerSegment)
+			if parseData.isPrefixSubnet(prefLen) {
+				hostAllSegIndex = hostSegIndex
+				if !equals {
+					// no need to look at host for containment when a prefix subnet
+					networkOnly = true
+				}
+			} else {
+				hostAllSegIndex = expectedSegCount
+			}
+		}
+	}
+
+	// Now determine if the other is a prefix block subnet, and if so, adjust otherHostAllSegIndex
+	if otherPref != nil {
+		otherPrefLen := otherPref.bitCount()
+		if adjustedOtherPref == nil || otherPrefLen < adjustedOtherPref.bitCount() {
+			otherHostIndex := getHostSegmentIndex(otherPrefLen, bytesPerSegment, bitsPerSegment)
+			if otherHostIndex < otherHostAllSegIndex &&
+				other.isPrefixSubnet(otherPrefLen) {
+				otherHostAllSegIndex = otherHostIndex
+			}
+		} else {
+			otherPref = adjustedOtherPref
+		}
+	} else {
+		otherPref = adjustedOtherPref
+	}
+
+	var compressedCount, otherCompressedCount int
+	i, j, normalizedCount := 0, 0, 0
+	for i < endIndex || compressedCount > 0 {
+		if networkOnly && normalizedCount > networkSegIndex {
+			break
+		}
+
+		var lower, upper SegInt
+		if compressedCount <= 0 {
+			lower = SegInt(parseData.getValue(i, keyLower))
+			upper = SegInt(parseData.getValue(i, keyUpper))
+		}
+
+		if normalizedCount >= hostAllSegIndex { // we've reached the prefixed segment
+			segPrefLength := getSegmentPrefixLength(bitsPerSegment, pref, normalizedCount)
+			segPref := segPrefLength.bitCount()
+			networkMask := ^SegInt(0) << uint(bitsPerSegment-segPref)
+			hostMask := ^networkMask
+			lower &= networkMask
+			upper |= hostMask
+		}
+
+		var otherLower, otherUpper SegInt
+		if normalizedCount > otherHostAllSegIndex {
+			otherLower = 0
+			otherUpper = max
+		} else {
+			if otherCompressedCount <= 0 {
+				otherLower = SegInt(otherParseData.getValue(j, keyLower))
+				otherUpper = SegInt(otherParseData.getValue(j, keyUpper))
+			}
+			if normalizedCount == otherHostAllSegIndex { // we've reached the prefixed segment
+				segPrefLength := getSegmentPrefixLength(bitsPerSegment, otherPref, normalizedCount)
+				segPref := segPrefLength.bitCount()
+				networkMask := ^SegInt(0) << uint(bitsPerSegment-segPref)
+				hostMask := ^networkMask
+				otherLower &= networkMask
+				otherUpper |= hostMask
+			}
+		}
+
+		if equals {
+			if lower != otherLower || upper != otherUpper {
+				return boolSetting{true, false}
+			}
+		} else {
+			if lower > otherLower || upper < otherUpper {
+				return boolSetting{true, false}
+			}
+		}
+
+		if !compressedAlready {
+			if compressedCount > 0 {
+				compressedCount--
+				if compressedCount == 0 {
+					compressedAlready = true
+				}
+			} else if parseData.segmentIsCompressed(i) {
+				i++
+				compressedCount = expectedSegCount - segmentCount
+			} else {
+				i++
+			}
+		} else {
+			i++
+		}
+
+		if !otherCompressedAlready {
+			if otherCompressedCount > 0 {
+				otherCompressedCount--
+				if otherCompressedCount == 0 {
+					otherCompressedAlready = true
+				}
+			} else if other.segmentIsCompressed(j) {
+				j++
+				otherCompressedCount = expectedSegCount - otherSegmentCount
+			} else {
+				j++
+			}
+		} else {
+			j++
+		}
+		normalizedCount++
+	}
+	return boolSetting{true, true}
+}
+
 func createRangeSeg(
 	addressString string,
 	_ IPVersion,
