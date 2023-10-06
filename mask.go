@@ -534,3 +534,7 @@ func MaskExtendedRange(value, extendedValue, upperValue, extendedUpperValue, mas
 	highestDifferingBitMasked = highestDifferingBitMaskedLow + 64
 	return newExtendedFullRangeMasker(highestDifferingBitMasked, maskedIsSequential)
 }
+
+func newSpecificValueBitwiseOrer(lower, upper uint64) BitwiseOrer {
+	return specificValueBitwiseOrer{lower: lower, upper: upper}
+}
