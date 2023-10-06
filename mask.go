@@ -1,6 +1,9 @@
 package goip
 
-import "math/bits"
+import (
+	"math/big"
+	"math/bits"
+)
 
 var (
 	defaultMasker                               = extendedMaskerBase{maskerBase{true}}
@@ -378,4 +381,156 @@ func newFullRangeBitwiseOrer(fullRangeBit int, isSequential bool) BitwiseOrer {
 		upperMask:       ^uint64(0) >> uint(fullRangeBit),
 		bitwiseOrerBase: bitwiseOrerBase{isSequential},
 	}
+}
+
+// MaskExtendedRange masks divisions with bit counts larger than 64 bits. Use MaskRange for smaller divisions.
+func MaskExtendedRange(value, extendedValue, upperValue, extendedUpperValue, maskValue, extendedMaskValue, maxValue, extendedMaxValue uint64) ExtendedMasker {
+	//algorithm:
+	//here we find the highest bit that is part of the range, highestDifferingBitInRange (ie changes from lower to upper)
+	//then we find the highest bit in the mask that is 1 that is the same or below highestDifferingBitInRange (if such a bit exists)
+	//
+	//this gives us the highest bit that is part of the masked range (ie changes from lower to upper after applying the mask)
+	//if this latter bit exists, then any bit below it in the mask must be 1 to include the entire range.
+	extendedDiffering := extendedValue ^ extendedUpperValue
+	if extendedDiffering == 0 {
+		// the top is single-valued so just need to check the lower part
+		masker := MaskRange(value, upperValue, maskValue, maxValue)
+		if masker == defaultMasker {
+			return defaultMasker
+		}
+		return newWrappedMasker(masker)
+	}
+
+	if (maskValue == maxValue && extendedMaskValue == extendedMaxValue /* all ones mask */) ||
+		(maskValue == 0 && extendedMaskValue == 0 /* all zeros mask */) {
+		return defaultMasker
+	}
+
+	var highestDifferingBitMasked int
+	highestDifferingBitInRange := bits.LeadingZeros64(extendedDiffering)
+	extendedDifferingMasked := extendedMaskValue & (^uint64(0) >> uint(highestDifferingBitInRange))
+	if extendedDifferingMasked != 0 {
+		var maskedIsSequential bool
+		differingIsLowestBit := extendedDifferingMasked == 1
+		hostMask := ^uint64(0) >> uint(highestDifferingBitMasked+1)
+		highestDifferingBitMasked = bits.LeadingZeros64(extendedDifferingMasked)
+		if !differingIsLowestBit { // Anything below highestDifferingBitMasked in the mask must be ones.
+			//for the first mask bit that is 1, all bits that follow must also be 1
+			maskedIsSequential = (extendedMaskValue&hostMask) == hostMask && maskValue == maxValue //check if all ones below
+		} else {
+			maskedIsSequential = maskValue == maxValue
+		}
+
+		if value == 0 && extendedValue == 0 &&
+			upperValue == maxValue && extendedUpperValue == extendedMaxValue {
+			// full range
+			if maskedIsSequential {
+				return defaultMasker
+			}
+			return defaultNonSequentialMasker
+		}
+
+		if highestDifferingBitMasked > highestDifferingBitInRange {
+			if maskedIsSequential {
+				// We need to check that the range is larger enough that when chopping off the top it remains sequential
+				//
+				// Note: a count of 2 in the extended could equate to a count of 2 total!
+				// upper: xxxxxxx1 00000000
+				// lower: xxxxxxx0 11111111
+				// Or, it could be everything:
+				// upper: xxxxxxx1 11111111
+				// lower: xxxxxxx0 00000000
+				// So for that reason, we need to check the full count here and not just extended
+				countRequiredForSequential := bigOne()
+				countRequiredForSequential.Lsh(countRequiredForSequential, 128-uint(highestDifferingBitMasked))
+
+				var upperBig, lowerBig, val big.Int
+				upperBig.SetUint64(extendedUpperValue).Lsh(&upperBig, 64).Or(&upperBig, val.SetUint64(upperValue))
+				lowerBig.SetUint64(extendedValue).Lsh(&lowerBig, 64).Or(&lowerBig, val.SetUint64(value))
+				count := upperBig.Sub(&upperBig, &lowerBig).Add(&upperBig, bigOne())
+				maskedIsSequential = count.CmpAbs(countRequiredForSequential) >= 0
+			}
+			return newExtendedFullRangeMasker(highestDifferingBitMasked, maskedIsSequential)
+		} else if !maskedIsSequential {
+
+			var bigHostZeroed, bigHostMask, val big.Int
+			bigHostMask.SetUint64(hostMask).Lsh(&bigHostMask, 64).Or(&bigHostMask, val.SetUint64(^uint64(0)))
+			bigHostZeroed.Not(&bigHostMask)
+
+			var upperBig, lowerBig big.Int
+			upperBig.SetUint64(extendedUpperValue).Lsh(&upperBig, 64).Or(&upperBig, val.SetUint64(upperValue))
+			lowerBig.SetUint64(extendedValue).Lsh(&lowerBig, 64).Or(&lowerBig, val.SetUint64(value))
+
+			var upperToBeMaskedBig, lowerToBeMaskedBig, maskBig big.Int
+			upperToBeMaskedBig.And(&upperBig, &bigHostZeroed)
+			lowerToBeMaskedBig.Or(&lowerBig, &bigHostMask)
+			maskBig.SetUint64(extendedMaskValue).Lsh(&maskBig, 64).Or(&maskBig, val.SetUint64(maskValue))
+
+			for nextBit := 128 - (highestDifferingBitMasked + 1) - 1; nextBit >= 0; nextBit-- {
+				// check if the bit in the mask is 1
+				if maskBig.Bit(nextBit) != 0 {
+					val.Set(&upperToBeMaskedBig).SetBit(&val, nextBit, 1)
+					if val.CmpAbs(&upperBig) <= 0 {
+						upperToBeMaskedBig.Set(&val)
+					}
+					val.Set(&lowerToBeMaskedBig).SetBit(&val, nextBit, 0)
+					if val.CmpAbs(&lowerBig) >= 0 {
+						lowerToBeMaskedBig.Set(&val)
+					}
+				}
+			}
+
+			var lowerMaskedBig, upperMaskedBig big.Int
+			lowerMaskedBig.Set(&lowerToBeMaskedBig).And(&lowerToBeMaskedBig, val.SetUint64(^uint64(0)))
+			upperMaskedBig.Set(&upperToBeMaskedBig).And(&upperToBeMaskedBig, &val)
+
+			return newExtendedSpecificValueMasker(
+				lowerToBeMaskedBig.Rsh(&lowerToBeMaskedBig, 64).Uint64(),
+				lowerMaskedBig.Uint64(),
+				upperToBeMaskedBig.Rsh(&upperToBeMaskedBig, 64).Uint64(),
+				upperMaskedBig.Uint64())
+
+		}
+		return defaultMasker
+	}
+	// When masking, the top becomes single-valued.
+	//
+	// We go to the lower values to find highestDifferingBitMasked.
+	//
+	// At this point, the highest differing bit in the lower range is 0
+	// and the highestDifferingBitMasked is the first 1 bit in the lower mask
+	if maskValue == 0 {
+		// the mask zeroes out everything,
+		return defaultMasker
+	}
+
+	maskedIsSequential := true
+	highestDifferingBitMaskedLow := bits.LeadingZeros64(maskValue)
+	if maskValue != maxValue && highestDifferingBitMaskedLow < 63 {
+		//for the first mask bit that is 1, all bits that follow must also be 1
+		hostMask := ^uint64(0) >> uint(highestDifferingBitMaskedLow+1) // this shift of since case of highestDifferingBitMaskedLow of 64 and 63 taken care of, so the shift is < 64
+		maskedIsSequential = (maskValue & hostMask) == hostMask        //check if all ones below
+	}
+
+	if maskedIsSequential {
+		//Note: a count of 2 in the lower values could equate to a count of everything in the full range:
+		//upper: xxxxxx10 00000000
+		//lower: xxxxxxx0 11111111
+		//Another example:
+		//upper: xxxxxxx1 00000001
+		//lower: xxxxxxx0 00000000
+		//So for that reason, we need to check the full count here and not just lower values
+		//
+		//We need to check that the range is larger enough that when chopping off the top it remains sequential
+		countRequiredForSequential := bigOne()
+		countRequiredForSequential.Lsh(countRequiredForSequential, 64-uint(highestDifferingBitMaskedLow))
+
+		var upperBig, lowerBig, val big.Int
+		upperBig.SetUint64(extendedUpperValue).Lsh(&upperBig, 64).Or(&upperBig, val.SetUint64(upperValue))
+		lowerBig.SetUint64(extendedValue).Lsh(&lowerBig, 64).Or(&lowerBig, val.SetUint64(value))
+		count := upperBig.Sub(&upperBig, &lowerBig).Add(&upperBig, bigOne())
+		maskedIsSequential = count.CmpAbs(countRequiredForSequential) >= 0
+	}
+	highestDifferingBitMasked = highestDifferingBitMaskedLow + 64
+	return newExtendedFullRangeMasker(highestDifferingBitMasked, maskedIsSequential)
 }
