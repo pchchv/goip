@@ -916,3 +916,34 @@ func checkExpandedValues(section *IPAddressSection, start, end int) bool {
 	}
 	return false
 }
+
+// createIPv6RangeSegment creates an IPv6 segment by joining two IPv4 segments
+func createIPv6RangeSegment(
+	sections *sectionResult,
+	_ *SequentialRange[*IPv4Address], // this was only used to be put into any exceptions
+	upperRangeLower,
+	upperRangeUpper,
+	lowerRangeLower,
+	lowerRangeUpper SegInt,
+	segmentPrefixLength PrefixLen,
+	creator ipAddressCreator) *AddressDivision {
+
+	shift := IPv4BitsPerSegment
+
+	if upperRangeLower != upperRangeUpper {
+		//if the high segment has a range, the low segment must match the full range,
+		//otherwise it is not possible to create an equivalent IPv6 range when joining two IPv4 ranges
+		if sections.mixedError == nil && lowerRangeLower != 0 || lowerRangeUpper != IPv4MaxValuePerSegment {
+			sections.mixedError = &incompatibleAddressError{
+				addressError: addressError{
+					key: "ipaddress.error.invalidMixedRange",
+				},
+			}
+		}
+	}
+
+	return creator.createSegment(
+		(upperRangeLower<<uint(shift))|lowerRangeLower,
+		(upperRangeUpper<<uint(shift))|lowerRangeUpper,
+		segmentPrefixLength)
+}
