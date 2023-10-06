@@ -203,6 +203,14 @@ type extendedSpecificValueMasker struct {
 	extendedUpper uint64
 }
 
+func (masker extendedSpecificValueMasker) GetMaskedLower(_, maskValue uint64) uint64 {
+	return masker.extendedMaskerBase.GetMaskedLower(masker.lower, maskValue)
+}
+
+func (masker extendedSpecificValueMasker) GetMaskedUpper(_, maskValue uint64) uint64 {
+	return masker.extendedMaskerBase.GetMaskedUpper(masker.upper, maskValue)
+}
+
 func newFullRangeMasker(fullRangeBit int, isSequential bool) Masker {
 	return fullRangeMasker{
 		fullRangeBit: fullRangeBit,
