@@ -338,3 +338,27 @@ func MaskRange(value, upperValue, maskValue, maxValue uint64) Masker {
 	}
 	return defaultMasker
 }
+
+func newWrappedMasker(masker Masker) ExtendedMasker {
+	return wrappedMasker{
+		extendedMaskerBase: extendedMaskerBase{maskerBase{masker.IsSequential()}},
+		masker:             masker,
+	}
+}
+
+func newExtendedFullRangeMasker(fullRangeBit int, isSequential bool) ExtendedMasker {
+	var upperMask, extendedUpperMask uint64
+
+	if fullRangeBit >= 64 {
+		upperMask = ^uint64(0) >> (uint(fullRangeBit) - 64)
+	} else {
+		extendedUpperMask = ^uint64(0) >> uint(fullRangeBit)
+		upperMask = 0xffffffffffffffff
+	}
+
+	return extendedFullRangeMasker{
+		extendedUpperMask:  extendedUpperMask,
+		upperMask:          upperMask,
+		extendedMaskerBase: extendedMaskerBase{maskerBase{isSequential}},
+	}
+}
