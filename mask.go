@@ -211,6 +211,14 @@ func (masker extendedSpecificValueMasker) GetMaskedUpper(_, maskValue uint64) ui
 	return masker.extendedMaskerBase.GetMaskedUpper(masker.upper, maskValue)
 }
 
+func (masker extendedSpecificValueMasker) GetExtendedMaskedLower(_, extendedMaskValue uint64) uint64 {
+	return masker.extendedMaskerBase.GetExtendedMaskedLower(masker.extendedLower, extendedMaskValue)
+}
+
+func (masker extendedSpecificValueMasker) GetExtendedMaskedUpper(_, extendedMaskValue uint64) uint64 {
+	return masker.extendedMaskerBase.GetExtendedMaskedUpper(masker.extendedUpper, extendedMaskValue)
+}
+
 func newFullRangeMasker(fullRangeBit int, isSequential bool) Masker {
 	return fullRangeMasker{
 		fullRangeBit: fullRangeBit,
