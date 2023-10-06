@@ -315,6 +315,19 @@ func (seg *MACAddressSegment) GetUpper() *MACAddressSegment {
 	return seg.init().getUpper().ToMAC()
 }
 
+// GetWildcardString produces a normalized string to represent the segment, favouring wildcards and range characters.
+// The explicit range of a range-valued segment will be printed.
+//
+// The string returned is useful in the context of creating strings for address sections or full addresses,
+// in which case the radix and the bit-length can be deduced from the context.
+// The String method produces strings more appropriate when no context is provided.
+func (seg *MACAddressSegment) GetWildcardString() string {
+	if seg == nil {
+		return nilString()
+	}
+	return seg.init().getWildcardString()
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
