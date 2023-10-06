@@ -947,3 +947,61 @@ func createIPv6RangeSegment(
 		(upperRangeUpper<<uint(shift))|lowerRangeUpper,
 		segmentPrefixLength)
 }
+
+func createAllAddress(
+	version IPVersion,
+	qualifier *parsedHostIdentifierStringQualifier,
+	originator HostIdentifierString) (res, hostAddr, lower, upper *IPAddress, err address_error.IncompatibleAddressError) {
+	creator := version.toType().getIPNetwork().getIPAddressCreator()
+	mask := qualifier.getMaskLower()
+
+	if mask != nil && mask.GetBlockMaskPrefixLen(true) != nil {
+		mask = nil //we don't do any masking if the mask is a subnet mask, instead we just map it to the corresponding prefix length
+	}
+
+	segmentCount := version.GetSegmentCount()
+	segments := make([]*AddressDivision, segmentCount)
+	hostSegments := make([]*AddressDivision, segmentCount)
+	lowerSegments := make([]*AddressDivision, segmentCount)
+	upperSegments := make([]*AddressDivision, segmentCount)
+	segMaxVal := creator.getMaxValuePerSegment()
+	hasMask := mask != nil
+	prefLen := getPrefixLength(qualifier)
+	bitsPerSegment := version.GetBitsPerSegment()
+
+	for i := 0; i < segmentCount; i++ {
+		var segmentMask *SegInt
+		if hasMask {
+			maskVal := mask.getSegment(i).getSegmentValue()
+			segmentMask = &maskVal
+		}
+		newSeg, hostSeg, lowSeg, upperSeg, rngErr := createFullRangeSegment(
+			version,
+			0,
+			segMaxVal,
+			i,
+			getSegmentPrefixLength(bitsPerSegment, prefLen, i),
+			segmentMask,
+			creator)
+		if rngErr != nil && err == nil {
+			err = rngErr
+		}
+		segments[i] = newSeg
+		hostSegments[i] = hostSeg
+		lowerSegments[i] = lowSeg
+		upperSegments[i] = upperSeg
+	}
+
+	if err == nil {
+		section := creator.createPrefixedSectionInternal(segments, true, prefLen)
+		res = creator.createAddressInternalFromSection(section, qualifier.getZone(), originator).ToIP()
+	}
+
+	hostSection := creator.createSectionInternal(hostSegments, true)
+	hostAddr = creator.createAddressInternal(hostSection.ToSectionBase(), nil).ToIP()
+	lowerSection := creator.createPrefixedSectionInternal(lowerSegments, false, prefLen)
+	lower = creator.createAddressInternal(lowerSection.ToSectionBase(), nil).ToIP()
+	upperSection := creator.createPrefixedSectionInternal(upperSegments, false, prefLen)
+	upper = creator.createAddressInternal(upperSection.ToSectionBase(), nil).ToIP()
+	return
+}
