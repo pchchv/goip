@@ -123,7 +123,7 @@ type ExtendedMasker interface {
 	GetExtendedMaskedUpper(extendedUpperValue, extendedMaskValue uint64) uint64
 }
 
-// These can be cached by the int used to construct.
+// fullRangeBitwiseOrer can be cached by the int used to construct.
 type fullRangeBitwiseOrer struct {
 	bitwiseOrerBase
 	upperMask    uint64
@@ -150,6 +150,13 @@ func (masker specificValueBitwiseOrer) GetOredLower(value, maskValue uint64) uin
 
 func (masker specificValueBitwiseOrer) GetOredUpper(upperValue, maskValue uint64) uint64 {
 	return masker.bitwiseOrerBase.GetOredUpper(upperValue, maskValue)
+}
+
+// extendedFullRangeMasker can be cached by the int used to construct.
+type extendedFullRangeMasker struct {
+	extendedMaskerBase
+	upperMask         uint64
+	extendedUpperMask uint64
 }
 
 func newFullRangeMasker(fullRangeBit int, isSequential bool) Masker {
