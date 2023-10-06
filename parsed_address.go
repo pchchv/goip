@@ -569,6 +569,31 @@ func (parseData *parsedIPAddress) getProviderNetworkPrefixLen() PrefixLen {
 	return parseData.getQualifier().getEquivalentPrefixLen()
 }
 
+// skipContains skips contains checking for addresses already parsed -
+// so this is not a case of unusual string formatting, because this is not for comparing strings,
+// but more a case of whether the parsing data structures are easy to use or not
+func (parseData *parsedIPAddress) skipContains() bool {
+	segmentCount := parseData.getAddressParseData().getSegmentCount()
+	// first we must excluded cases where the segments line up differently than standard, although we do not exclude ipv6 compressed
+	if parseData.isProvidingIPv4() {
+		if segmentCount != IPv4SegmentCount { // accounts for isInetAtonJoined, singleSegment and wildcard segments
+			return true
+		}
+	} else {
+		if parseData.isProvidingMixedIPv6() || (segmentCount != IPv6SegmentCount && !parseData.isCompressed()) { // accounts for single segment and wildcard segments
+			return true
+		}
+	}
+
+	// exclude non-standard masks which will modify segment values from their parsed values
+	mask := parseData.getProviderMask()
+	if mask != nil && mask.GetBlockMaskPrefixLen(true) == nil { // handles non-standard masks
+		return true
+	}
+
+	return false
+}
+
 func createRangeSeg(
 	addressString string,
 	_ IPVersion,
