@@ -3,13 +3,14 @@ package goip
 import "math/bits"
 
 var (
-	defaultMasker                            = extendedMaskerBase{maskerBase{true}}
-	defaultNonSequentialMasker               = extendedMaskerBase{}
-	defaultOrMasker                          = bitwiseOrerBase{true}
-	defaultNonSequentialOrMasker             = bitwiseOrerBase{}
-	_                            Masker      = maskerBase{}
-	_                            Masker      = extendedMaskerBase{}
-	_                            BitwiseOrer = bitwiseOrerBase{}
+	defaultMasker                               = extendedMaskerBase{maskerBase{true}}
+	defaultNonSequentialMasker                  = extendedMaskerBase{}
+	defaultOrMasker                             = bitwiseOrerBase{true}
+	defaultNonSequentialOrMasker                = bitwiseOrerBase{}
+	_                            Masker         = maskerBase{}
+	_                            Masker         = extendedMaskerBase{}
+	_                            BitwiseOrer    = bitwiseOrerBase{}
+	_                            ExtendedMasker = extendedMaskerBase{}
 )
 
 // BitwiseOrer is used for bitwise disjunction applied to division and segment values.
@@ -113,6 +114,13 @@ func (masker specificValueMasker) GetMaskedLower(value, maskValue uint64) uint64
 // GetMaskedUpper provides the largest masked value, which is not necessarily the largest masked value.
 func (masker specificValueMasker) GetMaskedUpper(upperValue, maskValue uint64) uint64 {
 	return masker.maskerBase.GetMaskedUpper(upperValue, maskValue)
+}
+
+// ExtendedMasker handles value masking for divisions with bit counts larger than 64 bits.
+type ExtendedMasker interface {
+	Masker
+	GetExtendedMaskedLower(extendedValue, extendedMaskValue uint64) uint64
+	GetExtendedMaskedUpper(extendedUpperValue, extendedMaskValue uint64) uint64
 }
 
 func newFullRangeMasker(fullRangeBit int, isSequential bool) Masker {
