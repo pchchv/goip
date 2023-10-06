@@ -138,6 +138,12 @@ func (masker fullRangeBitwiseOrer) GetOredUpper(upperValue, maskValue uint64) ui
 	return masker.bitwiseOrerBase.GetOredUpper(upperValue|masker.upperMask, maskValue)
 }
 
+type specificValueBitwiseOrer struct {
+	bitwiseOrerBase
+	lower uint64
+	upper uint64
+}
+
 func newFullRangeMasker(fullRangeBit int, isSequential bool) Masker {
 	return fullRangeMasker{
 		fullRangeBit: fullRangeBit,
