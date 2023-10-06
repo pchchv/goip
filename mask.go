@@ -186,6 +186,14 @@ type wrappedMasker struct {
 	masker Masker
 }
 
+func (masker wrappedMasker) GetMaskedLower(value, maskValue uint64) uint64 {
+	return masker.masker.GetMaskedLower(value, maskValue)
+}
+
+func (masker wrappedMasker) GetMaskedUpper(upperValue, maskValue uint64) uint64 {
+	return masker.masker.GetMaskedUpper(upperValue, maskValue)
+}
+
 func newFullRangeMasker(fullRangeBit int, isSequential bool) Masker {
 	return fullRangeMasker{
 		fullRangeBit: fullRangeBit,
