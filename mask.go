@@ -171,6 +171,16 @@ func (masker extendedFullRangeMasker) GetMaskedUpper(upperValue, maskValue uint6
 	return masker.extendedMaskerBase.GetMaskedUpper(upperValue|masker.upperMask, maskValue)
 }
 
+// GetExtendedMaskedLower provides the lowest masked value, which is not necessarily the lowest value masked.
+func (masker extendedFullRangeMasker) GetExtendedMaskedLower(extendedValue, extendedMaskValue uint64) uint64 {
+	return masker.extendedMaskerBase.GetExtendedMaskedLower(extendedValue & ^masker.extendedUpperMask, extendedMaskValue)
+}
+
+// GetExtendedMaskedUpper provides the highest masked value, which is not necessarily the highest value masked.
+func (masker extendedFullRangeMasker) GetExtendedMaskedUpper(extendedUpperValue, extendedMaskValue uint64) uint64 {
+	return masker.extendedMaskerBase.GetExtendedMaskedUpper(extendedUpperValue|masker.extendedUpperMask, extendedMaskValue)
+}
+
 func newFullRangeMasker(fullRangeBit int, isSequential bool) Masker {
 	return fullRangeMasker{
 		fullRangeBit: fullRangeBit,
