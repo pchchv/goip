@@ -19,6 +19,12 @@ type boundaryResult struct {
 	upperSection *IPAddressSection
 }
 
+func (res *boundaryResult) createMask() *IPAddress {
+	lowerSection := res.lowerSection
+	creator := lowerSection.getAddrType().getIPNetwork().getIPAddressCreator()
+	return creator.createAddressInternalFromSection(res.lowerSection, NoZone, nil)
+}
+
 type sectionResult struct {
 	section          *IPAddressSection
 	hostSection      *IPAddressSection
