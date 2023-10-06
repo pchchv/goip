@@ -194,6 +194,15 @@ func (masker wrappedMasker) GetMaskedUpper(upperValue, maskValue uint64) uint64 
 	return masker.masker.GetMaskedUpper(upperValue, maskValue)
 }
 
+// extendedSpecificValueMasker can be cached by the int used to construct.
+type extendedSpecificValueMasker struct {
+	extendedMaskerBase
+	lower         uint64
+	upper         uint64
+	extendedLower uint64
+	extendedUpper uint64
+}
+
 func newFullRangeMasker(fullRangeBit int, isSequential bool) Masker {
 	return fullRangeMasker{
 		fullRangeBit: fullRangeBit,
