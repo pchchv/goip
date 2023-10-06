@@ -560,6 +560,15 @@ func (parseData *parsedIPAddress) createIPv4Sections(doSections, doRangeBoundari
 	return
 }
 
+// this is for parsed addresses which have associated masks
+func (parseData *parsedIPAddress) getProviderMask() *IPAddress {
+	return parseData.getQualifier().getMaskLower()
+}
+
+func (parseData *parsedIPAddress) getProviderNetworkPrefixLen() PrefixLen {
+	return parseData.getQualifier().getEquivalentPrefixLen()
+}
+
 func createRangeSeg(
 	addressString string,
 	_ IPVersion,
