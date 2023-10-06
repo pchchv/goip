@@ -305,6 +305,16 @@ func (seg *MACAddressSegment) PrefixIterator(segmentPrefixLen BitCount) Iterator
 	return macSegmentIterator{seg.init().prefixedIterator(segmentPrefixLen)}
 }
 
+// GetLower returns a segment representing just the lowest value in the range, which will be the same segment if it represents a single value.
+func (seg *MACAddressSegment) GetLower() *MACAddressSegment {
+	return seg.init().getLower().ToMAC()
+}
+
+// GetUpper returns a segment representing just the highest value in the range, which will be the same segment if it represents a single value.
+func (seg *MACAddressSegment) GetUpper() *MACAddressSegment {
+	return seg.init().getUpper().ToMAC()
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
