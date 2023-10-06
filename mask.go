@@ -538,3 +538,86 @@ func MaskExtendedRange(value, extendedValue, upperValue, extendedUpperValue, mas
 func newSpecificValueBitwiseOrer(lower, upper uint64) BitwiseOrer {
 	return specificValueBitwiseOrer{lower: lower, upper: upper}
 }
+
+func bitwiseOrRange(value, upperValue, maskValue, maxValue uint64) BitwiseOrer {
+	//algorithm:
+	//here we find the highest bit that is part of the range, highestDifferingBitInRange (ie changes from lower to upper)
+	//then we find the highest bit in the mask that is 0 that is the same or below highestDifferingBitInRange (if such a bit exists)
+	//
+	//this gives us the highest bit that is part of the masked range (ie changes from lower to upper after applying the mask)
+	//if this latter bit exists, then any bit below it in the mask must be 0 to include the entire range.
+	if value == upperValue {
+		return defaultOrMasker
+	}
+
+	if maskValue == 0 || maskValue == maxValue {
+		return defaultOrMasker
+	}
+
+	differing := value ^ upperValue
+	if differing != 1 {
+		highestDifferingBitInRange := bits.LeadingZeros64(differing)
+		maskMask := ^uint64(0) >> uint(highestDifferingBitInRange)
+		differingMasked := maskValue & maskMask
+		foundDiffering := differingMasked != maskMask // mask not all ones
+		if foundDiffering {
+			var hostMask uint64
+			highestDifferingBitMasked := bits.LeadingZeros64(^differingMasked & maskMask) // first 0 bit in the part of the mask covering the range
+			if highestDifferingBitMasked != 63 {
+				hostMask = ^uint64(0) >> uint(highestDifferingBitMasked+1)
+			}
+
+			maskedIsSequential := (maskValue & hostMask) == 0
+
+			if maxValue == ^uint64(0) &&
+				(!maskedIsSequential || highestDifferingBitMasked > highestDifferingBitInRange) {
+				highestOneBit := bits.LeadingZeros64(upperValue)
+				// note we know highestOneBit < 64, otherwise differing would be 1 or 0, so shift is OK
+				maxValue = ^uint64(0) >> uint(highestOneBit)
+			}
+
+			if value == 0 && upperValue == maxValue {
+				// full range
+				if maskedIsSequential {
+					return defaultOrMasker
+				} else {
+					return defaultNonSequentialOrMasker
+				}
+			}
+
+			if highestDifferingBitMasked > highestDifferingBitInRange {
+				if maskedIsSequential {
+					// the count will determine if the ored range is sequential
+					if highestDifferingBitMasked < 63 {
+						count := upperValue - value + 1
+						countRequiredForSequential := uint64(1) << uint(64-highestDifferingBitMasked)
+						if count < countRequiredForSequential {
+							// the resulting ored values are disjoint, not sequential
+							maskedIsSequential = false
+						}
+					}
+				}
+				return newFullRangeBitwiseOrer(highestDifferingBitMasked, maskedIsSequential)
+			} else if !maskedIsSequential {
+				hostZeroed := ^hostMask
+				upperToBeMasked := upperValue & hostZeroed
+				lowerToBeMasked := value | hostMask
+				for nextBit := uint64(1) << uint(64-(highestDifferingBitMasked+1)-1); nextBit != 0; nextBit >>= 1 {
+					// check if the bit in the mask is 0
+					if (maskValue & nextBit) == 0 {
+						candidate := upperToBeMasked | nextBit
+						if candidate <= upperValue {
+							upperToBeMasked = candidate
+						}
+						candidate = lowerToBeMasked & ^nextBit
+						if candidate >= value {
+							lowerToBeMasked = candidate
+						}
+					}
+				}
+				return newSpecificValueBitwiseOrer(lowerToBeMasked, upperToBeMasked)
+			}
+		}
+	}
+	return defaultOrMasker
+}
