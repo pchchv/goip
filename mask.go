@@ -159,6 +159,18 @@ type extendedFullRangeMasker struct {
 	extendedUpperMask uint64
 }
 
+// GetMaskedLower provides the lowest masked value,
+// which is not necessarily the lowest value masked.
+func (masker extendedFullRangeMasker) GetMaskedLower(value, maskValue uint64) uint64 {
+	return masker.extendedMaskerBase.GetMaskedLower(value & ^masker.upperMask, maskValue)
+}
+
+// GetMaskedUpper provides the highest masked value,
+// which is not necessarily the highest value masked.
+func (masker extendedFullRangeMasker) GetMaskedUpper(upperValue, maskValue uint64) uint64 {
+	return masker.extendedMaskerBase.GetMaskedUpper(upperValue|masker.upperMask, maskValue)
+}
+
 func newFullRangeMasker(fullRangeBit int, isSequential bool) Masker {
 	return fullRangeMasker{
 		fullRangeBit: fullRangeBit,
