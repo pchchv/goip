@@ -362,3 +362,20 @@ func newExtendedFullRangeMasker(fullRangeBit int, isSequential bool) ExtendedMas
 		extendedMaskerBase: extendedMaskerBase{maskerBase{isSequential}},
 	}
 }
+
+func newExtendedSpecificValueMasker(extendedLower, lower, extendedUpper, upper uint64) ExtendedMasker {
+	return extendedSpecificValueMasker{
+		extendedLower: extendedLower,
+		lower:         lower,
+		extendedUpper: extendedUpper,
+		upper:         upper,
+	}
+}
+
+func newFullRangeBitwiseOrer(fullRangeBit int, isSequential bool) BitwiseOrer {
+	return fullRangeBitwiseOrer{
+		fullRangeBit:    fullRangeBit,
+		upperMask:       ^uint64(0) >> uint(fullRangeBit),
+		bitwiseOrerBase: bitwiseOrerBase{isSequential},
+	}
+}
