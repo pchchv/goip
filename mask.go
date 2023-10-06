@@ -181,6 +181,11 @@ func (masker extendedFullRangeMasker) GetExtendedMaskedUpper(extendedUpperValue,
 	return masker.extendedMaskerBase.GetExtendedMaskedUpper(extendedUpperValue|masker.extendedUpperMask, extendedMaskValue)
 }
 
+type wrappedMasker struct {
+	extendedMaskerBase
+	masker Masker
+}
+
 func newFullRangeMasker(fullRangeBit int, isSequential bool) Masker {
 	return fullRangeMasker{
 		fullRangeBit: fullRangeBit,
