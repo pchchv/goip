@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
@@ -1378,4 +1379,23 @@ func seriesValsSame(one, two AddressSegmentSeries) bool {
 	}
 
 	return true
+}
+
+func writeStr(state fmt.State, str string, count int) {
+	if count > 0 && len(str) > 0 {
+		bytes := []byte(str)
+		for ; count > 0; count-- {
+			_, _ = state.Write(bytes)
+		}
+	}
+}
+
+func writeBytes(state fmt.State, b byte, count int) {
+	if count > 0 {
+		bytes := make([]byte, count)
+		for i := range bytes {
+			bytes[i] = b
+		}
+		_, _ = state.Write(bytes)
+	}
 }
