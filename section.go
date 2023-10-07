@@ -568,6 +568,30 @@ func (section *addressSectionInternal) sameCountTypeContains(other *AddressSecti
 	return true
 }
 
+// ForEachSegment visits each segment in order from most-significant to least, the most significant with index 0,
+// calling the given function for each, terminating early if the function returns true.
+// Returns the number of visited segments.
+func (section *addressSectionInternal) ForEachSegment(consumer func(segmentIndex int, segment *AddressSegment) (stop bool)) int {
+	divArray := section.getDivArray()
+	if divArray != nil {
+		for i, div := range divArray {
+			if consumer(i, div.ToSegmentBase()) {
+				return i + 1
+			}
+		}
+	}
+	return len(divArray)
+}
+
+// GetBitCount returns the number of bits in each value comprising this address item.
+func (section *addressSectionInternal) GetBitCount() BitCount {
+	divLen := section.GetDivisionCount()
+	if divLen == 0 {
+		return 0
+	}
+	return getSegmentsBitCount(section.getDivision(0).GetBitCount(), section.GetSegmentCount())
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
