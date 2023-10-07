@@ -4,9 +4,24 @@ import (
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string"
 )
 
-var zeroSection = createSection(zeroDivs, nil, zeroType)
+var (
+	hexPrefixedUppercaseParams = new(address_string.StringOptionsBuilder).SetRadix(16).SetHasSeparator(false).SetExpandedSegments(true).SetAddressLabel(HexPrefix).SetUppercase(true).ToOptions()
+	octal0oPrefixedParams      = new(address_string.StringOptionsBuilder).SetRadix(8).SetHasSeparator(false).SetExpandedSegments(true).SetAddressLabel(otherOctalPrefix).ToOptions()
+	binaryPrefixedParams       = new(address_string.StringOptionsBuilder).SetRadix(2).SetHasSeparator(false).SetExpandedSegments(true).SetAddressLabel(BinaryPrefix).ToOptions()
+	octalPrefixedParams        = new(address_string.StringOptionsBuilder).SetRadix(8).SetHasSeparator(false).SetExpandedSegments(true).SetAddressLabel(OctalPrefix).ToOptions()
+	hexUppercaseParams         = new(address_string.StringOptionsBuilder).SetRadix(16).SetHasSeparator(false).SetExpandedSegments(true).SetUppercase(true).ToOptions()
+	hexPrefixedParams          = new(address_string.StringOptionsBuilder).SetRadix(16).SetHasSeparator(false).SetExpandedSegments(true).SetAddressLabel(HexPrefix).ToOptions()
+	decimalParams              = new(address_string.StringOptionsBuilder).SetRadix(10).SetHasSeparator(false).SetExpandedSegments(true).ToOptions()
+	binaryParams               = new(address_string.StringOptionsBuilder).SetRadix(2).SetHasSeparator(false).SetExpandedSegments(true).ToOptions()
+	octalParams                = new(address_string.StringOptionsBuilder).SetRadix(8).SetHasSeparator(false).SetExpandedSegments(true).ToOptions()
+	hexParams                  = new(address_string.StringOptionsBuilder).SetRadix(16).SetHasSeparator(false).SetExpandedSegments(true).ToOptions()
+	zeroSection                = createSection(zeroDivs, nil, zeroType)
+	otherHexPrefix             = "0X"
+	otherOctalPrefix           = "0o"
+)
 
 type addressSectionInternal struct {
 	addressDivisionGroupingInternal
