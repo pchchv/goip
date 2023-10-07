@@ -68,3 +68,19 @@ func (host *parsedHost) getMask() *IPAddress {
 func (host *parsedHost) isAddressString() bool {
 	return host.getAddressProvider() != nil
 }
+
+func (host *parsedHost) asAddress() (*IPAddress, address_error.IncompatibleAddressError) {
+	if host.hasEmbeddedAddress() {
+		return host.getAddressProvider().getProviderAddress()
+	}
+	return nil, nil
+}
+
+func (host *parsedHost) mapString(addressProvider ipAddressProvider) string {
+	if addressProvider.isProvidingAllAddresses() {
+		return SegmentWildcardStr
+	} else if addressProvider.isProvidingEmpty() {
+		return ""
+	}
+	return host.originalStr
+}
