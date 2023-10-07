@@ -788,6 +788,34 @@ func (section *addressSectionInternal) reverseSegments(segProducer func(int) (*A
 	return
 }
 
+// callers to replace have ensures the component sections have consistent prefix lengths for the replacement
+func (section *addressSectionInternal) replace(index, endIndex int, replacement *AddressSection, replacementStartIndex, replacementEndIndex int, prefixLen PrefixLen) *AddressSection {
+	otherSegmentCount := replacementEndIndex - replacementStartIndex
+	segmentCount := section.GetSegmentCount()
+	totalSegmentCount := segmentCount + otherSegmentCount - (endIndex - index)
+	segs := createSegmentArray(totalSegmentCount)
+	sect := section.toAddressSection()
+	sect.copySubDivisions(0, index, segs)
+
+	if index < totalSegmentCount {
+		replacement.copySubDivisions(replacementStartIndex, replacementEndIndex, segs[index:])
+		if index+otherSegmentCount < totalSegmentCount {
+			sect.copySubDivisions(endIndex, segmentCount, segs[index+otherSegmentCount:])
+		}
+	}
+
+	addrType := sect.getAddrType()
+	if addrType.isZeroSegments() { // zero-length section
+		addrType = replacement.getAddrType()
+	}
+
+	return createInitializedSection(segs, prefixLen, addrType)
+}
+
+func (section *addressSectionInternal) setPrefixLenZeroed(prefixLen BitCount) (*AddressSection, address_error.IncompatibleAddressError) {
+	return section.setPrefixLength(prefixLen, true)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
