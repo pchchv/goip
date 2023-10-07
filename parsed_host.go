@@ -44,3 +44,11 @@ func (host *parsedHost) getQualifier() *parsedHostIdentifierStringQualifier {
 func (host *parsedHost) isIPv6Address() bool {
 	return host.hasEmbeddedAddress() && host.getAddressProvider().isProvidingIPv6()
 }
+
+func (host *parsedHost) getPort() Port {
+	return host.labelsQualifier.getPort()
+}
+
+func (host *parsedHost) getService() string {
+	return host.labelsQualifier.getService()
+}
