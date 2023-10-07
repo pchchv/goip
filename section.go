@@ -816,6 +816,80 @@ func (section *addressSectionInternal) setPrefixLenZeroed(prefixLen BitCount) (*
 	return section.setPrefixLength(prefixLen, true)
 }
 
+// replaceLen replaces segments starting from startIndex and ending before endIndex with the segments starting at replacementStartIndex and
+// ending before replacementEndIndex from the replacement section.
+func (section *addressSectionInternal) replaceLen(startIndex, endIndex int, replacement *AddressSection, replacementStartIndex, replacementEndIndex int, segmentToBitsShift uint) *AddressSection {
+	segmentCount := section.GetSegmentCount()
+	startIndex, endIndex, replacementStartIndex, replacementEndIndex =
+		adjustIndices(startIndex, endIndex, segmentCount, replacementStartIndex, replacementEndIndex, replacement.GetSegmentCount())
+
+	replacedCount := endIndex - startIndex
+	replacementCount := replacementEndIndex - replacementStartIndex
+
+	// unlike ipvx, sections of zero length with 0 prefix are still considered to be applying their prefix during replacement,
+	// because you can have zero length prefixes when there are no bits in the section
+	prefixLength := section.getPrefixLen()
+	if replacementCount == 0 && replacedCount == 0 {
+		if prefixLength != nil {
+			prefLen := prefixLength.bitCount()
+			if prefLen <= BitCount(startIndex<<segmentToBitsShift) {
+				return section.toAddressSection()
+			} else {
+				replacementPrefisLength := replacement.getPrefixLen()
+				if replacementPrefisLength == nil {
+					return section.toAddressSection()
+				} else if replacementPrefisLength.bitCount() > BitCount(replacementStartIndex<<segmentToBitsShift) {
+					return section.toAddressSection()
+				}
+			}
+		} else {
+			replacementPrefisLength := replacement.getPrefixLen()
+			if replacementPrefisLength == nil {
+				return section.toAddressSection()
+			} else if replacementPrefisLength.bitCount() > BitCount(replacementStartIndex<<segmentToBitsShift) {
+				return section.toAddressSection()
+			}
+		}
+	} else if segmentCount == replacedCount {
+		if prefixLength == nil || prefixLength.bitCount() > 0 {
+			return replacement
+		} else {
+			replacementPrefisLength := replacement.getPrefixLen()
+			if replacementPrefisLength != nil && replacementPrefisLength.bitCount() == 0 { // prefix length is 0
+				return replacement
+			}
+		}
+	}
+
+	startBits := BitCount(startIndex << segmentToBitsShift)
+	var newPrefixLength PrefixLen
+	if prefixLength != nil && prefixLength.bitCount() <= startBits {
+		newPrefixLength = prefixLength
+	} else {
+		replacementPrefLen := replacement.getPrefixLen()
+		if replacementPrefLen != nil && replacementPrefLen.bitCount() <= BitCount(replacementEndIndex<<segmentToBitsShift) {
+			var replacementPrefixLen BitCount
+			replacementStartBits := BitCount(replacementStartIndex << segmentToBitsShift)
+			if replacementPrefLen.bitCount() > replacementStartBits {
+				replacementPrefixLen = replacementPrefLen.bitCount() - replacementStartBits
+			}
+			newPrefixLength = cacheBitCount(startBits + replacementPrefixLen)
+		} else if prefixLength != nil {
+			replacementBits := BitCount(replacementCount << segmentToBitsShift)
+			var endPrefixBits BitCount
+			endIndexBits := BitCount(endIndex << segmentToBitsShift)
+			if prefixLength.bitCount() > endIndexBits {
+				endPrefixBits = prefixLength.bitCount() - endIndexBits
+			}
+			newPrefixLength = cacheBitCount(startBits + replacementBits + endPrefixBits)
+		} else {
+			newPrefixLength = nil
+		}
+	}
+
+	return section.replace(startIndex, endIndex, replacement, replacementStartIndex, replacementEndIndex, newPrefixLength)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
