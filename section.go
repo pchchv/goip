@@ -890,6 +890,37 @@ func (section *addressSectionInternal) replaceLen(startIndex, endIndex int, repl
 	return section.replace(startIndex, endIndex, replacement, replacementStartIndex, replacementEndIndex, newPrefixLength)
 }
 
+// Constructs an equivalent address section with the smallest CIDR prefix possible (largest network),
+// such that the range of values are a set of subnet blocks for that prefix.
+func (section *addressSectionInternal) assignMinPrefixForBlock() *AddressSection {
+	return section.setPrefixLen(section.GetMinPrefixLenForBlock())
+}
+
+func (section *addressSectionInternal) contains(other AddressSectionType) bool {
+	if other == nil {
+		return true
+	}
+
+	otherSection := other.ToSectionBase()
+	if section.toAddressSection() == otherSection || otherSection == nil {
+		return true
+	}
+
+	//check if they are comparable first
+	matches, count := section.matchesTypeAndCount(otherSection)
+	if !matches {
+		return false
+	} else {
+		for i := count - 1; i >= 0; i-- {
+			if !section.GetSegment(i).sameTypeContains(otherSection.GetSegment(i)) {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
