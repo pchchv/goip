@@ -26,3 +26,11 @@ type parsedHost struct {
 	originalStr      string
 	params           address_string_param.HostNameParams
 }
+
+func (host *parsedHost) getAddressProvider() ipAddressProvider {
+	return host.embeddedAddress.addressProvider
+}
+
+func (host *parsedHost) hasEmbeddedAddress() bool {
+	return host.embeddedAddress.addressProvider != nil
+}
