@@ -131,3 +131,15 @@ func (host *parsedHost) buildNormalizedLabels() []string {
 	}
 	return host.parsedHostCache.normalizedLabels
 }
+
+func (host *parsedHost) getNormalizedLabels() []string {
+	return host.buildNormalizedLabels()
+}
+
+func (host *parsedHost) isUNCIPv6Literal() bool {
+	return host.embeddedAddress.isUNCIPv6Literal
+}
+
+func (host *parsedHost) isReverseDNS() bool {
+	return host.embeddedAddress.isReverseDNS
+}
