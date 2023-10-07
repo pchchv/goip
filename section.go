@@ -522,6 +522,27 @@ func (section *addressSectionInternal) adjustPrefixLenZeroed(adjustment BitCount
 	return section.adjustPrefixLength(adjustment, true)
 }
 
+func (section *addressSectionInternal) matchesTypeAndCount(other *AddressSection) (matches bool, count int) {
+	count = section.GetDivisionCount()
+	if count != other.GetDivisionCount() {
+		return
+	} else if section.getAddrType() != other.getAddrType() {
+		return
+	}
+	matches = true
+	return
+}
+
+func (section *addressSectionInternal) sameCountTypeEquals(other *AddressSection) bool {
+	count := section.GetSegmentCount()
+	for i := count - 1; i >= 0; i-- {
+		if !section.GetSegment(i).sameTypeEquals(other.GetSegment(i)) {
+			return false
+		}
+	}
+	return true
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
