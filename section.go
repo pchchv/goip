@@ -592,6 +592,22 @@ func (section *addressSectionInternal) GetBitCount() BitCount {
 	return getSegmentsBitCount(section.getDivision(0).GetBitCount(), section.GetSegmentCount())
 }
 
+// GetByteCount returns the number of bytes required for each value comprising this address item.
+func (section *addressSectionInternal) GetByteCount() int {
+	return int((section.GetBitCount() + 7) >> 3)
+}
+
+// IsOneBit returns true if the bit in the lower value of this section at the given index is 1,
+// where index 0 refers to the most significant bit.
+// IsOneBit will panic if bitIndex is less than zero, or if it is larger than the bit count of this item.
+func (section *addressSectionInternal) IsOneBit(prefixBitIndex BitCount) bool {
+	bitsPerSegment := section.GetBitsPerSegment()
+	bytesPerSegment := section.GetBytesPerSegment()
+	segment := section.GetSegment(getHostSegmentIndex(prefixBitIndex, bytesPerSegment, bitsPerSegment))
+	segmentBitIndex := prefixBitIndex % bitsPerSegment
+	return segment.IsOneBit(segmentBitIndex)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
