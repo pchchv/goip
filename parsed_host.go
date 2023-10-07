@@ -52,3 +52,11 @@ func (host *parsedHost) getPort() Port {
 func (host *parsedHost) getService() string {
 	return host.labelsQualifier.getService()
 }
+
+func (host *parsedHost) getNetworkPrefixLen() PrefixLen {
+	return host.labelsQualifier.getNetworkPrefixLen()
+}
+
+func (host *parsedHost) getEquivalentPrefixLen() PrefixLen {
+	return host.labelsQualifier.getEquivalentPrefixLen()
+}
