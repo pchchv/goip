@@ -744,6 +744,50 @@ func (section *addressSectionInternal) toMinUpper() *AddressSection {
 	return section.toAboveOrBelow(true)
 }
 
+func (section *addressSectionInternal) reverseSegments(segProducer func(int) (*AddressSegment, address_error.IncompatibleAddressError)) (res *AddressSection, err address_error.IncompatibleAddressError) {
+	count := section.GetSegmentCount()
+	if count == 0 { // case count == 1 we cannot exit early, we need to apply segProducer to each segment
+		return section.withoutPrefixLen(), nil
+	}
+
+	newSegs := createSegmentArray(count)
+	isSame := !section.isPrefixed() //when reversing, the prefix must go
+	halfCount := count >> 1
+	i := 0
+	for j := count - 1; i < halfCount; i, j = i+1, j-1 {
+		var newj, newi *AddressSegment
+		if newj, err = segProducer(i); err != nil {
+			return
+		}
+		if newi, err = segProducer(j); err != nil {
+			return
+		}
+		origi := section.GetSegment(i)
+		origj := section.GetSegment(j)
+		newSegs[j] = newj.ToDiv()
+		newSegs[i] = newi.ToDiv()
+		if isSame &&
+			!(segValsSame(newi.getSegmentValue(), origi.getSegmentValue(), newi.getUpperSegmentValue(), origi.getUpperSegmentValue()) &&
+				segValsSame(newj.getSegmentValue(), origj.getSegmentValue(), newj.getUpperSegmentValue(), origj.getUpperSegmentValue())) {
+			isSame = false
+		}
+	}
+
+	if (count & 1) == 1 { //the count is odd, handle the middle one
+		seg := section.getDivision(i)
+		newSegs[i] = seg // gets segment i without prefix length
+	}
+
+	if isSame {
+		res = section.toAddressSection()
+		return
+	}
+
+	res = deriveAddressSectionPrefLen(section.toAddressSection(), newSegs, nil)
+
+	return
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
