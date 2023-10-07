@@ -728,6 +728,22 @@ func (section *addressSectionInternal) toAboveOrBelow(above bool) *AddressSectio
 	return deriveAddressSectionPrefLen(section.toAddressSection(), newSegs, nil)
 }
 
+// Returns the address created by converting this address to
+// an address with a 0 as the first bit following the prefix,
+// followed by all ones to the end, and with the prefix length then removed
+// Returns the same address if it has no prefix length.
+func (section *addressSectionInternal) toMaxLower() *AddressSection {
+	return section.toAboveOrBelow(false)
+}
+
+// Returns the address created by converting this address to
+// an address with a 1 as the first bit following the prefix,
+// followed by all zeros to the end, and with the prefix length then removed
+// Returns the same address if it has no prefix length
+func (section *addressSectionInternal) toMinUpper() *AddressSection {
+	return section.toAboveOrBelow(true)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
