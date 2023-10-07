@@ -60,3 +60,11 @@ func (host *parsedHost) getNetworkPrefixLen() PrefixLen {
 func (host *parsedHost) getEquivalentPrefixLen() PrefixLen {
 	return host.labelsQualifier.getEquivalentPrefixLen()
 }
+
+func (host *parsedHost) getMask() *IPAddress {
+	return host.labelsQualifier.getMaskLower()
+}
+
+func (host *parsedHost) isAddressString() bool {
+	return host.getAddressProvider() != nil
+}
