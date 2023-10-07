@@ -1,6 +1,8 @@
 package goip
 
 import (
+	"strings"
+
 	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/address_string_param"
 )
@@ -83,4 +85,49 @@ func (host *parsedHost) mapString(addressProvider ipAddressProvider) string {
 		return ""
 	}
 	return host.originalStr
+}
+
+func (host *parsedHost) buildNormalizedLabels() []string {
+	if host.parsedHostCache == nil {
+		var normalizedLabels []string
+		if host.hasEmbeddedAddress() {
+			addressProvider := host.getAddressProvider()
+			addr, err := addressProvider.getProviderAddress()
+			if err == nil && addr != nil {
+				section := addr.GetSection()
+				normalizedLabels = section.GetSegmentStrings()
+			} else {
+				hostStr := host.mapString(addressProvider)
+				if addressProvider.isProvidingEmpty() {
+					normalizedLabels = []string{}
+				} else {
+					normalizedLabels = []string{hostStr}
+				}
+			}
+		} else {
+			normalizedLabels = make([]string, len(host.separatorIndices))
+			normalizedFlags := host.normalizedFlags
+
+			for i, lastSep := 0, -1; i < len(normalizedLabels); i++ {
+				index := host.separatorIndices[i]
+				if len(normalizedFlags) > 0 && !normalizedFlags[i] {
+					var normalizedLabelBuilder strings.Builder
+					normalizedLabelBuilder.Grow((index - lastSep) - 1)
+					for j := lastSep + 1; j < index; j++ {
+						c := host.originalStr[j]
+						if c >= 'A' && c <= 'Z' {
+							c = c + ('a' - 'A')
+						}
+						normalizedLabelBuilder.WriteByte(c)
+					}
+					normalizedLabels[i] = normalizedLabelBuilder.String()
+				} else {
+					normalizedLabels[i] = host.originalStr[lastSep+1 : index]
+				}
+				lastSep = index
+			}
+		}
+		return normalizedLabels
+	}
+	return host.parsedHostCache.normalizedLabels
 }
