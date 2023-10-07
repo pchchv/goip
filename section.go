@@ -608,6 +608,46 @@ func (section *addressSectionInternal) IsOneBit(prefixBitIndex BitCount) bool {
 	return segment.IsOneBit(segmentBitIndex)
 }
 
+// Gets the subsection from the series starting from the given index and ending just before the give endIndex.
+// The first segment is at index 0.
+func (section *addressSectionInternal) getSubSection(index, endIndex int) *AddressSection {
+	if index < 0 {
+		index = 0
+	}
+
+	thisSegmentCount := section.GetSegmentCount()
+	if endIndex > thisSegmentCount {
+		endIndex = thisSegmentCount
+	}
+
+	segmentCount := endIndex - index
+	if segmentCount <= 0 {
+		if thisSegmentCount == 0 {
+			return section.toAddressSection()
+		}
+		// we do not want an inconsistency where mac zero length can have prefix len zero while ip sections cannot
+		return zeroSection
+	}
+
+	if index == 0 && endIndex == thisSegmentCount {
+		return section.toAddressSection()
+	}
+
+	segs := section.getSubDivisions(index, endIndex)
+	newPrefLen := section.getPrefixLen()
+	if newPrefLen != nil {
+		newPrefLen = getAdjustedPrefixLength(section.GetBitsPerSegment(), newPrefLen.bitCount(), index, endIndex)
+	}
+
+	addrType := section.getAddrType()
+
+	if !section.isMultiple() {
+		return createSection(segs, newPrefLen, addrType)
+	}
+
+	return deriveAddressSectionPrefLen(section.toAddressSection(), segs, newPrefLen)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
