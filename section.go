@@ -985,6 +985,110 @@ func (section addressSectionInternal) writeStrFmt(state fmt.State, verb rune, st
 	writeBytes(state, ' ', rightPaddingCount)
 }
 
+func (section addressSectionInternal) writeNumberFmt(state fmt.State, verb rune, str string, zone Zone) {
+	var prefix, address_String, secondStr string
+	var separator byte
+
+	if verb == 'O' {
+		prefix = otherOctalPrefix // "0o"
+	} else if state.Flag('#') {
+		switch verb {
+		case 'x':
+			prefix = HexPrefix
+		case 'X':
+			prefix = otherHexPrefix
+		case 'b':
+			prefix = BinaryPrefix
+		case 'o':
+			prefix = OctalPrefix
+		}
+	}
+
+	isMulti := section.isMultiple()
+	if isMulti {
+		separatorIndex := len(str) >> 1
+		address_String = str[:separatorIndex]
+		separator = str[separatorIndex]
+		secondStr = str[separatorIndex+1:]
+	} else {
+		address_String = str
+	}
+
+	precision, hasPrecision := state.Precision()
+	width, hasWidth := state.Width()
+	usePrecision := hasPrecision
+
+	if section.hasNoDivisions() {
+		usePrecision = false
+		prefix = ""
+	}
+
+	for {
+		var zeroCount, leftPaddingCount, rightPaddingCount int
+		if usePrecision {
+			if len(address_String) > precision {
+				frontChar := address_String[0]
+				if frontChar == '0' {
+					i := 1
+					// eliminate leading zeros to match the precision (all the way to nothing)
+					for len(address_String) > precision+i {
+						frontChar = address_String[i]
+						if frontChar != '0' {
+							break
+						}
+						i++
+					}
+					address_String = address_String[i:]
+				}
+			} else if len(address_String) < precision {
+				// expand to match the precision
+				zeroCount = precision - len(address_String)
+			}
+		}
+
+		length := len(prefix) + zeroCount + len(address_String)
+		zoneRequired := len(zone) > 0
+		if zoneRequired {
+			length += len(zone) + 1
+		}
+
+		if hasWidth && length < width { // padding required
+			paddingCount := width - length
+			if state.Flag('-') {
+				// right padding with spaces (takes precedence over '0' flag)
+				rightPaddingCount = paddingCount
+			} else if state.Flag('0') && !hasPrecision {
+				// left padding with zeros
+				zeroCount = paddingCount
+			} else {
+				// left padding with spaces
+				leftPaddingCount = paddingCount
+			}
+		}
+
+		// left padding/prefix/zeros/str/right padding
+		writeBytes(state, ' ', leftPaddingCount)
+		writeStr(state, prefix, 1)
+		writeBytes(state, '0', zeroCount)
+		_, _ = state.Write([]byte(address_String))
+
+		if zoneRequired {
+			_, _ = state.Write([]byte{IPv6ZoneSeparator})
+			_, _ = state.Write([]byte(zone))
+		}
+
+		writeBytes(state, ' ', rightPaddingCount)
+
+		if !isMulti {
+			break
+		}
+
+		address_String = secondStr
+		isMulti = false
+		_, _ = state.Write([]byte{separator})
+	}
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
