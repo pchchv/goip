@@ -5,6 +5,8 @@ import (
 	"github.com/pchchv/goip/address_string_param"
 )
 
+var noQualifier = &parsedHostIdentifierStringQualifier{}
+
 type parsedHostCache struct {
 	normalizedLabels []string
 	host             string
@@ -33,4 +35,12 @@ func (host *parsedHost) getAddressProvider() ipAddressProvider {
 
 func (host *parsedHost) hasEmbeddedAddress() bool {
 	return host.embeddedAddress.addressProvider != nil
+}
+
+func (host *parsedHost) getQualifier() *parsedHostIdentifierStringQualifier {
+	return &host.labelsQualifier
+}
+
+func (host *parsedHost) isIPv6Address() bool {
+	return host.hasEmbeddedAddress() && host.getAddressProvider().isProvidingIPv6()
 }
