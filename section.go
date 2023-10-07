@@ -648,6 +648,25 @@ func (section *addressSectionInternal) getSubSection(index, endIndex int) *Addre
 	return deriveAddressSectionPrefLen(section.toAddressSection(), segs, newPrefLen)
 }
 
+// TestBit returns true if the bit in the lower value of this section at the given index is 1, where index 0 refers to the least significant bit.
+// In other words, it computes (bits & (1 << n)) != 0), using the lower value of this section.
+// TestBit will panic if n < 0, or if it matches or exceeds the bit count of this item.
+func (section *addressSectionInternal) TestBit(n BitCount) bool {
+	return section.IsOneBit(section.GetBitCount() - (n + 1))
+}
+
+func (section *addressSectionInternal) withoutPrefixLen() *AddressSection {
+	if !section.isPrefixed() {
+		return section.toAddressSection()
+	}
+
+	if sect := section.toIPAddressSection(); sect != nil {
+		return sect.withoutPrefixLen().ToSectionBase()
+	}
+
+	return createSectionMultiple(section.getDivisionsInternal(), nil, section.getAddrType(), section.isMultiple())
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
