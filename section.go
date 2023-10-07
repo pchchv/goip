@@ -1089,6 +1089,51 @@ func (section addressSectionInternal) writeNumberFmt(state fmt.State, verb rune,
 	}
 }
 
+func (section *addressSectionInternal) isDualString() (bool, address_error.IncompatibleAddressError) {
+	count := section.GetSegmentCount()
+	if section.isMultiple() {
+		//at this point we know we will return true, but we determine now if we must return address_error.IncompatibleAddressError
+		for i := 0; i < count; i++ {
+			division := section.GetSegment(i)
+			if division.isMultiple() {
+				isLastFull := true
+				for j := count - 1; j >= i; j-- {
+					division = section.GetSegment(j)
+					if division.isMultiple() {
+						if !isLastFull {
+							return false, &incompatibleAddressError{addressError{key: "ipaddress.error.segmentMismatch"}}
+						}
+						isLastFull = division.IsFullRange()
+					} else {
+						isLastFull = false
+					}
+				}
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
+// used by iterator() and nonZeroHostIterator() in section types
+func (section *addressSectionInternal) sectionIterator(excludeFunc func([]*AddressDivision) bool) Iterator[*AddressSection] {
+	var original = section.toAddressSection()
+	var iterator Iterator[[]*AddressDivision]
+	useOriginal := !section.isMultiple()
+	if useOriginal {
+		if excludeFunc != nil && excludeFunc(section.getDivisionsInternal()) {
+			original = nil // the single-valued iterator starts out empty
+		}
+	} else {
+		iterator = allSegmentsIterator(
+			section.GetSegmentCount(),
+			nil,
+			func(index int) Iterator[*AddressSegment] { return section.GetSegment(index).iterator() },
+			excludeFunc)
+	}
+	return sectIterator(useOriginal, original, false, iterator)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
