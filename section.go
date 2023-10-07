@@ -667,6 +667,67 @@ func (section *addressSectionInternal) withoutPrefixLen() *AddressSection {
 	return createSectionMultiple(section.getDivisionsInternal(), nil, section.getAddrType(), section.isMultiple())
 }
 
+func (section *addressSectionInternal) toAboveOrBelow(above bool) *AddressSection {
+	prefLen := section.GetPrefixLen()
+	if prefLen == nil {
+		return section.toAddressSection()
+	}
+
+	segmentCount := section.GetSegmentCount()
+	prefBits := prefLen.Len()
+	if prefBits == section.GetBitCount() || segmentCount == 0 {
+		return section.withoutPrefixLen()
+	}
+
+	segmentByteCount := section.GetBytesPerSegment()
+	segmentBitCount := section.GetBitsPerSegment()
+	newSegs := createSegmentArray(segmentCount)
+
+	if prefBits > 0 {
+		networkSegmentIndex := getNetworkSegmentIndex(prefBits, segmentByteCount, segmentBitCount)
+		section.copySubDivisions(0, networkSegmentIndex, newSegs)
+	}
+
+	hostSegmentIndex := getHostSegmentIndex(prefBits, segmentByteCount, segmentBitCount)
+	if hostSegmentIndex < segmentCount {
+		var newVal SegInt
+		oldSeg := section.getDivision(hostSegmentIndex)
+		oldVal := oldSeg.getUpperSegmentValue()
+		segPrefBits := getPrefixedSegmentPrefixLength(segmentBitCount, prefBits, hostSegmentIndex).bitCount()
+		// 1 bit followed by zeros
+		allOnes := ^SegInt(0)
+
+		if above {
+			hostBits := uint(segmentBitCount - segPrefBits)
+			networkMask := allOnes << (hostBits - 1)
+			hostMask := ^(allOnes << hostBits)
+			newVal = (oldVal | hostMask) & networkMask
+		} else {
+			hostBits := uint(segmentBitCount - segPrefBits)
+			networkMask := allOnes << hostBits
+			hostMask := ^(allOnes<<hostBits - 1)
+			newVal = (oldVal & networkMask) | hostMask
+		}
+
+		newSegs[hostSegmentIndex] = createAddressDivision(oldSeg.deriveNewSeg(newVal, nil))
+
+		if j := hostSegmentIndex + 1; j < segmentCount {
+			var endSeg *AddressDivision
+			if above {
+				endSeg = createAddressDivision(oldSeg.deriveNewSeg(0, nil))
+			} else {
+				maxSegVal := section.GetMaxSegmentValue()
+				endSeg = createAddressDivision(oldSeg.deriveNewSeg(maxSegVal, nil))
+			}
+			newSegs[j] = endSeg
+			for j++; j < segmentCount; j++ {
+				newSegs[j] = endSeg
+			}
+		}
+	}
+	return deriveAddressSectionPrefLen(section.toAddressSection(), newSegs, nil)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
