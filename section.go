@@ -1191,14 +1191,43 @@ func toSegments(
 	return
 }
 
-// callers to this function supply segments with prefix length consistent with the supplied prefix length
+// callers to deriveAddressSection supply segments with prefix length consistent with the supplied prefix length
 func deriveAddressSectionPrefLen(from *AddressSection, segments []*AddressDivision, prefixLength PrefixLen) *AddressSection {
 	result := createSection(segments, prefixLength, from.getAddrType())
 	result.initMultiple() // assigns isMultiple
 	return result
 }
 
-// callers to this function supply segments with prefix length consistent with the prefix length of this section
+// callers to deriveAddressSection supply segments with prefix length consistent with the prefix length of this section
 func deriveAddressSection(from *AddressSection, segments []*AddressDivision) (res *AddressSection) {
 	return deriveAddressSectionPrefLen(from, segments, from.prefixLength)
+}
+
+// callers to createInitializedSection supply segments with prefix length consistent with the supplied prefix length
+func createInitializedSection(segments []*AddressDivision, prefixLength PrefixLen, addrType addrType) *AddressSection {
+	result := createSection(segments, prefixLength, addrType)
+	result.initMultiple() // assigns isMultiple
+	return result
+}
+
+func seriesValsSame(one, two AddressSegmentSeries) bool {
+	if one == two {
+		return true
+	}
+
+	count := one.GetDivisionCount()
+	if count != two.GetDivisionCount() {
+		panic(two)
+	}
+
+	for i := count - 1; i >= 0; i-- { // reverse order since less significant segments more likely to differ
+		oneSeg := one.GetGenericSegment(i)
+		twoSeg := two.GetGenericSegment(i)
+		if !segValsSame(oneSeg.GetSegmentValue(), twoSeg.GetSegmentValue(),
+			oneSeg.GetUpperSegmentValue(), twoSeg.GetUpperSegmentValue()) {
+			return false
+		}
+	}
+
+	return true
 }
