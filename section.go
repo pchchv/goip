@@ -543,6 +543,31 @@ func (section *addressSectionInternal) sameCountTypeEquals(other *AddressSection
 	return true
 }
 
+func (section *addressSectionInternal) equal(otherT AddressSectionType) bool {
+	if otherT == nil {
+		return false
+	}
+
+	other := otherT.ToSectionBase()
+	if other == nil {
+		return false
+	}
+
+	matchesStructure, _ := section.matchesTypeAndCount(other)
+
+	return matchesStructure && section.sameCountTypeEquals(other)
+}
+
+func (section *addressSectionInternal) sameCountTypeContains(other *AddressSection) bool {
+	count := section.GetSegmentCount()
+	for i := count - 1; i >= 0; i-- {
+		if !section.GetSegment(i).sameTypeContains(other.GetSegment(i)) {
+			return false
+		}
+	}
+	return true
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
