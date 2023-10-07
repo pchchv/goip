@@ -2,6 +2,7 @@ package goip
 
 import (
 	"fmt"
+	"strconv"
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
@@ -935,6 +936,53 @@ func (section *addressSectionInternal) contains(other AddressSectionType) bool {
 	}
 
 	return true
+}
+
+func (section *addressSectionInternal) getStringCache() *stringCache {
+	if section.hasNoDivisions() {
+		return &zeroStringCache
+	}
+
+	cache := section.cache
+	if cache == nil {
+		return nil
+	}
+
+	return &cache.stringCache
+}
+
+func (section addressSectionInternal) writeStrFmt(state fmt.State, verb rune, str string, zone Zone) {
+	var leftPaddingCount, rightPaddingCount int
+
+	if precision, hasPrecision := state.Precision(); hasPrecision && len(str) > precision {
+		str = str[:precision]
+	}
+
+	if verb == 'q' {
+		if state.Flag('#') && (zone == NoZone || strconv.CanBackquote(string(zone))) {
+			str = "`" + str + "`"
+		} else if zone == NoZone {
+			str = `"` + str + `"`
+		} else {
+			str = strconv.Quote(str) // zones should not have special characters, but you cannot be sure
+		}
+	}
+
+	if width, hasWidth := state.Width(); hasWidth && len(str) < width { // padding required
+		paddingCount := width - len(str)
+		if state.Flag('-') {
+			// right padding with spaces (takes precedence over '0' flag)
+			rightPaddingCount = paddingCount
+		} else {
+			// left padding with spaces
+			leftPaddingCount = paddingCount
+		}
+	}
+
+	// left padding/str/right padding
+	writeBytes(state, ' ', leftPaddingCount)
+	_, _ = state.Write([]byte(str))
+	writeBytes(state, ' ', rightPaddingCount)
 }
 
 // AddressSection is an address section containing a certain number of consecutive segments.
