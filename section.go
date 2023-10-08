@@ -1195,6 +1195,22 @@ func (section *addressSectionInternal) IncludesMax() bool {
 	return section.addressDivisionGroupingInternal.IncludesMax()
 }
 
+// IsFullRange returns whether this address item represents all possible values attainable by an address item of this type.
+//
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (section *addressSectionInternal) IsFullRange() bool {
+	return section.addressDivisionGroupingInternal.IsFullRange()
+}
+
+// GetSequentialBlockIndex gets the minimal segment index for which all following segments are full-range blocks.
+//
+// The segment at this index is not a full-range block itself, unless all segments are full-range.
+// The segment at this index and all following segments form a sequential range.
+// For the full address section to be sequential, the preceding segments must be single-valued.
+func (section *addressSectionInternal) GetSequentialBlockIndex() int {
+	return section.addressDivisionGroupingInternal.GetSequentialBlockIndex()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
