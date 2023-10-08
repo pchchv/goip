@@ -1173,6 +1173,16 @@ func (section *addressSectionInternal) isMultipleFrom(segmentCount int) bool {
 	return false
 }
 
+// IsZero returns whether this section matches exactly the value of zero.
+func (section *addressSectionInternal) IsZero() bool {
+	return section.addressDivisionGroupingInternal.IsZero()
+}
+
+// IncludesZero returns whether this section includes the value of zero within its range.
+func (section *addressSectionInternal) IncludesZero() bool {
+	return section.addressDivisionGroupingInternal.IncludesZero()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
