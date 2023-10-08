@@ -1154,6 +1154,25 @@ func (section *addressSectionInternal) GetSequentialBlockCount() *big.Int {
 	return section.GetPrefixCountLen(BitCount(sequentialSegCount) * section.GetBitsPerSegment())
 }
 
+func (section *addressSectionInternal) isMultipleTo(segmentCount int) bool {
+	for i := 0; i < segmentCount; i++ {
+		if section.GetSegment(i).isMultiple() {
+			return true
+		}
+	}
+	return false
+}
+
+func (section *addressSectionInternal) isMultipleFrom(segmentCount int) bool {
+	segTotal := section.GetSegmentCount()
+	for i := segmentCount; i < segTotal; i++ {
+		if section.GetSegment(i).isMultiple() {
+			return true
+		}
+	}
+	return false
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
