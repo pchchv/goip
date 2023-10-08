@@ -1288,6 +1288,44 @@ func (section *addressSectionInternal) CopyUpperBytes(bytes []byte) []byte {
 	return section.addressDivisionGroupingInternal.CopyUpperBytes(bytes)
 }
 
+// IsSequential returns  whether the section represents a range of values that are sequential.
+//
+// Generally, this means that any segment covering a range of values must
+// be followed by segment that are full range, covering all values.
+func (section *addressSectionInternal) IsSequential() bool {
+	return section.addressDivisionGroupingInternal.IsSequential()
+}
+
+// GetLeadingBitCount returns the number of consecutive leading one or zero bits.
+// If ones is true, returns the number of consecutive leading one bits.
+// Otherwise, returns the number of consecutive leading zero bits.
+//
+// This method applies to the lower value of the range if this section represents multiple values.
+func (section *addressSectionInternal) GetLeadingBitCount(ones bool) BitCount {
+	count := section.GetSegmentCount()
+	if count == 0 {
+		return 0
+	}
+
+	var front SegInt
+	var prefixLen BitCount
+
+	if ones {
+		front = section.GetSegment(0).GetMaxValue()
+	}
+
+	for i := 0; i < count; i++ {
+		seg := section.GetSegment(i)
+		value := seg.getSegmentValue()
+		if value != front {
+			return prefixLen + seg.GetLeadingBitCount(ones)
+		}
+		prefixLen += seg.getBitCount()
+	}
+
+	return prefixLen
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
