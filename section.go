@@ -1183,6 +1183,18 @@ func (section *addressSectionInternal) IncludesZero() bool {
 	return section.addressDivisionGroupingInternal.IncludesZero()
 }
 
+// IsMax returns whether this section matches exactly the maximum possible value,
+// the value whose bits are all ones.
+func (section *addressSectionInternal) IsMax() bool {
+	return section.addressDivisionGroupingInternal.IsMax()
+}
+
+// IncludesMax returns whether this section includes the max value,
+// the value whose bits are all ones, within its range.
+func (section *addressSectionInternal) IncludesMax() bool {
+	return section.addressDivisionGroupingInternal.IncludesMax()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
