@@ -2,6 +2,7 @@ package goip
 
 import (
 	"fmt"
+	"math/big"
 	"strconv"
 	"unsafe"
 
@@ -1132,6 +1133,25 @@ func (section *addressSectionInternal) sectionIterator(excludeFunc func([]*Addre
 			excludeFunc)
 	}
 	return sectIterator(useOriginal, original, false, iterator)
+}
+
+// GetMinPrefixLenForBlock returns the smallest prefix length such that this section includes the block of all values for that prefix length.
+//
+// If the entire range can be described this way, then this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// There may be a single prefix, or multiple possible prefix values in this item for the returned prefix length.
+// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values.
+//
+// If this section represents a single value, this returns the bit count.
+func (section *addressSectionInternal) GetMinPrefixLenForBlock() BitCount {
+	return section.addressDivisionGroupingInternal.GetMinPrefixLenForBlock()
+}
+
+// GetSequentialBlockCount provides the count of elements from the sequential block iterator,
+// the minimal number of sequential address sections that comprise this address section.
+func (section *addressSectionInternal) GetSequentialBlockCount() *big.Int {
+	sequentialSegCount := section.GetSequentialBlockIndex()
+	return section.GetPrefixCountLen(BitCount(sequentialSegCount) * section.GetBitsPerSegment())
 }
 
 // AddressSection is an address section containing a certain number of consecutive segments.
