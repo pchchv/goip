@@ -1211,6 +1211,26 @@ func (section *addressSectionInternal) GetSequentialBlockIndex() int {
 	return section.addressDivisionGroupingInternal.GetSequentialBlockIndex()
 }
 
+// GetPrefixLen returns the prefix length, or nil if there is no prefix length.
+//
+// A prefix length indicates the number of bits in the initial part of the address item that comprises the prefix.
+//
+// A prefix is a part of the address item that is not specific to that address but common amongst a group of such items,
+// such as a CIDR prefix block subnet.
+func (section *addressSectionInternal) GetPrefixLen() PrefixLen {
+	return section.addressDivisionGroupingInternal.GetPrefixLen()
+}
+
+// GetValue returns the lowest individual address section in this address section as an integer value.
+func (section *addressSectionInternal) GetValue() *big.Int {
+	return section.addressDivisionGroupingInternal.GetValue()
+}
+
+// GetUpperValue returns the highest individual address section in this address section as an integer value.
+func (section *addressSectionInternal) GetUpperValue() *big.Int {
+	return section.addressDivisionGroupingInternal.GetUpperValue()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
