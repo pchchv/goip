@@ -1326,6 +1326,36 @@ func (section *addressSectionInternal) GetLeadingBitCount(ones bool) BitCount {
 	return prefixLen
 }
 
+// GetTrailingBitCount returns the number of consecutive trailing one or zero bits.
+// If ones is true, returns the number of consecutive trailing zero bits.
+// Otherwise, returns the number of consecutive trailing one bits.
+//
+// This method applies to the lower value of the range if this section represents multiple values.
+func (section *addressSectionInternal) GetTrailingBitCount(ones bool) BitCount {
+	count := section.GetSegmentCount()
+	if count == 0 {
+		return 0
+	}
+
+	var back SegInt
+	var bitLen BitCount
+
+	if ones {
+		back = section.GetSegment(0).GetMaxValue()
+	}
+
+	for i := count - 1; i >= 0; i-- {
+		seg := section.GetSegment(i)
+		value := seg.getSegmentValue()
+		if value != back {
+			return bitLen + seg.GetTrailingBitCount(ones)
+		}
+		bitLen += seg.getBitCount()
+	}
+
+	return bitLen
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
