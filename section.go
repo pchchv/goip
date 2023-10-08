@@ -1231,6 +1231,42 @@ func (section *addressSectionInternal) GetUpperValue() *big.Int {
 	return section.addressDivisionGroupingInternal.GetUpperValue()
 }
 
+// ContainsPrefixBlock returns whether the values of this item contains the block of values for the given prefix length.
+//
+// Unlike ContainsSinglePrefixBlock, whether there are multiple prefix values in this item for the given prefix length makes no difference.
+//
+// Use GetMinPrefixLenForBlock to determine the smallest prefix length for which this method returns true.
+func (section *addressSectionInternal) ContainsPrefixBlock(prefixLen BitCount) bool {
+	prefixLen = checkSubnet(section, prefixLen)
+	divCount := section.GetSegmentCount()
+	bitsPerSegment := section.GetBitsPerSegment()
+	i := getHostSegmentIndex(prefixLen, section.GetBytesPerSegment(), bitsPerSegment)
+	if i < divCount {
+		div := section.GetSegment(i)
+		segmentPrefixLength := getPrefixedSegmentPrefixLength(bitsPerSegment, prefixLen, i)
+		if !div.ContainsPrefixBlock(segmentPrefixLength.bitCount()) {
+			return false
+		}
+		for i++; i < divCount; i++ {
+			div = section.GetSegment(i)
+			if !div.IsFullRange() {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// IsPrefixBlock returns whether this address segment series has a prefix length and includes the block associated with its prefix length.
+// If the prefix length matches the bit count, this returns true.
+//
+// This is different from ContainsPrefixBlock in that this method returns
+// false if the series has no prefix length or a prefix length that differs from a prefix length for which ContainsPrefixBlock returns true.
+func (section *addressSectionInternal) IsPrefixBlock() bool {
+	prefLen := section.getPrefixLen()
+	return prefLen != nil && section.ContainsPrefixBlock(prefLen.bitCount())
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
