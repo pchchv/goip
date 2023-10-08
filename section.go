@@ -1267,6 +1267,27 @@ func (section *addressSectionInternal) IsPrefixBlock() bool {
 	return prefLen != nil && section.ContainsPrefixBlock(prefLen.bitCount())
 }
 
+// UpperBytes returns the highest individual address section in this address section as a byte slice.
+func (section *addressSectionInternal) UpperBytes() []byte {
+	return section.addressDivisionGroupingInternal.UpperBytes()
+}
+
+// CopyBytes copies the value of the lowest individual address section in the section into a byte slice.
+//
+// If the value can fit in the given slice, the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (section *addressSectionInternal) CopyBytes(bytes []byte) []byte {
+	return section.addressDivisionGroupingInternal.CopyBytes(bytes)
+}
+
+// CopyUpperBytes copies the value of the highest individual address section in the section into a byte slice.
+//
+// If the value can fit in the given slice, the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (section *addressSectionInternal) CopyUpperBytes(bytes []byte) []byte {
+	return section.addressDivisionGroupingInternal.CopyUpperBytes(bytes)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
