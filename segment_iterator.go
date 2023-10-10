@@ -134,6 +134,15 @@ func (iter ipSegmentIterator) Next() *IPAddressSegment {
 	return iter.Iterator.Next().ToIP()
 }
 
+// wrappedSegmentIterator converts an IP address segment iterator to an address segment iterator
+type wrappedSegmentIterator[T AddressSegmentType] struct {
+	Iterator[T]
+}
+
+func (iter wrappedSegmentIterator[T]) Next() *AddressSegment {
+	return iter.Iterator.Next().ToSegmentBase()
+}
+
 func segIterator(
 	original *addressSegmentInternal,
 	originalLower,
