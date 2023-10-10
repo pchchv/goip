@@ -1592,6 +1592,30 @@ func (section *AddressSection) GetPrefixCount() *big.Int {
 	return section.addressDivisionGroupingBase.GetPrefixCount()
 }
 
+// GetPrefixCountLen returns the number of distinct prefix values in this item for the given prefix length.
+func (section *AddressSection) GetPrefixCountLen(prefixLen BitCount) *big.Int {
+	if sect := section.ToIPv4(); sect != nil {
+		return sect.GetPrefixCountLen(prefixLen)
+	} else if sect := section.ToIPv6(); sect != nil {
+		return sect.GetPrefixCountLen(prefixLen)
+	} else if sect := section.ToMAC(); sect != nil {
+		return sect.GetPrefixCountLen(prefixLen)
+	}
+	return section.addressDivisionGroupingBase.GetPrefixCountLen(prefixLen)
+}
+
+// GetBlockCount returns the count of distinct values in the given number of initial (more significant) segments.
+func (section *AddressSection) GetBlockCount(segments int) *big.Int {
+	if sect := section.ToIPv4(); sect != nil {
+		return sect.GetBlockCount(segments)
+	} else if sect := section.ToIPv6(); sect != nil {
+		return sect.GetBlockCount(segments)
+	} else if sect := section.ToMAC(); sect != nil {
+		return sect.GetBlockCount(segments)
+	}
+	return section.addressDivisionGroupingBase.GetBlockCount(segments)
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
