@@ -1700,6 +1700,25 @@ func (section *AddressSection) ToBlock(segmentIndex int, lower, upper SegInt) *A
 	return section.toBlock(segmentIndex, lower, upper)
 }
 
+// Wrap wraps this address section, returning a WrappedAddressSection, an implementation of ExtendedSegmentSeries,
+// which can be used to write code that works with both addresses and address sections.
+func (section *AddressSection) Wrap() WrappedAddressSection {
+	return wrapSection(section)
+}
+
+// Iterator provides an iterator to iterate through the individual address sections of this address section.
+//
+// When iterating, the prefix length is preserved.
+// Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual address sections.
+//
+// Call IsMultiple to determine if this instance represents multiple address sections, or GetCount for the count.
+func (section *AddressSection) Iterator() Iterator[*AddressSection] {
+	if section == nil {
+		return nilSectIterator()
+	}
+	return section.sectionIterator(nil)
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
