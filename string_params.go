@@ -791,6 +791,19 @@ func (params *ipAddressStringParams) appendSuffix(builder *strings.Builder) *str
 	return builder
 }
 
+func (params *ipAddressStringParams) getAddressSuffixLength() int {
+	suffix := params.addressSuffix
+	return len(suffix)
+}
+
+func (params *ipAddressStringParams) getTrailingSeparatorCount(addr AddressDivisionSeries) int {
+	count := addr.GetDivisionCount()
+	if count > 0 {
+		return count - 1
+	}
+	return 0
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
