@@ -837,6 +837,24 @@ func (params *ipAddressStringParams) getStringLength(series AddressDivisionSerie
 	return count + params.getAddressSuffixLength() + params.getAddressLabelLength()
 }
 
+func (params *ipAddressStringParams) appendPrefixIndicator(builder *strings.Builder, addr AddressDivisionSeries) *strings.Builder {
+	if addr.IsPrefixed() {
+		builder.WriteByte(PrefixLenSeparator)
+		return toUnsignedStringCased(uint64(addr.GetPrefixLen().bitCount()), 10, 0, false, builder)
+	}
+	return builder
+}
+
+func (params *ipAddressStringParams) append(builder *strings.Builder, addr AddressDivisionSeries, zone Zone) *strings.Builder {
+	if addr.GetDivisionCount() > 0 {
+		params.appendSuffix(params.appendZone(params.appendSegments(params.appendLabel(builder), addr), zone))
+		if !params.reverse && !params.preferWildcards() {
+			params.appendPrefixIndicator(builder, addr)
+		}
+	}
+	return builder
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
