@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/pchchv/goip/address_error"
@@ -1081,4 +1082,14 @@ func getPrefixIndicatorStringLength(addr AddressDivisionSeries) int {
 		return toUnsignedStringLengthFast(uint16(addr.GetPrefixLen().bitCount()), 10) + 1
 	}
 	return 0
+}
+
+// checkLengths is only needed during development.
+// Disable when sending to production!
+func checkLengths(length int, builder *strings.Builder) {
+	calcMatch := length == builder.Len()
+	capMatch := length == builder.Cap()
+	if !calcMatch || !capMatch {
+		panic(fmt.Sprintf("length is %d, capacity is %d, expected length is %d", builder.Len(), builder.Cap(), length))
+	}
 }
