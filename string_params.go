@@ -779,6 +779,18 @@ func (params *ipAddressStringParams) getLeadingZeros(segmentIndex int) int {
 	return 0
 }
 
+func (params *ipAddressStringParams) getTrailingSegmentSeparator() byte {
+	return params.separator
+}
+
+func (params *ipAddressStringParams) appendSuffix(builder *strings.Builder) *strings.Builder {
+	suffix := params.addressSuffix
+	if len(suffix) > 0 {
+		builder.WriteString(suffix)
+	}
+	return builder
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
