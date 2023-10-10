@@ -130,6 +130,10 @@ type ipSegmentIterator struct {
 	Iterator[*AddressSegment]
 }
 
+func (iter ipSegmentIterator) Next() *IPAddressSegment {
+	return iter.Iterator.Next().ToIP()
+}
+
 func segIterator(
 	original *addressSegmentInternal,
 	originalLower,
