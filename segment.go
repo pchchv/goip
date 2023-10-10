@@ -4,6 +4,8 @@ import (
 	"math/big"
 	"math/bits"
 	"unsafe"
+
+	"github.com/pchchv/goip/address_error"
 )
 
 const SegIntSize = 32 // must match the bit count of SegInt
@@ -534,6 +536,68 @@ func (seg *addressSegmentInternal) withoutPrefixLen() *AddressSegment {
 		return createAddressDivision(seg.derivePrefixed(nil)).ToSegmentBase()
 	}
 	return seg.toAddressSegment()
+}
+
+func (seg *addressSegmentInternal) reverseMultiValSeg(perByte bool) (res *AddressSegment, err address_error.IncompatibleAddressError) {
+	if isReversible := seg.isReversibleRange(perByte); isReversible {
+		res = seg.withoutPrefixLen()
+		return
+	}
+	err = &incompatibleAddressError{addressError{key: "ipaddress.error.reverseRange"}}
+	return
+}
+
+// ReverseBits returns a segment with the bits reversed.
+//
+// If this segment represents a range of values that cannot be reversed, then this returns an error.
+//
+// To be reversible, a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+// Otherwise the result is not contiguous and thus cannot be represented by a sequential range of values.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (seg *addressSegmentInternal) ReverseBits(perByte bool) (res *AddressSegment, err address_error.IncompatibleAddressError) {
+	if seg.divisionValues == nil {
+		res = seg.toAddressSegment()
+		return
+	}
+
+	if seg.isMultiple() {
+		return seg.reverseMultiValSeg(perByte)
+	}
+
+	var val SegInt
+	oldVal := seg.GetSegmentValue()
+	byteCount := seg.GetByteCount()
+	switch byteCount {
+	case 1:
+		val = SegInt(reverseUint8(uint8(oldVal)))
+	case 2:
+		val = SegInt(reverseUint16(uint16(oldVal)))
+		if perByte {
+			val = ((val & 0xff) << 8) | (val >> 8)
+		}
+	case 3:
+		val = reverseUint32(uint32(oldVal)) >> 8
+		if perByte {
+			val = ((val & 0xff) << 16) | (val & 0xff00) | (val >> 16)
+		}
+	case 4:
+		val = reverseUint32(uint32(oldVal))
+		if perByte {
+			val = ((val & 0xff) << 24) | (val&0xff00)<<8 | (val&0xff0000)>>8 | (val >> 24)
+		}
+	default: // SegInt is at most 32 bits so this default case is not possible
+		err = &incompatibleAddressError{addressError{key: "ipaddress.error.reverseRange"}}
+		return
+	}
+
+	if oldVal == val && !seg.isPrefixed() {
+		res = seg.toAddressSegment()
+	} else {
+		res = createAddressSegment(seg.deriveNewSeg(val, nil))
+	}
+
+	return
 }
 
 // AddressSegment represents a single address segment.
