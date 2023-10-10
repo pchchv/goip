@@ -938,6 +938,19 @@ func (params *ipAddressStringParams) toZonedString(series AddressDivisionSeries,
 	return builder.String()
 }
 
+func (params *ipAddressStringParams) toString(series AddressDivisionSeries) string {
+	return params.toZonedString(series, NoZone)
+}
+
+func (params *ipAddressStringParams) clone() *ipAddressStringParams {
+	result := *params
+	expandSegment := params.expandSeg
+	if expandSegment != nil {
+		result.expandSeg = cloneInts(expandSegment)
+	}
+	return &result
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
