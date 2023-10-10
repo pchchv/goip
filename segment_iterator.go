@@ -143,6 +143,14 @@ func (iter wrappedSegmentIterator[T]) Next() *AddressSegment {
 	return iter.Iterator.Next().ToSegmentBase()
 }
 
+type ipv6SegmentIterator struct {
+	Iterator[*AddressSegment]
+}
+
+func (iter ipv6SegmentIterator) Next() *IPv6AddressSegment {
+	return iter.Iterator.Next().ToIPv6()
+}
+
 func segIterator(
 	original *addressSegmentInternal,
 	originalLower,
