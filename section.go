@@ -1719,6 +1719,33 @@ func (section *AddressSection) Iterator() Iterator[*AddressSection] {
 	return section.sectionIterator(nil)
 }
 
+// ReverseSegments returns a new section with the segments reversed.
+func (section *AddressSection) ReverseSegments() *AddressSection {
+	if section.GetSegmentCount() <= 1 {
+		if section.IsPrefixed() {
+			return section.WithoutPrefixLen()
+		}
+		return section
+	}
+
+	res, _ := section.reverseSegments(
+		func(i int) (*AddressSegment, address_error.IncompatibleAddressError) {
+			return section.GetSegment(i).withoutPrefixLen(), nil
+		},
+	)
+
+	return res
+}
+
+// GetSegmentStrings returns a slice with the string for each segment being
+// the string that is normalized with wildcards.
+func (section *AddressSection) GetSegmentStrings() []string {
+	if section == nil {
+		return nil
+	}
+	return section.getSegmentStrings()
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
