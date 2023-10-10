@@ -1555,6 +1555,43 @@ func (section *AddressSection) Equal(other AddressSectionType) bool {
 	return section.equal(other)
 }
 
+// GetCount returns the count of possible distinct values for this item.
+// If not representing multiple values, the count is 1,
+// unless this is a division grouping with no divisions,
+// or an address section with no segments, in which case it is 0.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (section *AddressSection) GetCount() *big.Int {
+	if section == nil {
+		return bigZero()
+	} else if sect := section.ToIPv4(); sect != nil {
+		return sect.GetCount()
+	} else if sect := section.ToIPv6(); sect != nil {
+		return sect.GetCount()
+	} else if sect := section.ToMAC(); sect != nil {
+		return sect.GetCount()
+	}
+	return section.addressDivisionGroupingBase.getCount()
+}
+
+// GetPrefixCount returns the number of distinct prefix values in this item.
+//
+// The prefix length is given by GetPrefixLen.
+//
+// If this has a non-nil prefix length, returns the number of distinct prefix values.
+//
+// If this has a nil prefix length, returns the same value as GetCount.
+func (section *AddressSection) GetPrefixCount() *big.Int {
+	if sect := section.ToIPv4(); sect != nil {
+		return sect.GetPrefixCount()
+	} else if sect := section.ToIPv6(); sect != nil {
+		return sect.GetPrefixCount()
+	} else if sect := section.ToMAC(); sect != nil {
+		return sect.GetPrefixCount()
+	}
+	return section.addressDivisionGroupingBase.GetPrefixCount()
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
