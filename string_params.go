@@ -918,6 +918,26 @@ func (params *ipAddressStringParams) appendSegment(segmentIndex int, div Divisio
 	return writer.getPrefixAdjustedRangeString(segmentIndex, params, builder)
 }
 
+func (params *ipAddressStringParams) getZonedStringLength(addr AddressDivisionSeries, zone Zone) int {
+	if addr.GetDivisionCount() > 0 {
+		result := params.getStringLength(addr)
+		if zone != NoZone {
+			result += params.getZoneLength(zone, params.zoneSeparator)
+		}
+		return result
+	}
+	return 0
+}
+
+func (params *ipAddressStringParams) toZonedString(series AddressDivisionSeries, zone Zone) string {
+	length := params.getZonedStringLength(series, zone)
+	builder := strings.Builder{}
+	builder.Grow(length)
+	params.append(&builder, series, zone)
+	checkLengths(length, &builder)
+	return builder.String()
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
