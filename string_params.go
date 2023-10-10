@@ -9,6 +9,8 @@ import (
 
 const zeros = "00000000000000000000"
 
+var _ addressSegmentParams = &addressStringParams{}
+
 type divStringProvider interface {
 	getLowerStringLength(radix int) int
 	getUpperStringLength(radix int) int
@@ -743,6 +745,18 @@ type ipAddressStringParams struct {
 	wildcardOption address_string.WildcardOption
 	expandSeg      []int //the same as expandSegments but for each segment
 	addressSuffix  string
+}
+
+func (params *ipAddressStringParams) preferWildcards() bool {
+	return params.wildcardOption == address_string.WildcardsAll
+}
+
+func (params *ipAddressStringParams) getExpandedSegmentLength(segmentIndex int) int {
+	expandSegment := params.expandSeg
+	if expandSegment == nil || len(expandSegment) <= segmentIndex {
+		return 0
+	}
+	return expandSegment[segmentIndex]
 }
 
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
