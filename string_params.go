@@ -759,6 +759,26 @@ func (params *ipAddressStringParams) getExpandedSegmentLength(segmentIndex int) 
 	return expandSegment[segmentIndex]
 }
 
+func (params *ipAddressStringParams) expandSegment(index, expansionLength, segmentCount int) {
+	expandSegment := params.expandSeg
+	if expandSegment == nil {
+		expandSegment = make([]int, segmentCount)
+		params.expandSeg = expandSegment
+	}
+	expandSegment[index] = expansionLength
+}
+
+// getLeadingZeros returns -1 for MAX, or 0, 1, 2, 3 to indicate the string prefix length
+func (params *ipAddressStringParams) getLeadingZeros(segmentIndex int) int {
+	expandSegment := params.expandSeg
+	if params.expandSegments {
+		return -1
+	} else if expandSegment != nil && len(expandSegment) > segmentIndex {
+		return expandSegment[segmentIndex]
+	}
+	return 0
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
