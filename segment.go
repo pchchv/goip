@@ -641,6 +641,18 @@ func (seg *addressSegmentInternal) ReverseBytes() (res *AddressSegment, err addr
 	return
 }
 
+// GetMinPrefixLenForBlock returns the smallest prefix length such that this segment includes the block of all values for that prefix length.
+//
+// If the entire range can be described this way, then this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// There may be a single prefix, or multiple possible prefix values in this item for the returned prefix length.
+// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values.
+//
+// If this segment represents a single value, this returns the bit count.
+func (seg *addressSegmentInternal) GetMinPrefixLenForBlock() BitCount {
+	return seg.addressDivisionInternal.GetMinPrefixLenForBlock()
+}
+
 // AddressSegment represents a single address segment.
 // A segment contains a single value or range of sequential values and has an assigned bit length.
 // Segments are 1 byte for Ipv4, two bytes for Ipv6, and 1 byte for MAC addresses.
