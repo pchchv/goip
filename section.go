@@ -1659,6 +1659,23 @@ func (section *AddressSection) GetSegments() (res []*AddressSegment) {
 	return
 }
 
+// WithoutPrefixLen provides the same address section but with no prefix length.
+// Values remain unchanged.
+func (section *AddressSection) WithoutPrefixLen() *AddressSection {
+	if !section.IsPrefixed() {
+		return section
+	}
+	return section.withoutPrefixLen()
+}
+
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address section.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (section *AddressSection) SetPrefixLen(prefixLen BitCount) *AddressSection {
+	return section.setPrefixLen(prefixLen)
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
