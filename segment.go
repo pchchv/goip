@@ -740,3 +740,37 @@ func compareSegInt(one, two SegInt) int {
 	}
 	return 0
 }
+
+func getSegmentPrefLen(_ AddressSegmentSeries, prefLen PrefixLen, bitsPerSegment, bitsMatchedSoFar BitCount, segment *AddressSegment) PrefixLen {
+	if ipSeg := segment.ToIP(); ipSeg != nil {
+		return ipSeg.GetSegmentPrefixLen()
+	} else if prefLen != nil {
+		result := prefLen.Len() - bitsMatchedSoFar
+		if result <= bitsPerSegment {
+			if result < 0 {
+				result = 0
+			}
+			return cacheBitCount(result)
+		}
+	}
+	return nil
+}
+
+func getMatchingBits(segment1, segment2 *AddressSegment, maxBits, bitsPerSegment BitCount) BitCount {
+	if maxBits == 0 {
+		return 0
+	}
+
+	val1 := segment1.getSegmentValue()
+	val2 := segment2.getSegmentValue()
+	xor := val1 ^ val2
+
+	switch bitsPerSegment {
+	case IPv4BitsPerSegment:
+		return BitCount(bits.LeadingZeros8(uint8(xor)))
+	case IPv6BitsPerSegment:
+		return BitCount(bits.LeadingZeros16(uint16(xor)))
+	default:
+		return BitCount(bits.LeadingZeros32(xor)) - 32 + bitsPerSegment
+	}
+}
