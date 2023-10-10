@@ -1746,6 +1746,14 @@ func (section *AddressSection) GetSegmentStrings() []string {
 	return section.getSegmentStrings()
 }
 
+// AssignMinPrefixForBlock returns an equivalent address section, assigned the smallest prefix length possible,
+// such that the prefix block for that prefix length is in this address section.
+//
+// In other words, this method assigns a prefix length to this address section matching the largest prefix block in this address section.
+func (section *AddressSection) AssignMinPrefixForBlock() *AddressSection {
+	return section.assignMinPrefixForBlock()
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
