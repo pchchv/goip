@@ -1616,6 +1616,19 @@ func (section *AddressSection) GetBlockCount(segments int) *big.Int {
 	return section.addressDivisionGroupingBase.GetBlockCount(segments)
 }
 
+// GetTrailingSection gets the subsection from the series starting from the given index.
+// The first segment is at index 0.
+func (section *AddressSection) GetTrailingSection(index int) *AddressSection {
+	return section.getSubSection(index, section.GetSegmentCount())
+}
+
+// GetSubSection gets the subsection from the series starting from
+// the given index and ending just before the give endIndex.
+// The first segment is at index 0.
+func (section *AddressSection) GetSubSection(index, endIndex int) *AddressSection {
+	return section.getSubSection(index, endIndex)
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
