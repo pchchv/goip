@@ -804,6 +804,39 @@ func (params *ipAddressStringParams) getTrailingSeparatorCount(addr AddressDivis
 	return 0
 }
 
+func (params *ipAddressStringParams) getSegmentsStringLength(part AddressDivisionSeries) int {
+	count := 0
+	divCount := part.GetDivisionCount()
+	if divCount != 0 {
+		prefLen := part.GetPrefixLen()
+		for i := 0; i < divCount; i++ {
+			div := part.GetGenericDivision(i)
+			count += params.appendSegment(i, div, prefLen, nil, part)
+			if prefLen != nil {
+				bc := prefLen.bitCount()
+				dc := div.GetBitCount()
+				var bits BitCount
+				if bc > dc {
+					bits = bc - dc
+				}
+				prefLen = cacheBitCount(bits)
+			}
+		}
+		if params.hasSep {
+			count += divCount - 1 // the number of separators
+		}
+	}
+	return count
+}
+
+func (params *ipAddressStringParams) getStringLength(series AddressDivisionSeries) int {
+	count := params.getSegmentsStringLength(series)
+	if !params.reverse && !params.preferWildcards() {
+		count += getPrefixIndicatorStringLength(series)
+	}
+	return count + params.getAddressSuffixLength() + params.getAddressLabelLength()
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
@@ -927,4 +960,11 @@ func toNormalizedZonedString(opts address_string.StringOptions, section AddressD
 
 func toNormalizedString(opts address_string.StringOptions, section AddressDivisionSeries) string {
 	return toParams(opts).toString(section)
+}
+
+func getPrefixIndicatorStringLength(addr AddressDivisionSeries) int {
+	if addr.IsPrefixed() {
+		return toUnsignedStringLengthFast(uint16(addr.GetPrefixLen().bitCount()), 10) + 1
+	}
+	return 0
 }
