@@ -1356,6 +1356,49 @@ func (section *addressSectionInternal) GetTrailingBitCount(ones bool) BitCount {
 	return bitLen
 }
 
+func (section *addressSectionInternal) blockIterator(segmentCount int) Iterator[*AddressSection] {
+	if segmentCount < 0 {
+		segmentCount = 0
+	}
+
+	allSegsCount := section.GetSegmentCount()
+	if segmentCount >= allSegsCount {
+		return section.sectionIterator(nil)
+	}
+
+	var iterator Iterator[[]*AddressDivision]
+	useOriginal := !section.isMultipleTo(segmentCount)
+	if !useOriginal {
+		var hostSegIteratorProducer func(index int) Iterator[*AddressSegment]
+		hostSegIteratorProducer = func(index int) Iterator[*AddressSegment] {
+			return section.GetSegment(index).identityIterator()
+		}
+
+		segIteratorProducer := func(index int) Iterator[*AddressSegment] {
+			return section.GetSegment(index).iterator()
+		}
+
+		iterator = segmentsIterator(
+			allSegsCount,
+			nil,
+			segIteratorProducer,
+			nil,
+			segmentCount-1,
+			segmentCount,
+			hostSegIteratorProducer)
+	}
+
+	return sectIterator(
+		useOriginal,
+		section.toAddressSection(),
+		section.isMultipleFrom(segmentCount),
+		iterator)
+}
+
+func (section *addressSectionInternal) sequentialBlockIterator() Iterator[*AddressSection] {
+	return section.blockIterator(section.GetSequentialBlockIndex())
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
