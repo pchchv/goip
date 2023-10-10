@@ -600,6 +600,47 @@ func (seg *addressSegmentInternal) ReverseBits(perByte bool) (res *AddressSegmen
 	return
 }
 
+// ReverseBytes returns a segment with the bytes reversed.
+//
+// If this segment represents a range of values that cannot be reversed, then this returns an error.
+//
+// To be reversible, a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+// Otherwise the result is not contiguous and thus cannot be represented by a sequential range of values.
+func (seg *addressSegmentInternal) ReverseBytes() (res *AddressSegment, err address_error.IncompatibleAddressError) {
+	byteCount := seg.GetByteCount()
+	if byteCount <= 1 {
+		res = seg.toAddressSegment()
+		return
+	}
+
+	if seg.isMultiple() {
+		return seg.reverseMultiValSeg(false)
+	}
+
+	var val SegInt
+	oldVal := seg.GetSegmentValue()
+
+	switch byteCount {
+	case 2:
+		val = ((oldVal & 0xff) << 8) | (oldVal >> 8)
+	case 3:
+		val = ((oldVal & 0xff) << 16) | (oldVal & 0xff00) | (oldVal >> 16)
+	case 4:
+		val = ((oldVal & 0xff) << 24) | (oldVal&0xff00)<<8 | (oldVal&0xff0000)>>8 | (oldVal >> 24)
+	default: // SegInt is at most 32 bits so this default case is not possible
+		err = &incompatibleAddressError{addressError{key: "ipaddress.error.reverseRange"}}
+		return
+	}
+
+	if oldVal == val && !seg.isPrefixed() {
+		res = seg.toAddressSegment()
+	} else {
+		res = createAddressSegment(seg.deriveNewSeg(val, nil))
+	}
+
+	return
+}
+
 // AddressSegment represents a single address segment.
 // A segment contains a single value or range of sequential values and has an assigned bit length.
 // Segments are 1 byte for Ipv4, two bytes for Ipv6, and 1 byte for MAC addresses.
