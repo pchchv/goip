@@ -1676,6 +1676,30 @@ func (section *AddressSection) SetPrefixLen(prefixLen BitCount) *AddressSection 
 	return section.setPrefixLen(prefixLen)
 }
 
+// SetPrefixLenZeroed sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address section.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+//
+// If this address section has a prefix length, and the prefix length is increased when setting the new prefix length,
+// the bits moved within the prefix become zero.
+// If this address section has a prefix length, and the prefix length is decreased when setting the new prefix length,
+// the bits moved outside the prefix become zero.
+//
+// In other words, bits that move from one side of the prefix length to the other (bits moved into the prefix or outside the prefix) are zeroed.
+//
+// If the result cannot be zeroed because zeroing out bits results in a non-contiguous segment, an error is returned.
+func (section *AddressSection) SetPrefixLenZeroed(prefixLen BitCount) (*AddressSection, address_error.IncompatibleAddressError) {
+	return section.setPrefixLenZeroed(prefixLen)
+}
+
+// ToBlock creates a new block of address sections by changing the segment at
+// the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (section *AddressSection) ToBlock(segmentIndex int, lower, upper SegInt) *AddressSection {
+	return section.toBlock(segmentIndex, lower, upper)
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
