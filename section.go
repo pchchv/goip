@@ -1629,6 +1629,36 @@ func (section *AddressSection) GetSubSection(index, endIndex int) *AddressSectio
 	return section.getSubSection(index, endIndex)
 }
 
+// CopySubSegments copies the existing segments from the given start index until
+// but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (section *AddressSection) CopySubSegments(start, end int, segs []*AddressSegment) (count int) {
+	start, end, targetStart := adjust1To1StartIndices(start, end, section.GetDivisionCount(), len(segs))
+	segs = segs[targetStart:]
+	return section.forEachSubDivision(start, end, func(index int, div *AddressDivision) {
+		segs[index] = div.ToSegmentBase()
+	}, len(segs))
+}
+
+// CopySegments copies the existing segments into the given slice,
+// as much as can be fit into the slice, returning the number of segments copied.
+func (section *AddressSection) CopySegments(segs []*AddressSegment) (count int) {
+	return section.ForEachSegment(func(index int, seg *AddressSegment) (stop bool) {
+		if stop = index >= len(segs); !stop {
+			segs[index] = seg
+		}
+		return
+	})
+}
+
+// GetSegments returns a slice with the address segments.
+// Returned slice is not backed by the same array as this section.
+func (section *AddressSection) GetSegments() (res []*AddressSegment) {
+	res = make([]*AddressSegment, section.GetSegmentCount())
+	section.CopySegments(res)
+	return
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
