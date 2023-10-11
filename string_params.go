@@ -1018,6 +1018,20 @@ func (params *ipv6v4MixedParams) requiresPrefixIndicatorIPv4(ipv4Section *IPv4Ad
 	return ipv4Section.IsPrefixed() && !params.ipv4Params.preferWildcards()
 }
 
+func (params *ipv6v4MixedParams) requiresPrefixIndicatorIPv6(ipv6Section IPv6AddressSegmentSeries) bool {
+	ipv6Params := params.ipv6Params
+	return ipv6Section.IsPrefixed() && (!ipv6Params.preferWildcards() || ipv6Params.hostCompressed)
+}
+
+func (params *ipv6v4MixedParams) clone() *ipv6v4MixedParams {
+	ipv6Params := *params.ipv6Params
+	ipv4Params := *params.ipv4Params
+	return &ipv6v4MixedParams{
+		ipv6Params: &ipv6Params,
+		ipv4Params: &ipv4Params,
+	}
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
