@@ -998,6 +998,12 @@ func (params *ipv6StringParams) appendSegment(segmentIndex int, div DivisionType
 	return
 }
 
+func (params *ipv6StringParams) clone() *ipv6StringParams {
+	res := *params
+	res.ipAddressStringParams = *res.ipAddressStringParams.clone()
+	return &res
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
