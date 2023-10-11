@@ -968,6 +968,36 @@ func (params *ipv6StringParams) isCompressed(_ IPAddressSegmentSeries) bool {
 	return params.firstCompressedSegmentIndex >= 0
 }
 
+func (params *ipv6StringParams) getTrailingSepCount(addr IPAddressSegmentSeries) int {
+	divisionCount := addr.GetDivisionCount()
+	if divisionCount == 0 {
+		return 0
+	}
+
+	count := divisionCount - 1 //separators with no compression
+	if params.isCompressed(addr) {
+		firstCompressedSegmentIndex := params.firstCompressedSegmentIndex
+		nextUncompressedIndex := params.nextUncompressedIndex
+		count -= (nextUncompressedIndex - firstCompressedSegmentIndex) - 1 //missing seps
+		if firstCompressedSegmentIndex == 0 /* additional separator at front */ ||
+			nextUncompressedIndex >= divisionCount /* additional separator at end */ {
+			count++
+		}
+	}
+
+	return count
+}
+
+func (params *ipv6StringParams) appendSegment(segmentIndex int, div DivisionType, divPrefixLen PrefixLen, builder *strings.Builder, part AddressDivisionSeries) (count int, err address_error.IncompatibleAddressError) {
+	if params.isSplitDigits() {
+		writer := stringWriter{div}
+		count, err = writer.getStandardString(segmentIndex, params, builder)
+		return
+	}
+	count = params.ipAddressStringParams.appendSegment(segmentIndex, div, divPrefixLen, builder, part)
+	return
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
