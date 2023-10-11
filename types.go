@@ -189,6 +189,19 @@ type wrappedIterator struct {
 	indexi     int
 }
 
+func (wrapped *wrappedIterator) HasNext() bool {
+	return wrapped.iterator.HasNext()
+}
+
+func (wrapped *wrappedIterator) Next() *IPAddressSegment {
+	iter := wrapped.iterator
+	next := iter.Next()
+	if !iter.HasNext() {
+		wrapped.finalValue[wrapped.indexi+1] = true
+	}
+	return next
+}
+
 func bigIsZero(val *BigDivInt) bool {
 	return len(val.Bits()) == 0 // slightly faster than div.value.BitLen() == 0
 }
