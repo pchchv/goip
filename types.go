@@ -348,3 +348,32 @@ func cachePrefixLen(external PrefixLen) PrefixLen {
 	}
 	return cacheBitCount(external.bitCount())
 }
+
+func cachePorts(i PortInt) Port {
+	if i < minPortNumInternal {
+		i = minPortNumInternal
+	} else if i > maxPortNumInternal {
+		i = maxPortNumInternal
+	}
+
+	res := PortNum(i)
+	return &res
+}
+
+func cachePrefix(i BitCount) *PrefixLen {
+	if i < minBitCountInternal {
+		i = minBitCountInternal
+	}
+
+	if i < len(cachedPrefixLens) {
+		return &cachedPrefixLens[i]
+	}
+
+	if i > maxBitCountInternal {
+		i = maxBitCountInternal
+	}
+
+	val := PrefixBitCount(i)
+	res := &val
+	return &res
+}
