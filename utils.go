@@ -216,3 +216,25 @@ func reverseUint32(i uint32) uint32 {
 	x = ((x & 0xff00ff00) >> 8) | ((x & 0x00ff00ff) << 8)
 	return (x >> 16) | (x << 16)
 }
+
+// note: only to be used when you already know the total size fits into a long
+func longPrefixCount(section *AddressSection, prefixLength BitCount) uint64 {
+	bitsPerSegment := section.GetBitsPerSegment()
+	bytesPerSegment := section.GetBytesPerSegment()
+	networkSegmentIndex := getNetworkSegmentIndex(prefixLength, bytesPerSegment, bitsPerSegment)
+	hostSegmentIndex := getHostSegmentIndex(prefixLength, bytesPerSegment, bitsPerSegment)
+	return getLongCount(func(index int) uint64 {
+		if (networkSegmentIndex == hostSegmentIndex) && index == networkSegmentIndex {
+			segmentPrefixLength := getPrefixedSegmentPrefixLength(section.GetBitsPerSegment(), prefixLength, index)
+			return getPrefixValueCount(section.GetSegment(index), segmentPrefixLength.bitCount())
+		}
+		return section.GetSegment(index).GetValueCount()
+	},
+		networkSegmentIndex+1)
+}
+
+// note: only to be used when you already know the total size fits into a long
+func longCount(section *AddressSection, segCount int) uint64 {
+	result := getLongCount(func(index int) uint64 { return section.GetSegment(index).GetValueCount() }, segCount)
+	return result
+}
