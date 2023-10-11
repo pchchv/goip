@@ -1166,3 +1166,27 @@ func toSplitUnsignedString(value uint64, radix, choppedDigits int, uppercase boo
 		}
 	}
 }
+
+func toUnsignedSplitRangeString(lower, upper uint64, rangeSeparator, wildcard string, radix int, uppercase bool, splitDigitSeparator byte, reverseSplitDigits bool, stringPrefix string, appendable *strings.Builder) (err address_error.IncompatibleAddressError) {
+	// A split can be invalid.  Consider xxx.456-789.
+	// The number 691, which is in the range 456-789, is not in the range 4-7.5-8.6-9
+	// In such cases we have IncompatibleAddressError
+	// To avoid such cases, we must have lower digits covering the full range, for example 400-799 in which lower digits are both 0-9 ranges.
+	// If we have 401-799 then 500 will not be included when splitting.
+	// If we have 400-798 then 599 will not be included when splitting.
+	// If we have 410-799 then 500 will not be included when splitting.
+	// If we have 400-789 then 599 will not be included when splitting.
+	if reverseSplitDigits {
+		err = appendRangeDigits(lower, upper, rangeSeparator, wildcard, radix, uppercase, splitDigitSeparator, reverseSplitDigits, stringPrefix, appendable)
+	} else {
+		var tmpBuilder strings.Builder
+		err = appendRangeDigits(lower, upper, rangeSeparator, wildcard, radix, uppercase, splitDigitSeparator, reverseSplitDigits, stringPrefix, &tmpBuilder)
+		if err == nil {
+			str := tmpBuilder.String()
+			for back := tmpBuilder.Len() - 1; back >= 0; back-- {
+				appendable.WriteByte(str[back])
+			}
+		}
+	}
+	return
+}
