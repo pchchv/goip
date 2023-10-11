@@ -381,6 +381,31 @@ func (addr *addressInternal) isOneBit(bitIndex BitCount) bool {
 	return addr.section.IsOneBit(bitIndex)
 }
 
+// IsPrefixBlock returns whether the address has a prefix length and
+// the address range includes the block of values for that prefix length.
+// If the prefix length matches the bit count, this returns true.
+//
+// To create a prefix block from any address, use ToPrefixBlock.
+//
+// This is different from ContainsPrefixBlock in that this method returns
+// false if the series has no prefix length, or a prefix length that differs from
+// a prefix length for which ContainsPrefixBlock returns true.
+func (addr *addressInternal) IsPrefixBlock() bool {
+	prefLen := addr.getPrefixLen()
+	return prefLen != nil && addr.section.ContainsPrefixBlock(prefLen.bitCount())
+}
+
+// ContainsPrefixBlock returns whether the range of this address or subnet contains the
+// block of addresses for the given prefix length.
+//
+// Unlike ContainsSinglePrefixBlock, whether there are multiple prefix values in
+// this item for the given prefix length makes no difference.
+//
+// Use GetMinPrefixLenForBlock to determine the smallest prefix length for which this method returns true.
+func (addr *addressInternal) ContainsPrefixBlock(prefixLen BitCount) bool {
+	return addr.section == nil || addr.section.ContainsPrefixBlock(prefixLen)
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
