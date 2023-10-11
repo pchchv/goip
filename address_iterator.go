@@ -92,6 +92,10 @@ func (iter macAddressIterator) Next() *MACAddress {
 	return iter.Iterator.Next().ToMAC()
 }
 
+type addressSeriesIterator struct {
+	Iterator[*Address]
+}
+
 func nilAddrIterator() Iterator[*Address] {
 	return &singleIterator[*Address]{}
 }
