@@ -1010,6 +1010,14 @@ type ipv6v4MixedParams struct {
 	ipv4Params *ipAddressStringParams
 }
 
+func (params *ipv6v4MixedParams) getTrailingSegmentSeparator() byte {
+	return params.ipv4Params.getTrailingSegmentSeparator()
+}
+
+func (params *ipv6v4MixedParams) requiresPrefixIndicatorIPv4(ipv4Section *IPv4AddressSection) bool {
+	return ipv4Section.IsPrefixed() && !params.ipv4Params.preferWildcards()
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
