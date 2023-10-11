@@ -1173,3 +1173,40 @@ func toNormalizedStringRange(params *addressStringParams, lower, upper AddressDi
 	}
 	return ""
 }
+
+func from(opts address_string.IPv6StringOptions, addr *IPv6AddressSection) (res *ipv6StringParams) {
+	res = &ipv6StringParams{
+		ipAddressStringParams: ipAddressStringParams{
+			addressStringParams: addressStringParams{
+				radix:            opts.GetRadix(),
+				separator:        opts.GetSeparator(),
+				hasSep:           opts.HasSeparator(),
+				uppercase:        opts.IsUppercase(),
+				expandSegments:   opts.IsExpandedSegments(),
+				wildcards:        opts.GetWildcards(),
+				segmentStrPrefix: opts.GetSegmentStrPrefix(),
+				reverse:          opts.IsReverse(),
+				splitDigits:      opts.IsSplitDigits(),
+				addressLabel:     opts.GetAddressLabel(),
+				zoneSeparator:    opts.GetZoneSeparator(),
+			},
+			wildcardOption: opts.GetWildcardOption(),
+			addressSuffix:  opts.GetAddressSuffix(),
+		},
+	}
+
+	if opts.GetCompressOptions() != nil {
+		compressOptions := opts.GetCompressOptions()
+		maxIndex, maxCount := addr.getCompressIndexAndCount(compressOptions, opts.IsMixed())
+		if maxCount > 0 {
+			res.firstCompressedSegmentIndex = maxIndex
+			res.nextUncompressedIndex = maxIndex + maxCount
+			res.hostCompressed = compressOptions.GetCompressionChoiceOptions().CompressHost() &&
+				addr.IsPrefixed() &&
+				(res.nextUncompressedIndex >
+					getHostSegmentIndex(addr.getNetworkPrefixLen().bitCount(), IPv6BytesPerSegment, IPv6BitsPerSegment))
+		}
+	}
+
+	return res
+}
