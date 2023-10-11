@@ -14,6 +14,7 @@ const (
 )
 
 var (
+	p                                       PrefixLen
 	one                                     = bigOne()
 	zero                                    = bigZero()
 	minusOne                                = big.NewInt(-1)
@@ -179,6 +180,13 @@ func (portNum *PortNum) Compare(other Port) int {
 		return 1
 	}
 	return portNum.portNum() - other.portNum()
+}
+
+// wrapperIterator notifies the iterator to the right when wrapperIterator reaches its final value.
+type wrappedIterator struct {
+	iterator   Iterator[*IPAddressSegment]
+	finalValue []bool
+	indexi     int
 }
 
 func bigIsZero(val *BigDivInt) bool {
