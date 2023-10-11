@@ -978,3 +978,60 @@ func toUnsignedSplitRangeStringLength(lower, upper uint64, rangeSeparator, wildc
 
 	return digitsLength
 }
+
+func appendDigits(value uint64, radix int, choppedDigits int, uppercase bool, splitDigitSeparator byte, stringPrefix string, appendable *strings.Builder) {
+	value2 := uint(radix)
+	useInts := value <= uint64(maxUint)
+	if useInts {
+		value2 = uint(value)
+	}
+
+	uradix := uint(radix)
+	rad64 := uint64(radix)
+	dig := digits
+
+	if uppercase {
+		dig = uppercaseDigits
+	}
+
+	var index uint
+	prefLen := len(stringPrefix)
+
+	for value2 >= uradix {
+		if useInts {
+			val := value2
+			value2 /= uradix
+			if choppedDigits > 0 {
+				choppedDigits--
+				continue
+			}
+			index = val % uradix
+		} else {
+			val := value
+			value /= rad64
+			if value <= uint64(maxUint) {
+				useInts = true
+				value2 = uint(value)
+			}
+			if choppedDigits > 0 {
+				choppedDigits--
+				continue
+			}
+			index = uint(val % rad64)
+		}
+
+		if prefLen > 0 {
+			appendable.WriteString(stringPrefix)
+		}
+
+		appendable.WriteByte(dig[index])
+		appendable.WriteByte(splitDigitSeparator)
+	}
+
+	if choppedDigits == 0 {
+		if prefLen > 0 {
+			appendable.WriteString(stringPrefix)
+		}
+		appendable.WriteByte(dig[value2])
+	}
+}
