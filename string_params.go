@@ -952,6 +952,14 @@ func (params *ipAddressStringParams) clone() *ipAddressStringParams {
 	return &result
 }
 
+// Each IPv6StringParams has settings to write exactly one IPv6 address section string.
+type ipv6StringParams struct {
+	ipAddressStringParams
+	firstCompressedSegmentIndex int //the start and end of any compressed section
+	nextUncompressedIndex       int
+	hostCompressed              bool // whether the host was compressed, which with some prefix configurations means we must print the network prefix to indicate that the host is full range
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
