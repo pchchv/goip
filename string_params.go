@@ -1004,6 +1004,12 @@ func (params *ipv6StringParams) clone() *ipv6StringParams {
 	return &res
 }
 
+// Each IPv6StringParams has settings to write exactly one IPv6 address section string.
+type ipv6v4MixedParams struct {
+	ipv6Params *ipv6StringParams
+	ipv4Params *ipAddressStringParams
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
