@@ -202,6 +202,11 @@ func (wrapped *wrappedIterator) Next() *IPAddressSegment {
 	return next
 }
 
+// HostBitCount is the count of bits in a host.
+// For arithmetic, you may wish to use the signed integer type BitCount instead,
+// which you can get from a HostBitCount using the Len method.
+type HostBitCount uint8
+
 func bigIsZero(val *BigDivInt) bool {
 	return len(val.Bits()) == 0 // slightly faster than div.value.BitLen() == 0
 }
