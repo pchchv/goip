@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"unsafe"
+
+	"github.com/pchchv/goip/address_error"
 )
 
 const (
@@ -1034,4 +1036,110 @@ func appendDigits(value uint64, radix int, choppedDigits int, uppercase bool, sp
 		}
 		appendable.WriteByte(dig[value2])
 	}
+}
+
+func appendRangeDigits(lower, upper uint64, rangeSeparator, wildcard string, radix int, uppercase bool, splitDigitSeparator byte, reverseSplitDigits bool, stringPrefix string, appendable *strings.Builder) address_error.IncompatibleAddressError {
+	dig := digits
+	if uppercase {
+		dig = uppercaseDigits
+	}
+
+	lowerInt := uint(radix)
+	upperInt := lowerInt
+	previousWasFullRange := true
+	useInts := upper <= uint64(maxUint)
+	if useInts {
+		upperInt = uint(upper)
+		lowerInt = uint(lower)
+	}
+
+	uradix := uint(radix)
+	rad64 := uint64(radix)
+	prefLen := len(stringPrefix)
+
+	for {
+		var upperDigit, lowerDigit uint
+		if useInts {
+			ud := upperInt
+			upperDigit = upperInt % uradix
+			upperInt /= uradix
+			if ud == lowerInt {
+				lowerInt = upperInt
+				lowerDigit = upperDigit
+			} else {
+				lowerDigit = lowerInt % uradix
+				lowerInt /= uradix
+			}
+		} else {
+			ud := upper
+			upperDigit = uint(upper % rad64)
+			upper /= rad64
+			if ud == lower {
+				lower = upper
+				lowerDigit = upperDigit
+			} else {
+				lowerDigit = uint(lower % rad64)
+				lower /= rad64
+			}
+			if upper <= uint64(maxUint) {
+				useInts = true
+				upperInt = uint(upper)
+				lowerInt = uint(lower)
+			}
+		}
+
+		if lowerDigit == upperDigit {
+			previousWasFullRange = false
+			if reverseSplitDigits {
+				if prefLen > 0 {
+					appendable.WriteString(stringPrefix)
+				}
+				appendable.WriteByte(dig[lowerDigit])
+			} else {
+				// in this case, whatever we do here will be completely reversed following this method call
+				appendable.WriteByte(dig[lowerDigit])
+				for k := prefLen - 1; k >= 0; k-- {
+					appendable.WriteByte(stringPrefix[k])
+				}
+			}
+		} else {
+			if !previousWasFullRange {
+				return &incompatibleAddressError{addressError{key: "ipaddress.error.splitMismatch"}}
+			}
+			previousWasFullRange = (lowerDigit == 0) && (upperDigit == uradix-1)
+			if previousWasFullRange && len(wildcard) > 0 {
+				if reverseSplitDigits {
+					appendable.WriteString(wildcard)
+				} else {
+					// in this case, whatever we do here will be completely reversed following this method call
+					for k := len(wildcard) - 1; k >= 0; k-- {
+						appendable.WriteByte(wildcard[k])
+					}
+				}
+			} else {
+				if reverseSplitDigits {
+					if prefLen > 0 {
+						appendable.WriteString(stringPrefix)
+					}
+					appendable.WriteByte(dig[lowerDigit])
+					appendable.WriteString(rangeSeparator)
+					appendable.WriteByte(dig[upperDigit])
+				} else {
+					// in this case, whatever we do here will be completely reversed following this method call
+					appendable.WriteByte(dig[upperDigit])
+					appendable.WriteString(rangeSeparator)
+					appendable.WriteByte(dig[lowerDigit])
+					for k := prefLen - 1; k >= 0; k-- {
+						appendable.WriteByte(stringPrefix[k])
+					}
+				}
+			}
+		}
+
+		if upperInt == 0 {
+			break
+		}
+		appendable.WriteByte(splitDigitSeparator)
+	}
+	return nil
 }
