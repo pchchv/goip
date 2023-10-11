@@ -207,6 +207,26 @@ func (wrapped *wrappedIterator) Next() *IPAddressSegment {
 // which you can get from a HostBitCount using the Len method.
 type HostBitCount uint8
 
+// BlockSize is the reverse of BitsForCount, giving the total number of values when ranging across the number of host bits.
+// The nil *HostBitCount returns 0.
+func (hostBitCount *HostBitCount) BlockSize() *big.Int {
+	if hostBitCount == nil {
+		return bigZero()
+	}
+	return new(big.Int).Lsh(bigOneConst(), uint(*hostBitCount))
+}
+
+// Len returns the length of the host.
+// If the receiver is nil, representing the absence of a host length, returns 0.
+// It will also return 0 if the receiver has a host length of 0.
+// To distinguish the two, compare the receiver with nil.
+func (hostBitCount *HostBitCount) Len() BitCount {
+	if hostBitCount == nil {
+		return 0
+	}
+	return BitCount(*hostBitCount)
+}
+
 func bigIsZero(val *BigDivInt) bool {
 	return len(val.Bits()) == 0 // slightly faster than div.value.BitLen() == 0
 }
