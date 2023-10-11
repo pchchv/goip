@@ -377,3 +377,25 @@ func cachePrefix(i BitCount) *PrefixLen {
 	res := &val
 	return &res
 }
+
+// BitsForCount returns the number of bits required outside the prefix length
+// for a single prefix block to span at least as many addresses as the given count.
+// Mathematically, it is the ceiling of the base 2 logarithm of the given count.
+// A count of zero returns nil.
+func BitsForCount(count uint64) (result *HostBitCount) {
+	if count != 0 {
+		var res HostBitCount
+		countMinusOne := count - 1
+		if (countMinusOne & (0xfff0000000000000)) != 0 { // conversion to float64 will fail
+			count = (countMinusOne >> 53) + 1
+			res = 53
+		}
+		res += HostBitCount(math.Ilogb(float64((count << 1) - 1)))
+		return &res
+	}
+	return nil
+}
+
+func cacheNilPrefix() *PrefixLen {
+	return &p
+}
