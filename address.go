@@ -368,6 +368,19 @@ func (addr *addressInternal) getLeadingBitCount(ones bool) BitCount {
 	return addr.section.GetLeadingBitCount(ones)
 }
 
+// testBit returns true if the bit in the lower value of this address at the given index is 1, where index 0 refers to the least significant bit.
+// In other words, it computes (bits & (1 << n)) != 0), using the lower value of this address.
+// TestBit will panic if n < 0, or if it matches or exceeds the bit count of this item.
+func (addr *addressInternal) testBit(n BitCount) bool {
+	return addr.section.TestBit(n)
+}
+
+// isOneBit returns true if the bit in the lower value of this address at the given index is 1, where index 0 refers to the most significant bit.
+// isOneBit will panic if bitIndex is less than zero or larger than the bit count of this item.
+func (addr *addressInternal) isOneBit(bitIndex BitCount) bool {
+	return addr.section.IsOneBit(bitIndex)
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
