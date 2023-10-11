@@ -96,6 +96,10 @@ type addressSeriesIterator struct {
 	Iterator[*Address]
 }
 
+type ipaddressSeriesIterator struct {
+	Iterator[*IPAddress]
+}
+
 func nilAddrIterator() Iterator[*Address] {
 	return &singleIterator[*Address]{}
 }
