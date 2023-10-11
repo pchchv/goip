@@ -933,3 +933,48 @@ func toDefaultString(val uint64, radix int) string {
 	}
 	return strconv.FormatUint(val, radix)
 }
+
+func toUnsignedSplitRangeStringLength(lower, upper uint64, rangeSeparator, wildcard string, leadingZerosCount, radix int, uppercase bool, splitDigitSeparator byte, reverseSplitDigits bool, stringPrefix string) int {
+	_ = rangeSeparator
+	_ = uppercase
+	_ = splitDigitSeparator
+	_ = reverseSplitDigits
+	stringPrefixLength := len(stringPrefix)
+	radix64 := uint64(radix)
+	digitsLength := -1
+
+	for {
+		upperDigit := int(upper % radix64)
+		lowerDigit := int(lower % radix64)
+		isFull := (lowerDigit == 0) && (upperDigit == radix-1)
+
+		if isFull {
+			digitsLength += len(wildcard) + 1
+		} else {
+			// if not full range, they must not be the same either,
+			// otherwise they would be illegal for split range.
+			// this is because we know whenever entering the loop that upper != lower,
+			// and we know this also means the least significant digits must differ.
+			digitsLength += (stringPrefixLength << 1) + 4
+		}
+
+		upper /= radix64
+		lower /= radix64
+		if upper == lower {
+			break
+		}
+	}
+
+	remaining := 0
+
+	if upper != 0 {
+		remaining = toUnsignedStringLength(upper, radix)
+	}
+
+	remaining += leadingZerosCount
+	if remaining > 0 {
+		digitsLength += remaining * (stringPrefixLength + 2)
+	}
+
+	return digitsLength
+}
