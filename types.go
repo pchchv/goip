@@ -227,6 +227,19 @@ func (hostBitCount *HostBitCount) Len() BitCount {
 	return BitCount(*hostBitCount)
 }
 
+// String returns the bit count as a base-10 positive integer string, or "<nil>" if the receiver is a nil pointer.
+func (hostBitCount *HostBitCount) String() string {
+	if hostBitCount == nil {
+		return nilString()
+	}
+	return strconv.Itoa(hostBitCount.Len())
+}
+
+// IsNil returns true if this is nil, meaning it represents having no identified host length.
+func (hostBitCount *HostBitCount) IsNil() bool {
+	return hostBitCount == nil
+}
+
 func bigIsZero(val *BigDivInt) bool {
 	return len(val.Bits()) == 0 // slightly faster than div.value.BitLen() == 0
 }
