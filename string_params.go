@@ -1093,3 +1093,25 @@ func checkLengths(length int, builder *strings.Builder) {
 		panic(fmt.Sprintf("length is %d, capacity is %d, expected length is %d", builder.Len(), builder.Cap(), length))
 	}
 }
+
+func toNormalizedStringRange(params *addressStringParams, lower, upper AddressDivisionSeries, zone Zone) string {
+	if lower.GetDivisionCount() > 0 {
+		var builder strings.Builder
+		length := params.getStringLength(lower) + params.getZonedStringLength(upper, zone)
+		separator := params.getWildcards().GetRangeSeparator()
+		if separator != "" {
+			length += len(separator)
+			builder.Grow(length)
+			params.append(&builder, lower).WriteString(separator)
+			params.appendZoned(&builder, upper, zone)
+		} else {
+			builder.Grow(length)
+			params.appendZoned(params.append(&builder, lower), upper, zone)
+		}
+
+		checkLengths(length, &builder)
+
+		return builder.String()
+	}
+	return ""
+}
