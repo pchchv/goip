@@ -360,6 +360,14 @@ func (addr *addressInternal) getStringCache() *stringCache {
 	return addr.cache.stringCache
 }
 
+func (addr *addressInternal) getTrailingBitCount(ones bool) BitCount {
+	return addr.section.GetTrailingBitCount(ones)
+}
+
+func (addr *addressInternal) getLeadingBitCount(ones bool) BitCount {
+	return addr.section.GetLeadingBitCount(ones)
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
