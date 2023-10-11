@@ -960,6 +960,14 @@ type ipv6StringParams struct {
 	hostCompressed              bool // whether the host was compressed, which with some prefix configurations means we must print the network prefix to indicate that the host is full range
 }
 
+func (params *ipv6StringParams) endIsCompressed(addr IPAddressSegmentSeries) bool {
+	return params.nextUncompressedIndex >= addr.GetDivisionCount()
+}
+
+func (params *ipv6StringParams) isCompressed(_ IPAddressSegmentSeries) bool {
+	return params.firstCompressedSegmentIndex >= 0
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
