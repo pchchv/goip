@@ -1143,3 +1143,26 @@ func appendRangeDigits(lower, upper uint64, rangeSeparator, wildcard string, rad
 	}
 	return nil
 }
+
+func toSplitUnsignedString(value uint64, radix, choppedDigits int, uppercase bool, splitDigitSeparator byte, reverseSplitDigits bool, stringPrefix string, appendable *strings.Builder) {
+	if reverseSplitDigits {
+		appendDigits(value, radix, choppedDigits, uppercase, splitDigitSeparator, stringPrefix, appendable)
+	} else {
+		var tmpBuilder strings.Builder
+		appendDigits(value, radix, choppedDigits, uppercase, splitDigitSeparator, stringPrefix, &tmpBuilder)
+		stringPrefixLen := len(stringPrefix)
+		str := tmpBuilder.String()
+		back := tmpBuilder.Len() - 1
+
+		for {
+			appendable.WriteString(stringPrefix)
+			appendable.WriteByte(str[back])
+			back -= stringPrefixLen // skip the prefix, if any
+			back -= 2               // 1 for the separator, 1 for the byte
+			if back < 0 {
+				break
+			}
+			appendable.WriteByte(splitDigitSeparator)
+		}
+	}
+}
