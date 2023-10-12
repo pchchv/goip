@@ -827,3 +827,21 @@ func (addr *Address) CopySubSegments(start, end int, segs []*AddressSegment) (co
 func (addr *Address) CopySegments(segs []*AddressSegment) (count int) {
 	return addr.GetSection().CopySegments(segs)
 }
+
+// GetSegments returns a slice with the address segments.  The returned slice is not backed by the same array as this section.
+func (addr *Address) GetSegments() []*AddressSegment {
+	return addr.GetSection().GetSegments()
+}
+
+// GetSegment returns the segment at the given index.
+// The first segment is at index 0.
+// GetSegment will panic given a negative index or an index matching or larger than the segment count.
+func (addr *Address) GetSegment(index int) *AddressSegment {
+	return addr.getSegment(index)
+}
+
+// GetSegmentCount returns the segment count, the number of segments in this address.
+// For example, IPv4 addresses have 4, IPv6 addresses have 8.
+func (addr *Address) GetSegmentCount() int {
+	return addr.getDivisionCount()
+}
