@@ -504,6 +504,39 @@ func (addr *addressInternal) setPrefixLenZeroed(prefixLen BitCount) (res *Addres
 	return
 }
 
+// assignMinPrefixForBlock constructs an equivalent address section with the smallest CIDR prefix possible (largest network),
+// such that the range of values are a set of subnet blocks for that prefix.
+func (addr *addressInternal) assignMinPrefixForBlock() *Address {
+	return addr.setPrefixLen(addr.GetMinPrefixLenForBlock())
+}
+
+// equivalent to section.sectionIterator
+func (addr *addressInternal) addrIterator(excludeFunc func([]*AddressDivision) bool) Iterator[*Address] {
+	var iterator Iterator[[]*AddressDivision]
+	useOriginal := !addr.isMultiple()
+	original := addr.toAddress()
+
+	if useOriginal {
+		if excludeFunc != nil && excludeFunc(addr.getDivisionsInternal()) {
+			original = nil // the single-valued iterator starts out empty
+		}
+	} else {
+		address := addr.toAddress()
+		iterator = allSegmentsIterator(
+			addr.getDivisionCount(),
+			nil,
+			func(index int) Iterator[*AddressSegment] { return address.getSegment(index).iterator() },
+			excludeFunc)
+	}
+
+	return addrIterator(
+		useOriginal,
+		original,
+		original.getPrefixLen(),
+		false,
+		iterator)
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
