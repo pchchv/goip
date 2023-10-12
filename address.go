@@ -1014,3 +1014,17 @@ func (addr *Address) BlockIterator(segmentCount int) Iterator[*Address] {
 func (addr *Address) SequentialBlockIterator() Iterator[*Address] {
 	return addr.init().sequentialBlockIterator()
 }
+
+// GetSequentialBlockIndex gets the minimal segment index for which all following segments are full-range blocks.
+//
+// The segment at this index is not a full-range block itself, unless all segments are full-range.
+// The segment at this index and all following segments form a sequential range.
+// For the full subnet to be sequential, the preceding segments must be single-valued.
+func (addr *Address) GetSequentialBlockIndex() int {
+	return addr.getSequentialBlockIndex()
+}
+
+// GetSequentialBlockCount provides the count of elements from the sequential block iterator, the minimal number of sequential subnets that comprise this subnet.
+func (addr *Address) GetSequentialBlockCount() *big.Int {
+	return addr.getSequentialBlockCount()
+}
