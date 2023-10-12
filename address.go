@@ -845,3 +845,20 @@ func (addr *Address) GetSegment(index int) *AddressSegment {
 func (addr *Address) GetSegmentCount() int {
 	return addr.getDivisionCount()
 }
+
+// ForEachSegment visits each segment in order from most-significant to least, the most significant with index 0,
+// calling the given function for each, terminating early if the function returns true.
+// Returns the number of visited segments.
+func (addr *Address) ForEachSegment(consumer func(segmentIndex int, segment *AddressSegment) (stop bool)) int {
+	return addr.GetSection().ForEachSegment(consumer)
+}
+
+// GetDivisionCount returns the division count, which is the same as the segment count, since the divisions of an address are the segments.
+func (addr *Address) GetDivisionCount() int {
+	return addr.getDivisionCount()
+}
+
+// GetValue returns the lowest address in this subnet or address collection as an integer value.
+func (addr *Address) GetValue() *big.Int {
+	return addr.init().section.GetValue()
+}
