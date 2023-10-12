@@ -27,8 +27,19 @@ const (
 	unknownrangetype     rangeType    = -1
 )
 
+var (
 // CountComparator compares by count first, then by value.
-var CountComparator = AddressComparator{countComparator{}}
+	CountComparator = AddressComparator{countComparator{}}
+	// HighValueComparator compares by high value first, then low, then count.
+	HighValueComparator = AddressComparator{valueComparator{compareHighValue: true}}
+	// LowValueComparator compares by low value first, then high, then count.
+	LowValueComparator = AddressComparator{valueComparator{}}
+	// With the reverse comparators, ordering with the secondary values (higher or lower) follow a reverse ordering than the primary values (lower or higher)
+	// ReverseHighValueComparator is like HighValueComparator but when comparing the low value, reverses the comparison.
+	ReverseHighValueComparator = AddressComparator{valueComparator{compareHighValue: true, flipSecond: true}}
+	// ReverseLowValueComparator is like LowValueComparator but when comparing the high value, reverses the comparison.
+	ReverseLowValueComparator = AddressComparator{valueComparator{flipSecond: true}}
+)
 
 type groupingType int
 
@@ -629,6 +640,191 @@ func compareDivBitCounts(oneSeries, twoSeries AddressDivisionSeries) int {
 		}
 	}
 	return result
+}
+
+func (comp valueComparator) compareParts(oneSeries, twoSeries AddressDivisionSeries) int {
+	sizeResult := int(oneSeries.GetBitCount() - twoSeries.GetBitCount())
+	if sizeResult != 0 {
+		return sizeResult
+	}
+
+	result := compareDivBitCounts(oneSeries, twoSeries)
+	if result != 0 {
+		return result
+	}
+
+	var one, two *AddressDivisionGrouping
+	compareHigh := comp.compareHighValue
+
+	if o, ok := oneSeries.(StandardDivGroupingType); ok {
+		if t, ok := twoSeries.(StandardDivGroupingType); ok {
+			one = o.ToDivGrouping()
+			two = t.ToDivGrouping()
+		}
+	}
+
+	oneSeriesByteCount := oneSeries.GetByteCount()
+	twoSeriesByteCount := twoSeries.GetByteCount()
+	oneBytes := make([]byte, oneSeriesByteCount)
+	twoBytes := make([]byte, twoSeriesByteCount)
+
+	for {
+		var oneByteCount, twoByteCount, oneByteIndex, twoByteIndex, oneIndex, twoIndex int
+		var oneBitCount, twoBitCount, oneTotalBitCount, twoTotalBitCount BitCount
+		var oneValue, twoValue uint64
+		for oneIndex < oneSeries.GetDivisionCount() || twoIndex < twoSeries.GetDivisionCount() {
+			if one != nil {
+				if oneBitCount == 0 {
+					oneCombo := one.GetDivision(oneIndex)
+					oneIndex++
+					oneBitCount = oneCombo.GetBitCount()
+					if compareHigh {
+						oneValue = oneCombo.GetUpperDivisionValue()
+					} else {
+						oneValue = oneCombo.GetDivisionValue()
+					}
+				}
+
+				if twoBitCount == 0 {
+					twoCombo := two.GetDivision(twoIndex)
+					twoIndex++
+					twoBitCount = twoCombo.GetBitCount()
+					if compareHigh {
+						twoValue = twoCombo.GetUpperDivisionValue()
+					} else {
+						twoValue = twoCombo.GetDivisionValue()
+					}
+				}
+			} else {
+				if oneBitCount == 0 {
+					if oneByteCount == 0 {
+						oneCombo := oneSeries.GetGenericDivision(oneIndex)
+						oneIndex++
+						if compareHigh {
+							oneBytes = oneCombo.CopyUpperBytes(oneBytes)
+						} else {
+							oneBytes = oneCombo.CopyBytes(oneBytes)
+						}
+						oneTotalBitCount = oneCombo.GetBitCount()
+						oneByteCount = oneCombo.GetByteCount()
+						oneByteIndex = 0
+					}
+					//put some or all of the bytes into a long
+					count := 8
+					oneValue = 0
+					if count < oneByteCount {
+						oneBitCount = BitCount(count) << 3
+						oneTotalBitCount -= oneBitCount
+						oneByteCount -= count
+						for count > 0 {
+							count--
+
+							oneValue = (oneValue << 8) | uint64(oneBytes[oneByteIndex])
+							oneByteIndex++
+						}
+					} else {
+						shortCount := oneByteCount - 1
+						lastBitsCount := oneTotalBitCount - (BitCount(shortCount) << 3)
+						for shortCount > 0 {
+							shortCount--
+							oneValue = (oneValue << 8) | uint64(oneBytes[oneByteIndex])
+							oneByteIndex++
+						}
+						oneValue = (oneValue << uint64(lastBitsCount)) | uint64(oneBytes[oneByteIndex]>>uint64(8-lastBitsCount))
+						oneByteIndex++
+						oneBitCount = oneTotalBitCount
+						oneTotalBitCount = 0
+						oneByteCount = 0
+					}
+				}
+
+				if twoBitCount == 0 {
+					if twoByteCount == 0 {
+						twoCombo := twoSeries.GetGenericDivision(twoIndex)
+						twoIndex++
+						if compareHigh {
+							twoBytes = twoCombo.CopyUpperBytes(twoBytes)
+						} else {
+							twoBytes = twoCombo.CopyBytes(twoBytes)
+						}
+						twoTotalBitCount = twoCombo.GetBitCount()
+						twoByteCount = twoCombo.GetByteCount()
+						twoByteIndex = 0
+					}
+					// put some or all of the bytes into a long
+					count := 8
+					twoValue = 0
+					if count < twoByteCount {
+						twoBitCount = BitCount(count) << 3
+						twoTotalBitCount -= twoBitCount
+						twoByteCount -= count
+						for count > 0 {
+							count--
+
+							twoValue = (twoValue << 8) | uint64(twoBytes[twoByteIndex])
+							twoByteIndex++
+						}
+					} else {
+						shortCount := twoByteCount - 1
+						lastBitsCount := twoTotalBitCount - (BitCount(shortCount) << 3)
+						for shortCount > 0 {
+							shortCount--
+
+							twoValue = (twoValue << 8) | uint64(twoBytes[twoByteIndex])
+							twoByteIndex++
+						}
+						twoValue = (twoValue << uint(lastBitsCount)) | uint64(twoBytes[twoByteIndex]>>uint(8-lastBitsCount))
+						twoByteIndex++
+						twoBitCount = twoTotalBitCount
+						twoTotalBitCount = 0
+						twoByteCount = 0
+					}
+				}
+			}
+
+			oneResultValue := oneValue
+			twoResultValue := twoValue
+
+			if twoBitCount == oneBitCount {
+				//no adjustment required, compare the values straight up
+				oneBitCount = 0
+				twoBitCount = 0
+			} else {
+				diffBits := twoBitCount - oneBitCount
+				if diffBits > 0 {
+					twoResultValue >>= uint(diffBits)
+					twoValue &= ^(^uint64(0) << uint(diffBits))
+					twoBitCount = diffBits
+					oneBitCount = 0
+				} else {
+					diffBits = -diffBits
+					oneResultValue >>= uint(diffBits)
+					oneValue &= ^(^uint64(0) << uint(diffBits))
+					oneBitCount = diffBits
+					twoBitCount = 0
+				}
+			}
+
+			if oneResultValue != twoResultValue {
+				if comp.flipSecond && compareHigh != comp.compareHighValue {
+					if oneResultValue > twoResultValue {
+						return -1
+					}
+					return 1
+				}
+				if oneResultValue > twoResultValue {
+					return 1
+				}
+				return -1
+			}
+		}
+
+		compareHigh = !compareHigh
+		if compareHigh == comp.compareHighValue {
+			break
+		}
+	}
+	return 0
 }
 
 // Note: never called with an address instance, never called with an instance of AddressType
