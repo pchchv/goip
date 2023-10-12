@@ -883,3 +883,13 @@ func (addr *Address) CopyBytes(bytes []byte) []byte {
 func (addr *Address) CopyUpperBytes(bytes []byte) []byte {
 	return addr.init().section.CopyUpperBytes(bytes)
 }
+
+// IsMax returns whether this address matches exactly the maximum possible value, the address whose bits are all ones.
+func (addr *Address) IsMax() bool {
+	return addr.init().section.IsMax()
+}
+
+// IncludesMax returns whether this address includes the max address, the address whose bits are all ones, within its range.
+func (addr *Address) IncludesMax() bool {
+	return addr.init().section.IncludesMax()
+}
