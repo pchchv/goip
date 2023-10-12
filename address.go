@@ -803,3 +803,15 @@ func (addr *Address) IsMultiple() bool {
 func (addr *Address) IsPrefixed() bool {
 	return addr != nil && addr.isPrefixed()
 }
+
+// GetTrailingSection gets the subsection from the series starting from the given index.
+// The first segment is at index 0.
+func (addr *Address) GetTrailingSection(index int) *AddressSection {
+	return addr.GetSection().GetTrailingSection(index)
+}
+
+// GetSubSection gets the subsection from the series starting from the given index and ending just before the give endIndex.
+// The first segment is at index 0.
+func (addr *Address) GetSubSection(index, endIndex int) *AddressSection {
+	return addr.GetSection().GetSubSection(index, endIndex)
+}
