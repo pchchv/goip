@@ -779,3 +779,27 @@ func (addr *Address) TestBit(n BitCount) bool {
 func (addr *Address) IsOneBit(bitIndex BitCount) bool {
 	return addr.init().isOneBit(bitIndex)
 }
+
+// GetCount returns the count of addresses that this address or subnet represents.
+//
+// If just a single address, not a collection nor subnet of multiple addresses, returns 1.
+//
+// For instance, the IP address subnet "2001:db8::/64" has the count of 2 to the power of 64.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (addr *Address) GetCount() *big.Int {
+	if addr == nil {
+		return bigZero()
+	}
+	return addr.getCount()
+}
+
+// IsMultiple returns true if this represents more than a single individual address, whether it is a collection or subnet of multiple addresses.
+func (addr *Address) IsMultiple() bool {
+	return addr != nil && addr.isMultiple()
+}
+
+// IsPrefixed returns whether this address has an associated prefix length.
+func (addr *Address) IsPrefixed() bool {
+	return addr != nil && addr.isPrefixed()
+}
