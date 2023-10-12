@@ -893,3 +893,19 @@ func (addr *Address) IsMax() bool {
 func (addr *Address) IncludesMax() bool {
 	return addr.init().section.IncludesMax()
 }
+
+// WithoutPrefixLen provides the same address but with no prefix length.  The values remain unchanged.
+func (addr *Address) WithoutPrefixLen() *Address {
+	if !addr.IsPrefixed() {
+		return addr
+	}
+	return addr.init().withoutPrefixLen()
+}
+
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (addr *Address) SetPrefixLen(prefixLen BitCount) *Address {
+	return addr.init().setPrefixLen(prefixLen)
+}
