@@ -583,6 +583,23 @@ func (addr *addressInternal) getSequentialBlockIndex() int {
 	return addr.section.GetSequentialBlockIndex()
 }
 
+func (addr *addressInternal) getSequentialBlockCount() *big.Int {
+	if addr.section == nil {
+		return bigOne()
+	}
+	return addr.section.GetSequentialBlockCount()
+}
+
+func (addr *addressInternal) getSegmentStrings() []string {
+	return addr.section.getSegmentStrings()
+}
+
+// sequentialBlockIterator iterates through the minimal number of maximum-sized blocks comprising this subnet
+// a block is sequential if given any two addresses in the block, any intervening address between the two is also in the block
+func (addr *addressInternal) sequentialBlockIterator() Iterator[*Address] {
+	return addr.blockIterator(addr.getSequentialBlockIndex())
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
