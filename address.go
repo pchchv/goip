@@ -815,3 +815,15 @@ func (addr *Address) GetTrailingSection(index int) *AddressSection {
 func (addr *Address) GetSubSection(index, endIndex int) *AddressSection {
 	return addr.GetSection().GetSubSection(index, endIndex)
 }
+
+// CopySubSegments copies the existing segments from the given start index until but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (addr *Address) CopySubSegments(start, end int, segs []*AddressSegment) (count int) {
+	return addr.GetSection().CopySubSegments(start, end, segs)
+}
+
+// CopySegments copies the existing segments into the given slice,
+// as much as can be fit into the slice, returning the number of segments copied.
+func (addr *Address) CopySegments(segs []*AddressSegment) (count int) {
+	return addr.GetSection().CopySegments(segs)
+}
