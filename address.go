@@ -1084,3 +1084,9 @@ func (addr *Address) GetSegmentStrings() []string {
 	}
 	return addr.init().getSegmentStrings()
 }
+
+// Wrap wraps this address, returning a WrappedAddress, an implementation of ExtendedSegmentSeries,
+// which can be used to write code that works with both addresses and address sections.
+func (addr *Address) Wrap() WrappedAddress {
+	return wrapAddress(addr.init())
+}
