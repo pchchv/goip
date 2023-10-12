@@ -971,3 +971,23 @@ func (addr *Address) SetPrefixLenZeroed(prefixLen BitCount) (*Address, address_e
 func (addr *Address) AssignMinPrefixForBlock() *Address {
 	return addr.init().assignMinPrefixForBlock()
 }
+
+// GetMaxSegmentValue returns the maximum possible segment value for this type of address.
+//
+// Note this is not the maximum of the range of segment values in this specific address,
+// this is the maximum value of any segment for this address type and version, determined by the number of bits per segment.
+func (addr *Address) GetMaxSegmentValue() SegInt {
+	return addr.init().getMaxSegmentValue()
+}
+
+// Iterator provides an iterator to iterate through the individual addresses of this address or subnet.
+//
+// When iterating, the prefix length is preserved.  Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual addresses.
+//
+// Call IsMultiple to determine if this instance represents multiple addresses, or GetCount for the count.
+func (addr *Address) Iterator() Iterator[*Address] {
+	if addr == nil {
+		return nilAddrIterator()
+	}
+	return addr.addrIterator(nil)
+}
