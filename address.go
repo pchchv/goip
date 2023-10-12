@@ -1028,3 +1028,21 @@ func (addr *Address) GetSequentialBlockIndex() int {
 func (addr *Address) GetSequentialBlockCount() *big.Int {
 	return addr.getSequentialBlockCount()
 }
+
+// IncrementBoundary returns the address that is the given increment from the range boundaries of this subnet or address collection.
+//
+// If the given increment is positive, adds the value to the upper address (GetUpper) in the range to produce a new address.
+// If the given increment is negative, adds the value to the lower address (GetLower) in the range to produce a new address.
+// If the increment is zero, returns this address.
+//
+// If this is a single address value, that address is simply incremented by the given increment value, positive or negative.
+//
+// On address overflow or underflow, IncrementBoundary returns nil.
+func (addr *Address) IncrementBoundary(increment int64) *Address {
+	return addr.init().IncrementBoundary(increment)
+}
+
+// ReverseSegments returns a new address with the segments reversed.
+func (addr *Address) ReverseSegments() *Address {
+	return addr.init().reverseSegments()
+}
