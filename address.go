@@ -1046,3 +1046,24 @@ func (addr *Address) IncrementBoundary(increment int64) *Address {
 func (addr *Address) ReverseSegments() *Address {
 	return addr.init().reverseSegments()
 }
+
+// IsMulticast returns whether this address is multicast.
+func (addr *Address) IsMulticast() bool {
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		return thisAddr.IsMulticast()
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		return thisAddr.IsMulticast()
+	} else if thisAddr := addr.ToMAC(); thisAddr != nil {
+		return thisAddr.IsMulticast()
+	}
+	return false
+}
+
+// GetLeadingBitCount returns the number of consecutive leading one or zero bits.
+// If ones is true, returns the number of consecutive leading one bits.
+// Otherwise, returns the number of consecutive leading zero bits.
+//
+// This method applies to the lower address of the range if this is a subnet representing multiple values.
+func (addr *Address) GetLeadingBitCount(ones bool) BitCount {
+	return addr.init().getLeadingBitCount(ones)
+}
