@@ -537,6 +537,52 @@ func (addr *addressInternal) addrIterator(excludeFunc func([]*AddressDivision) b
 		iterator)
 }
 
+func (addr *addressInternal) blockIterator(segmentCount int) Iterator[*Address] {
+	if segmentCount < 0 {
+		segmentCount = 0
+	}
+
+	allSegsCount := addr.getDivisionCount()
+	if segmentCount >= allSegsCount {
+		return addr.addrIterator(nil)
+	}
+
+	var iterator Iterator[[]*AddressDivision]
+	address := addr.toAddress()
+	useOriginal := !addr.section.isMultipleTo(segmentCount)
+	if !useOriginal {
+		var hostSegIteratorProducer func(index int) Iterator[*AddressSegment]
+		hostSegIteratorProducer = func(index int) Iterator[*AddressSegment] {
+			return address.getSegment(index).identityIterator()
+		}
+		segIteratorProducer := func(index int) Iterator[*AddressSegment] {
+			return address.getSegment(index).iterator()
+		}
+		iterator = segmentsIterator(
+			allSegsCount,
+			nil, //when no prefix we defer to other iterator, when there is one we use the whole original section in the encompassing iterator and not just the original segments
+			segIteratorProducer,
+			nil,
+			segmentCount-1,
+			segmentCount,
+			hostSegIteratorProducer)
+	}
+
+	return addrIterator(
+		useOriginal,
+		address,
+		address.getPrefixLen(),
+		addr.section.isMultipleFrom(segmentCount),
+		iterator)
+}
+
+func (addr *addressInternal) getSequentialBlockIndex() int {
+	if addr.section == nil {
+		return 0
+	}
+	return addr.section.GetSequentialBlockIndex()
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
