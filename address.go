@@ -468,6 +468,29 @@ func (addr *addressInternal) IsFullRange() bool {
 	return section.IsFullRange()
 }
 
+func (addr *addressInternal) getDivisionsInternal() []*AddressDivision {
+	return addr.section.getDivisionsInternal()
+}
+
+// reverseSegments returns a new address with the segments reversed.
+func (addr *addressInternal) reverseSegments() *Address {
+	return addr.checkIdentity(addr.section.ReverseSegments())
+}
+
+func (addr *addressInternal) equalsSameVersion(other AddressType) bool {
+	otherAddr := other.ToAddressBase()
+	if addr.toAddress() == otherAddr {
+		return true
+	} else if otherAddr == nil {
+		return false
+	}
+
+	otherSection := otherAddr.GetSection()
+	return addr.section.sameCountTypeEquals(otherSection) &&
+		// if it it is IPv6 and has a zone, then it does not equal addresses from other zones
+		addr.isSameZone(otherAddr)
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
