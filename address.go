@@ -938,3 +938,36 @@ func (addr *Address) AdjustPrefixLenZeroed(prefixLen BitCount) (*Address, addres
 	res, err := addr.adjustPrefixLenZeroed(prefixLen)
 	return res.ToAddressBase(), err
 }
+
+// SetPrefixLenZeroed sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+//
+// If this address has a prefix length, and the prefix length is increased when setting the new prefix length, the bits moved within the prefix become zero.
+// If this address has a prefix length, and the prefix length is decreased when setting the new prefix length, the bits moved outside the prefix become zero.
+//
+// In other words, bits that move from one side of the prefix length to the other (bits moved into the prefix or outside the prefix) are zeroed.
+//
+// If the result cannot be zeroed because zeroing out bits results in a non-contiguous segment, an error is returned.
+func (addr *Address) SetPrefixLenZeroed(prefixLen BitCount) (*Address, address_error.IncompatibleAddressError) {
+	return addr.init().setPrefixLenZeroed(prefixLen)
+}
+
+// AssignMinPrefixForBlock returns an equivalent subnet, assigned the smallest prefix length possible,
+// such that the prefix block for that prefix length is in this subnet.
+//
+// In other words, this method assigns a prefix length to this subnet matching the largest prefix block in this subnet.
+//
+// Examples:
+//   - 1.2.3.4 returns 1.2.3.4/32
+//   - 1.2.*.* returns 1.2.0.0/16
+//   - 1.2.*.0/24 returns 1.2.0.0/16
+//   - 1.2.*.4 returns 1.2.*.4/32
+//   - 1.2.0-1.* returns 1.2.0.0/23
+//   - 1.2.1-2.* returns 1.2.1-2.0/24
+//   - 1.2.252-255.* returns 1.2.252.0/22
+//   - 1.2.3.4/16 returns 1.2.3.4/32
+func (addr *Address) AssignMinPrefixForBlock() *Address {
+	return addr.init().assignMinPrefixForBlock()
+}
