@@ -862,3 +862,24 @@ func (addr *Address) GetDivisionCount() int {
 func (addr *Address) GetValue() *big.Int {
 	return addr.init().section.GetValue()
 }
+
+// GetUpperValue returns the highest address in this subnet or address collection as an integer value.
+func (addr *Address) GetUpperValue() *big.Int {
+	return addr.init().section.GetUpperValue()
+}
+
+// CopyBytes copies the value of the lowest individual address in the subnet into a byte slice.
+//
+// If the value can fit in the given slice, the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (addr *Address) CopyBytes(bytes []byte) []byte {
+	return addr.init().section.CopyBytes(bytes)
+}
+
+// CopyUpperBytes copies the value of the highest individual address in the subnet into a byte slice.
+//
+// If the value can fit in the given slice, the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (addr *Address) CopyUpperBytes(bytes []byte) []byte {
+	return addr.init().section.CopyUpperBytes(bytes)
+}
