@@ -1067,3 +1067,20 @@ func (addr *Address) IsMulticast() bool {
 func (addr *Address) GetLeadingBitCount(ones bool) BitCount {
 	return addr.init().getLeadingBitCount(ones)
 }
+
+// GetTrailingBitCount returns the number of consecutive trailing one or zero bits.
+// If ones is true, returns the number of consecutive trailing zero bits.
+// Otherwise, returns the number of consecutive trailing one bits.
+//
+// This method applies to the lower value of the range if this is a subnet representing multiple values.
+func (addr *Address) GetTrailingBitCount(ones bool) BitCount {
+	return addr.init().getTrailingBitCount(ones)
+}
+
+// GetSegmentStrings returns a slice with the string for each segment being the string that is normalized with wildcards.
+func (addr *Address) GetSegmentStrings() []string {
+	if addr == nil {
+		return nil
+	}
+	return addr.init().getSegmentStrings()
+}
