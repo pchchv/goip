@@ -491,6 +491,19 @@ func (addr *addressInternal) equalsSameVersion(other AddressType) bool {
 		addr.isSameZone(otherAddr)
 }
 
+// withoutPrefixLen returns the same address but with no associated prefix length.
+func (addr *addressInternal) withoutPrefixLen() *Address {
+	return addr.checkIdentity(addr.section.withoutPrefixLen())
+}
+
+func (addr *addressInternal) setPrefixLenZeroed(prefixLen BitCount) (res *Address, err address_error.IncompatibleAddressError) {
+	section, err := addr.section.setPrefixLenZeroed(prefixLen)
+	if err == nil {
+		res = addr.checkIdentity(section)
+	}
+	return
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
