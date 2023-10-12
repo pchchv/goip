@@ -871,3 +871,35 @@ func checkGroupingType(series AddressDivisionSeries) (
 	}
 	return
 }
+
+func checkDivisionType(genericDiv DivisionType) (isNil, isStandard bool, divType divType, standardDiv StandardDivisionType) {
+	if standardDiv, isStandard = genericDiv.(StandardDivisionType); isStandard {
+		div := standardDiv.ToDiv()
+		if isNil = div == nil; !isNil {
+			if div.IsIPv6() {
+				divType = ipv6segtype
+			} else if div.IsIPv4() {
+				divType = ipv4segtype
+			} else if div.IsMAC() {
+				divType = macsegtype
+			} else if div.IsIP() {
+				divType = ipsegtype
+			} else if div.IsSegmentBase() {
+				divType = segtype
+			} else {
+				divType = standarddivtype
+			}
+		} else {
+			divType = unknowndivtype
+		}
+	} else if largeDiv, isLarge := genericDiv.(*IPAddressLargeDivision); isLarge {
+		if isNil = largeDiv.isNil(); !isNil {
+			divType = largedivtype
+		}
+	} else {
+		isNil = genericDiv == nil
+		// it could still have some external type, so not a nil interface but a nil value with that type, but we have no way to know
+		divType = unknowndivtype
+	}
+	return
+}
