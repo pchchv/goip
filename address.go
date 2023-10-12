@@ -447,6 +447,27 @@ func (addr *addressInternal) IsZero() bool {
 	return section.IsZero()
 }
 
+// IncludesZero returns whether this address includes the zero address within its range.
+func (addr *addressInternal) IncludesZero() bool {
+	section := addr.section
+	if section == nil {
+		return true
+	}
+	return section.IncludesZero()
+}
+
+// IsFullRange returns whether this address covers the entire address space of this address version or type.
+//
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (addr *addressInternal) IsFullRange() bool {
+	section := addr.section
+	if section == nil {
+		// when no bits, the only value 0 is the max value too
+		return true
+	}
+	return section.IsFullRange()
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
