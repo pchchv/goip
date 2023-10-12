@@ -1090,3 +1090,20 @@ func (addr *Address) GetSegmentStrings() []string {
 func (addr *Address) Wrap() WrappedAddress {
 	return wrapAddress(addr.init())
 }
+
+// AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
+// subnets, or address collections, using address equality.
+// Duplicates and nil addresses are allowed.
+func AddrsMatchOrdered[T, U AddressType](addrs1 []T, addrs2 []U) (result bool) {
+	len1 := len(addrs1)
+	len2 := len(addrs2)
+	if len1 != len2 {
+		return
+	}
+	for i, addr := range addrs1 {
+		if !addr.Equal(addrs2[i]) {
+			return
+		}
+	}
+	return true
+}
