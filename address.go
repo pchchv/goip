@@ -761,3 +761,21 @@ func (addr *Address) Bytes() []byte {
 func (addr *Address) UpperBytes() []byte {
 	return addr.init().section.UpperBytes()
 }
+
+// toAddressBase is needed for tries
+func (addr *Address) toAddressBase() *Address {
+	return addr
+}
+
+// TestBit returns true if the bit in the lower value of this address at the given index is 1, where index 0 refers to the least significant bit.
+// In other words, it computes (bits & (1 << n)) != 0), using the lower value of this address.
+// TestBit will panic if n < 0, or if it matches or exceeds the bit count of this item.
+func (addr *Address) TestBit(n BitCount) bool {
+	return addr.init().testBit(n)
+}
+
+// IsOneBit returns true if the bit in the lower value of this address at the given index is 1, where index 0 refers to the most significant bit.
+// IsOneBit will panic if bitIndex is less than zero, or if it is larger than the bit count of this item.
+func (addr *Address) IsOneBit(bitIndex BitCount) bool {
+	return addr.init().isOneBit(bitIndex)
+}
