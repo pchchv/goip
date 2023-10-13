@@ -242,6 +242,44 @@ func (comp AddressComparator) Compare(one, two AddressItem) int {
 	return comp.getCompComp().compareLargeValues(one.GetUpperValue(), one.GetValue(), two.GetUpperValue(), two.GetValue())
 }
 
+// CompareDivisions compares any two address divisions (including from different versions or address types).
+// It returns a negative integer, zero, or a positive integer if address item one is less than, equal, or greater than address item two.
+func (comp AddressComparator) CompareDivisions(one, two DivisionType) int {
+	if addrSeg1, ok := one.(AddressSegmentType); ok {
+		if addrSeg2, ok := two.(AddressSegmentType); ok {
+			return comp.CompareSegments(addrSeg1, addrSeg2)
+		}
+	}
+
+	oneIsNil, oneIsStandard, oneDivType, oneStandardDiv := checkDivisionType(one)
+	twoIsNil, twoIsStandard, twoDivType, twoStandardDiv := checkDivisionType(two)
+	// All nils are equivalent.  We decided that a nil interface should be equivalent to an interface with a nil value (standard or large)
+	// But if nil interface == nil standard, and nil interface == nil large, then nil standard == nil large, by transitive condition.
+	// And in fact, if you attempted to categorize the 3 nil types, it would get quite confusing perhaps.
+	if oneIsNil {
+		if twoIsNil {
+			return 0
+		}
+		return -1
+	} else if twoIsNil {
+		return 1
+	} else if result := oneDivType - twoDivType; result != 0 {
+		return int(result)
+	} else if result := int(one.GetBitCount() - two.GetBitCount()); result != 0 {
+		return result
+	}
+
+	compComp := comp.getCompComp()
+	if oneIsStandard {
+		if twoIsStandard {
+			div1, div2 := oneStandardDiv.ToDiv(), twoStandardDiv.ToDiv()
+			return compComp.compareValues(div1.GetUpperDivisionValue(), div1.GetDivisionValue(), div2.GetUpperDivisionValue(), div2.GetDivisionValue())
+		}
+	}
+
+	return compComp.compareLargeValues(one.GetUpperValue(), one.GetValue(), two.GetUpperValue(), two.GetValue())
+}
+
 type countComparator struct{}
 
 func (countComparator) compareLargeValues(oneUpper, oneLower, twoUpper, twoLower *big.Int) (result int) {
