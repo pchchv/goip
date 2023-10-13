@@ -491,6 +491,34 @@ func (div *addressDivisionInternal) getSplitRangeStringLength(rangeSeparator str
 		stringPrefix)
 }
 
+func (div *addressDivisionInternal) getDigitCount(radix int) int {
+	// optimization - just get the string, which is cached, which speeds up further calls to this or getString()
+	if !div.isMultiple() && radix == div.getDefaultTextualRadix() {
+		return len(div.getWildcardString())
+	}
+	return getDigitCount(div.getUpperDivisionValue(), radix)
+}
+
+// getDefaultSegmentWildcardString() is the wildcard string to be used when producing
+// the default strings with getString() or getWildcardString()
+//
+// Since no parameters for the string are provided,
+// default settings are used, but they must be consistent with the address.
+//
+// For instance, generally the '*' is used as a wildcard to denote all possible values for a given segment,
+// but in some cases that character is used for a segment separator.
+//
+// Note that this only applies to "default" settings,
+// there are additional string methods that allow you to specify these separator characters.
+// Those methods must be aware of the defaults as well,
+// to know when they can defer to the defaults and when they cannot.
+func (div *addressDivisionInternal) getDefaultSegmentWildcardString() string {
+	if seg := div.toAddressDivision().ToSegmentBase(); seg != nil {
+		return seg.getDefaultSegmentWildcardString()
+	}
+	return "" // for divisions, the width is variable and max values can change, so using wildcards make no sense
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
