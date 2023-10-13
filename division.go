@@ -14,9 +14,10 @@ const DivIntSize = 64
 
 var (
 	// Wildcards are different, here we only use the range, since the div size is not implicit.
-	octalParamsDiv   = new(address_string.IPStringOptionsBuilder).SetRadix(8).SetSegmentStrPrefix(OctalPrefix).SetWildcards(rangeWildcard).ToOptions()
-	hexParamsDiv     = new(address_string.IPStringOptionsBuilder).SetRadix(16).SetSegmentStrPrefix(HexPrefix).SetWildcards(rangeWildcard).ToOptions()
-	decimalParamsDiv = new(address_string.IPStringOptionsBuilder).SetRadix(10).SetWildcards(rangeWildcard).ToOptions()
+	octalParamsDiv                  = new(address_string.IPStringOptionsBuilder).SetRadix(8).SetSegmentStrPrefix(OctalPrefix).SetWildcards(rangeWildcard).ToOptions()
+	hexParamsDiv                    = new(address_string.IPStringOptionsBuilder).SetRadix(16).SetSegmentStrPrefix(HexPrefix).SetWildcards(rangeWildcard).ToOptions()
+	decimalParamsDiv                = new(address_string.IPStringOptionsBuilder).SetRadix(10).SetWildcards(rangeWildcard).ToOptions()
+	_                divisionValues = &divIntValues{}
 )
 
 // DivInt is an integer type for holding generic division values,
@@ -561,6 +562,16 @@ func (div *addressDivisionInternal) CopyBytes(bytes []byte) []byte {
 // Otherwise, a new slice is created and returned with the value.
 func (div *addressDivisionInternal) CopyUpperBytes(bytes []byte) []byte {
 	return div.addressDivisionBase.CopyUpperBytes(bytes)
+}
+
+// IsZero returns whether this division matches exactly the value of zero.
+func (div *addressDivisionInternal) IsZero() bool {
+	return div.addressDivisionBase.IsZero()
+}
+
+// IncludesZero returns whether this item includes the value of zero within its range.
+func (div *addressDivisionInternal) IncludesZero() bool {
+	return div.addressDivisionBase.IncludesZero()
 }
 
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
