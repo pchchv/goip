@@ -519,6 +519,22 @@ func (div *addressDivisionInternal) getDefaultSegmentWildcardString() string {
 	return "" // for divisions, the width is variable and max values can change, so using wildcards make no sense
 }
 
+// GetByteCount returns the number of bytes required for each value comprising this address item,
+// rounding up if the bit count is not a multiple of 8.
+func (div *addressDivisionInternal) GetByteCount() int {
+	return div.addressDivisionBase.GetByteCount()
+}
+
+// GetValue returns the lowest value in the address division range as a big integer.
+func (div *addressDivisionInternal) GetValue() *BigDivInt {
+	return div.addressDivisionBase.GetValue()
+}
+
+// GetUpperValue returns the highest value in the address division range as a big integer.
+func (div *addressDivisionInternal) GetUpperValue() *BigDivInt {
+	return div.addressDivisionBase.GetUpperValue()
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
