@@ -591,6 +591,15 @@ func (div *addressDivisionInternal) IsFullRange() bool {
 	return div.addressDivisionBase.IsFullRange()
 }
 
+// divIntValues are used by AddressDivision.
+type divIntValues struct {
+	bitCount   BitCount
+	value      DivInt
+	upperValue DivInt
+	prefLen    PrefixLen
+	cache      divCache
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
