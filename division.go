@@ -920,3 +920,41 @@ func cacheStrErr(cachedString **string, stringer func() (string, address_error.I
 	}
 	return
 }
+
+func calcBytesInternal(byteCount int, val, upperVal DivInt) (bytes, upperBytes []byte) {
+	byteIndex := byteCount - 1
+	isMultiple := val != upperVal
+	bytes = make([]byte, byteCount)
+	if isMultiple {
+		upperBytes = make([]byte, byteCount)
+	} else {
+		upperBytes = bytes
+	}
+
+	for {
+		bytes[byteIndex] |= byte(val)
+		val >>= 8
+		if isMultiple {
+			upperBytes[byteIndex] |= byte(upperVal)
+			upperVal >>= 8
+		}
+		if byteIndex == 0 {
+			return bytes, upperBytes
+		}
+		byteIndex--
+	}
+}
+
+func calcSingleBytes(byteCount int, val DivInt) (bytes []byte) {
+	byteIndex := byteCount - 1
+	bytes = make([]byte, byteCount)
+
+	for {
+		bytes[byteIndex] |= byte(val)
+		val >>= 8
+		if byteIndex == 0 {
+			return bytes
+		}
+		byteIndex--
+	}
+}
