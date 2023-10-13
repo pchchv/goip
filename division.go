@@ -1034,3 +1034,19 @@ func newDivValues(value, upperValue DivInt, prefLen PrefixLen, bitCount BitCount
 
 	return newDivValuesUnchecked(value, upperValue, prefLen, bitCount)
 }
+
+// NewPrefixDivision creates a division of the given bit length, assigning it the given value and prefix length.
+// If the value's bit length exceeds the given bit length, it is truncated.
+// If the prefix length exceeds the bit length, it is adjusted to the bit length.
+// If the prefix length is negative, it is adjusted to zero.
+func NewPrefixDivision(val DivInt, prefixLen PrefixLen, bitCount BitCount) *AddressDivision {
+	return NewRangePrefixDivision(val, val, prefixLen, bitCount)
+}
+
+// NewRangePrefixDivision creates a division of the given bit length, assigning it the given value range and prefix length.
+// If a value's bit length exceeds the given bit length, it is truncated.
+// If the prefix length exceeds the bit length, it is adjusted to the bit length.
+// If the prefix length is negative, it is adjusted to zero.
+func NewRangePrefixDivision(val, upperVal DivInt, prefixLen PrefixLen, bitCount BitCount) *AddressDivision {
+	return createAddressDivision(newDivValues(val, upperVal, prefixLen, bitCount))
+}
