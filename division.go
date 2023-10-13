@@ -632,6 +632,15 @@ func (div *divIntValues) isMultiple() bool {
 	return div.value != div.upperValue
 }
 
+func (div *divIntValues) getCount() *big.Int {
+	res := new(big.Int)
+	return res.SetUint64(uint64(div.upperValue-div.value)).Add(res, bigOneConst())
+}
+
+func (div *divIntValues) getCache() *divCache {
+	return &div.cache
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
