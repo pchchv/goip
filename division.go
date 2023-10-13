@@ -600,6 +600,14 @@ type divIntValues struct {
 	cache      divCache
 }
 
+func (div *divIntValues) getBitCount() BitCount {
+	return div.bitCount
+}
+
+func (div *divIntValues) getByteCount() int {
+	return (int(div.getBitCount()) + 7) >> 3
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
