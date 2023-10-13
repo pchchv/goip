@@ -545,6 +545,24 @@ func (div *addressDivisionInternal) UpperBytes() []byte {
 	return div.addressDivisionBase.UpperBytes()
 }
 
+// CopyBytes copies the lowest value in the address division range into a byte slice.
+//
+// If the value can fit in the given slice,
+ the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (div *addressDivisionInternal) CopyBytes(bytes []byte) []byte {
+	return div.addressDivisionBase.CopyBytes(bytes)
+}
+
+// CopyUpperBytes copies the highest value in the address division range into a byte slice.
+//
+// If the value can fit in the given slice,
+ the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (div *addressDivisionInternal) CopyUpperBytes(bytes []byte) []byte {
+	return div.addressDivisionBase.CopyUpperBytes(bytes)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
