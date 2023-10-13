@@ -461,6 +461,36 @@ func (div *addressDivisionInternal) getSplitLowerString(radix int, choppedDigits
 	toSplitUnsignedString(div.getDivisionValue(), radix, choppedDigits, uppercase, splitDigitSeparator, reverseSplitDigits, stringPrefix, appendable)
 }
 
+func (div *addressDivisionInternal) getSplitRangeString(rangeSeparator string, wildcard string, radix int, uppercase bool,
+	splitDigitSeparator byte, reverseSplitDigits bool, stringPrefix string, appendable *strings.Builder) address_error.IncompatibleAddressError {
+	return toUnsignedSplitRangeString(
+		div.getDivisionValue(),
+		div.getUpperDivisionValue(),
+		rangeSeparator,
+		wildcard,
+		radix,
+		uppercase,
+		splitDigitSeparator,
+		reverseSplitDigits,
+		stringPrefix,
+		appendable)
+}
+
+func (div *addressDivisionInternal) getSplitRangeStringLength(rangeSeparator string, wildcard string, leadingZeroCount int, radix int, uppercase bool,
+	splitDigitSeparator byte, reverseSplitDigits bool, stringPrefix string) int {
+	return toUnsignedSplitRangeStringLength(
+		div.getDivisionValue(),
+		div.getUpperDivisionValue(),
+		rangeSeparator,
+		wildcard,
+		leadingZeroCount,
+		radix,
+		uppercase,
+		splitDigitSeparator,
+		reverseSplitDigits,
+		stringPrefix)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
