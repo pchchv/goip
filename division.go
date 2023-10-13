@@ -978,3 +978,31 @@ func calcSingleBytes(byteCount int, val DivInt) (bytes []byte) {
 		byteIndex--
 	}
 }
+
+func newDivValuesUnchecked(value, upperValue DivInt, prefLen PrefixLen, bitCount BitCount) *divIntValues {
+	return &divIntValues{
+		value:      value,
+		upperValue: upperValue,
+		prefLen:    prefLen,
+		bitCount:   bitCount,
+	}
+}
+
+func newDivValues(value, upperValue DivInt, prefLen PrefixLen, bitCount BitCount) *divIntValues {
+	if value > upperValue {
+		value, upperValue = upperValue, value
+	}
+
+	if bitCount <= 0 {
+		value = 0
+		upperValue = 0
+	} else if (1 << uint(bitCount)) <= upperValue { // upperValue too big
+		max := ^(^DivInt(0) << uint(bitCount))
+		value &= max
+		upperValue &= max
+	}
+
+	prefLen = checkPrefLen(prefLen, bitCount)
+
+	return newDivValuesUnchecked(value, upperValue, prefLen, bitCount)
+}
