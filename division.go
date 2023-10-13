@@ -429,6 +429,20 @@ func (div *addressDivisionInternal) getUpperStringLength(radix int) int {
 	return toUnsignedStringLength(div.getUpperDivisionValue(), radix)
 }
 
+func (div *addressDivisionInternal) toAddressSegment() *AddressSegment {
+	if div.matchesSegment() {
+		return (*AddressSegment)(unsafe.Pointer(div))
+	}
+	return nil
+}
+
+func (div *addressDivisionInternal) getStringAsLower() string {
+	if seg := div.toAddressDivision().ToIP(); seg != nil {
+		return seg.getStringAsLower()
+	}
+	return div.getStringFromStringer(div.getDefaultLowerString)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
