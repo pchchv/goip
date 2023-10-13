@@ -10,6 +10,8 @@ import (
 	"github.com/pchchv/goip/address_string"
 )
 
+const DivIntSize = 64
+
 var (
 	// Wildcards are different, here we only use the range, since the div size is not implicit.
 	octalParamsDiv   = new(address_string.IPStringOptionsBuilder).SetRadix(8).SetSegmentStrPrefix(OctalPrefix).SetWildcards(rangeWildcard).ToOptions()
@@ -589,6 +591,40 @@ func (div *AddressDivision) CompareSize(other AddressItem) int {
 // For the highest range value of this particular segment, use GetUpperDivisionValue.
 func (div *AddressDivision) GetMaxValue() DivInt {
 	return div.getMaxValue()
+}
+
+// ToMAC converts to a MACAddressSegment if this division originated as a MAC segment.
+// If not, ToMAC returns nil.
+//
+// ToMAC can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (div *AddressDivision) ToMAC() *MACAddressSegment {
+	if div.IsMAC() {
+		return (*MACAddressSegment)(unsafe.Pointer(div))
+	}
+	return nil
+}
+
+// GetString produces a normalized string to represent the segment.
+// If the segment is an IP segment string with CIDR network prefix block for its prefix length,
+// then the string contains only the lower value of the block range.
+// Otherwise, the explicit range will be printed.
+// If the segment is not an IP segment, then the string is the same as that produced by GetWildcardString.
+//
+// The string returned is useful in the context of creating strings for address sections or full addresses,
+// in which case the radix and bit-length can be deduced from the context.
+// The String method produces strings more appropriate when no context is provided.
+func (div *AddressDivision) GetString() string {
+	if div == nil {
+		return nilString()
+	}
+	return div.getString()
+}
+
+// MatchesValsWithMask applies the mask to this division and then compares the result with the given values,
+// returning true if the range of the resulting division matches the given range.
+func (div *AddressDivision) MatchesValsWithMask(lowerValue, upperValue, mask DivInt) bool {
+	return div.matchesValsWithMask(lowerValue, upperValue, mask)
 }
 
 func testRange(lowerValue, upperValue, finalUpperValue, networkMask, hostMask DivInt) bool {
