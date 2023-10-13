@@ -641,6 +641,14 @@ func (div *divIntValues) getCache() *divCache {
 	return &div.cache
 }
 
+func (div *divIntValues) getAddrType() addrType {
+	return zeroType
+}
+
+func (div *divIntValues) getDivisionValue() DivInt {
+	return div.value
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
