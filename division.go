@@ -574,6 +574,23 @@ func (div *addressDivisionInternal) IncludesZero() bool {
 	return div.addressDivisionBase.IncludesZero()
 }
 
+// IsMax returns whether this division matches exactly the maximum possible value, the value whose bits are all ones.
+func (div *addressDivisionInternal) IsMax() bool {
+	return div.addressDivisionBase.IsMax()
+}
+
+// IncludesMax returns whether this division includes the max value, the value whose bits are all ones, within its range.
+func (div *addressDivisionInternal) IncludesMax() bool {
+	return div.addressDivisionBase.IncludesMax()
+}
+
+// IsFullRange returns whether the division range includes all possible values for its bit length.
+//
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (div *addressDivisionInternal) IsFullRange() bool {
+	return div.addressDivisionBase.IsFullRange()
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
