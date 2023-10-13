@@ -443,6 +443,24 @@ func (div *addressDivisionInternal) getStringAsLower() string {
 	return div.getStringFromStringer(div.getDefaultLowerString)
 }
 
+func (div *addressDivisionInternal) getUpperStringMasked(radix int, uppercase bool, appendable *strings.Builder) {
+	if seg := div.toAddressDivision().ToIP(); seg != nil {
+		seg.getUpperStringMasked(radix, uppercase, appendable)
+	} else if div.isPrefixed() {
+		upperValue := div.getUpperDivisionValue()
+		mask := ^DivInt(0) << uint(div.GetBitCount()-div.getDivisionPrefixLength().bitCount())
+		upperValue &= mask
+		toUnsignedStringCased(upperValue, radix, 0, uppercase, appendable)
+	} else {
+		div.getUpperString(radix, uppercase, appendable)
+	}
+}
+
+func (div *addressDivisionInternal) getSplitLowerString(radix int, choppedDigits int, uppercase bool,
+	splitDigitSeparator byte, reverseSplitDigits bool, stringPrefix string, appendable *strings.Builder) {
+	toSplitUnsignedString(div.getDivisionValue(), radix, choppedDigits, uppercase, splitDigitSeparator, reverseSplitDigits, stringPrefix, appendable)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
