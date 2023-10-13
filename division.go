@@ -649,6 +649,18 @@ func (div *divIntValues) getDivisionValue() DivInt {
 	return div.value
 }
 
+func (div *divIntValues) getUpperDivisionValue() DivInt {
+	return div.upperValue
+}
+
+func (div *divIntValues) getSegmentValue() SegInt {
+	return SegInt(div.value)
+}
+
+func (div *divIntValues) getUpperSegmentValue() SegInt {
+	return SegInt(div.upperValue)
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
