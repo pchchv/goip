@@ -535,6 +535,16 @@ func (div *addressDivisionInternal) GetUpperValue() *BigDivInt {
 	return div.addressDivisionBase.GetUpperValue()
 }
 
+// Bytes returns the lowest value in the address division range as a byte slice.
+func (div *addressDivisionInternal) Bytes() []byte {
+	return div.addressDivisionBase.Bytes()
+}
+
+// UpperBytes returns the highest value in the address division range as a byte slice.
+func (div *addressDivisionInternal) UpperBytes() []byte {
+	return div.addressDivisionBase.UpperBytes()
+}
+
 // AddressDivision represents an arbitrary division in an address or grouping of address divisions.
 // It can contain a single value or a range of sequential values and has an assigned bit length.
 // Like all address components, it is immutable.
