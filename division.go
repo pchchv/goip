@@ -549,7 +549,7 @@ func (div *addressDivisionInternal) UpperBytes() []byte {
 // CopyBytes copies the lowest value in the address division range into a byte slice.
 //
 // If the value can fit in the given slice,
- the value is copied into that slice and a length-adjusted sub-slice is returned.
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
 // Otherwise, a new slice is created and returned with the value.
 func (div *addressDivisionInternal) CopyBytes(bytes []byte) []byte {
 	return div.addressDivisionBase.CopyBytes(bytes)
@@ -558,7 +558,7 @@ func (div *addressDivisionInternal) CopyBytes(bytes []byte) []byte {
 // CopyUpperBytes copies the highest value in the address division range into a byte slice.
 //
 // If the value can fit in the given slice,
- the value is copied into that slice and a length-adjusted sub-slice is returned.
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
 // Otherwise, a new slice is created and returned with the value.
 func (div *addressDivisionInternal) CopyUpperBytes(bytes []byte) []byte {
 	return div.addressDivisionBase.CopyUpperBytes(bytes)
