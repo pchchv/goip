@@ -367,6 +367,23 @@ func (addr *IPAddress) ForEachSegment(consumer func(segmentIndex int, segment *I
 	return addr.GetSection().ForEachSegment(consumer)
 }
 
+// WithoutPrefixLen provides the same address but with no prefix length.
+// The values remain unchanged.
+func (addr *IPAddress) WithoutPrefixLen() *IPAddress {
+	if !addr.IsPrefixed() {
+		return addr
+	}
+	return addr.withoutPrefixLen().ToIP()
+}
+
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (addr *IPAddress) SetPrefixLen(prefixLen BitCount) *IPAddress {
+	return addr.init().setPrefixLen(prefixLen).ToIP()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
