@@ -529,6 +529,17 @@ func (addr *IPAddress) GetSequentialBlockCount() *big.Int {
 	return addr.getSequentialBlockCount()
 }
 
+// IsUnspecified returns true if exactly zero.  The unspecified address is the address that is all zeros.
+func (addr *IPAddress) IsUnspecified() bool {
+	return addr.section != nil && addr.IsZero()
+}
+
+// IsAnyLocal returns whether this address is the address which binds to any address on the local host.
+// This is the address that has the value of 0, aka the unspecified address.
+func (addr *IPAddress) IsAnyLocal() bool {
+	return addr.section != nil && addr.IsZero()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
