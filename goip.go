@@ -326,6 +326,22 @@ func (addr *IPAddress) GetNetworkSectionLen(prefLen BitCount) *IPAddressSection 
 	return addr.GetSection().GetNetworkSectionLen(prefLen)
 }
 
+// GetHostSection returns a section containing the segments with the host of the address or subnet,
+// the bits beyond the CIDR network prefix length.
+// The returned section will have only as many segments as needed to contain the host.
+//
+// If this series has no prefix length, the returned host section will be the full section.
+func (addr *IPAddress) GetHostSection() *IPAddressSection {
+	return addr.GetSection().GetHostSection()
+}
+
+// GetHostSectionLen returns a section containing the segments with the host of the address or subnet,
+// the bits beyond the given CIDR network prefix length.
+// The returned section will have only as many segments as needed to contain the host.
+func (addr *IPAddress) GetHostSectionLen(prefLen BitCount) *IPAddressSection {
+	return addr.GetSection().GetHostSectionLen(prefLen)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
