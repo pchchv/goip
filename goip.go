@@ -418,6 +418,16 @@ func (addr *IPAddress) AssignMinPrefixForBlock() *IPAddress {
 	return addr.init().assignMinPrefixForBlock().ToIP()
 }
 
+// GetValue returns the lowest address in this subnet or address as an integer value.
+func (addr *IPAddress) GetValue() *big.Int {
+	return addr.init().section.GetValue()
+}
+
+// GetUpperValue returns the highest address in this subnet or address as an integer value.
+func (addr *IPAddress) GetUpperValue() *big.Int {
+	return addr.init().section.GetUpperValue()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
