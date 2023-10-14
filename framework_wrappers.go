@@ -201,6 +201,11 @@ type WrappedAddress struct {
 	*Address
 }
 
+// GetSection returns the backing section for this series, comprising all segments.
+func (addr WrappedAddress) GetSection() *AddressSection {
+	return addr.Address.GetSection()
+}
+
 // WrappedAddressSection is the implementation of ExtendedSegmentSeries for address sections.
 type WrappedAddressSection struct {
 	*AddressSection
