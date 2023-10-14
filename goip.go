@@ -428,6 +428,22 @@ func (addr *IPAddress) GetUpperValue() *big.Int {
 	return addr.init().section.GetUpperValue()
 }
 
+// CopyBytes copies the value of the lowest individual address in the subnet into a byte slice.
+//
+// If the value can fit in the given slice, the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (addr *IPAddress) CopyBytes(bytes []byte) []byte {
+	return addr.init().section.CopyBytes(bytes)
+}
+
+// CopyUpperBytes copies the value of the highest individual address in the subnet into a byte slice.
+//
+// If the value can fit in the given slice, the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (addr *IPAddress) CopyUpperBytes(bytes []byte) []byte {
+	return addr.init().section.CopyUpperBytes(bytes)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
