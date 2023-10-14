@@ -444,6 +444,18 @@ func (addr *IPAddress) CopyUpperBytes(bytes []byte) []byte {
 	return addr.init().section.CopyUpperBytes(bytes)
 }
 
+// IsMax returns whether this address matches exactly the maximum possible value,
+// the address whose bits are all ones.
+func (addr *IPAddress) IsMax() bool {
+	return addr.init().section.IsMax()
+}
+
+// IncludesMax returns whether this address includes the max address,
+// the address whose bits are all ones, within its range.
+func (addr *IPAddress) IncludesMax() bool {
+	return addr.init().section.IncludesMax()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
