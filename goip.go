@@ -342,6 +342,18 @@ func (addr *IPAddress) GetHostSectionLen(prefLen BitCount) *IPAddressSection {
 	return addr.GetSection().GetHostSectionLen(prefLen)
 }
 
+// CopySubSegments copies the existing segments from the given start index until but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (addr *IPAddress) CopySubSegments(start, end int, segs []*IPAddressSegment) (count int) {
+	return addr.GetSection().CopySubSegments(start, end, segs)
+}
+
+// CopySegments copies the existing segments into the given slice,
+// as much as can be fit into the slice, returning the number of segments copied.
+func (addr *IPAddress) CopySegments(segs []*IPAddressSegment) (count int) {
+	return addr.GetSection().CopySegments(segs)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
