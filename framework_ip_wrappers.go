@@ -294,6 +294,11 @@ type WrappedIPAddressSection struct {
 	*IPAddressSection
 }
 
+// GetSection returns the backing section for this series, comprising all segments.
+func (section WrappedIPAddressSection) GetSection() *IPAddressSection {
+	return section.IPAddressSection
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }
