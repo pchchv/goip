@@ -8,3 +8,9 @@ type ExtendedIdentifierString interface {
 	ToAddress() (AddressType, error) // returns the identified address or an error
 	Unwrap() HostIdentifierString    // returns the wrapped IPAddressString, MACAddressString or HostName as an interface, HostIdentifierString
 }
+
+// WrappedIPAddressString wraps an IPAddressString to get an ExtendedIdentifierString,
+// an extended polymorphic type.
+type WrappedIPAddressString struct {
+	*IPAddressString
+}
