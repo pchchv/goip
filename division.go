@@ -1062,3 +1062,13 @@ func NewDivision(val DivInt, bitCount BitCount) *AddressDivision {
 func NewRangeDivision(val, upperVal DivInt, bitCount BitCount) *AddressDivision {
 	return NewRangePrefixDivision(val, upperVal, nil, bitCount)
 }
+
+// The following avoid the prefix length checks, value to BitCount checks, and low to high check inside newDivValues
+
+func newPrefixDivision(val DivInt, prefixLen PrefixLen, bitCount BitCount) *AddressDivision {
+	return newRangePrefixDivision(val, val, prefixLen, bitCount)
+}
+
+func newRangePrefixDivision(val, upperVal DivInt, prefixLen PrefixLen, bitCount BitCount) *AddressDivision {
+	return createAddressDivision(newDivValuesUnchecked(val, upperVal, prefixLen, bitCount))
+}
