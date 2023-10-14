@@ -1072,3 +1072,11 @@ func newPrefixDivision(val DivInt, prefixLen PrefixLen, bitCount BitCount) *Addr
 func newRangePrefixDivision(val, upperVal DivInt, prefixLen PrefixLen, bitCount BitCount) *AddressDivision {
 	return createAddressDivision(newDivValuesUnchecked(val, upperVal, prefixLen, bitCount))
 }
+
+func newDivision(val DivInt, bitCount BitCount) *AddressDivision {
+	return newRangePrefixDivision(val, val, nil, bitCount)
+}
+
+func newRangeDivision(val, upperVal DivInt, bitCount BitCount) *AddressDivision {
+	return newRangePrefixDivision(val, upperVal, nil, bitCount)
+}
