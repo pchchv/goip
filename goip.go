@@ -456,6 +456,21 @@ func (addr *IPAddress) IncludesMax() bool {
 	return addr.init().section.IncludesMax()
 }
 
+// TestBit returns true if the bit in the lower value of this address at the given index is 1,
+// where index 0 refers to the least significant bit.
+// In other words, it computes (bits & (1 << n)) != 0), using the lower value of this address.
+// TestBit will panic if n < 0, or if it matches or exceeds the bit count of this item.
+func (addr *IPAddress) TestBit(n BitCount) bool {
+	return addr.init().testBit(n)
+}
+
+// IsOneBit returns true if the bit in the lower value of this address at the given index is 1,
+// where index 0 refers to the most significant bit.
+// IsOneBit will panic if bitIndex is less than zero, or if it is larger than the bit count of this item.
+func (addr *IPAddress) IsOneBit(bitIndex BitCount) bool {
+	return addr.init().isOneBit(bitIndex)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
