@@ -819,6 +819,24 @@ func (addr *ipAddressInternal) getNetNetIPAddr() netip.Addr {
 	return netAddr
 }
 
+func (addr *ipAddressInternal) getUpperNetNetIPAddr() netip.Addr {
+	netAddr, _ := netip.AddrFromSlice(addr.getUpperBytes())
+	return netAddr
+}
+
+// IncludesZeroHost returns whether the subnet contains an individual address with a host of zero.
+// If the subnet has no prefix length it returns false.
+// If the prefix length matches the bit count, then it returns true.
+//
+// Otherwise, it checks whether it contains an individual address for which all bits past the prefix are zero.
+func (addr *ipAddressInternal) IncludesZeroHost() bool {
+	section := addr.section
+	if section == nil {
+		return false
+	}
+	return section.ToIP().IncludesZeroHost()
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
