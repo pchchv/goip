@@ -3,6 +3,7 @@ package goip
 import (
 	"math/big"
 	"net"
+	"net/netip"
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
@@ -805,6 +806,17 @@ func (addr *ipAddressInternal) getNetworkPrefixLen() PrefixLen {
 		return nil
 	}
 	return section.ToIP().getNetworkPrefixLen()
+}
+
+// GetNetworkPrefixLen returns the prefix length, or nil if there is no prefix length.
+// GetNetworkPrefixLen is equivalent to the method GetPrefixLen.
+func (addr *ipAddressInternal) GetNetworkPrefixLen() PrefixLen {
+	return addr.getNetworkPrefixLen().copy()
+}
+
+func (addr *ipAddressInternal) getNetNetIPAddr() netip.Addr {
+	netAddr, _ := netip.AddrFromSlice(addr.getBytes())
+	return netAddr
 }
 
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
