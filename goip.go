@@ -862,6 +862,25 @@ func (addr *ipAddressInternal) includesMaxHostLen(networkPrefixLength BitCount) 
 	return addr.getSection().IncludesMaxHostLen(networkPrefixLength)
 }
 
+// IsSingleNetwork returns whether the network section of the address, the prefix, consists of a single value.
+//
+// If it has no prefix length, it returns true if not multiple,
+// if it contains only a single individual address.
+func (addr *ipAddressInternal) IsSingleNetwork() bool {
+	section := addr.section
+	return section == nil || section.ToIP().IsSingleNetwork()
+}
+
+// IsMaxHost returns whether this section has a prefix length and if so,
+// whether the host section is always all one-bits, the max value,
+// for all individual addresses in this subnet.
+//
+// If the host section is zero length (there are zero host bits), IsMaxHost returns true.
+func (addr *ipAddressInternal) IsMaxHost() bool {
+	section := addr.section
+	return section != nil && section.ToIP().IsMaxHost()
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
