@@ -948,6 +948,23 @@ func (addr *ipAddressInternal) getHostMask(network IPAddressNetwork) *IPAddress 
 	return network.GetHostMask(prefLen)
 }
 
+func (addr *ipAddressInternal) getNetwork() IPAddressNetwork {
+	return addr.getSection().getNetwork()
+}
+
+// IsPrefixBlock returns whether the address has a prefix length and
+// the address range includes the block of values for that prefix length.
+// If the prefix length matches the bit count, this returns true.
+//
+// To create a prefix block from any address, use ToPrefixBlock.
+//
+// This is different from ContainsPrefixBlock in that this method returns
+// false if the series has no prefix length, or a prefix length that differs from
+// a prefix length for which ContainsPrefixBlock returns true.
+func (addr *ipAddressInternal) IsPrefixBlock() bool {
+	return addr.addressInternal.IsPrefixBlock()
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
