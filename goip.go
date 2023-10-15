@@ -1151,3 +1151,37 @@ func NewIPAddressFromNetIPNet(ipnet *net.IPNet) (*IPAddress, address_error.Addre
 
 	return addr.ToPrefixBlockLen(prefLen.bitCount()), nil
 }
+
+// NewIPAddressFromPrefixedSegments constructs an address from the given segments and prefix length.
+// If the segments are not consistently IPv4 or IPv6, or if there is not the correct number of segments for the IP version (4 for IPv4, 8 for IPv6),
+// then an error is returned.
+func NewIPAddressFromPrefixedSegments(segs []*IPAddressSegment, prefixLength PrefixLen) (res *IPAddress, err address_error.AddressValueError) {
+	if len(segs) > 0 {
+		if segs[0].IsIPv4() {
+			for _, seg := range segs[1:] {
+				if !seg.IsIPv4() {
+					err = &addressValueError{addressError: addressError{key: "ipaddress.error.ipVersionMismatch"}}
+					return
+				}
+			}
+			sect := createIPSectionFromSegs(true, segs, prefixLength)
+			addr, address_Error := NewIPv4Address(sect.ToIPv4())
+			res, err = addr.ToIP(), address_Error
+		} else if segs[0].IsIPv6() {
+			for _, seg := range segs[1:] {
+				if !seg.IsIPv6() {
+					err = &addressValueError{addressError: addressError{key: "ipaddress.error.ipVersionMismatch"}}
+					return
+				}
+			}
+			sect := createIPSectionFromSegs(false, segs, prefixLength)
+			addr, address_Error := NewIPv6Address(sect.ToIPv6())
+			res, err = addr.ToIP(), address_Error
+		} else {
+			err = &addressValueError{addressError: addressError{key: "ipaddress.error.invalid.size"}}
+		}
+	} else {
+		err = &addressValueError{addressError: addressError{key: "ipaddress.error.invalid.size"}}
+	}
+	return
+}
