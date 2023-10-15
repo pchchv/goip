@@ -540,6 +540,21 @@ func (addr *IPAddress) IsAnyLocal() bool {
 	return addr.section != nil && addr.IsZero()
 }
 
+// IsMulticast returns whether this address or subnet is entirely multicast.
+func (addr *IPAddress) IsMulticast() bool {
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		return thisAddr.IsMulticast()
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		return thisAddr.IsMulticast()
+	}
+	return false
+}
+
+// ReverseSegments returns a new address with the segments reversed.
+func (addr *IPAddress) ReverseSegments() *IPAddress {
+	return addr.init().reverseSegments().ToIP()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
