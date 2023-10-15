@@ -1185,3 +1185,26 @@ func NewIPAddressFromPrefixedSegments(segs []*IPAddressSegment, prefixLength Pre
 	}
 	return
 }
+
+func NewIPAddressFromNetNetIPAddr(addr netip.Addr) *IPAddress {
+	if res := addr.AsSlice(); res != nil {
+		if addr.Is6() {
+			if zone := addr.Zone(); zone != "" {
+				addr, _ := NewIPv6AddressFromZonedBytes(res, zone)
+				return addr.ToIP()
+			}
+		}
+		addr, _ := addrFromBytes(res)
+		return addr.ToIP()
+	}
+	// the zero addr
+	return &IPAddress{}
+}
+
+// NewIPAddressFromSegs constructs an address from the given segments.
+// If the segments are not consistently IPv4 or IPv6,
+// or if there is not the correct number of segments for the IP version (4 for IPv4, 8 for IPv6),
+// then an error is returned.
+func NewIPAddressFromSegs(segments []*IPAddressSegment) (res *IPAddress, err address_error.AddressValueError) {
+	return NewIPAddressFromPrefixedSegments(segments, nil)
+}
