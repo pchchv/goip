@@ -790,6 +790,23 @@ func (addr *ipAddressInternal) GetBlockMaskPrefixLen(network bool) PrefixLen {
 	return section.ToIP().GetBlockMaskPrefixLen(network)
 }
 
+func (addr *ipAddressInternal) getIPVersion() IPVersion {
+	if addr.isIPv4() {
+		return IPv4
+	} else if addr.isIPv6() {
+		return IPv6
+	}
+	return IndeterminateIPVersion
+}
+
+func (addr *ipAddressInternal) getNetworkPrefixLen() PrefixLen {
+	section := addr.section
+	if section == nil {
+		return nil
+	}
+	return section.ToIP().getNetworkPrefixLen()
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
