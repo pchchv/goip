@@ -1094,3 +1094,17 @@ func addrFromZonedIP(addr *net.IPAddr) (*IPAddress, address_error.AddressValueEr
 func NewIPAddressFromNetIPMask(ip net.IPMask) (*IPAddress, address_error.AddressValueError) {
 	return addrFromBytes(ip)
 }
+
+// NewIPAddressFromBytes constructs an address from a slice of bytes.
+// An error is returned when the IP has an invalid number of bytes.
+// IPv4 should have 4 bytes or less, IPv6 16 bytes or less, although extra leading zeros are tolerated.
+func NewIPAddressFromBytes(ip net.IP) (*IPAddress, address_error.AddressValueError) {
+	return addrFromBytes(ip)
+}
+
+// NewIPAddressFromNetIP constructs an address from a net.IP.
+// An error is returned when the IP has an invalid number of bytes.
+// IPv4 should have 4 bytes or less, IPv6 16 bytes or less, although extra leading zeros are tolerated.
+func NewIPAddressFromNetIP(ip net.IP) (*IPAddress, address_error.AddressValueError) {
+	return addrFromIP(ip)
+}
