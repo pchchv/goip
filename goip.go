@@ -881,6 +881,24 @@ func (addr *ipAddressInternal) IsMaxHost() bool {
 	return section != nil && section.ToIP().IsMaxHost()
 }
 
+// IsMaxHostLen returns whether the host section is always one-bits,
+// the max value, for all individual addresses in this subnet,
+// for the given prefix length.
+//
+// If the host section is zero length (there are zero host bits), IsMaxHostLen returns true.
+func (addr *ipAddressInternal) isMaxHostLen(prefLen BitCount) bool {
+	return addr.getSection().IsMaxHostLen(prefLen)
+}
+
+// IsZeroHost returns whether this subnet has a prefix length and if so,
+// whether the host section is always zero for all individual addresses in this subnet.
+//
+// If the host section is zero length (there are zero host bits), IsZeroHost returns true.
+func (addr *ipAddressInternal) IsZeroHost() bool {
+	section := addr.section
+	return section != nil && section.ToIP().IsZeroHost()
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
