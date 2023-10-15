@@ -1010,3 +1010,20 @@ func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 func versionsMatch(one, two *IPAddress) bool {
 	return one.getAddrType() == two.getAddrType()
 }
+
+func newIPAddressZoned(section *IPAddressSection, zone Zone) *IPAddress {
+	result := createIPAddress(section.ToSectionBase(), zone)
+	if zone != NoZone {
+		result.cache.stringCache = &stringCache{}
+	}
+	return result
+}
+
+func isAllZeros(byts []byte) bool {
+	for _, b := range byts {
+		if b != 0 {
+			return false
+		}
+	}
+	return true
+}
