@@ -1055,6 +1055,36 @@ func (creator IPAddressCreator) NewIPSectionFromBytes(bytes []byte) *IPAddressSe
 	return nil
 }
 
+// NewIPSectionFromSegmentedBytes creates an address section from the given bytes.  It is IPv4 or IPv6 depending on the IP version assigned to this IPAddressCreator instance.
+// The number of segments is given.  An error is returned when the byte slice has too many bytes to match the segment count.
+// IPv4 should have 4 bytes or less, IPv6 16 bytes or less, although extra leading zeros are tolerated.
+// If the IP version is indeterminate, then nil is returned.
+func (creator IPAddressCreator) NewIPSectionFromSegmentedBytes(bytes []byte, segmentCount int) (*IPAddressSection, address_error.AddressValueError) {
+	if creator.IsIPv4() {
+		addr, err := NewIPv4SectionFromSegmentedBytes(bytes, segmentCount)
+		return addr.ToIP(), err
+	} else if creator.IsIPv6() {
+		addr, err := NewIPv6SectionFromSegmentedBytes(bytes, segmentCount)
+		return addr.ToIP(), err
+	}
+	return nil, &addressValueError{addressError: addressError{key: "ipaddress.error.ipVersionIndeterminate"}}
+}
+
+// NewIPSectionFromPrefixedBytes creates an address section from the given bytes and prefix length.  It is IPv4 or IPv6 depending on the IP version assigned to this IPAddressCreator instance.
+// The number of segments is given.  An error is returned when the byte slice has too many bytes to match the segment count.
+// IPv4 should have 4 bytes or less, IPv6 16 bytes or less, although extra leading zeros are tolerated.
+// If the IP version is indeterminate, then nil is returned.
+func (creator IPAddressCreator) NewIPSectionFromPrefixedBytes(bytes []byte, segmentCount int, prefLen PrefixLen) (*IPAddressSection, address_error.AddressValueError) {
+	if creator.IsIPv4() {
+		addr, err := NewIPv4SectionFromPrefixedBytes(bytes, segmentCount, prefLen)
+		return addr.ToIP(), err
+	} else if creator.IsIPv6() {
+		addr, err := NewIPv4SectionFromPrefixedBytes(bytes, segmentCount, prefLen)
+		return addr.ToIP(), err
+	}
+	return nil, &addressValueError{addressError: addressError{key: "ipaddress.error.ipVersionIndeterminate"}}
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
