@@ -918,6 +918,18 @@ func (addr *ipAddressInternal) checkIdentity(section *IPAddressSection) *IPAddre
 	return createIPAddress(sect, addr.zone)
 }
 
+func (addr *ipAddressInternal) adjustPrefixLen(prefixLen BitCount) *IPAddress {
+	return addr.checkIdentity(addr.getSection().adjustPrefixLen(prefixLen))
+}
+
+func (addr *ipAddressInternal) adjustPrefixLenZeroed(prefixLen BitCount) (res *IPAddress, err address_error.IncompatibleAddressError) {
+	section, err := addr.getSection().adjustPrefixLenZeroed(prefixLen)
+	if err == nil {
+		res = addr.checkIdentity(section)
+	}
+	return
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
