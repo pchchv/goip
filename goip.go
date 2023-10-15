@@ -899,6 +899,25 @@ func (addr *ipAddressInternal) IsZeroHost() bool {
 	return section != nil && section.ToIP().IsZeroHost()
 }
 
+// IsZeroHostLen returns whether the host section is always zero for all individual sections in this address section,
+// for the given prefix length.
+//
+// If the host section is zero length (there are zero host bits), IsZeroHostLen returns true.
+func (addr *ipAddressInternal) isZeroHostLen(prefLen BitCount) bool {
+	return addr.getSection().IsZeroHostLen(prefLen)
+}
+
+func (addr *ipAddressInternal) checkIdentity(section *IPAddressSection) *IPAddress {
+	if section == nil {
+		return nil
+	}
+	sect := section.ToSectionBase()
+	if sect == addr.section {
+		return addr.toIPAddress()
+	}
+	return createIPAddress(sect, addr.zone)
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
