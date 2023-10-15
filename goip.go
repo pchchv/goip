@@ -582,6 +582,14 @@ func (addr *IPAddress) GetTrailingBitCount(ones bool) BitCount {
 	return addr.init().getTrailingBitCount(ones)
 }
 
+func (addr *IPAddress) toMaxLower() *IPAddress {
+	return addr.init().addressInternal.toMaxLower().ToIP()
+}
+
+func (addr *IPAddress) toMinUpper() *IPAddress {
+	return addr.init().addressInternal.toMinUpper().ToIP()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
