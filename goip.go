@@ -555,6 +555,24 @@ func (addr *IPAddress) ReverseSegments() *IPAddress {
 	return addr.init().reverseSegments().ToIP()
 }
 
+// GetSegmentStrings returns a slice with the string for
+// each segment being the string that is normalized with wildcards.
+func (addr *IPAddress) GetSegmentStrings() []string {
+	if addr == nil {
+		return nil
+	}
+	return addr.init().getSegmentStrings()
+}
+
+// GetLeadingBitCount returns the number of consecutive leading one or zero bits.
+// If ones is true, returns the number of consecutive leading one bits.
+// Otherwise, returns the number of consecutive leading zero bits.
+//
+// This method applies to the lower value of the range if this is a subnet representing multiple values.
+func (addr *IPAddress) GetLeadingBitCount(ones bool) BitCount {
+	return addr.init().getLeadingBitCount(ones)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
