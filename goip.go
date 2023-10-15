@@ -854,6 +854,14 @@ func (addr *ipAddressInternal) IncludesMaxHost() bool {
 	return section.ToIP().IncludesMaxHost()
 }
 
+func (addr *ipAddressInternal) includesZeroHostLen(networkPrefixLength BitCount) bool {
+	return addr.getSection().IncludesZeroHostLen(networkPrefixLength)
+}
+
+func (addr *ipAddressInternal) includesMaxHostLen(networkPrefixLength BitCount) bool {
+	return addr.getSection().IncludesMaxHostLen(networkPrefixLength)
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
