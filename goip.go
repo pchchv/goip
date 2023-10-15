@@ -1108,3 +1108,46 @@ func NewIPAddressFromBytes(ip net.IP) (*IPAddress, address_error.AddressValueErr
 func NewIPAddressFromNetIP(ip net.IP) (*IPAddress, address_error.AddressValueError) {
 	return addrFromIP(ip)
 }
+
+// NewIPAddressFromNetIPAddr constructs an address or subnet from a net.IPAddr.
+// An error is returned when the IP has an invalid number of bytes.  IPv4 should have 4 bytes or less, IPv6 16 bytes or less, although extra leading zeros are tolerated.
+func NewIPAddressFromNetIPAddr(addr *net.IPAddr) (*IPAddress, address_error.AddressValueError) {
+	return addrFromZonedIP(addr)
+}
+
+// NewIPAddressFromNetIPNet constructs a subnet from a net.IPNet.
+// The error can be either address_error.AddressValueError, when the net.IPNet IP or mask has an invalid number of bytes,
+// or address_error.IncompatibleAddressError when the mask and the IP from net.IPNet are different IP versions.
+func NewIPAddressFromNetIPNet(ipnet *net.IPNet) (*IPAddress, address_error.AddressError) {
+	ip := ipnet.IP
+	maskIp := ipnet.Mask
+	if ipv4 := ip.To4(); ipv4 != nil {
+		ip = ipv4
+		if len(maskIp) == net.IPv6len {
+			maskIp = maskIp[IPv6MixedOriginalByteCount:]
+		}
+	}
+
+	addr, err := addrFromBytes(ip)
+	if err != nil {
+		return nil, err
+	} else if addr == nil {
+		return nil, &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
+	}
+
+	mask, err := NewIPAddressFromNetIPMask(maskIp)
+	if err != nil {
+		return nil, err
+	} else if mask == nil {
+		return nil, &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
+	} else if addr.getAddrType() != mask.getAddrType() {
+		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.ipMismatch"}}
+	}
+
+	prefLen := mask.GetBlockMaskPrefixLen(true)
+	if prefLen == nil {
+		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.notNetworkMask"}}
+	}
+
+	return addr.ToPrefixBlockLen(prefLen.bitCount()), nil
+}
