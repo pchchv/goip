@@ -930,6 +930,24 @@ func (addr *ipAddressInternal) adjustPrefixLenZeroed(prefixLen BitCount) (res *I
 	return
 }
 
+func (addr *ipAddressInternal) getNetworkMask(network IPAddressNetwork) *IPAddress {
+	var prefLen BitCount
+	if pref := addr.getPrefixLen(); pref != nil {
+		prefLen = pref.bitCount()
+	} else {
+		prefLen = addr.GetBitCount()
+	}
+	return network.GetNetworkMask(prefLen)
+}
+
+func (addr *ipAddressInternal) getHostMask(network IPAddressNetwork) *IPAddress {
+	var prefLen BitCount
+	if addr.isPrefixed() {
+		prefLen = addr.getNetworkPrefixLen().bitCount()
+	}
+	return network.GetHostMask(prefLen)
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
