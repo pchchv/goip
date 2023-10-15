@@ -591,6 +591,18 @@ func (addr *IPAddress) toMinUpper() *IPAddress {
 	return addr.init().addressInternal.toMinUpper().ToIP()
 }
 
+// GetNetworkMask returns the network mask associated with the CIDR network prefix length of this address or subnet.
+// If this address or subnet has no prefix length, then the all-ones mask is returned.
+func (addr *IPAddress) GetNetworkMask() *IPAddress {
+	return addr.getNetworkMask(addr.getNetwork())
+}
+
+// GetHostMask returns the host mask associated with the CIDR network prefix length of this address or subnet.
+// If this address or subnet has no prefix length, then the all-ones mask is returned.
+func (addr *IPAddress) GetHostMask() *IPAddress {
+	return addr.getHostMask(addr.getNetwork())
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
