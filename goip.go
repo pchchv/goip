@@ -995,6 +995,14 @@ func (addr *ipAddressInternal) GetMinPrefixLenForBlock() BitCount {
 	return addr.addressInternal.GetMinPrefixLenForBlock()
 }
 
+// IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
+type IPAddressValueProvider interface {
+	AddressValueProvider
+	GetPrefixLen() PrefixLen // return nil if none
+	GetIPVersion() IPVersion // should not return IndeterminateVersion
+	GetZone() string         // return "" or NoZone if none
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
