@@ -1003,6 +1003,12 @@ type IPAddressValueProvider interface {
 	GetZone() string         // return "" or NoZone if none
 }
 
+// IPAddressCreator is a polymporphic type providing constructor methods to
+// construct IP addresses corresponding to its contained IP version
+type IPAddressCreator struct {
+	IPVersion
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
