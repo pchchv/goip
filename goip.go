@@ -965,6 +965,36 @@ func (addr *ipAddressInternal) IsPrefixBlock() bool {
 	return addr.addressInternal.IsPrefixBlock()
 }
 
+// ContainsPrefixBlock returns whether the range of this address or subnet contains
+// the block of addresses for the given prefix length.
+//
+// Unlike ContainsSinglePrefixBlock, whether there are multiple prefix values in
+// this item for the given prefix length makes no difference.
+//
+// Use GetMinPrefixLenForBlock to determine the smallest prefix length
+// for which this method returns true.
+func (addr *ipAddressInternal) ContainsPrefixBlock(prefixLen BitCount) bool {
+	return addr.addressInternal.ContainsPrefixBlock(prefixLen)
+}
+
+// GetMinPrefixLenForBlock returns the smallest prefix length such that
+// this includes the block of addresses for that prefix length.
+//
+// If the entire range can be described this way,
+// then this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// There may be a single prefix, or multiple possible prefix values in
+// this item for the returned prefix length.
+// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values.
+//
+// If this represents just a single address,
+// returns the bit length of this address.
+//
+// See AssignMinPrefixForBlock for some examples.
+func (addr *ipAddressInternal) GetMinPrefixLenForBlock() BitCount {
+	return addr.addressInternal.GetMinPrefixLenForBlock()
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
