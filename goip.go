@@ -1009,6 +1009,28 @@ type IPAddressCreator struct {
 	IPVersion
 }
 
+// CreateSegment creates an IPv4 or IPv6 segment depending on the IP version assigned to this IPAddressCreator instance.
+// If the IP version is indeterminate, then nil is returned.
+func (creator IPAddressCreator) CreateSegment(lower, upper SegInt, segmentPrefixLength PrefixLen) *IPAddressSegment {
+	if creator.IsIPv4() {
+		return NewIPv4RangePrefixedSegment(IPv4SegInt(lower), IPv4SegInt(upper), segmentPrefixLength).ToIP()
+	} else if creator.IsIPv6() {
+		return NewIPv6RangePrefixedSegment(IPv6SegInt(lower), IPv6SegInt(upper), segmentPrefixLength).ToIP()
+	}
+	return nil
+}
+
+// CreateRangeSegment creates an IPv4 or IPv6 range-valued segment depending on the IP version assigned to this IPAddressCreator instance.
+// If the IP version is indeterminate, then nil is returned.
+func (creator IPAddressCreator) CreateRangeSegment(lower, upper SegInt) *IPAddressSegment {
+	if creator.IsIPv4() {
+		return NewIPv4RangeSegment(IPv4SegInt(lower), IPv4SegInt(upper)).ToIP()
+	} else if creator.IsIPv6() {
+		return NewIPv6RangeSegment(IPv6SegInt(lower), IPv6SegInt(upper)).ToIP()
+	}
+	return nil
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
