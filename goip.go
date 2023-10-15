@@ -1027,3 +1027,35 @@ func isAllZeros(byts []byte) bool {
 	}
 	return true
 }
+
+func addrFromIP(ip net.IP) (addr *IPAddress, err address_error.AddressValueError) {
+	if ipv4 := ip.To4(); ipv4 != nil {
+		ip = ipv4
+	}
+	return addrFromBytes(ip)
+}
+
+func addrFromBytes(ip []byte) (addr *IPAddress, err address_error.AddressValueError) {
+	addrLen := len(ip)
+	if len(ip) == 0 {
+		return &IPAddress{}, nil
+	} else if addrLen <= IPv4ByteCount {
+		var addr4 *IPv4Address
+		addr4, err = NewIPv4AddressFromBytes(ip)
+		addr = addr4.ToIP()
+	} else if addrLen <= IPv6ByteCount {
+		var addr6 *IPv6Address
+		addr6, err = NewIPv6AddressFromBytes(ip)
+		addr = addr6.ToIP()
+	} else {
+		extraCount := len(ip) - IPv6ByteCount
+		if isAllZeros(ip[:extraCount]) {
+			var addr6 *IPv6Address
+			addr6, err = NewIPv6AddressFromBytes(ip[extraCount:])
+			addr = addr6.ToIP()
+		} else {
+			err = &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
+		}
+	}
+	return
+}
