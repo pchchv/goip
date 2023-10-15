@@ -1059,3 +1059,38 @@ func addrFromBytes(ip []byte) (addr *IPAddress, err address_error.AddressValueEr
 	}
 	return
 }
+
+func addrFromZonedIP(addr *net.IPAddr) (*IPAddress, address_error.AddressValueError) {
+	ip := addr.IP
+	if ipv4 := ip.To4(); ipv4 != nil {
+		ip = ipv4
+	}
+
+	if len(ip) == 0 {
+		return &IPAddress{}, nil
+	} else if len(ip) <= IPv4ByteCount {
+		res, err := NewIPv4AddressFromBytes(ip)
+		return res.ToIP(), err
+	} else if len(ip) <= IPv6ByteCount {
+		res, err := NewIPv6AddressFromZonedBytes(ip, addr.Zone)
+		return res.ToIP(), err
+	} else {
+		extraCount := len(ip) - IPv6ByteCount
+		if isAllZeros(ip[:extraCount]) {
+			var addr6 *IPv6Address
+			addr6, err := NewIPv6AddressFromZonedBytes(ip[extraCount:], addr.Zone)
+			res := addr6.ToIP()
+			return res, err
+		}
+	}
+
+	return nil, &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
+}
+
+// NewIPAddressFromNetIPMask constructs an address from a net.IPMask.
+// An error is returned when the mask has an invalid number of bytes.
+// IPv4 should have 4 bytes or less, IPv6 16 bytes or less,
+// although extra leading zeros are tolerated.
+func NewIPAddressFromNetIPMask(ip net.IPMask) (*IPAddress, address_error.AddressValueError) {
+	return addrFromBytes(ip)
+}
