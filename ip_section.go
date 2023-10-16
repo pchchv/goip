@@ -1358,6 +1358,28 @@ func (section *IPAddressSection) GetSubSection(index, endIndex int) *IPAddressSe
 	return section.getSubSection(index, endIndex).ToIP()
 }
 
+// GetTrailingSection gets the subsection from the series starting from the given index.
+// The first segment is at index 0.
+func (section *IPAddressSection) GetTrailingSection(index int) *IPAddressSection {
+	return section.GetSubSection(index, section.GetSegmentCount())
+}
+
+// SetPrefixLenZeroed sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address section.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+//
+// If this address section has a prefix length, and the prefix length is increased when setting the new prefix length, the bits moved within the prefix become zero.
+// If this address section has a prefix length, and the prefix length is decreased when setting the new prefix length, the bits moved outside the prefix become zero.
+//
+// In other words, bits that move from one side of the prefix length to the other (bits moved into the prefix or outside the prefix) are zeroed.
+//
+// If the result cannot be zeroed because zeroing out bits results in a non-contiguous segment, an error is returned.
+func (section *IPAddressSection) SetPrefixLenZeroed(prefixLen BitCount) (*IPAddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.setPrefixLenZeroed(prefixLen)
+	return res.ToIP(), err
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
