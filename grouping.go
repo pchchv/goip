@@ -895,3 +895,30 @@ func cacheMinPrefix(cache *valueCache, calc func() BitCount) BitCount {
 
 	return res.bitCount()
 }
+
+func cacheIsSinglePrefixBlock(cache *valueCache, prefLen PrefixLen, calc func() bool) bool {
+	if cache == nil {
+		return calc()
+	}
+
+	res := (*bool)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.isSinglePrefixBlock))))
+	if res == nil {
+		if calc() {
+			res = &trueVal
+
+			// we can also set related cache fields
+			dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.equivalentPrefix))
+			equivPref := cachePrefix(prefLen.bitCount())
+			atomicStorePointer(dataLoc, unsafe.Pointer(equivPref))
+
+			dataLoc = (*unsafe.Pointer)(unsafe.Pointer(&cache.minPrefix))
+			atomicStorePointer(dataLoc, unsafe.Pointer(prefLen))
+		} else {
+			res = &falseVal
+		}
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.isSinglePrefixBlock))
+		atomicStorePointer(dataLoc, unsafe.Pointer(res))
+	}
+
+	return *res
+}
