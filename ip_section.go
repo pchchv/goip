@@ -885,6 +885,34 @@ func (section *ipAddressSectionInternal) getOredSegments(networkPrefixLength Pre
 	return
 }
 
+func (section *ipAddressSectionInternal) createMaxHost() (*IPAddressSection, address_error.IncompatibleAddressError) {
+	prefixLength := section.getNetworkPrefixLen() // we know it is prefixed here so no panic on the derefence
+	mask := section.addrType.getIPNetwork().GetHostMask(prefixLength.bitCount())
+	return section.getOredSegments(
+		prefixLength,
+		true,
+		section.getDivision,
+		func(i int) SegInt { return mask.GetSegment(i).GetSegmentValue() })
+}
+
+// error can be address_error.IncompatibleAddressError or address_error.SizeMismatchError
+func (section *ipAddressSectionInternal) bitwiseOr(msk *IPAddressSection, retainPrefix bool) (*IPAddressSection, address_error.IncompatibleAddressError) {
+	if err := section.checkSectionCount(msk); err != nil {
+		return nil, err
+	}
+
+	var prefLen PrefixLen
+	if retainPrefix {
+		prefLen = section.getPrefixLen()
+	}
+
+	return section.getOredSegments(
+		prefLen,
+		true,
+		section.getDivision,
+		func(i int) SegInt { return msk.GetSegment(i).GetSegmentValue() })
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
