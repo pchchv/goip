@@ -4,6 +4,8 @@ import (
 	"math/big"
 	"strings"
 	"unsafe"
+
+	"github.com/pchchv/goip/address_error"
 )
 
 type ipAddressSegmentInternal struct {
@@ -421,6 +423,28 @@ func (seg *ipAddressSegmentInternal) getStringAsLower() string {
 // If this segment represents a single value, this returns the bit count.
 func (seg *ipAddressSegmentInternal) GetMinPrefixLenForBlock() BitCount {
 	return seg.addressSegmentInternal.GetMinPrefixLenForBlock()
+}
+
+// ReverseBits returns a segment with the bits reversed.
+//
+// If this segment represents a range of values that cannot be reversed, then this returns an error.
+//
+// To be reversible, a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+// Otherwise the result is not contiguous and thus cannot be represented by a sequential range of values.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (seg *ipAddressSegmentInternal) ReverseBits(perByte bool) (res *AddressSegment, err address_error.IncompatibleAddressError) {
+	return seg.addressSegmentInternal.ReverseBits(perByte)
+}
+
+// ReverseBytes returns a segment with the bytes reversed.
+//
+// If this segment represents a range of values that cannot be reversed, then this returns an error.
+//
+// To be reversible, a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+// Otherwise the result is not contiguous and thus cannot be represented by a sequential range of values.
+func (seg *ipAddressSegmentInternal) ReverseBytes() (res *AddressSegment, err address_error.IncompatibleAddressError) {
+	return seg.addressSegmentInternal.ReverseBytes()
 }
 
 // IPAddressSegment represents a single IP address segment.
