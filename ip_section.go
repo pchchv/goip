@@ -1335,6 +1335,29 @@ func (section *IPAddressSection) Equal(other AddressSectionType) bool {
 	return section.equal(other)
 }
 
+// GetCount returns the count of possible distinct values for this item.
+// If not representing multiple values, the count is 1,
+// unless this is a division grouping with no divisions,
+// or an address section with no segments, in which case it is 0.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (section *IPAddressSection) GetCount() *big.Int {
+	if section == nil {
+		return bigZero()
+	} else if sect := section.ToIPv4(); sect != nil {
+		return sect.GetCount()
+	} else if sect := section.ToIPv6(); sect != nil {
+		return sect.GetCount()
+	}
+	return section.addressDivisionGroupingBase.getCount()
+}
+
+// GetSubSection gets the subsection from the series starting from the given index and ending just before the give endIndex.
+// The first segment is at index 0.
+func (section *IPAddressSection) GetSubSection(index, endIndex int) *IPAddressSection {
+	return section.getSubSection(index, endIndex).ToIP()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
