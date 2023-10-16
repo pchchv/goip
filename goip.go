@@ -619,6 +619,20 @@ func (addr *IPAddress) IsMaxHostLen(prefLen BitCount) bool {
 	return addr.init().isMaxHostLen(prefLen)
 }
 
+// GetNetNetIPAddr returns the lowest address in this subnet or address range as a netip.Addr.
+func (addr *IPAddress) GetNetNetIPAddr() netip.Addr {
+	res := addr.init().getNetNetIPAddr()
+	if addr.hasZone() {
+		res = res.WithZone(string(addr.zone))
+	}
+	return res
+}
+
+// GetUpperNetNetIPAddr returns the highest address in this subnet or address range as a netip.Addr.
+func (addr *IPAddress) GetUpperNetNetIPAddr() netip.Addr {
+	return addr.init().getUpperNetNetIPAddr()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
