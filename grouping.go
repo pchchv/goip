@@ -667,6 +667,34 @@ func (grouping *addressDivisionGroupingInternal) getCount() *big.Int {
 	return grouping.addressDivisionGroupingBase.getCount()
 }
 
+// Format implements the [fmt.Formatter] interface. It accepts the formats
+//   - 'v' for the default address and section format (either the normalized or canonical string),
+//   - 's' (string) for the same,
+//   - 'b' (binary), 'o' (octal with 0 prefix), 'O' (octal with 0o prefix),
+//   - 'd' (decimal), 'x' (lowercase hexadecimal), and
+//   - 'X' (uppercase hexadecimal).
+//
+// Also supported are some of fmt's format flags for integral types.
+// Sign control is not supported since addresses and sections are never negative.
+// '#' for an alternate format is supported, which adds a leading zero for octal,
+// and for hexadecimal it adds
+// a leading "0x" or "0X" for "%#x" and "%#X" respectively.
+// Also supported is specification of minimum digits precision, output field width,
+// space or zero padding, and '-' for left or right justification.
+func (grouping addressDivisionGroupingInternal) Format(state fmt.State, verb rune) {
+	if sect := grouping.toAddressSection(); sect != nil {
+		sect.Format(state, verb)
+		return
+	} else if mixed := grouping.toAddressDivisionGrouping().ToMixedIPv6v4(); mixed != nil {
+		mixed.Format(state, verb)
+		return
+	}
+	// divisions are printed like slices of *AddressDivision (which are Stringers)
+	// with division separated by spaces and enclosed in square brackets,
+	// sections are printed like addresses with segments separated by segment separators
+	grouping.defaultFormat(state, verb)
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
