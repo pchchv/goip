@@ -449,6 +449,19 @@ func (all *allCreator) getProviderMask() *IPAddress {
 	return all.qualifier.getMaskLower()
 }
 
+func (all *allCreator) versionedCreate(version IPVersion) (addr *IPAddress, address_Error address_error.IncompatibleAddressError) {
+	if version == all.adjustedVersion {
+		return all.getProviderAddress()
+	} else if all.adjustedVersion != IndeterminateIPVersion {
+		return nil, nil
+	}
+	addr, _, _, _, address_Error = createAllAddress(
+		version,
+		&all.qualifier,
+		all.originator)
+	return
+}
+
 func newMaskCreator(options address_string_param.IPAddressStringParams, adjustedVersion IPVersion, networkPrefixLength PrefixLen) *maskCreator {
 	if adjustedVersion == IndeterminateIPVersion {
 		adjustedVersion = IPVersion(options.GetPreferredVersion())
