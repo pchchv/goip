@@ -207,3 +207,46 @@ func newSequRange[T SequentialRangeConstraint[T]](first, other T) *SequentialRan
 	}
 	return newSequRangeUnchecked(lower, upper, isMult)
 }
+
+// NewSequentialRange creates a sequential range from the given addresses.
+// If the type of T is *IPAddress and the versions of lower and upper do not match (one is IPv4, one IPv6), then nil is returned.
+// Otherwise, the range is returned.
+func NewSequentialRange[T SequentialRangeConstraint[T]](lower, upper T) *SequentialRange[T] {
+	var t T
+	if lower == t && upper == t { // nil for pointers
+		lower = nilConvert[T]()
+	} else if lower != t && upper != t {
+		// this check only matters when T is *IPAddress
+		if lower.getAddrType() != upper.getAddrType() {
+			// when both are zero-type, we do not go in here
+			// but if only one is, we return nil.  zero-type is "indeterminate", so we cannot "infer" a different version for it
+			// However, nil is the absence of a version/type so we can and do
+			return nil
+		}
+	}
+	return newSequRange(lower, upper)
+}
+
+// getPrefixLenForSingleBlock returns a prefix length for which the given lower and upper values share the same prefix,
+// and the range spanned by those values matches exactly the block of all values for that prefix.
+// The given bit count indicates the bits that matter in the two values, the remaining bits are ignored.
+//
+// If the range can be described this way, then this method returns the same value as GetMinPrefixLenForBlock.
+//
+// If no such prefix length exists, returns nil.
+//
+// If lower and upper values are the same, this returns the bit count.
+func getPrefixLenForSingleBlock(lower, upper DivInt, bitCount BitCount) PrefixLen {
+	prefixLen := getMinPrefixLenForBlock(lower, upper, bitCount)
+	if prefixLen == bitCount {
+		if lower == upper {
+			return cacheBitCount(prefixLen)
+		}
+	} else {
+		shift := bitCount - prefixLen
+		if lower>>uint(shift) == upper>>uint(shift) {
+			return cacheBitCount(prefixLen)
+		}
+	}
+	return nil
+}
