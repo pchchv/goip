@@ -633,6 +633,20 @@ func (addr *IPAddress) GetUpperNetNetIPAddr() netip.Addr {
 	return addr.init().getUpperNetNetIPAddr()
 }
 
+// GetIPVersion returns the IP version of this IP address.
+func (addr *IPAddress) GetIPVersion() IPVersion {
+	if addr == nil {
+		return IndeterminateIPVersion
+	}
+	return addr.getIPVersion()
+}
+
+// IncludesZeroHostLen returns whether the subnet contains an individual address with a host of zero,
+// an individual address for which all bits past the given prefix length are zero.
+func (addr *IPAddress) IncludesZeroHostLen(networkPrefixLength BitCount) bool {
+	return addr.init().includesZeroHostLen(networkPrefixLength)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
