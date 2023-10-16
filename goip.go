@@ -647,6 +647,17 @@ func (addr *IPAddress) IncludesZeroHostLen(networkPrefixLength BitCount) bool {
 	return addr.init().includesZeroHostLen(networkPrefixLength)
 }
 
+// IncludesMaxHostLen returns whether the subnet contains an individual address with a host of all one-bits,
+// an individual address for which all bits past the given prefix length are all ones.
+func (addr *IPAddress) IncludesMaxHostLen(networkPrefixLength BitCount) bool {
+	return addr.init().includesMaxHostLen(networkPrefixLength)
+}
+
+// GetNetwork returns the singleton network instance for the IP version of this address or subnet.
+func (addr *IPAddress) GetNetwork() IPAddressNetwork {
+	return addr.getNetwork()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
