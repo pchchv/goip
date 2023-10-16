@@ -1310,6 +1310,31 @@ func (section *IPAddressSection) GetSegmentStrings() []string {
 	return section.getSegmentStrings()
 }
 
+// Contains returns whether this is same type and version as the given address section and whether it contains all values in the given section.
+//
+// Sections must also have the same number of segments to be comparable, otherwise false is returned.
+func (section *IPAddressSection) Contains(other AddressSectionType) bool {
+	if section == nil {
+		return other == nil || other.ToSectionBase() == nil
+	}
+	return section.contains(other)
+}
+
+// Equal returns whether the given address section is equal to this address section.
+// Two address sections are equal if they represent the same set of sections.
+// They must match:
+//   - type/version: IPv4, IPv6
+//   - segment counts
+//   - segment value ranges
+//
+// Prefix lengths are ignored.
+func (section *IPAddressSection) Equal(other AddressSectionType) bool {
+	if section == nil {
+		return other == nil || other.ToSectionBase() == nil
+	}
+	return section.equal(other)
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
