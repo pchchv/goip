@@ -511,3 +511,64 @@ func newMaskCreator(options address_string_param.IPAddressStringParams, adjusted
 func getProviderFor(address, hostAddress *IPAddress) ipAddressProvider {
 	return &cachedAddressProvider{addresses: &addressResult{address: address, hostAddress: hostAddress}}
 }
+
+func emptyAddressCreator(emptyStrOption address_string_param.EmptyStrOption, version IPVersion, zone Zone) (addrCreator func() (address, hostAddress *IPAddress), versionedCreator func() *IPAddress) {
+	preferIPv6 := version.IsIPv6()
+	double := func(one *IPAddress) (address, hostAddress *IPAddress) {
+		return one, one
+	}
+
+	if emptyStrOption == address_string_param.NoAddressOption {
+		addrCreator = func() (*IPAddress, *IPAddress) { return double(nil) }
+		versionedCreator = func() *IPAddress { return nil }
+	} else if emptyStrOption == address_string_param.LoopbackOption {
+		if preferIPv6 {
+			if len(zone) > 0 {
+				ipv6WithZoneLoop := func() *IPAddress {
+					network := ipv6Network
+					creator := network.getIPAddressCreator()
+					return creator.createAddressInternalFromBytes(network.GetLoopback().Bytes(), zone)
+				}
+				versionedCreator = ipv6WithZoneLoop
+				addrCreator = func() (*IPAddress, *IPAddress) { return double(ipv6WithZoneLoop()) }
+			} else {
+				ipv6Loop := func() *IPAddress {
+					return ipv6Network.GetLoopback()
+				}
+				versionedCreator = ipv6Loop
+				addrCreator = func() (*IPAddress, *IPAddress) { return double(ipv6Loop()) }
+			}
+		} else {
+			ipv4Loop := func() *IPAddress {
+				return ipv4Network.GetLoopback()
+			}
+			addrCreator = func() (*IPAddress, *IPAddress) { return double(ipv4Loop()) }
+			versionedCreator = ipv4Loop
+		}
+	} else { // EmptyStrParsedAs() == ZeroAddressOption
+		if preferIPv6 {
+			if len(zone) > 0 {
+				ipv6WithZoneZero := func() *IPAddress {
+					network := ipv6Network
+					creator := network.getIPAddressCreator()
+					return creator.createAddressInternalFromBytes(zeroIPv6.Bytes(), zone)
+				}
+				versionedCreator = ipv6WithZoneZero
+				addrCreator = func() (*IPAddress, *IPAddress) { return double(ipv6WithZoneZero()) }
+			} else {
+				ipv6Zero := func() *IPAddress {
+					return zeroIPv6.ToIP()
+				}
+				versionedCreator = ipv6Zero
+				addrCreator = func() (*IPAddress, *IPAddress) { return double(ipv6Zero()) }
+			}
+		} else {
+			ipv4Zero := func() *IPAddress {
+				return zeroIPv4.ToIP()
+			}
+			addrCreator = func() (*IPAddress, *IPAddress) { return double(ipv4Zero()) }
+			versionedCreator = ipv4Zero
+		}
+	}
+	return
+}
