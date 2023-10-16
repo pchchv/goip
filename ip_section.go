@@ -1380,6 +1380,27 @@ func (section *IPAddressSection) SetPrefixLenZeroed(prefixLen BitCount) (*IPAddr
 	return res.ToIP(), err
 }
 
+// AssignMinPrefixForBlock returns an equivalent address section, assigned the smallest prefix length possible,
+// such that the prefix block for that prefix length is in this address section.
+//
+// In other words, this method assigns a prefix length to this address section matching the largest prefix block in this address section.
+func (section *IPAddressSection) AssignMinPrefixForBlock() *IPAddressSection {
+	return section.assignMinPrefixForBlock().ToIP()
+}
+
+// Iterator provides an iterator to iterate through the individual address sections of this address section.
+//
+// When iterating, the prefix length is preserved.
+// Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual address sections.
+//
+// Call IsMultiple to determine if this instance represents multiple address sections, or GetCount for the count.
+func (section *IPAddressSection) Iterator() Iterator[*IPAddressSection] {
+	if section == nil {
+		return ipSectionIterator{nilSectIterator()}
+	}
+	return ipSectionIterator{section.sectionIterator(nil)}
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
