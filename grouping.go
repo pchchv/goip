@@ -647,6 +647,26 @@ func (grouping *addressDivisionGroupingInternal) createNewPrefixedDivisions(bits
 	return divs, nil
 }
 
+func (grouping *addressDivisionGroupingInternal) createNewDivisions(bitsPerDigit BitCount) ([]*AddressDivision, address_error.IncompatibleAddressError) {
+	return grouping.createNewPrefixedDivisions(bitsPerDigit, nil)
+}
+
+func (grouping *addressDivisionGroupingInternal) getCount() *big.Int {
+	if !grouping.isMultiple() {
+		return bigOne()
+	} else {
+		g := grouping.toAddressDivisionGrouping()
+		if sect := g.ToIPv4(); sect != nil {
+			return sect.GetCount()
+		} else if sect := g.ToIPv6(); sect != nil {
+			return sect.GetCount()
+		} else if sect := g.ToMAC(); sect != nil {
+			return sect.GetCount()
+		}
+	}
+	return grouping.addressDivisionGroupingBase.getCount()
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
