@@ -148,3 +148,62 @@ func newSequRangeUnchecked[T SequentialRangeConstraint[T]](lower, upper T, isMul
 func newSequRangeCheckSize[T SequentialRangeConstraint[T]](lower, upper T) *SequentialRange[T] {
 	return newSequRangeUnchecked(lower, upper, !lower.equalsSameVersion(upper))
 }
+
+func compareLowIPAddressValues(one, two AddressType) int {
+	return LowValueComparator.CompareAddresses(one, two)
+}
+
+func newSequRange[T SequentialRangeConstraint[T]](first, other T) *SequentialRange[T] {
+	var lower, upper T
+	var isMult bool
+	if f := first.Contains(other); f || other.Contains(first) {
+		var addr T
+		if f {
+			addr = first.WithoutPrefixLen()
+		} else {
+			addr = other.WithoutPrefixLen()
+		}
+		lower = addr.GetLower()
+		if isMult = addr.IsMultiple(); isMult {
+			upper = addr.GetUpper()
+		} else {
+			upper = lower
+		}
+	} else {
+		// We find the lowest and the highest from both supplied addresses
+		firstLower := first.GetLower()
+		otherLower := other.GetLower()
+		firstUpper := first.GetUpper()
+		otherUpper := other.GetUpper()
+		if comp := compareLowIPAddressValues(firstLower, otherLower); comp > 0 {
+			isMult = true
+			lower = otherLower
+		} else {
+			isMult = comp < 0
+			lower = firstLower
+		}
+		if comp := compareLowIPAddressValues(firstUpper, otherUpper); comp < 0 {
+			isMult = true
+			upper = otherUpper
+		} else {
+			isMult = isMult || comp > 0
+			upper = firstUpper
+		}
+		if isMult = isMult || compareLowIPAddressValues(lower, upper) != 0; isMult {
+			lower = lower.WithoutPrefixLen()
+			upper = upper.WithoutPrefixLen()
+		} else {
+			if lower.IsPrefixed() {
+				if upper.IsPrefixed() {
+					lower = lower.WithoutPrefixLen()
+					upper = lower
+				} else {
+					lower = upper
+				}
+			} else {
+				upper = lower
+			}
+		}
+	}
+	return newSequRangeUnchecked(lower, upper, isMult)
+}
