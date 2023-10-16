@@ -627,3 +627,29 @@ func (seg *IPAddressSegment) GetLower() *IPAddressSegment {
 func (seg *IPAddressSegment) GetUpper() *IPAddressSegment {
 	return seg.getUpper().ToIP()
 }
+
+// Iterator provides an iterator to iterate through
+// the individual address segments of this address segment.
+//
+// When iterating, the prefix length is preserved.
+// Remove it using WithoutPrefixLen prior to iterating if
+// you wish to drop it from all individual address segments.
+//
+// Call IsMultiple to determine if this instance represents multiple address segments,
+// or GetValueCount for the count.
+func (seg *IPAddressSegment) Iterator() Iterator[*IPAddressSegment] {
+	if seg == nil {
+		return ipSegmentIterator{nilSegIterator()}
+	}
+	return ipSegmentIterator{seg.iterator()}
+}
+
+// PrefixBlockIterator provides an iterator to iterate through
+// the individual prefix blocks, one for each prefix of this address segment.
+// Each iterated address segment will be a prefix block with
+// the same prefix length as this address segment.
+//
+// If this address segment has no prefix length, then this is equivalent to Iterator.
+func (seg *IPAddressSegment) PrefixBlockIterator() Iterator[*IPAddressSegment] {
+	return ipSegmentIterator{seg.prefixBlockIterator()}
+}
