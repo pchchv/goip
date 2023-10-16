@@ -818,6 +818,73 @@ func (section *ipAddressSectionInternal) getHostSection() *IPAddressSection {
 	return section.getHostSectionLen(prefLen)
 }
 
+func (section *ipAddressSectionInternal) getOredSegments(networkPrefixLength PrefixLen, verifyMask bool, segProducer func(int) *AddressDivision, segmentMaskProducer func(int) SegInt) (res *IPAddressSection, err address_error.IncompatibleAddressError) {
+	networkPrefixLength = checkPrefLen(networkPrefixLength, section.GetBitCount())
+	bitsPerSegment := section.GetBitsPerSegment()
+	count := section.GetSegmentCount()
+	for i := 0; i < count; i++ {
+		segmentPrefixLength := getSegmentPrefixLength(bitsPerSegment, networkPrefixLength, i)
+		seg := segProducer(i)
+		//note that the mask can represent a range (for example a CIDR mask),
+		//but we use the lowest value (maskSegment.value) in the range when masking (ie we discard the range)
+		maskValue := segmentMaskProducer(i)
+		origValue, origUpperValue := seg.getSegmentValue(), seg.getUpperSegmentValue()
+		value, upperValue := origValue, origUpperValue
+		if verifyMask {
+			mask64 := uint64(maskValue)
+			val64 := uint64(value)
+			upperVal64 := uint64(upperValue)
+			masker := bitwiseOrRange(val64, upperVal64, mask64, seg.GetMaxValue())
+			if !masker.IsSequential() {
+				err = &incompatibleAddressError{addressError{key: "ipaddress.error.maskMismatch"}}
+				return
+			}
+			value = SegInt(masker.GetOredLower(val64, mask64))
+			upperValue = SegInt(masker.GetOredUpper(upperVal64, mask64))
+		} else {
+			value |= maskValue
+			upperValue |= maskValue
+		}
+		if !segsSame(segmentPrefixLength, seg.getDivisionPrefixLength(), value, origValue, upperValue, origUpperValue) {
+			newSegments := createSegmentArray(count)
+			section.copySubDivisions(0, i, newSegments)
+			newSegments[i] = createAddressDivision(seg.deriveNewMultiSeg(value, upperValue, segmentPrefixLength))
+			for i++; i < count; i++ {
+				segmentPrefixLength = getSegmentPrefixLength(bitsPerSegment, networkPrefixLength, i)
+				seg = segProducer(i)
+				maskValue = segmentMaskProducer(i)
+				value = seg.getSegmentValue()
+				upperValue = seg.getUpperSegmentValue()
+				if verifyMask {
+					mask64 := uint64(maskValue)
+					val64 := uint64(value)
+					upperVal64 := uint64(upperValue)
+					masker := bitwiseOrRange(val64, upperVal64, mask64, seg.GetMaxValue())
+					if !masker.IsSequential() {
+						err = &incompatibleAddressError{addressError{key: "ipaddress.error.maskMismatch"}}
+						return
+					}
+					value = SegInt(masker.GetOredLower(val64, mask64))
+					upperValue = SegInt(masker.GetOredUpper(upperVal64, mask64))
+
+				} else {
+					value |= maskValue
+					upperValue |= maskValue
+				}
+				if !segsSame(segmentPrefixLength, seg.getDivisionPrefixLength(), value, origValue, upperValue, origUpperValue) {
+					newSegments[i] = createAddressDivision(seg.deriveNewMultiSeg(value, upperValue, segmentPrefixLength))
+				} else {
+					newSegments[i] = seg
+				}
+			}
+			res = deriveIPAddressSectionPrefLen(section.toIPAddressSection(), newSegments, networkPrefixLength)
+			return
+		}
+	}
+	res = section.toIPAddressSection()
+	return
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
