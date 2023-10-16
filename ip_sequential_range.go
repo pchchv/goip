@@ -25,6 +25,11 @@ type rangeCache struct {
 	cachedCount *big.Int
 }
 
+type segPrefData struct {
+	prefLen PrefixLen
+	shift   BitCount
+}
+
 // SequentialRangeConstraint is the generic type constraint for an IP address sequential range.
 type SequentialRangeConstraint[T any] interface {
 	// cannot use IPAddressType here because ToAddressString() results in a circular dependency,
