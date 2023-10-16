@@ -294,6 +294,20 @@ func (cached *cachedAddressProvider) isProvidingIPv6() bool {
 	return addr.IsIPv6()
 }
 
+func (cached *cachedAddressProvider) getProviderNetworkPrefixLen() (p PrefixLen) {
+	if addr, _ := cached.getProviderAddress(); addr != nil {
+		p = addr.getNetworkPrefixLen()
+	}
+	return
+}
+
+func (cached *cachedAddressProvider) getProviderIPVersion() IPVersion {
+	if addr, _ := cached.getProviderAddress(); addr != nil {
+		return addr.getIPVersion()
+	}
+	return IndeterminateIPVersion
+}
+
 type versionedAddressCreator struct {
 	cachedAddressProvider
 	adjustedVersion             IPVersion
