@@ -572,3 +572,41 @@ func emptyAddressCreator(emptyStrOption address_string_param.EmptyStrOption, ver
 	}
 	return
 }
+
+func newEmptyAddrCreator(options address_string_param.IPAddressStringParams, zone Zone) *emptyAddrCreator {
+	var version = IPVersion(options.GetPreferredVersion())
+	// EmptyStrParsedAs chooses whether to produce loopbacks, zero addresses, or nothing for the empty string ""
+	addrCreator, versionedCreator := emptyAddressCreator(options.EmptyStrParsedAs(), version, zone)
+	cached := cachedAddressProvider{
+		addressCreator: func() (address, hostAddress *IPAddress, address_Error, hosterr address_error.IncompatibleAddressError) {
+			address, hostAddress = addrCreator()
+			return
+		},
+	}
+	versionedCreatorFunc := func(v IPVersion) *IPAddress {
+		addresses := cached.addresses
+		if addresses != nil {
+			addr := addresses.address
+			if v == addr.GetIPVersion() {
+				return addr
+			}
+		}
+		if v.IsIndeterminate() {
+			return versionedCreator()
+		}
+		_, vCreator := emptyAddressCreator(options.EmptyStrParsedAs(), v, zone)
+		return vCreator()
+	}
+	versionedAddressCreatorFunc := func(version IPVersion) (*IPAddress, address_error.IncompatibleAddressError) {
+		return versionedCreatorFunc(version), nil
+	}
+	return &emptyAddrCreator{
+		versionedAddressCreator: versionedAddressCreator{
+			adjustedVersion:             version,
+			parameters:                  options,
+			cachedAddressProvider:       cached,
+			versionedAddressCreatorFunc: versionedAddressCreatorFunc,
+		},
+		zone: zone,
+	}
+}
