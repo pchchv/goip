@@ -982,6 +982,19 @@ func (section *ipAddressSectionInternal) replaceLen(startIndex, endIndex int, re
 		replacementStartIndex, replacementEndIndex, newPrefixLen).ToIP()
 }
 
+// TestBit returns true if the bit in the lower value of this section at the given index is 1, where index 0 refers to the least significant bit.
+// In other words, it computes (bits & (1 << n)) != 0), using the lower value of this section.
+// TestBit will panic if n < 0, or if it matches or exceeds the bit count of this item.
+func (section *ipAddressSectionInternal) TestBit(n BitCount) bool {
+	return section.addressSectionInternal.TestBit(n)
+}
+
+// IsOneBit returns true if the bit in the lower value of this section at the given index is 1, where index 0 refers to the most significant bit.
+// IsOneBit will panic if bitIndex is less than zero, or if it is larger than the bit count of this item.
+func (section *ipAddressSectionInternal) IsOneBit(prefixBitIndex BitCount) bool {
+	return section.addressSectionInternal.IsOneBit(prefixBitIndex)
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
