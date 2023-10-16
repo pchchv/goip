@@ -603,6 +603,22 @@ func (addr *IPAddress) GetHostMask() *IPAddress {
 	return addr.getHostMask(addr.getNetwork())
 }
 
+// IsZeroHostLen returns whether the host section is always zero for all individual addresses in this subnet,
+// for the given prefix length.
+//
+// If the host section is zero length (there are zero host bits), IsZeroHostLen returns true.
+func (addr *IPAddress) IsZeroHostLen(prefLen BitCount) bool {
+	return addr.init().isZeroHostLen(prefLen)
+}
+
+// IsMaxHostLen returns whether the host is all one-bits, the max value, for all individual addresses in this subnet,
+// for the given prefix length, the host being the bits following the prefix.
+//
+// If the host section is zero length (there are zero host bits), IsMaxHostLen returns true.
+func (addr *IPAddress) IsMaxHostLen(prefLen BitCount) bool {
+	return addr.init().isMaxHostLen(prefLen)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
