@@ -913,6 +913,75 @@ func (section *ipAddressSectionInternal) bitwiseOr(msk *IPAddressSection, retain
 		func(i int) SegInt { return msk.GetSegment(i).GetSegmentValue() })
 }
 
+func (section *ipAddressSectionInternal) insert(index int, other *IPAddressSection, segmentToBitsShift uint) *IPAddressSection {
+	return section.replaceLen(index, index, other, 0, other.GetSegmentCount(), segmentToBitsShift)
+}
+
+// Replaces segments starting from startIndex and ending before endIndex with the segments starting at replacementStartIndex and
+// ending before replacementEndIndex from the replacement section.
+func (section *ipAddressSectionInternal) replaceLen(startIndex, endIndex int, replacement *IPAddressSection, replacementStartIndex, replacementEndIndex int, segmentToBitsShift uint) *IPAddressSection {
+	segmentCount := section.GetSegmentCount()
+	startIndex, endIndex, replacementStartIndex, replacementEndIndex =
+		adjustIndices(startIndex, endIndex, segmentCount, replacementStartIndex, replacementEndIndex, replacement.GetSegmentCount())
+	replacedCount := endIndex - startIndex
+	replacementCount := replacementEndIndex - replacementStartIndex
+	thizz := section.toAddressSection()
+	if replacementCount == 0 && replacedCount == 0 { //keep in mind for ipvx, empty sections cannot have prefix lengths
+		return section.toIPAddressSection()
+	} else if segmentCount == replacedCount { //keep in mind for ipvx, empty sections cannot have prefix lengths
+		return replacement
+	}
+
+	var newPrefixLen PrefixLen
+	prefixLength := section.getPrefixLen()
+	startBits := BitCount(startIndex << segmentToBitsShift)
+	if prefixLength != nil && prefixLength.bitCount() <= startBits {
+		newPrefixLen = prefixLength
+		replacement = replacement.SetPrefixLen(0)
+	} else {
+		replacementEndBits := BitCount(replacementEndIndex << segmentToBitsShift)
+		replacementPrefLen := replacement.getPrefixLen()
+		endIndexBits := BitCount(endIndex << segmentToBitsShift)
+		if replacementPrefLen != nil && replacementPrefLen.bitCount() <= replacementEndBits {
+			var replacementPrefixLen BitCount
+			replacementStartBits := BitCount(replacementStartIndex << segmentToBitsShift)
+			replacementPrefLenIsZero := replacementPrefLen.bitCount() <= replacementStartBits
+			if !replacementPrefLenIsZero {
+				replacementPrefixLen = replacementPrefLen.bitCount() - replacementStartBits
+			}
+			newPrefixLen = cacheBitCount(startBits + replacementPrefixLen)
+			if endIndex < segmentCount && (prefixLength == nil || prefixLength.bitCount() > endIndexBits) {
+				if replacedCount > 0 || replacementPrefLenIsZero {
+					thizz = section.setPrefixLen(endIndexBits)
+				} else {
+					// this covers the case of a:5:6:7:8 is getting b:c:d/47 at index 1 to 1
+					// We need "a" to have no prefix, and "5" to get prefix len 0
+					// But setting "5" to have prefix len 0 gives "a" the prefix len 16
+					// This is not a problem if any segments are getting replaced or the replacement segments have prefix length 0
+					//
+					// we move the non-replaced host segments from the end of this to the end of the replacement segments
+					// and we also remove the prefix length from this
+					additionalSegs := segmentCount - endIndex
+					thizz = section.getSubSection(0, startIndex)
+					replacement = replacement.insert(
+						replacementEndIndex, section.getSubSection(endIndex, segmentCount).ToIP(), segmentToBitsShift)
+					replacementEndIndex += additionalSegs
+				}
+			}
+		} else if prefixLength != nil {
+			replacementBits := BitCount(replacementCount << segmentToBitsShift)
+			var endPrefixBits BitCount
+			if prefixLength.bitCount() > endIndexBits {
+				endPrefixBits = prefixLength.bitCount() - endIndexBits
+			}
+			newPrefixLen = cacheBitCount(startBits + replacementBits + endPrefixBits)
+		} // else newPrefixLen is nil
+	}
+
+	return thizz.replace(startIndex, endIndex, replacement.ToSectionBase(),
+		replacementStartIndex, replacementEndIndex, newPrefixLen).ToIP()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
