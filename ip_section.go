@@ -1418,6 +1418,23 @@ func (section *IPAddressSection) SequentialBlockIterator() Iterator[*IPAddressSe
 	return ipSectionIterator{section.sequentialBlockIterator()}
 }
 
+// ReverseSegments returns a new section with the segments reversed.
+func (section *IPAddressSection) ReverseSegments() *IPAddressSection {
+	if section.GetSegmentCount() <= 1 {
+		if section.IsPrefixed() {
+			return section.WithoutPrefixLen()
+		}
+		return section
+	}
+
+	res, _ := section.reverseSegments(
+		func(i int) (*AddressSegment, address_error.IncompatibleAddressError) {
+			return section.GetSegment(i).withoutPrefixLen().ToSegmentBase(), nil
+		},
+	)
+	return res.ToIP()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
