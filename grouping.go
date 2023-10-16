@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/big"
 	"unsafe"
+
+	"github.com/pchchv/goip/address_error"
 )
 
 var emptyBytes = make([]byte, 0, 0)
@@ -520,6 +522,129 @@ func (grouping *addressDivisionGroupingInternal) GetMinPrefixLenForBlock() BitCo
 		return totalPrefix
 	}
 	return cacheMinPrefix(grouping.cache, calc)
+}
+
+func (grouping *addressDivisionGroupingInternal) createNewPrefixedDivisions(bitsPerDigit BitCount, networkPrefixLength PrefixLen) ([]*AddressDivision, address_error.IncompatibleAddressError) {
+	bitCount := grouping.GetBitCount()
+	var bitDivs []BitCount
+
+	// here we divide into divisions, each with an exact number of digits.
+	// Each digit takes 3 bits.
+	// So the division bit-sizes are a multiple of 3 until the last one.
+
+	largestBitCount := BitCount(64)                   // uint64, size of DivInt
+	largestBitCount -= largestBitCount % bitsPerDigit // round off to a multiple of 3 bits
+
+	for {
+		if bitCount <= largestBitCount {
+			mod := bitCount % bitsPerDigit
+			secondLast := bitCount - mod
+			if secondLast > 0 {
+				bitDivs = append(bitDivs, secondLast)
+			}
+			if mod > 0 {
+				bitDivs = append(bitDivs, mod)
+			}
+			break
+		} else {
+			bitCount -= largestBitCount
+			bitDivs = append(bitDivs, largestBitCount)
+		}
+	}
+
+	// at this point bitDivs has our division sizes
+
+	divCount := len(bitDivs)
+	divs := make([]*AddressDivision, divCount)
+	if divCount > 0 {
+		currentSegmentIndex := 0
+		seg := grouping.getDivision(currentSegmentIndex)
+		segLowerVal := seg.GetDivisionValue()
+		segUpperVal := seg.GetUpperDivisionValue()
+		segBits := seg.GetBitCount()
+		bitsSoFar := BitCount(0)
+
+		// 2 to the x is all ones shift left x, then not, then add 1
+		// so, for x == 1, 1111111 -> 1111110 -> 0000001 -> 0000010
+		// radix := ^(^(0) << uint(bitsPerDigit)) + 1
+
+		// fill up our new divisions, one by one
+		for i := divCount - 1; i >= 0; i-- {
+			var divLowerValue, divUpperValue uint64
+			divBitSize := bitDivs[i]
+			originalDivBitSize := divBitSize
+
+			for {
+				if segBits >= divBitSize { // this segment fills the remainder of this division
+					diff := uint(segBits - divBitSize)
+					segBits = BitCount(diff)
+					segL := segLowerVal >> diff
+					segU := segUpperVal >> diff
+
+					// if the division upper bits are multiple, then the lower bits inserted must be full range
+					if divLowerValue != divUpperValue {
+						if segL != 0 || segU != ^(^uint64(0)<<uint(divBitSize)) {
+							return nil, &incompatibleAddressError{addressError: addressError{key: "ipaddress.error.invalid.joined.ranges"}}
+						}
+					}
+
+					divLowerValue |= segL
+					divUpperValue |= segU
+
+					shift := ^(^uint64(0) << diff)
+					segLowerVal &= shift
+					segUpperVal &= shift
+
+					// if a segment's bits are split into two divisions, and the bits going into the first division are multi-valued,
+					// then the bits going into the second division must be full range
+					if segL != segU {
+						if segLowerVal != 0 || segUpperVal != ^(^uint64(0)<<uint(segBits)) {
+							return nil, &incompatibleAddressError{addressError: addressError{key: "ipaddress.error.invalid.joined.ranges"}}
+						}
+					}
+
+					var segPrefixBits PrefixLen
+
+					if networkPrefixLength != nil {
+						segPrefixBits = getDivisionPrefixLength(originalDivBitSize, networkPrefixLength.bitCount()-bitsSoFar)
+					}
+
+					div := newRangePrefixDivision(divLowerValue, divUpperValue, segPrefixBits, originalDivBitSize)
+					divs[divCount-i-1] = div
+
+					if segBits == 0 && i > 0 {
+						//get next seg
+						currentSegmentIndex++
+						seg = grouping.getDivision(currentSegmentIndex)
+						segLowerVal = seg.getDivisionValue()
+						segUpperVal = seg.getUpperDivisionValue()
+						segBits = seg.getBitCount()
+					}
+					break
+				} else {
+					// if the division upper bits are multiple, then the lower bits inserted must be full range
+					if divLowerValue != divUpperValue {
+						if segLowerVal != 0 || segUpperVal != ^(^uint64(0)<<uint(segBits)) {
+							return nil, &incompatibleAddressError{addressError: addressError{key: "ipaddress.error.invalid.joined.ranges"}}
+						}
+					}
+					diff := uint(divBitSize - segBits)
+					divLowerValue |= segLowerVal << diff
+					divUpperValue |= segUpperVal << diff
+					divBitSize = BitCount(diff)
+
+					//get next seg
+					currentSegmentIndex++
+					seg = grouping.getDivision(currentSegmentIndex)
+					segLowerVal = seg.getDivisionValue()
+					segUpperVal = seg.getUpperDivisionValue()
+					segBits = seg.getBitCount()
+				}
+			}
+			bitsSoFar += originalDivBitSize
+		}
+	}
+	return divs, nil
 }
 
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
