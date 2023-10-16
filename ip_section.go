@@ -1401,6 +1401,23 @@ func (section *IPAddressSection) Iterator() Iterator[*IPAddressSection] {
 	return ipSectionIterator{section.sectionIterator(nil)}
 }
 
+// BlockIterator Iterates through the address sections that can be obtained by
+// iterating through all the upper segments up to the given segment count.
+// The segments following remain the same in all iterated sections.
+func (section *IPAddressSection) BlockIterator(segmentCount int) Iterator[*IPAddressSection] {
+	return ipSectionIterator{section.blockIterator(segmentCount)}
+}
+
+// SequentialBlockIterator iterates through the sequential address sections that make up this address section.
+//
+// Practically, this means finding the count of segments for which the segments that follow are not full range,
+// and then using BlockIterator with that segment count.
+//
+// Use GetSequentialBlockCount to get the number of iterated elements.
+func (section *IPAddressSection) SequentialBlockIterator() Iterator[*IPAddressSection] {
+	return ipSectionIterator{section.sequentialBlockIterator()}
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
