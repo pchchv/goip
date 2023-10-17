@@ -407,6 +407,21 @@ func (addr *IPv4Address) GetIPv4PrefixCount() uint64 {
 	return addr.GetSection().GetIPv4PrefixCount()
 }
 
+// GetIPv4PrefixCountLen gives count available as a uint64 instead of big.Int.
+//
+// It is the similar to GetPrefixCountLen but returns a uint64, not a *big.Int
+func (addr *IPv4Address) GetIPv4PrefixCountLen(prefixLength BitCount) uint64 {
+	return addr.GetSection().GetIPv4PrefixCountLen(prefixLength)
+}
+
+// GetIPv4BlockCount returns the count of distinct values in
+// the given number of initial (more significant) segments.
+//
+// It is similar to GetBlockCount but returns a uint64 instead of a big integer.
+func (addr *IPv4Address) GetIPv4BlockCount(segmentCount int) uint64 {
+	return addr.GetSection().GetIPv4BlockCount(segmentCount)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
