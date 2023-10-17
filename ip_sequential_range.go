@@ -360,6 +360,18 @@ func (rng *SequentialRange[T]) GetUpper() T {
 	return rng.init().upper
 }
 
+// GetLowerIPAddress satisfies the IPAddressRange interface,
+// returning the lower address in the range, same as GetLower.
+func (rng *SequentialRange[T]) GetLowerIPAddress() *IPAddress {
+	return rng.GetLower().ToIP()
+}
+
+// GetUpperIPAddress satisfies the IPAddressRange interface,
+// returning the upper address in the range, same as GetUpper.
+func (rng *SequentialRange[T]) GetUpperIPAddress() *IPAddress {
+	return rng.GetUpper().ToIP()
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
