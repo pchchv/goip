@@ -461,6 +461,38 @@ func (rng *SequentialRange[T]) GetUpperValue() *big.Int {
 	return rng.GetUpper().GetValue()
 }
 
+// Iterator provides an iterator to iterate through the individual addresses of this address range.
+//
+// Call GetCount for the count.
+func (rng *SequentialRange[T]) Iterator() Iterator[T] {
+	if rng == nil {
+		return nilIterator[T]()
+	}
+
+	rng = rng.init()
+	lower := rng.lower
+	if !rng.isMultiple {
+		return &singleIterator[T]{original: lower}
+	}
+
+	divCount := lower.GetSegmentCount()
+
+	return lower.rangeIterator(
+		rng.upper,
+		false,
+		nil,
+		(*IPAddress).GetSegment,
+		func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment] {
+			return seg.Iterator()
+		},
+		func(addr1, addr2 *IPAddress, index int) bool {
+			return addr1.getSegment(index).getSegmentValue() == addr2.getSegment(index).getSegmentValue()
+		},
+		divCount-1,
+		divCount,
+		nil)
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
