@@ -218,6 +218,47 @@ func (rng *SequentialRange[T]) ContainsSinglePrefixBlock(prefixLen BitCount) boo
 	return true
 }
 
+// GetPrefixLenForSingleBlock returns a prefix length for which there is only one prefix in this range,
+// and the range of values in this range matches the block of all values for that prefix.
+//
+// If the range can be described this way, then this method returns the same value as GetMinPrefixLenForBlock.
+//
+// If no such prefix length exists, returns nil.
+//
+// If this item represents a single value, this returns the bit count.
+func (rng *SequentialRange[T]) GetPrefixLenForSingleBlock() PrefixLen {
+	rng = rng.init()
+	lower := rng.lower
+	upper := rng.upper
+	count := lower.GetSegmentCount()
+	segBitCount := lower.GetBitsPerSegment()
+	maxSegValue := ^(^SegInt(0) << uint(segBitCount))
+	totalPrefix := BitCount(0)
+	for i := 0; i < count; i++ {
+		lowerSeg := lower.GetGenericSegment(i)
+		upperSeg := upper.GetGenericSegment(i)
+		segPrefix := getPrefixLenForSingleBlock(DivInt(lowerSeg.GetSegmentValue()), DivInt(upperSeg.GetSegmentValue()), segBitCount)
+		if segPrefix == nil {
+			return nil
+		}
+		dabits := segPrefix.bitCount()
+		totalPrefix += dabits
+		if dabits < segBitCount {
+			//remaining segments must be full range or we return nil
+			for i++; i < count; i++ {
+				lowerSeg = lower.GetGenericSegment(i)
+				upperSeg = upper.GetGenericSegment(i)
+				if lowerSeg.GetSegmentValue() != 0 {
+					return nil
+				} else if upperSeg.GetSegmentValue() != maxSegValue {
+					return nil
+				}
+			}
+		}
+	}
+	return cacheBitCount(totalPrefix)
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
