@@ -591,6 +591,59 @@ func (rng *SequentialRange[T]) SpanWithPrefixBlocks() []T {
 	return rng.GetLower().SpanWithPrefixBlocksTo(rng.GetUpper())
 }
 
+// SpanWithSequentialBlocks produces the smallest slice of
+// sequential blocks that cover the same set of addresses as this range.
+// This slice can be shorter than that produced by SpanWithPrefixBlocks and is never longer.
+func (rng *SequentialRange[T]) SpanWithSequentialBlocks() []T {
+	res := rng.GetLower().SpanWithSequentialBlocksTo(rng.GetUpper())
+	return res
+}
+
+// JoinTo joins this range to the other if they are contiguous.
+// If this range overlaps with the given range,
+// or if the highest value of the lower range is one below the lowest value of the higher range,
+// then the two are joined into a new larger range that is returned.
+// Otherwise, nil is returned.
+func (rng *SequentialRange[T]) JoinTo(other *SequentialRange[T]) *SequentialRange[T] {
+	rng = rng.init()
+	other = other.init()
+	otherLower, otherUpper := other.GetLower(), other.GetUpper()
+	lower, upper := rng.lower, rng.upper
+	lowerComp := compareLowIPAddressValues(lower, otherLower)
+	if !rng.Overlaps(other) {
+		if lowerComp >= 0 {
+			if otherUpper.Increment(1).Equal(lower) {
+				return newSequRangeUnchecked[T](otherLower, upper, true)
+			}
+		} else {
+			if upper.Increment(1).Equal(otherLower) {
+				return newSequRangeUnchecked[T](lower, otherUpper, true)
+			}
+		}
+		return nil
+	}
+
+	var lowestLower, highestUpper T
+	upperComp := compareLowIPAddressValues(upper, otherUpper)
+
+	if lowerComp >= 0 {
+		if lowerComp == 0 && upperComp == 0 {
+			return rng
+		}
+		lowestLower = otherLower
+	} else {
+		lowestLower = lower
+	}
+
+	if upperComp >= 0 {
+		highestUpper = upper
+	} else {
+		highestUpper = otherUpper
+	}
+
+	return newSequRangeUnchecked(lowestLower, highestUpper, true)
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
