@@ -372,6 +372,16 @@ func (rng *SequentialRange[T]) GetUpperIPAddress() *IPAddress {
 	return rng.GetUpper().ToIP()
 }
 
+// GetBitCount returns the number of bits in each address in the range.
+func (rng *SequentialRange[T]) GetBitCount() BitCount {
+	return rng.GetLower().GetBitCount()
+}
+
+// GetByteCount returns the number of bytes in each address in the range.
+func (rng *SequentialRange[T]) GetByteCount() int {
+	return rng.GetLower().GetByteCount()
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
