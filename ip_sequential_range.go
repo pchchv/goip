@@ -435,6 +435,20 @@ func (rng *SequentialRange[T]) CopyBytes(bytes []byte) []byte {
 	return rng.GetLower().CopyBytes(bytes)
 }
 
+// UpperBytes returns the highest address in the range, the one with the highest numeric value, as a byte slice.
+func (rng *SequentialRange[T]) UpperBytes() []byte {
+	return rng.GetUpper().UpperBytes()
+}
+
+// CopyUpperBytes copies the value of the highest address in the range into a byte slice.
+//
+// If the value can fit in the given slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (rng *SequentialRange[T]) CopyUpperBytes(bytes []byte) []byte {
+	return rng.GetUpper().CopyUpperBytes(bytes)
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
