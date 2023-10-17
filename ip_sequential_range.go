@@ -545,6 +545,41 @@ func (rng *SequentialRange[T]) PrefixBlockIterator(prefLength BitCount) Iterator
 	)
 }
 
+// Overlaps returns true if this sequential range overlaps with the given sequential range.
+func (rng *SequentialRange[T]) Overlaps(other *SequentialRange[T]) bool {
+	rng = rng.init()
+	return compareLowIPAddressValues(other.GetLower(), rng.upper) <= 0 &&
+		compareLowIPAddressValues(other.GetUpper(), rng.lower) >= 0
+}
+
+// Intersect returns the intersection of this range with the given range, a range which includes those addresses found in both.
+func (rng *SequentialRange[T]) Intersect(other *SequentialRange[T]) *SequentialRange[T] {
+	rng = rng.init()
+	other = other.init()
+	otherLower, otherUpper := other.GetLower(), other.GetUpper()
+	lower, upper := rng.lower, rng.upper
+
+	if compareLowIPAddressValues(lower, otherLower) <= 0 {
+		if compareLowIPAddressValues(upper, otherUpper) >= 0 { // l, ol, ou, u
+			return other
+		}
+		comp := compareLowIPAddressValues(upper, otherLower)
+		if comp < 0 { // l, u, ol, ou
+			return nil
+		}
+		return newSequRangeUnchecked(otherLower, upper, comp != 0) // l, ol, u,  ou
+	} else if compareLowIPAddressValues(otherUpper, upper) >= 0 {
+		return rng
+	}
+
+	comp := compareLowIPAddressValues(otherUpper, lower)
+	if comp < 0 {
+		return nil
+	}
+
+	return newSequRangeUnchecked(lower, otherUpper, comp != 0)
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
