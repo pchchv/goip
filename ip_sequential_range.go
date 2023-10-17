@@ -132,6 +132,48 @@ func (rng *SequentialRange[T]) GetMinPrefixLenForBlock() BitCount {
 	return totalPrefix
 }
 
+// IsSequential returns whether the address or subnet represents a range of values that are sequential.
+//
+// IP address sequential ranges are sequential by definition, so this returns true.
+func (rng *SequentialRange[T]) IsSequential() bool {
+	return true
+}
+
+// ContainsPrefixBlock returns whether the range contains the block of addresses for the given prefix length.
+//
+// Unlike ContainsSinglePrefixBlock, whether there are multiple prefix values for the given prefix length makes no difference.
+//
+// Use GetMinPrefixLenForBlock to determine whether there is a prefix length for which this method returns true.
+func (rng *SequentialRange[T]) ContainsPrefixBlock(prefixLen BitCount) bool {
+	lower := rng.lower
+	upper := rng.upper
+	if lower == upper { // also handles zero-value case nil lower and upper
+		return true
+	}
+
+	divCount := lower.GetDivisionCount()
+	prefixLen = checkSubnet(lower, prefixLen)
+	bitsPerSegment := lower.GetBitsPerSegment()
+	i := getHostSegmentIndex(prefixLen, lower.GetBytesPerSegment(), bitsPerSegment)
+	if i < divCount {
+		div := lower.GetGenericSegment(i)
+		upperDiv := upper.GetGenericSegment(i)
+		segmentPrefixLength := getPrefixedSegmentPrefixLength(bitsPerSegment, prefixLen, i)
+		if !isPrefixBlockVals(DivInt(div.GetSegmentValue()), DivInt(upperDiv.GetSegmentValue()), segmentPrefixLength.bitCount(), div.GetBitCount()) {
+			return false
+		}
+		for i++; i < divCount; i++ {
+			div = lower.GetGenericSegment(i)
+			upperDiv = upper.GetGenericSegment(i)
+			//is full range?
+			if !div.IncludesZero() || !upperDiv.IncludesMax() {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
