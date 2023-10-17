@@ -276,6 +276,23 @@ func (rng *SequentialRange[T]) IncludesMax() bool {
 	return rng.init().upper.IsMax()
 }
 
+// IsZero returns whether this sequential range spans from the zero address to itself.
+func (rng *SequentialRange[T]) IsZero() bool {
+	return rng.IncludesZero() && !rng.IsMultiple()
+}
+
+// IncludesZero returns whether this sequential range's lower value is the zero address.
+func (rng *SequentialRange[T]) IncludesZero() bool {
+	return rng.init().lower.IsZero()
+}
+
+// IsFullRange returns whether this address range covers the entire address space of this IP address version.
+//
+// This is true if and only if both IncludesZero and IncludesMax return true.
+func (rng *SequentialRange[T]) IsFullRange() bool {
+	return rng.IncludesZero() && rng.IncludesMax()
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
