@@ -580,6 +580,17 @@ func (rng *SequentialRange[T]) Intersect(other *SequentialRange[T]) *SequentialR
 	return newSequRangeUnchecked(lower, otherUpper, comp != 0)
 }
 
+// CoverWithPrefixBlock returns the minimal-size prefix block that covers all the addresses in this range.
+// The resulting block will have a larger count than this, unless this range already directly corresponds to a prefix block.
+func (rng *SequentialRange[T]) CoverWithPrefixBlock() T {
+	return rng.GetLower().CoverWithPrefixBlockTo(rng.GetUpper())
+}
+
+// SpanWithPrefixBlocks returns an array of prefix blocks that spans the same set of addresses as this range.
+func (rng *SequentialRange[T]) SpanWithPrefixBlocks() []T {
+	return rng.GetLower().SpanWithPrefixBlocksTo(rng.GetUpper())
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
