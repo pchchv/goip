@@ -91,6 +91,47 @@ type SequentialRange[T SequentialRangeConstraint[T]] struct {
 	cache      *rangeCache
 }
 
+func (rng *SequentialRange[T]) init() *SequentialRange[T] {
+	var t T
+	if rng.lower == t { // nil for pointers
+		t = nilConvert[T]()
+		zeroSeqRange := newSequRange(t, t)
+		return zeroSeqRange
+	}
+	return rng
+}
+
+// GetMinPrefixLenForBlock returns the smallest prefix length such that this includes the block of addresses for that prefix length.
+//
+// If the entire range can be described this way, then this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// There may be a single prefix, or multiple possible prefix values in this item for the returned prefix length.
+// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values.
+func (rng *SequentialRange[T]) GetMinPrefixLenForBlock() BitCount {
+	rng = rng.init()
+	lower := rng.lower
+	upper := rng.upper
+	count := lower.GetSegmentCount()
+	totalPrefix := lower.GetBitCount()
+	segBitCount := lower.GetBitsPerSegment()
+
+	for i := count - 1; i >= 0; i-- {
+		lowerSeg := lower.GetGenericSegment(i)
+		upperSeg := upper.GetGenericSegment(i)
+		segPrefix := getMinPrefixLenForBlock(DivInt(lowerSeg.GetSegmentValue()), DivInt(upperSeg.GetSegmentValue()), segBitCount)
+		if segPrefix == segBitCount {
+			break
+		} else {
+			totalPrefix -= segBitCount
+			if segPrefix != 0 {
+				totalPrefix += segPrefix
+				break
+			}
+		}
+	}
+	return totalPrefix
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
