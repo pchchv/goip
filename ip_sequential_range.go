@@ -422,6 +422,19 @@ func (rng *SequentialRange[T]) CopyUpperNetIP(bytes net.IP) net.IP {
 	return rng.GetUpper().CopyUpperNetIP(bytes) // changes the arg to 4 bytes if 16 bytes and ipv4
 }
 
+// Bytes returns the lowest address in the range, the one with the lowest numeric value, as a byte slice.
+func (rng *SequentialRange[T]) Bytes() []byte {
+	return rng.GetLower().Bytes()
+}
+
+// CopyBytes copies the value of the lowest address in the range into a byte slice.
+//
+// If the value can fit in the given slice, the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (rng *SequentialRange[T]) CopyBytes(bytes []byte) []byte {
+	return rng.GetLower().CopyBytes(bytes)
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
