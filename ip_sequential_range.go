@@ -336,6 +336,30 @@ func (rng *SequentialRange[T]) ToCanonicalString() string {
 	return rng.ToString(T.ToCanonicalString, DefaultSeqRangeSeparator, T.ToCanonicalString)
 }
 
+// Format implements [fmt.Formatter] interface.
+//
+// It prints the string as "lower -> upper" where lower and upper are the formatted strings for
+// the lowest and highest addresses in the range, given by GetLower and GetUpper.
+// The formats, flags, and other specifications supported are those supported by Format in IPAddress.
+func (rng SequentialRange[T]) Format(state fmt.State, verb rune) {
+	rngPtr := rng.init()
+	rngPtr.lower.Format(state, verb)
+	_, _ = state.Write([]byte(DefaultSeqRangeSeparator))
+	rngPtr.upper.Format(state, verb)
+}
+
+// GetLower returns the lowest address in the range,
+// the one with the lowest numeric value.
+func (rng *SequentialRange[T]) GetLower() T {
+	return rng.init().lower
+}
+
+// GetUpper returns the highest address in the range,
+// the one with the highest numeric value.
+func (rng *SequentialRange[T]) GetUpper() T {
+	return rng.init().upper
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
