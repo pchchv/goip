@@ -383,6 +383,30 @@ func (addr *IPv4Address) toAddressBase() *Address {
 	return (*Address)(unsafe.Pointer(addr))
 }
 
+// GetIPv4Count returns the count of possible distinct values for this section.
+// It is the same as GetCount but returns the value as a uint64 instead of a big integer.
+// If not representing multiple values, the count is 1.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (addr *IPv4Address) GetIPv4Count() uint64 {
+	if addr == nil {
+		return 0
+	}
+	return addr.GetSection().GetIPv4Count()
+}
+
+// GetIPv4PrefixCount returns the number of distinct prefix values in this section.
+// It is the same as GetPrefixCount but returns the value as a uint64 instead of a big integer.
+//
+// The prefix length is given by GetPrefixLen.
+//
+// If this has a non-nil prefix length, returns the number of distinct prefix values.
+//
+// If this has a nil prefix length, returns the same value as GetIPv4Count.
+func (addr *IPv4Address) GetIPv4PrefixCount() uint64 {
+	return addr.GetSection().GetIPv4PrefixCount()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
