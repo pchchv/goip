@@ -449,6 +449,18 @@ func (rng *SequentialRange[T]) CopyUpperBytes(bytes []byte) []byte {
 	return rng.GetUpper().CopyUpperBytes(bytes)
 }
 
+// GetValue returns the lowest address in the range,
+// the one with the lowest numeric value, as an integer.
+func (rng *SequentialRange[T]) GetValue() *big.Int {
+	return rng.GetLower().GetValue()
+}
+
+// GetUpperValue returns the highest address in the range,
+// the one with the highest numeric value, as an integer.
+func (rng *SequentialRange[T]) GetUpperValue() *big.Int {
+	return rng.GetUpper().GetValue()
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
