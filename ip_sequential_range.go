@@ -737,6 +737,11 @@ func (rng *SequentialRange[T]) Subtract(other *SequentialRange[T]) []*Sequential
 	}
 }
 
+// GetIPVersion returns the IP version of this IP address sequential range
+func (rng *SequentialRange[T]) GetIPVersion() IPVersion {
+	return rng.init().lower.GetIPVersion()
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
