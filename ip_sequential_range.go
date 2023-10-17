@@ -259,6 +259,23 @@ func (rng *SequentialRange[T]) GetPrefixLenForSingleBlock() PrefixLen {
 	return cacheBitCount(totalPrefix)
 }
 
+// IsMultiple returns whether this range represents a range of multiple addresses.
+func (rng *SequentialRange[T]) IsMultiple() bool {
+	return rng != nil && rng.isMultiple
+}
+
+// IsMax returns whether this sequential range spans from the max address,
+// the address whose bits are all ones, to itself.
+func (rng *SequentialRange[T]) IsMax() bool {
+	return rng.IncludesMax() && !rng.IsMultiple()
+}
+
+// IncludesMax returns whether this sequential range's upper value is the max value,
+// the value whose bits are all ones.
+func (rng *SequentialRange[T]) IncludesMax() bool {
+	return rng.init().upper.IsMax()
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
