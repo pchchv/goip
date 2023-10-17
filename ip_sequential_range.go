@@ -672,6 +672,35 @@ func (rng *SequentialRange[T]) IsIPv6() bool { // returns false when lower is ni
 	return false
 }
 
+// Extend extends this sequential range to include all address in the given range.
+// If the argument has a different IP version than this, nil is returned.
+// Otherwise, this method returns the range that includes this range, the given range, and all addresses in-between.
+func (rng *SequentialRange[T]) Extend(other *SequentialRange[T]) *SequentialRange[T] {
+	rng = rng.init()
+	other = other.init()
+	if !rng.lower.GetIPVersion().Equal(other.lower.GetIPVersion()) {
+		return nil
+	}
+
+	otherLower, otherUpper := other.GetLower(), other.GetUpper()
+	lower, upper := rng.lower, rng.upper
+	lowerComp := compareLowIPAddressValues(lower, otherLower)
+	upperComp := compareLowIPAddressValues(upper, otherUpper)
+	if lowerComp > 0 { //
+		if upperComp <= 0 { // ol l u ou
+			return other
+		}
+		// ol l ou u or ol ou l u
+		return newSequRangeUnchecked(otherLower, upper, true)
+	}
+
+	if upperComp >= 0 { // l ol ou u
+		return rng
+	}
+
+	return newSequRangeUnchecked(lower, otherUpper, true) // l ol u ou or l u ol ou
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
