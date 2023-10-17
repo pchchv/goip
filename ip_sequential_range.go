@@ -701,6 +701,42 @@ func (rng *SequentialRange[T]) Extend(other *SequentialRange[T]) *SequentialRang
 	return newSequRangeUnchecked(lower, otherUpper, true) // l ol u ou or l u ol ou
 }
 
+// Subtract subtracts the given range from the receiver range, to produce either zero, one,
+// or two address ranges that contain the addresses in the receiver range and not in the given range.
+// If the result has length 2, the two ranges are ordered by ascending lowest range value.
+func (rng *SequentialRange[T]) Subtract(other *SequentialRange[T]) []*SequentialRange[T] {
+	rng = rng.init()
+	other = other.init()
+	otherLower, otherUpper := other.GetLower(), other.GetUpper()
+	lower, upper := rng.lower, rng.upper
+	if compareLowIPAddressValues(lower, otherLower) < 0 {
+		if compareLowIPAddressValues(upper, otherUpper) > 0 { // l ol ou u
+			return []*SequentialRange[T]{
+				newSequRangeCheckSize(lower, otherLower.Increment(-1)),
+				newSequRangeCheckSize(otherUpper.Increment(1), upper),
+			}
+		} else {
+			comp := compareLowIPAddressValues(upper, otherLower)
+			if comp < 0 { // l u ol ou
+				return []*SequentialRange[T]{rng}
+			} else if comp == 0 { // l u == ol ou
+				return []*SequentialRange[T]{newSequRangeCheckSize(lower, upper.Increment(-1))}
+			}
+			return []*SequentialRange[T]{newSequRangeCheckSize(lower, otherLower.Increment(-1))} // l ol u ou
+		}
+	} else if compareLowIPAddressValues(otherUpper, upper) >= 0 { // ol l u ou
+		return make([]*SequentialRange[T], 0, 0)
+	} else {
+		comp := compareLowIPAddressValues(otherUpper, lower)
+		if comp < 0 {
+			return []*SequentialRange[T]{rng} // ol ou l u
+		} else if comp == 0 {
+			return []*SequentialRange[T]{newSequRangeCheckSize(lower.Increment(1), upper)} // ol ou == l u
+		}
+		return []*SequentialRange[T]{newSequRangeCheckSize(otherUpper.Increment(1), upper)} // ol l ou u
+	}
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
