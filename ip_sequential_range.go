@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"math/bits"
 	"net"
+	"net/netip"
 	"strings"
 )
 
@@ -391,6 +392,16 @@ func (rng *SequentialRange[T]) GetNetIP() net.IP {
 // GetUpperNetIP returns the upper IP address in the range as a net.IP.
 func (rng *SequentialRange[T]) GetUpperNetIP() net.IP {
 	return rng.GetUpper().GetUpperNetIP()
+}
+
+// GetNetNetIPAddr returns the lowest address in this address range as a netip.Addr.
+func (rng *SequentialRange[T]) GetNetNetIPAddr() netip.Addr {
+	return rng.GetLower().GetNetNetIPAddr()
+}
+
+// GetUpperNetNetIPAddr returns the highest address in this address range as a netip.Addr.
+func (rng *SequentialRange[T]) GetUpperNetNetIPAddr() netip.Addr {
+	return rng.GetUpper().GetUpperNetNetIPAddr()
 }
 
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
