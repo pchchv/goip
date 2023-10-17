@@ -320,6 +320,22 @@ func (rng *SequentialRange[T]) String() string {
 	return rng.ToString(T.String, DefaultSeqRangeSeparator, T.String)
 }
 
+// ToNormalizedString produces a normalized string for the address range.
+// It has the format "lower -> upper" where lower and upper are
+// the normalized strings for the lowest and highest addresses in the range,
+// given by GetLower and GetUpper.
+func (rng *SequentialRange[T]) ToNormalizedString() string {
+	return rng.ToString(T.ToNormalizedString, DefaultSeqRangeSeparator, T.ToNormalizedString)
+}
+
+// ToCanonicalString produces a canonical string for the address range.
+// It has the format "lower -> upper" where lower and upper are
+// the canonical strings for the lowest and highest addresses in the range,
+// given by GetLower and GetUpper.
+func (rng *SequentialRange[T]) ToCanonicalString() string {
+	return rng.ToString(T.ToCanonicalString, DefaultSeqRangeSeparator, T.ToCanonicalString)
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
