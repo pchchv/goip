@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"math/bits"
+	"strings"
 )
 
 // DefaultSeqRangeSeparator is the low to high value separator used when creating strings for IP ranges.
@@ -291,6 +292,32 @@ func (rng *SequentialRange[T]) IncludesZero() bool {
 // This is true if and only if both IncludesZero and IncludesMax return true.
 func (rng *SequentialRange[T]) IsFullRange() bool {
 	return rng.IncludesZero() && rng.IncludesMax()
+}
+
+// ToString produces a customized string for the address range.
+func (rng *SequentialRange[T]) ToString(lowerStringer func(T) string, separator string, upperStringer func(T) string) string {
+	if rng == nil {
+		return nilString()
+	}
+	rng = rng.init()
+	builder := strings.Builder{}
+	str1, str2, str3 := lowerStringer(rng.lower), separator, upperStringer(rng.upper)
+	builder.Grow(len(str1) + len(str2) + len(str3))
+	builder.WriteString(str1)
+	builder.WriteString(str2)
+	builder.WriteString(str3)
+	return builder.String()
+}
+
+// String implements the [fmt.Stringer] interface,
+// returning the lower address canonical string, followed by the default separator " -> ",
+// followed by the upper address canonical string.
+// It returns "<nil>" if the receiver is a nil pointer.
+func (rng *SequentialRange[T]) String() string {
+	if rng == nil {
+		return nilString()
+	}
+	return rng.ToString(T.String, DefaultSeqRangeSeparator, T.String)
 }
 
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
