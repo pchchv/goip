@@ -174,6 +174,50 @@ func (rng *SequentialRange[T]) ContainsPrefixBlock(prefixLen BitCount) bool {
 	return true
 }
 
+// ContainsSinglePrefixBlock returns whether this address range contains a single prefix block for the given prefix length.
+//
+// This means there is only one prefix value for the given prefix length,
+// and it also contains the full prefix block for that prefix, all addresses with that prefix.
+//
+// Use GetPrefixLenForSingleBlock to determine whether there is a prefix length for which this method returns true.
+func (rng *SequentialRange[T]) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	lower := rng.lower
+	upper := rng.upper
+	if lower == upper { // also handles zero-value case nil lower and upper
+		return true
+	}
+
+	var prevBitCount BitCount
+	prefixLen = checkSubnet(lower, prefixLen)
+	divCount := lower.GetDivisionCount()
+	for i := 0; i < divCount; i++ {
+		div := lower.GetGenericSegment(i)
+		upperDiv := upper.GetGenericSegment(i)
+		bitCount := div.GetBitCount()
+		totalBitCount := bitCount + prevBitCount
+		if prefixLen >= totalBitCount {
+			if !segValSame(div.GetSegmentValue(), upperDiv.GetSegmentValue()) {
+				return false
+			}
+		} else {
+			divPrefixLen := prefixLen - prevBitCount
+			if !isPrefixBlockVals(DivInt(div.GetSegmentValue()), DivInt(upperDiv.GetSegmentValue()), divPrefixLen, div.GetBitCount()) {
+				return false
+			}
+			for i++; i < divCount; i++ {
+				div = lower.GetGenericSegment(i)
+				upperDiv = upper.GetGenericSegment(i)
+				if !div.IncludesZero() || !upperDiv.IncludesMax() {
+					return false
+				}
+			}
+			return true
+		}
+		prevBitCount = totalBitCount
+	}
+	return true
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
