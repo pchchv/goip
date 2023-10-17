@@ -493,6 +493,58 @@ func (rng *SequentialRange[T]) Iterator() Iterator[T] {
 		nil)
 }
 
+// PrefixBlockIterator provides an iterator to iterate through the individual prefix blocks of the given prefix length,
+// one for each prefix of that length in the address range.
+func (rng *SequentialRange[T]) PrefixBlockIterator(prefLength BitCount) Iterator[T] {
+	rng = rng.init()
+	lower := rng.lower
+	if !rng.isMultiple {
+		return &singleIterator[T]{original: lower.ToPrefixBlockLen(prefLength)}
+	}
+
+	prefLength = checkSubnet(lower, prefLength)
+	bitsPerSegment := lower.GetBitsPerSegment()
+	bytesPerSegment := lower.GetBytesPerSegment()
+	segCount := lower.GetSegmentCount()
+	segPrefs := make([]segPrefData, segCount)
+	networkSegIndex := getNetworkSegmentIndex(prefLength, bytesPerSegment, bitsPerSegment)
+	for i := networkSegIndex; i < segCount; i++ {
+		segPrefLength := getPrefixedSegmentPrefixLength(bitsPerSegment, prefLength, i)
+		segPrefs[i] = segPrefData{segPrefLength, bitsPerSegment - segPrefLength.bitCount()}
+	}
+
+	hostSegIndex := getHostSegmentIndex(prefLength, bytesPerSegment, bitsPerSegment)
+
+	return lower.rangeIterator(
+		rng.upper,
+		true,
+		cacheBitCount(prefLength),
+		(*IPAddress).GetSegment,
+		func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment] {
+			return seg.Iterator()
+		},
+		func(addr1, addr2 *IPAddress, index int) bool {
+			segPref := segPrefs[index]
+			if segPref.prefLen == nil {
+				return addr1.GetSegment(index).GetSegmentValue() == addr2.GetSegment(index).GetSegmentValue()
+			}
+			shift := segPref.shift
+			return addr1.GetSegment(index).GetSegmentValue()>>uint(shift) == addr2.GetSegment(index).GetSegmentValue()>>uint(shift)
+
+		},
+		networkSegIndex,
+		hostSegIndex,
+		func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment] {
+			segPref := segPrefs[index]
+			segPrefLen := segPref.prefLen
+			if segPrefLen == nil {
+				return seg.Iterator()
+			}
+			return seg.PrefixedBlockIterator(segPrefLen.bitCount())
+		},
+	)
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
