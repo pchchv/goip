@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"math/bits"
+	"net"
 	"strings"
 )
 
@@ -380,6 +381,16 @@ func (rng *SequentialRange[T]) GetBitCount() BitCount {
 // GetByteCount returns the number of bytes in each address in the range.
 func (rng *SequentialRange[T]) GetByteCount() int {
 	return rng.GetLower().GetByteCount()
+}
+
+// GetNetIP returns the lower IP address in the range as a net.IP.
+func (rng *SequentialRange[T]) GetNetIP() net.IP {
+	return rng.GetLower().GetNetIP()
+}
+
+// GetUpperNetIP returns the upper IP address in the range as a net.IP.
+func (rng *SequentialRange[T]) GetUpperNetIP() net.IP {
+	return rng.GetUpper().GetUpperNetIP()
 }
 
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
