@@ -404,6 +404,24 @@ func (rng *SequentialRange[T]) GetUpperNetNetIPAddr() netip.Addr {
 	return rng.GetUpper().GetUpperNetNetIPAddr()
 }
 
+// CopyNetIP copies the value of the lower IP address in the range into a net.IP.
+//
+// If the value can fit in the given net.IP slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (rng *SequentialRange[T]) CopyNetIP(bytes net.IP) net.IP {
+	return rng.GetLower().CopyNetIP(bytes) // changes the arg to 4 bytes if 16 bytes and ipv4
+}
+
+// CopyUpperNetIP copies the upper IP address in the range into a net.IP.
+//
+// If the value can fit in the given net.IP slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (rng *SequentialRange[T]) CopyUpperNetIP(bytes net.IP) net.IP {
+	return rng.GetUpper().CopyUpperNetIP(bytes) // changes the arg to 4 bytes if 16 bytes and ipv4
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
