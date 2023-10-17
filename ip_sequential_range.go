@@ -644,6 +644,34 @@ func (rng *SequentialRange[T]) JoinTo(other *SequentialRange[T]) *SequentialRang
 	return newSequRangeUnchecked(lowestLower, highestUpper, true)
 }
 
+// IsIPv4 returns true if this sequential address range is an IPv4 sequential address range.
+// If so, use ToIPv4 to convert to the IPv4-specific type.
+func (rng *SequentialRange[T]) IsIPv4() bool { // returns false when lower is nil
+	if rng != nil {
+		t := any(rng.GetLower())
+		if _, ok := t.(*IPv4Address); ok {
+			return true
+		} else if addr, ok := t.(*IPAddress); ok {
+			return addr.IsIPv4()
+		}
+	}
+	return false
+}
+
+// IsIPv6 returns true if this sequential address range is an IPv6 sequential address range.
+// If so, use ToIPv6 to convert to the IPv6-specific type.
+func (rng *SequentialRange[T]) IsIPv6() bool { // returns false when lower is nil
+	if rng != nil {
+		t := any(rng.GetLower())
+		if _, ok := t.(*IPv6Address); ok {
+			return true
+		} else if addr, ok := t.(*IPAddress); ok {
+			return addr.IsIPv6()
+		}
+	}
+	return false
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
