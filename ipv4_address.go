@@ -468,6 +468,17 @@ func (addr *IPv4Address) CopySegments(segs []*IPv4AddressSegment) (count int) {
 	return addr.GetSection().CopySegments(segs)
 }
 
+// GetSegments returns a slice with the address segments.
+// The returned slice is not backed by the same array as this address.
+func (addr *IPv4Address) GetSegments() []*IPv4AddressSegment {
+	return addr.GetSection().GetSegments()
+}
+
+// GetSegmentCount returns the segment count, the number of segments in this address, which is 4.
+func (addr *IPv4Address) GetSegmentCount() int {
+	return addr.GetDivisionCount()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
