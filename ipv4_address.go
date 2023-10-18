@@ -492,6 +492,24 @@ func (addr *IPv4Address) GetHostMask() *IPv4Address {
 	return addr.getHostMask(ipv4Network).ToIPv4()
 }
 
+// Mask applies the given mask to all addresses represented by this IPv4Address.
+// The mask is applied to all individual addresses.
+//
+// If this represents multiple addresses, and applying the mask to all addresses creates a set of addresses
+// that cannot be represented as a sequential range within each segment, then an error is returned.
+func (addr *IPv4Address) Mask(other *IPv4Address) (masked *IPv4Address, err address_error.IncompatibleAddressError) {
+	return addr.maskPrefixed(other, true)
+}
+
+func (addr *IPv4Address) maskPrefixed(other *IPv4Address, retainPrefix bool) (masked *IPv4Address, err address_error.IncompatibleAddressError) {
+	addr = addr.init()
+	sect, err := addr.GetSection().maskPrefixed(other.GetSection(), retainPrefix)
+	if err == nil {
+		masked = addr.checkIdentity(sect)
+	}
+	return
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
