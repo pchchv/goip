@@ -686,6 +686,18 @@ func (addr *IPv4Address) Equal(other AddressType) bool {
 	return other.ToAddressBase().getAddrType() == ipv4Type && addr.init().section.sameCountTypeEquals(other.ToAddressBase().GetSection())
 }
 
+// MatchesWithMask applies the mask to this address and then compares the result with the given address,
+// returning true if they match, false otherwise.
+func (addr *IPv4Address) MatchesWithMask(other *IPv4Address, mask *IPv4Address) bool {
+	return addr.init().GetSection().MatchesWithMask(other.GetSection(), mask.GetSection())
+}
+
+// IncludesZeroHostLen returns whether the subnet contains an individual address with a host of zero,
+// an individual address for which all bits past the given prefix length are zero.
+func (addr *IPv4Address) IncludesZeroHostLen(networkPrefixLength BitCount) bool {
+	return addr.init().includesZeroHostLen(networkPrefixLength)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
