@@ -479,6 +479,19 @@ func (addr *IPv4Address) GetSegmentCount() int {
 	return addr.GetDivisionCount()
 }
 
+// ForEachSegment visits each segment in order from most-significant to least, the most significant with index 0,
+// calling the given function for each, terminating early if the function returns true.
+// Returns the number of visited segments.
+func (addr *IPv4Address) ForEachSegment(consumer func(segmentIndex int, segment *IPv4AddressSegment) (stop bool)) int {
+	return addr.GetSection().ForEachSegment(consumer)
+}
+
+// GetHostMask returns the host mask associated with the CIDR network prefix length of this address or subnet.
+// If this address or subnet has no prefix length, then the all-ones mask is returned.
+func (addr *IPv4Address) GetHostMask() *IPv4Address {
+	return addr.getHostMask(ipv4Network).ToIPv4()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
