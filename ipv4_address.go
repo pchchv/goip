@@ -764,6 +764,26 @@ func (addr *IPv4Address) Iterator() Iterator[*IPv4Address] {
 	return ipv4AddressIterator{addr.init().addrIterator(nil)}
 }
 
+// BlockIterator iterates through the addresses that can be obtained by iterating through all the upper segments up to the given segment count.
+// The segments following remain the same in all iterated addresses.
+//
+// For instance, given the IPv4 subnet "1-2.3-4.5-6.7" and the count argument 2,
+// BlockIterator will iterate through "1.3.5-6.7", "1.4.5-6.7", "2.3.5-6.7" and "2.4.5-6.7".
+func (addr *IPv4Address) BlockIterator(segmentCount int) Iterator[*IPv4Address] {
+	return ipv4AddressIterator{addr.init().blockIterator(segmentCount)}
+}
+
+// SequentialBlockIterator iterates through the sequential subnets or addresses that make up this address or subnet.
+//
+// Practically, this means finding the count of segments for which the segments that follow are not full range, and then using BlockIterator with that segment count.
+//
+// For instance, given the IPv4 subnet "1-2.3-4.5-6.7-8", it will iterate through "1.3.5.7-8", "1.3.6.7-8", "1.4.5.7-8", "1.4.6.7-8", "2.3.5.7-8", "2.3.6.7-8", "2.4.6.7-8" and "2.4.6.7-8".
+//
+// Use GetSequentialBlockCount to get the number of iterated elements.
+func (addr *IPv4Address) SequentialBlockIterator() Iterator[*IPv4Address] {
+	return ipv4AddressIterator{addr.init().sequentialBlockIterator()}
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
