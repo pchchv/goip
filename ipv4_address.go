@@ -698,6 +698,21 @@ func (addr *IPv4Address) IncludesZeroHostLen(networkPrefixLength BitCount) bool 
 	return addr.init().includesZeroHostLen(networkPrefixLength)
 }
 
+// IncludesMaxHostLen returns whether the subnet contains an individual address with a host of all one-bits,
+// an individual address for which all bits past the given prefix length are all ones.
+func (addr *IPv4Address) IncludesMaxHostLen(networkPrefixLength BitCount) bool {
+	return addr.init().includesMaxHostLen(networkPrefixLength)
+}
+
+// IsLinkLocal returns whether the address is link local, whether unicast or multicast.
+func (addr *IPv4Address) IsLinkLocal() bool {
+	if addr.IsMulticast() {
+		// 224.0.0.252	Link-local Multicast Name Resolution	[RFC4795]
+		return addr.GetSegment(0).Matches(224) && addr.GetSegment(1).IsZero() && addr.GetSegment(2).IsZero() && addr.GetSegment(3).Matches(252)
+	}
+	return addr.GetSegment(0).Matches(169) && addr.GetSegment(1).Matches(254)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
