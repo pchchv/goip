@@ -456,6 +456,18 @@ func (addr *IPv4Address) GetHostSectionLen(prefLen BitCount) *IPv4AddressSection
 	return addr.GetSection().GetHostSectionLen(prefLen)
 }
 
+// CopySubSegments copies the existing segments from the given start index until but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (addr *IPv4Address) CopySubSegments(start, end int, segs []*IPv4AddressSegment) (count int) {
+	return addr.GetSection().CopySubSegments(start, end, segs)
+}
+
+// CopySegments copies the existing segments into the given slice,
+// as much as can be fit into the slice, returning the number of segments copied.
+func (addr *IPv4Address) CopySegments(segs []*IPv4AddressSegment) (count int) {
+	return addr.GetSection().CopySegments(segs)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
