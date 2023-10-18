@@ -615,3 +615,16 @@ func NewIPv4AddressFromVals(vals IPv4SegmentValueProvider) *IPv4Address {
 	section := NewIPv4SectionFromVals(vals, IPv4SegmentCount)
 	return newIPv4Address(section)
 }
+
+// NewIPv4AddressFromPrefixedVals constructs an IPv4 address or prefix block from the given values and prefix length.
+// If the address has a zero host for the given prefix length, the returned address will be the prefix block.
+func NewIPv4AddressFromPrefixedVals(vals IPv4SegmentValueProvider, prefixLength PrefixLen) *IPv4Address {
+	section := NewIPv4SectionFromPrefixedVals(vals, IPv4SegmentCount, prefixLength)
+	return newIPv4Address(section)
+}
+
+// NewIPv4AddressFromRange constructs an IPv4 subnet from the given values.
+func NewIPv4AddressFromRange(vals, upperVals IPv4SegmentValueProvider) *IPv4Address {
+	section := NewIPv4SectionFromRange(vals, upperVals, IPv4SegmentCount)
+	return newIPv4Address(section)
+}
