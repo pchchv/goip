@@ -657,6 +657,35 @@ func (addr *IPv4Address) IsOneBit(bitIndex BitCount) bool {
 	return addr.init().isOneBit(bitIndex)
 }
 
+// Contains returns whether this is the same type and version as
+// the given address or subnet and whether it contains all addresses in the given address or subnet.
+func (addr *IPv4Address) Contains(other AddressType) bool {
+	if other == nil || other.ToAddressBase() == nil {
+		return true
+	} else if addr == nil {
+		return false
+	}
+
+	addr = addr.init()
+	otherAddr := other.ToAddressBase()
+	if addr.ToAddressBase() == otherAddr {
+		return true
+	}
+
+	return otherAddr.getAddrType() == ipv4Type && addr.section.sameCountTypeContains(otherAddr.GetSection())
+}
+
+// Equal returns whether the given address or subnet is equal to this address or subnet.
+// Two address instances are equal if they represent the same set of addresses.
+func (addr *IPv4Address) Equal(other AddressType) bool {
+	if addr == nil {
+		return other == nil || other.ToAddressBase() == nil
+	} else if other.ToAddressBase() == nil {
+		return false
+	}
+	return other.ToAddressBase().getAddrType() == ipv4Type && addr.init().section.sameCountTypeEquals(other.ToAddressBase().GetSection())
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
