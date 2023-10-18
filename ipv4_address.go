@@ -580,6 +580,23 @@ func (addr *IPv4Address) ContainsPrefixBlock(prefixLen BitCount) bool {
 	return addr.init().ipAddressInternal.ContainsPrefixBlock(prefixLen)
 }
 
+// GetMinPrefixLenForBlock returns the smallest prefix length such that this includes the block of addresses for that prefix length.
+//
+// If the entire range can be described this way, then this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// There may be a single prefix, or multiple possible prefix values in this item for the returned prefix length.
+// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values.
+//
+// If this represents just a single address, returns the bit length of this address.
+func (addr *IPv4Address) GetMinPrefixLenForBlock() BitCount {
+	return addr.init().ipAddressInternal.GetMinPrefixLenForBlock()
+}
+
+// Uint32Value returns the lowest address in the subnet range as a uint32.
+func (addr *IPv4Address) Uint32Value() uint32 {
+	return addr.GetSection().Uint32Value()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
