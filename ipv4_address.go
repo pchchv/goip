@@ -713,6 +713,39 @@ func (addr *IPv4Address) IsLinkLocal() bool {
 	return addr.GetSegment(0).Matches(169) && addr.GetSegment(1).Matches(254)
 }
 
+// IsAnyLocal returns whether this address is the address which binds to any address on the local host.
+// This is the address that has the value of 0, aka the unspecified address.
+func (addr *IPv4Address) IsAnyLocal() bool {
+	return addr.section == nil || addr.IsZero()
+}
+
+// IsLocal returns true if the address is link local,
+// site local, organization local,
+// administered locally, or unspecified.
+// This includes both unicast and multicast.
+func (addr *IPv4Address) IsLocal() bool {
+	if addr.IsMulticast() {
+		// 1110...
+		seg0 := addr.GetSegment(0)
+		// http://www.tcpipguide.com/free/t_IPMulticastAddressing.htm
+		// RFC 4607 and https://www.iana.org/assignments/multicast-addresses/multicast-addresses.xhtml
+
+		// 239.0.0.0-239.255.255.255 organization local
+		if seg0.matches(239) {
+			return true
+		}
+		seg1, seg2 := addr.GetSegment(1), addr.GetSegment(2)
+
+		// 224.0.0.0 to 224.0.0.255 local
+		// includes link local multicast name resolution https://tools.ietf.org/html/rfc4795 224.0.0.252
+		return (seg0.matches(224) && seg1.IsZero() && seg2.IsZero()) ||
+			// 232.0.0.1 - 232.0.0.255	Reserved for IANA allocation	[RFC4607]
+			// 232.0.1.0 - 232.255.255.255	Reserved for local host allocation	[RFC4607]
+			(seg0.matches(232) && !(seg1.IsZero() && seg2.IsZero()))
+	}
+	return addr.IsLinkLocal() || addr.IsPrivate() || addr.IsAnyLocal()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
