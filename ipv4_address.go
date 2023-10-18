@@ -746,6 +746,24 @@ func (addr *IPv4Address) IsLocal() bool {
 	return addr.IsLinkLocal() || addr.IsPrivate() || addr.IsAnyLocal()
 }
 
+// IsUnspecified returns whether this is the unspecified address.  The unspecified address is the address that is all zeros.
+func (addr *IPv4Address) IsUnspecified() bool {
+	return addr.section == nil || addr.IsZero()
+}
+
+// Iterator provides an iterator to iterate through the individual addresses of this address or subnet.
+//
+// When iterating, the prefix length is preserved.
+// Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual addresses.
+//
+// Call IsMultiple to determine if this instance represents multiple addresses, or GetCount for the count.
+func (addr *IPv4Address) Iterator() Iterator[*IPv4Address] {
+	if addr == nil {
+		return ipv4AddressIterator{nilAddrIterator()}
+	}
+	return ipv4AddressIterator{addr.init().addrIterator(nil)}
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
