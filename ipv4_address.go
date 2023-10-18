@@ -597,6 +597,16 @@ func (addr *IPv4Address) Uint32Value() uint32 {
 	return addr.GetSection().Uint32Value()
 }
 
+// GetNetIP returns the lowest address in this subnet or address as a net.IP.
+func (addr *IPv4Address) GetNetIP() net.IP {
+	return addr.Bytes()
+}
+
+// GetUpperNetIP returns the highest address in this subnet or address as a net.IP.
+func (addr *IPv4Address) GetUpperNetIP() net.IP {
+	return addr.UpperBytes()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
