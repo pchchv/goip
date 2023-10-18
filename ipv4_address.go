@@ -510,6 +510,22 @@ func (addr *IPv4Address) maskPrefixed(other *IPv4Address, retainPrefix bool) (ma
 	return
 }
 
+// IsZeroHostLen returns whether the host section is always zero for all individual addresses in this subnet,
+// for the given prefix length.
+//
+// If the host section is zero length (there are zero host bits), IsZeroHostLen returns true.
+func (addr *IPv4Address) IsZeroHostLen(prefLen BitCount) bool {
+	return addr.init().isZeroHostLen(prefLen)
+}
+
+// IsMaxHostLen returns whether the host is all one-bits, the max value, for all individual addresses in this subnet,
+// for the given prefix length, the host being the bits following the prefix.
+//
+// If the host section is zero length (there are zero host bits), IsMaxHostLen returns true.
+func (addr *IPv4Address) IsMaxHostLen(prefLen BitCount) bool {
+	return addr.init().isMaxHostLen(prefLen)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
