@@ -422,6 +422,24 @@ func (addr *IPv4Address) GetIPv4BlockCount(segmentCount int) uint64 {
 	return addr.GetSection().GetIPv4BlockCount(segmentCount)
 }
 
+// GetNetworkSection returns an address section containing the segments with the network of the address or subnet, the prefix bits.
+// The returned section will have only as many segments as needed as determined by the existing CIDR network prefix length.
+//
+// If this series has no CIDR prefix length, the returned network section will
+// be the entire series as a prefixed section with prefix length matching the address bit length.
+func (addr *IPv4Address) GetNetworkSection() *IPv4AddressSection {
+	return addr.GetSection().GetNetworkSection()
+}
+
+// GetNetworkSectionLen returns a section containing the segments with the network of the address or subnet, the prefix bits according to the given prefix length.
+// The returned section will have only as many segments as needed to contain the network.
+//
+// The new section will be assigned the given prefix length,
+// unless the existing prefix length is smaller, in which case the existing prefix length will be retained.
+func (addr *IPv4Address) GetNetworkSectionLen(prefLen BitCount) *IPv4AddressSection {
+	return addr.GetSection().GetNetworkSectionLen(prefLen)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
