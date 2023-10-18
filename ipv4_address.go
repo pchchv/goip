@@ -602,3 +602,16 @@ func NewIPv4AddressFromUint32(val uint32) *IPv4Address {
 	section := NewIPv4SectionFromUint32(val, IPv4SegmentCount)
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
+
+// NewIPv4AddressFromPrefixedUint32 constructs an IPv4 address or prefix block from the given value and prefix length.
+// If the address has a zero host for the given prefix length, the returned address will be the prefix block.
+func NewIPv4AddressFromPrefixedUint32(val uint32, prefixLength PrefixLen) *IPv4Address {
+	section := NewIPv4SectionFromPrefixedUint32(val, IPv4SegmentCount, prefixLength)
+	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
+}
+
+// NewIPv4AddressFromVals constructs an IPv4 address from the given values.
+func NewIPv4AddressFromVals(vals IPv4SegmentValueProvider) *IPv4Address {
+	section := NewIPv4SectionFromVals(vals, IPv4SegmentCount)
+	return newIPv4Address(section)
+}
