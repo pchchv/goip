@@ -3,6 +3,7 @@ package goip
 import (
 	"math/big"
 	"net"
+	"net/netip"
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
@@ -605,6 +606,16 @@ func (addr *IPv4Address) GetNetIP() net.IP {
 // GetUpperNetIP returns the highest address in this subnet or address as a net.IP.
 func (addr *IPv4Address) GetUpperNetIP() net.IP {
 	return addr.UpperBytes()
+}
+
+// GetNetNetIPAddr returns the lowest address in this subnet or address range as a netip.Addr.
+func (addr *IPv4Address) GetNetNetIPAddr() netip.Addr {
+	return addr.init().getNetNetIPAddr()
+}
+
+// GetUpperNetNetIPAddr returns the highest address in this subnet or address range as a netip.Addr.
+func (addr *IPv4Address) GetUpperNetNetIPAddr() netip.Addr {
+	return addr.init().getUpperNetNetIPAddr()
 }
 
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
