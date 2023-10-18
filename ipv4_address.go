@@ -579,3 +579,26 @@ func NewIPv4AddressFromPrefixedSegs(segments []*IPv4AddressSegment, prefixLength
 	section := NewIPv4PrefixedSection(segments, prefixLength)
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4(), nil
 }
+
+// NewIPv4AddressFromPrefixedBytes constructs an IPv4 address or prefix block from the given byte slice and prefix length.
+// An error is returned when the byte slice has too many bytes to match the IPv4 segment count of 4.
+// There should be 4 bytes or less, although extra leading zeros are tolerated.
+// If the address has a zero host for the given prefix length, the returned address will be the prefix block.
+func NewIPv4AddressFromPrefixedBytes(bytes []byte, prefixLength PrefixLen) (addr *IPv4Address, err address_error.AddressValueError) {
+	if ipv4 := net.IP(bytes).To4(); ipv4 != nil {
+		bytes = ipv4
+	}
+
+	section, err := NewIPv4SectionFromPrefixedBytes(bytes, IPv4SegmentCount, prefixLength)
+	if err == nil {
+		addr = newIPv4Address(section)
+	}
+
+	return
+}
+
+// NewIPv4AddressFromUint32 constructs an IPv4 address from the given value.
+func NewIPv4AddressFromUint32(val uint32) *IPv4Address {
+	section := NewIPv4SectionFromUint32(val, IPv4SegmentCount)
+	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
+}
