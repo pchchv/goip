@@ -551,6 +551,35 @@ func (addr *IPv4Address) SetPrefixLenZeroed(prefixLen BitCount) (*IPv4Address, a
 	return res.ToIPv4(), err
 }
 
+// AssignMinPrefixForBlock returns an equivalent subnet,
+// assigned the smallest prefix length possible,
+// such that the prefix block for that prefix length is in this subnet.
+//
+// In other words, this method assigns a prefix length to
+// this subnet matching the largest prefix block in this subnet.
+//
+// Examples:
+//   - 1.2.3.4 returns 1.2.3.4/32
+//   - 1.2.*.* returns 1.2.0.0/16
+//   - 1.2.*.0/24 returns 1.2.0.0/16
+//   - 1.2.*.4 returns 1.2.*.4/32
+//   - 1.2.0-1.* returns 1.2.0.0/23
+//   - 1.2.1-2.* returns 1.2.1-2.0/24
+//   - 1.2.252-255.* returns 1.2.252.0/22
+//   - 1.2.3.4/16 returns 1.2.3.4/32
+func (addr *IPv4Address) AssignMinPrefixForBlock() *IPv4Address {
+	return addr.init().assignMinPrefixForBlock().ToIPv4()
+}
+
+// ContainsPrefixBlock returns whether the range of this address or subnet contains the block of addresses for the given prefix length.
+//
+// Unlike ContainsSinglePrefixBlock, whether there are multiple prefix values in this item for the given prefix length makes no difference.
+//
+// Use GetMinPrefixLenForBlock to determine the smallest prefix length for which this method returns true.
+func (addr *IPv4Address) ContainsPrefixBlock(prefixLen BitCount) bool {
+	return addr.init().ipAddressInternal.ContainsPrefixBlock(prefixLen)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
