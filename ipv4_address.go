@@ -845,6 +845,22 @@ func (addr *IPv4Address) getIPv6Address(ipv6Segs []*AddressDivision) (*IPv6Addre
 	return newIPv6Address(sect), nil
 }
 
+// GetSegmentStrings returns a slice with the string for each segment being the string that is normalized with wildcards.
+func (addr *IPv4Address) GetSegmentStrings() []string {
+	if addr == nil {
+		return nil
+	}
+	return addr.init().getSegmentStrings()
+}
+
+func (addr *IPv4Address) toMaxLower() *IPv4Address {
+	return addr.init().addressInternal.toMaxLower().ToIPv4()
+}
+
+func (addr *IPv4Address) toMinUpper() *IPv4Address {
+	return addr.init().addressInternal.toMinUpper().ToIPv4()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
