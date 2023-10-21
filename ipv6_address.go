@@ -795,3 +795,21 @@ func NewIPv6AddressFromPrefixedRange(vals, upperVals IPv6SegmentValueProvider, p
 	section := NewIPv6SectionFromPrefixedRange(vals, upperVals, IPv6SegmentCount, prefixLength)
 	return newIPv6Address(section)
 }
+
+// NewIPv6AddressFromZonedRange constructs an IPv6 subnet from the given values and zone.
+func NewIPv6AddressFromZonedRange(vals, upperVals IPv6SegmentValueProvider, zone string) *IPv6Address {
+	section := NewIPv6SectionFromRange(vals, upperVals, IPv6SegmentCount)
+	return newIPv6AddressZoned(section, zone)
+}
+
+// NewIPv6AddressFromPrefixedZonedRange constructs an IPv6 subnet from the given values, prefix length, and zone.
+// If the address has a zero host for the given prefix length, the returned address will be the prefix block.
+func NewIPv6AddressFromPrefixedZonedRange(vals, upperVals IPv6SegmentValueProvider, prefixLength PrefixLen, zone string) *IPv6Address {
+	section := NewIPv6SectionFromPrefixedRange(vals, upperVals, IPv6SegmentCount, prefixLength)
+	return newIPv6AddressZoned(section, zone)
+}
+
+func newIPv6AddressFromPrefixedSingle(vals, upperVals IPv6SegmentValueProvider, prefixLength PrefixLen, zone string) *IPv6Address {
+	section := newIPv6SectionFromPrefixedSingle(vals, upperVals, IPv6SegmentCount, prefixLength, true)
+	return newIPv6AddressZoned(section, zone)
+}
