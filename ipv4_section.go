@@ -509,6 +509,19 @@ func (section *IPv4AddressSection) Equal(other AddressSectionType) bool {
 	return section.equal(other)
 }
 
+// GetTrailingSection gets the subsection from the series starting from the given index.
+// The first segment is at index 0.
+func (section *IPv4AddressSection) GetTrailingSection(index int) *IPv4AddressSection {
+	return section.GetSubSection(index, section.GetSegmentCount())
+}
+
+// GetSubSection gets the subsection from the series starting from
+// the given index and ending just before the give endIndex.
+// The first segment is at index 0.
+func (section *IPv4AddressSection) GetSubSection(index, endIndex int) *IPv4AddressSection {
+	return section.getSubSection(index, endIndex).ToIPv4()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
