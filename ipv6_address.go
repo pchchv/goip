@@ -756,3 +756,16 @@ func NewIPv6AddressFromPrefixedUint64(highBytes, lowBytes uint64, prefixLength P
 	section := NewIPv6SectionFromPrefixedUint64(highBytes, lowBytes, IPv6SegmentCount, prefixLength)
 	return newIPv6Address(section)
 }
+
+// NewIPv6AddressFromZonedUint64 constructs an IPv6 address from the given values and zone.
+func NewIPv6AddressFromZonedUint64(highBytes, lowBytes uint64, zone string) *IPv6Address {
+	section := NewIPv6SectionFromUint64(highBytes, lowBytes, IPv6SegmentCount)
+	return newIPv6AddressZoned(section, zone)
+}
+
+// NewIPv6AddressFromPrefixedZonedUint64 constructs an IPv6 address or prefix block from the given values, prefix length, and zone
+// If the address has a zero host for the given prefix length, the returned address will be the prefix block.
+func NewIPv6AddressFromPrefixedZonedUint64(highBytes, lowBytes uint64, prefixLength PrefixLen, zone string) *IPv6Address {
+	section := NewIPv6SectionFromPrefixedUint64(highBytes, lowBytes, IPv6SegmentCount, prefixLength)
+	return newIPv6AddressZoned(section, zone)
+}
