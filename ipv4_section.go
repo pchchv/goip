@@ -565,6 +565,24 @@ func (section *IPv4AddressSection) AssignMinPrefixForBlock() *IPv4AddressSection
 	return section.assignMinPrefixForBlock().ToIPv4()
 }
 
+// Iterator provides an iterator to iterate through the individual address sections of this address section.
+//
+// When iterating, the prefix length is preserved.  Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual address sections.
+//
+// Call IsMultiple to determine if this instance represents multiple address sections, or GetCount for the count.
+func (section *IPv4AddressSection) Iterator() Iterator[*IPv4AddressSection] {
+	if section == nil {
+		return ipv4SectionIterator{nilSectIterator()}
+	}
+	return ipv4SectionIterator{section.sectionIterator(nil)}
+}
+
+// BlockIterator Iterates through the address sections that can be obtained by iterating through all the upper segments up to the given segment count.
+// The segments following remain the same in all iterated sections.
+func (section *IPv4AddressSection) BlockIterator(segmentCount int) Iterator[*IPv4AddressSection] {
+	return ipv4SectionIterator{section.blockIterator(segmentCount)}
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
