@@ -799,6 +799,24 @@ func (addr *IPv4Address) GetSequentialBlockCount() *big.Int {
 	return addr.getSequentialBlockCount()
 }
 
+// GetLeadingBitCount returns the number of consecutive leading one or zero bits.
+// If ones is true, returns the number of consecutive leading one bits.
+// Otherwise, returns the number of consecutive leading zero bits.
+//
+// This method applies to the lower value of the range if this is a subnet representing multiple values.
+func (addr *IPv4Address) GetLeadingBitCount(ones bool) BitCount {
+	return addr.init().getLeadingBitCount(ones)
+}
+
+// GetTrailingBitCount returns the number of consecutive trailing one or zero bits.
+// If ones is true, returns the number of consecutive trailing zero bits.
+// Otherwise, returns the number of consecutive trailing one bits.
+//
+// This method applies to the lower value of the range if this is a subnet representing multiple values.
+func (addr *IPv4Address) GetTrailingBitCount(ones bool) BitCount {
+	return addr.init().getTrailingBitCount(ones)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
