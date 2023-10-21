@@ -861,6 +861,20 @@ func (addr *IPv4Address) toMinUpper() *IPv4Address {
 	return addr.init().addressInternal.toMinUpper().ToIPv4()
 }
 
+// GetNetIPAddr returns the lowest address in this subnet or address as a net.IPAddr.
+func (addr *IPv4Address) GetNetIPAddr() *net.IPAddr {
+	return &net.IPAddr{
+		IP: addr.GetNetIP(),
+	}
+}
+
+// GetUpperNetIPAddr returns the highest address in this subnet or address as a net.IPAddr.
+func (addr *IPv4Address) GetUpperNetIPAddr() *net.IPAddr {
+	return &net.IPAddr{
+		IP: addr.GetUpperNetIP(),
+	}
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
