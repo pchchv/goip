@@ -720,3 +720,26 @@ func NewIPv6AddressFromPrefixedInt(val *big.Int, prefixLength PrefixLen) (addr *
 	}
 	return
 }
+
+// NewIPv6AddressFromZonedInt constructs an IPv6 address from the given value and zone.
+// An error is returned when the values is negative or too large.
+func NewIPv6AddressFromZonedInt(val *big.Int, zone string) (addr *IPv6Address, err address_error.AddressValueError) {
+	addr, err = NewIPv6AddressFromInt(val)
+	if err == nil {
+		addr.zone = Zone(zone)
+		assignIPv6Cache(addr.zone, addr.cache)
+	}
+	return
+}
+
+// NewIPv6AddressFromPrefixedZonedInt constructs an IPv6 address from the given value, prefix length, and zone.
+// An error is returned when the values is negative or too large.
+// If the address has a zero host for the given prefix length, the returned address will be the prefix block.
+func NewIPv6AddressFromPrefixedZonedInt(val *big.Int, prefixLength PrefixLen, zone string) (addr *IPv6Address, err address_error.AddressValueError) {
+	addr, err = NewIPv6AddressFromPrefixedInt(val, prefixLength)
+	if err == nil {
+		addr.zone = Zone(zone)
+		assignIPv6Cache(addr.zone, addr.cache)
+	}
+	return
+}
