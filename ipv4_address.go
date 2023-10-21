@@ -817,6 +817,34 @@ func (addr *IPv4Address) GetTrailingBitCount(ones bool) BitCount {
 	return addr.init().getTrailingBitCount(ones)
 }
 
+// GetIPv4MappedAddress returns the IPv4-mapped IPv6 address corresponding to this IPv4 address.
+// The IPv4-mapped IPv6 address is all zeros in the first 12 bytes, with the last 4 bytes matching the bytes of this IPv4 address.
+// See rfc 5156 for details.
+// If this is a subnet with segment ranges which cannot be converted to two IPv6 segment ranges, than an error is returned.
+func (addr *IPv4Address) GetIPv4MappedAddress() (*IPv6Address, address_error.IncompatibleAddressError) {
+	var sect *IPv6AddressSection
+	zero := zeroIPv6Seg.ToDiv()
+	segs := createSegmentArray(IPv6SegmentCount)
+	segs[0], segs[1], segs[2], segs[3], segs[4] = zero, zero, zero, zero, zero
+	segs[5] = NewIPv6Segment(IPv6MaxValuePerSegment).ToDiv()
+	sect, err := createMixedSection(segs, addr.WithoutPrefixLen())
+	if err != nil {
+		return nil, err
+	}
+	return newIPv6Address(sect), nil
+}
+
+// returns an error if the first or 3rd segments have a range of values that cannot be combined with their neighbouting segments into IPv6 segments
+func (addr *IPv4Address) getIPv6Address(ipv6Segs []*AddressDivision) (*IPv6Address, address_error.IncompatibleAddressError) {
+	newSegs := createSegmentArray(IPv6SegmentCount)
+	copy(newSegs, ipv6Segs)
+	sect, err := createMixedSection(newSegs, addr)
+	if err != nil {
+		return nil, err
+	}
+	return newIPv6Address(sect), nil
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
