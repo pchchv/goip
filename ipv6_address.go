@@ -699,3 +699,24 @@ func NewIPv6AddressFromPrefixedZonedBytes(bytes []byte, prefixLength PrefixLen, 
 	}
 	return
 }
+
+// NewIPv6AddressFromInt constructs an IPv6 address from the given value.
+// An error is returned when the values is negative or too large.
+func NewIPv6AddressFromInt(val *big.Int) (addr *IPv6Address, err address_error.AddressValueError) {
+	section, err := NewIPv6SectionFromBigInt(val, IPv6SegmentCount)
+	if err == nil {
+		addr = newIPv6Address(section)
+	}
+	return
+}
+
+// NewIPv6AddressFromPrefixedInt constructs an IPv6 address from the given value and prefix length.
+// An error is returned when the values is negative or too large.
+// If the address has a zero host for the given prefix length, the returned address will be the prefix block.
+func NewIPv6AddressFromPrefixedInt(val *big.Int, prefixLength PrefixLen) (addr *IPv6Address, err address_error.AddressValueError) {
+	section, err := NewIPv6SectionFromPrefixedBigInt(val, IPv6SegmentCount, prefixLength)
+	if err == nil {
+		addr = newIPv6Address(section)
+	}
+	return
+}
