@@ -522,6 +522,25 @@ func (section *IPv4AddressSection) GetSubSection(index, endIndex int) *IPv4Addre
 	return section.getSubSection(index, endIndex).ToIPv4()
 }
 
+func (section *IPv4AddressSection) bitwiseOrPrefixed(other *IPv4AddressSection, retainPrefix bool) (res *IPv4AddressSection, err address_error.IncompatibleAddressError) {
+	sec, err := section.bitwiseOr(other.ToIP(), retainPrefix)
+	if err == nil {
+		res = sec.ToIPv4()
+	}
+	return
+}
+
+// BitwiseOr does the bitwise disjunction with this address section, useful when subnetting.
+// It is similar to Mask which does the bitwise conjunction.
+//
+// The operation is applied to all individual addresses and the result is returned.
+//
+// If this represents multiple address sections, and applying the operation to all sections creates a set of sections
+// that cannot be represented as a sequential range within each segment, then an error is returned.
+func (section *IPv4AddressSection) BitwiseOr(other *IPv4AddressSection) (res *IPv4AddressSection, err address_error.IncompatibleAddressError) {
+	return section.bitwiseOrPrefixed(other, true)
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
