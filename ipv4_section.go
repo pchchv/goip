@@ -609,6 +609,16 @@ func (section *IPv4AddressSection) ReverseSegments() *IPv4AddressSection {
 	return res.ToIPv4()
 }
 
+// ReverseBytes returns a new section with the bytes reversed.  Any prefix length is dropped.
+func (section *IPv4AddressSection) ReverseBytes() *IPv4AddressSection {
+	return section.ReverseSegments()
+}
+
+// Insert creates a new section by inserting the given section into this section at the given index.
+func (section *IPv4AddressSection) Insert(index int, other *IPv4AddressSection) *IPv4AddressSection {
+	return section.insert(index, other.ToIP(), ipv4BitsToSegmentBitshift).ToIPv4()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
