@@ -630,6 +630,43 @@ func (section *IPv4AddressSection) ReplaceLen(startIndex, endIndex int, replacem
 	return section.replaceLen(startIndex, endIndex, replacement.ToIP(), replacementStartIndex, replacementEndIndex, ipv4BitsToSegmentBitshift).ToIPv4()
 }
 
+// Append creates a new section by appending the given section to this section.
+func (section *IPv4AddressSection) Append(other *IPv4AddressSection) *IPv4AddressSection {
+	count := section.GetSegmentCount()
+	return section.ReplaceLen(count, count, other, 0, other.GetSegmentCount())
+}
+
+func (section *IPv4AddressSection) joinSegments(joinCount int) (*AddressDivision, address_error.IncompatibleAddressError) {
+	var prefix PrefixLen
+	var lower, upper DivInt
+	var networkPrefixLength BitCount
+	var firstRange *IPv4AddressSegment
+	bitsPerSeg := section.GetBitsPerSegment()
+	firstJoinedIndex := section.GetSegmentCount() - 1 - joinCount
+
+	for j := 0; j <= joinCount; j++ {
+		thisSeg := section.GetSegment(firstJoinedIndex + j)
+		if firstRange != nil {
+			if !thisSeg.IsFullRange() {
+				return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.invalidMixedRange"}}
+			}
+		} else if thisSeg.isMultiple() {
+			firstRange = thisSeg
+		}
+		lower = (lower << uint(bitsPerSeg)) | DivInt(thisSeg.getSegmentValue())
+		upper = (upper << uint(bitsPerSeg)) | DivInt(thisSeg.getUpperSegmentValue())
+		if prefix == nil {
+			thisSegPrefix := thisSeg.getDivisionPrefixLength()
+			if thisSegPrefix != nil {
+				prefix = cacheBitCount(networkPrefixLength + thisSegPrefix.bitCount())
+			} else {
+				networkPrefixLength += thisSeg.getBitCount()
+			}
+		}
+	}
+	return newRangePrefixDivision(lower, upper, prefix, (BitCount(joinCount)+1)<<3), nil
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
