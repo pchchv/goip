@@ -674,3 +674,28 @@ func NewIPv6AddressFromPrefixedZonedSegs(segments []*IPv6AddressSegment, prefixL
 	section := NewIPv6PrefixedSection(segments, prefixLength)
 	return NewIPv6AddressZoned(section, zone)
 }
+
+// NewIPv6AddressFromPrefixedBytes constructs an IPv6 address from the given byte slice and prefix length.
+// An error is returned when the byte slice has too many bytes to match the IPv6 segment count of 8.
+// There should be 16 bytes or less, although extra leading zeros are tolerated.
+// If the address has a zero host for the given prefix length, the returned address will be the prefix block.
+func NewIPv6AddressFromPrefixedBytes(bytes []byte, prefixLength PrefixLen) (addr *IPv6Address, err address_error.AddressValueError) {
+	section, err := NewIPv6SectionFromPrefixedBytes(bytes, IPv6SegmentCount, prefixLength)
+	if err == nil {
+		addr = newIPv6Address(section)
+	}
+	return
+}
+
+// NewIPv6AddressFromPrefixedZonedBytes constructs an IPv6 address from the given byte slice, prefix length, and zone.
+// An error is returned when the byte slice has too many bytes to match the IPv6 segment count of 8.
+// There should be 16 bytes or less, although extra leading zeros are tolerated.
+// If the address has a zero host for the given prefix length, the returned address will be the prefix block.
+func NewIPv6AddressFromPrefixedZonedBytes(bytes []byte, prefixLength PrefixLen, zone string) (addr *IPv6Address, err address_error.AddressValueError) {
+	addr, err = NewIPv6AddressFromPrefixedBytes(bytes, prefixLength)
+	if err == nil {
+		addr.zone = Zone(zone)
+		assignIPv6Cache(addr.zone, addr.cache)
+	}
+	return
+}
