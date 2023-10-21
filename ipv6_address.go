@@ -644,3 +644,33 @@ func NewIPv6AddressFromZonedSegs(segments []*IPv6AddressSegment, zone string) (a
 	section := NewIPv6Section(segments)
 	return NewIPv6AddressZoned(section, zone)
 }
+
+// NewIPv6AddressFromPrefixedSegs constructs an IPv6 address or subnet from the given segments and prefix length.
+// If the given slice does not have 8 segments, an error is returned.
+// If the address has a zero host for its prefix length, the returned address will be the prefix block.
+func NewIPv6AddressFromPrefixedSegs(segments []*IPv6AddressSegment, prefixLength PrefixLen) (addr *IPv6Address, err address_error.AddressValueError) {
+	segCount := len(segments)
+	if segCount != IPv6SegmentCount {
+		return nil, &addressValueError{
+			addressError: addressError{key: "ipaddress.error.invalid.size"},
+			val:          segCount,
+		}
+	}
+	section := NewIPv6PrefixedSection(segments, prefixLength)
+	return NewIPv6Address(section)
+}
+
+// NewIPv6AddressFromPrefixedZonedSegs constructs an IPv6 address or subnet from the given segments, prefix length, and zone.
+// If the given slice does not have 8 segments, an error is returned.
+// If the address has a zero host for its prefix length, the returned address will be the prefix block.
+func NewIPv6AddressFromPrefixedZonedSegs(segments []*IPv6AddressSegment, prefixLength PrefixLen, zone string) (addr *IPv6Address, err address_error.AddressValueError) {
+	segCount := len(segments)
+	if segCount != IPv6SegmentCount {
+		return nil, &addressValueError{
+			addressError: addressError{key: "ipaddress.error.invalid.size"},
+			val:          segCount,
+		}
+	}
+	section := NewIPv6PrefixedSection(segments, prefixLength)
+	return NewIPv6AddressZoned(section, zone)
+}
