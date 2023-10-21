@@ -784,6 +784,21 @@ func (addr *IPv4Address) SequentialBlockIterator() Iterator[*IPv4Address] {
 	return ipv4AddressIterator{addr.init().sequentialBlockIterator()}
 }
 
+// GetSequentialBlockIndex gets the minimal segment index for which all following segments are full-range blocks.
+//
+// The segment at this index is not a full-range block itself, unless all segments are full-range.
+// The segment at this index and all following segments form a sequential range.
+// For the full subnet to be sequential, the preceding segments must be single-valued.
+func (addr *IPv4Address) GetSequentialBlockIndex() int {
+	return addr.init().getSequentialBlockIndex()
+}
+
+// GetSequentialBlockCount provides the count of elements from the sequential block iterator,
+// the minimal number of sequential subnets that comprise this subnet.
+func (addr *IPv4Address) GetSequentialBlockCount() *big.Int {
+	return addr.getSequentialBlockCount()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
