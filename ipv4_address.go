@@ -947,3 +947,29 @@ func newIPv4AddressFromPrefixedSingle(vals, upperVals IPv4SegmentValueProvider, 
 	section := newIPv4SectionFromPrefixedSingle(vals, upperVals, IPv4SegmentCount, prefixLength, true)
 	return newIPv4Address(section)
 }
+
+func createMixedSection(newIPv6Divisions []*AddressDivision, mixedSection *IPv4Address) (res *IPv6AddressSection, err address_error.IncompatibleAddressError) {
+	var seg *IPv6AddressSegment
+	ipv4Section := mixedSection.GetSection().WithoutPrefixLen()
+	if seg, err = ipv4Section.GetSegment(0).Join(ipv4Section.GetSegment(1)); err == nil {
+		newIPv6Divisions[6] = seg.ToDiv()
+		if seg, err = ipv4Section.GetSegment(2).Join(ipv4Section.GetSegment(3)); err == nil {
+			newIPv6Divisions[7] = seg.ToDiv()
+			res = newIPv6SectionFromMixed(newIPv6Divisions)
+			if res.cache != nil {
+				nonMixedSection := res.createNonMixedSection()
+				mixedGrouping := newIPv6v4MixedGrouping(
+					nonMixedSection,
+					ipv4Section,
+				)
+				mixed := &mixedCache{
+					defaultMixedAddressSection: mixedGrouping,
+					embeddedIPv6Section:        nonMixedSection,
+					embeddedIPv4Section:        ipv4Section,
+				}
+				res.cache.mixed = mixed
+			}
+		}
+	}
+	return
+}
