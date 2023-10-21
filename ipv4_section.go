@@ -727,3 +727,7 @@ func NewIPv4SectionFromRange(vals, upperVals IPv4SegmentValueProvider, segmentCo
 	res = NewIPv4SectionFromPrefixedRange(vals, upperVals, segmentCount, nil)
 	return
 }
+
+func getIPv4MaxValueLong(segmentCount int) uint64 {
+	return macMaxValues[segmentCount]
+}
