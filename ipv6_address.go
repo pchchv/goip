@@ -567,6 +567,18 @@ func (addr *IPv6Address) GetHostSectionLen(prefLen BitCount) *IPv6AddressSection
 	return addr.GetSection().GetHostSectionLen(prefLen)
 }
 
+// GetHostMask returns the host mask associated with the CIDR network prefix length of this address or subnet.
+// If this address or subnet has no prefix length, then the all-ones mask is returned.
+func (addr *IPv6Address) GetHostMask() *IPv6Address {
+	return addr.getHostMask(ipv6Network).ToIPv6()
+}
+
+// CopySubSegments copies the existing segments from the given start index until but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (addr *IPv6Address) CopySubSegments(start, end int, segs []*IPv6AddressSegment) (count int) {
+	return addr.GetSection().CopySubSegments(start, end, segs)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
