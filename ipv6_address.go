@@ -776,6 +776,21 @@ func (addr *IPv6Address) IncludesZeroHostLen(networkPrefixLength BitCount) bool 
 	return addr.init().includesZeroHostLen(networkPrefixLength)
 }
 
+// IncludesMaxHostLen returns whether the subnet contains an individual address with a host of all one-bits,
+// an individual address for which all bits past the given prefix length are all ones.
+func (addr *IPv6Address) IncludesMaxHostLen(networkPrefixLength BitCount) bool {
+	return addr.init().includesMaxHostLen(networkPrefixLength)
+}
+
+// IsLinkLocal returns whether the address is link local,
+// whether unicast or multicast.
+func (addr *IPv6Address) IsLinkLocal() bool {
+	firstSeg := addr.GetSegment(0)
+	return (addr.IsMulticast() && firstSeg.matchesWithMask(2, 0xf)) || // ffx2::/16
+		// 1111 1110 10 .... fe8x currently only in use
+		firstSeg.MatchesWithPrefixMask(0xfe80, 10)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
