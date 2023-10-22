@@ -635,6 +635,23 @@ func (addr *IPv6Address) SetPrefixLenZeroed(prefixLen BitCount) (*IPv6Address, a
 	return res.ToIPv6(), err
 }
 
+// AssignMinPrefixForBlock returns an equivalent subnet, assigned the smallest prefix length possible,
+// such that the prefix block for that prefix length is in this subnet.
+//
+// In other words, this method assigns a prefix length to this subnet matching the largest prefix block in this subnet.
+func (addr *IPv6Address) AssignMinPrefixForBlock() *IPv6Address {
+	return addr.init().assignMinPrefixForBlock().ToIPv6()
+}
+
+// ContainsPrefixBlock returns whether the range of this address or subnet contains the block of addresses for the given prefix length.
+//
+// Unlike ContainsSinglePrefixBlock, whether there are multiple prefix values in this item for the given prefix length makes no difference.
+//
+// Use GetMinPrefixLenForBlock to determine the smallest prefix length for which this method returns true.
+func (addr *IPv6Address) ContainsPrefixBlock(prefixLen BitCount) bool {
+	return addr.init().ipAddressInternal.ContainsPrefixBlock(prefixLen)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
