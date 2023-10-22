@@ -700,6 +700,24 @@ func (addr *IPv6Address) GetUpperNetNetIPAddr() netip.Addr {
 	return addr.init().getUpperNetNetIPAddr()
 }
 
+// CopyNetIP copies the value of the lowest individual address in the subnet into a net.IP.
+//
+// If the value can fit in the given net.IP slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (addr *IPv6Address) CopyNetIP(bytes net.IP) net.IP {
+	return addr.CopyBytes(bytes)
+}
+
+// CopyUpperNetIP copies the value of the highest individual address in the subnet into a net.IP.
+//
+// If the value can fit in the given net.IP slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (addr *IPv6Address) CopyUpperNetIP(bytes net.IP) net.IP {
+	return addr.CopyUpperBytes(bytes)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
