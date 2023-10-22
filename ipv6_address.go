@@ -864,6 +864,24 @@ func (addr *IPv6Address) IsLoopback() bool {
 	return addr.GetSegment(i).Matches(1)
 }
 
+// Iterator provides an iterator to iterate through the individual addresses of this address or subnet.
+//
+// When iterating, the prefix length is preserved.  Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual addresses.
+//
+// Call IsMultiple to determine if this instance represents multiple addresses, or GetCount for the count.
+func (addr *IPv6Address) Iterator() Iterator[*IPv6Address] {
+	if addr == nil {
+		return ipv6AddressIterator{nilAddrIterator()}
+	}
+	return ipv6AddressIterator{addr.init().addrIterator(nil)}
+}
+
+// BlockIterator iterates through the addresses that can be obtained by iterating through all the upper segments up to the given segment count.
+// The segments following remain the same in all iterated addresses.
+func (addr *IPv6Address) BlockIterator(segmentCount int) Iterator[*IPv6Address] {
+	return ipv6AddressIterator{addr.init().blockIterator(segmentCount)}
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
