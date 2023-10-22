@@ -663,6 +663,28 @@ func (addr *IPv6Address) UpperUint64Values() (high, low uint64) {
 	return addr.GetSection().UpperUint64Values()
 }
 
+// GetMinPrefixLenForBlock returns the smallest prefix length such that this includes the block of addresses for that prefix length.
+//
+// If the entire range can be described this way, then this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// There may be a single prefix, or multiple possible prefix values in this item for the returned prefix length.
+// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values.
+//
+// If this represents just a single address, returns the bit length of this address.
+func (addr *IPv6Address) GetMinPrefixLenForBlock() BitCount {
+	return addr.init().ipAddressInternal.GetMinPrefixLenForBlock()
+}
+
+// GetNetIP returns the lowest address in this subnet or address as a net.IP.
+func (addr *IPv6Address) GetNetIP() net.IP {
+	return addr.Bytes()
+}
+
+// GetUpperNetIP returns the highest address in this subnet or address as a net.IP.
+func (addr *IPv6Address) GetUpperNetIP() net.IP {
+	return addr.UpperBytes()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
