@@ -610,6 +610,31 @@ func (addr *IPv6Address) IsMaxHostLen(prefLen BitCount) bool {
 	return addr.init().isMaxHostLen(prefLen)
 }
 
+// WithoutPrefixLen provides the same address but with no prefix length.
+// The values remain unchanged.
+func (addr *IPv6Address) WithoutPrefixLen() *IPv6Address {
+	if !addr.IsPrefixed() {
+		return addr
+	}
+	return addr.init().withoutPrefixLen().ToIPv6()
+}
+
+// SetPrefixLenZeroed sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the address.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+//
+// If this address has a prefix length, and the prefix length is increased when setting the new prefix length, the bits moved within the prefix become zero.
+// If this address has a prefix length, and the prefix length is decreased when setting the new prefix length, the bits moved outside the prefix become zero.
+//
+// In other words, bits that move from one side of the prefix length to the other (bits moved into the prefix or outside the prefix) are zeroed.
+//
+// If the result cannot be zeroed because zeroing out bits results in a non-contiguous segment, an error is returned.
+func (addr *IPv6Address) SetPrefixLenZeroed(prefixLen BitCount) (*IPv6Address, address_error.IncompatibleAddressError) {
+	res, err := addr.init().setPrefixLenZeroed(prefixLen)
+	return res.ToIPv6(), err
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
