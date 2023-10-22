@@ -764,6 +764,18 @@ func (addr *IPv6Address) Equal(other AddressType) bool {
 		addr.isSameZone(other.ToAddressBase())
 }
 
+// MatchesWithMask applies the mask to this address and then compares the result with the given address,
+// returning true if they match, false otherwise.
+func (addr *IPv6Address) MatchesWithMask(other *IPv6Address, mask *IPv6Address) bool {
+	return addr.init().GetSection().MatchesWithMask(other.GetSection(), mask.GetSection())
+}
+
+// IncludesZeroHostLen returns whether the subnet contains an individual address with a host of zero,
+// an individual address for which all bits past the given prefix length are zero.
+func (addr *IPv6Address) IncludesZeroHostLen(networkPrefixLength BitCount) bool {
+	return addr.init().includesZeroHostLen(networkPrefixLength)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
