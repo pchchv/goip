@@ -791,6 +791,57 @@ func (addr *IPv6Address) IsLinkLocal() bool {
 		firstSeg.MatchesWithPrefixMask(0xfe80, 10)
 }
 
+// IsSiteLocal returns true if the address is site-local,
+// or all addresses in the subnet are site-local,
+// see rfc 3513, 3879, and 4291.
+func (addr *IPv6Address) IsSiteLocal() bool {
+	firstSeg := addr.GetSegment(0)
+	return (addr.IsMulticast() && firstSeg.matchesWithMask(5, 0xf)) || // ffx5::/16
+		// 1111 1110 11 ...
+		firstSeg.MatchesWithPrefixMask(0xfec0, 10) // deprecated RFC 3879
+}
+
+// IsAnyLocal returns whether this address is
+// the address which binds to any address on the local host.
+// This is the address that has the value of 0, aka the unspecified address.
+func (addr *IPv6Address) IsAnyLocal() bool {
+	return addr.section == nil || addr.IsZero()
+}
+
+// IsLocal returns true if the address is link local,
+// site local, organization local, administered locally, or unspecified.
+// This includes both unicast and multicast.
+func (addr *IPv6Address) IsLocal() bool {
+	if addr.IsMulticast() {
+		/*
+				[RFC4291][RFC7346]
+				11111111|flgs|scop
+					scope 4 bits
+					 1  Interface-Local scope
+			         2  Link-Local scope
+			         3  Realm-Local scope
+			         4  Admin-Local scope
+			         5  Site-Local scope
+			         8  Organization-Local scope
+			         E  Global scope
+		*/
+		firstSeg := addr.GetSegment(0)
+		if firstSeg.matchesWithMask(8, 0xf) {
+			return true
+		}
+		if firstSeg.GetValueCount() <= 5 &&
+			(firstSeg.getSegmentValue()&0xf) >= 1 && (firstSeg.getUpperSegmentValue()&0xf) <= 5 {
+			// all values fall within the range from interface local to site local
+			return true
+		}
+		// FF3X::8000:0 - FF3X::FFFF:FFFF	Reserved for local host allocation	[RFC4607]
+		if firstSeg.MatchesWithPrefixMask(0xff30, 12) && addr.GetSegment(6).MatchesWithPrefixMask(0x8000, 1) {
+			return true
+		}
+	}
+	return addr.IsLinkLocal() || addr.IsSiteLocal() || addr.IsUniqueLocal() || addr.IsAnyLocal()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
