@@ -652,6 +652,17 @@ func (addr *IPv6Address) ContainsPrefixBlock(prefixLen BitCount) bool {
 	return addr.init().ipAddressInternal.ContainsPrefixBlock(prefixLen)
 }
 
+// Uint64Values returns the lowest address in the address range as a pair of uint64 values.
+func (addr *IPv6Address) Uint64Values() (high, low uint64) {
+	return addr.GetSection().Uint64Values()
+}
+
+// UpperUint64Values returns the highest address in
+// the address section range as a pair of uint64 values.
+func (addr *IPv6Address) UpperUint64Values() (high, low uint64) {
+	return addr.GetSection().UpperUint64Values()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
