@@ -579,6 +579,21 @@ func (addr *IPv6Address) CopySubSegments(start, end int, segs []*IPv6AddressSegm
 	return addr.GetSection().CopySubSegments(start, end, segs)
 }
 
+// GetSegmentCount returns the segment count,
+// the number of segments in this address, which is 8
+func (addr *IPv6Address) GetSegmentCount() int {
+	return addr.GetDivisionCount()
+}
+
+func (addr *IPv6Address) maskPrefixed(other *IPv6Address, retainPrefix bool) (masked *IPv6Address, err address_error.IncompatibleAddressError) {
+	addr = addr.init()
+	sect, err := addr.GetSection().maskPrefixed(other.GetSection(), retainPrefix)
+	if err == nil {
+		masked = addr.checkIdentity(sect)
+	}
+	return
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
