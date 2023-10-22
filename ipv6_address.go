@@ -842,6 +842,28 @@ func (addr *IPv6Address) IsLocal() bool {
 	return addr.IsLinkLocal() || addr.IsSiteLocal() || addr.IsUniqueLocal() || addr.IsAnyLocal()
 }
 
+// IsUnspecified returns whether this is the unspecified address.
+// The unspecified address is the address that is all zeros.
+func (addr *IPv6Address) IsUnspecified() bool {
+	return addr.section == nil || addr.IsZero()
+}
+
+// IsLoopback returns whether this address is a loopback address, namely "::1".
+func (addr *IPv6Address) IsLoopback() bool {
+	if addr.section == nil {
+		return false
+	}
+	//::1
+	i := 0
+	lim := addr.GetSegmentCount() - 1
+	for ; i < lim; i++ {
+		if !addr.GetSegment(i).IsZero() {
+			return false
+		}
+	}
+	return addr.GetSegment(i).Matches(1)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
