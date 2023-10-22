@@ -553,6 +553,20 @@ func (addr *IPv6Address) GetNetworkSectionLen(prefLen BitCount) *IPv6AddressSect
 	return addr.GetSection().GetNetworkSectionLen(prefLen)
 }
 
+// GetHostSection returns a section containing the segments with the host of the address or subnet, the bits beyond the CIDR network prefix length.
+// The returned section will have only as many segments as needed to contain the host.
+//
+// If this series has no prefix length, the returned host section will be the full section.
+func (addr *IPv6Address) GetHostSection() *IPv6AddressSection {
+	return addr.GetSection().GetHostSection()
+}
+
+// GetHostSectionLen returns a section containing the segments with the host of the address or subnet, the bits beyond the given CIDR network prefix length.
+// The returned section will have only as many segments as needed to contain the host.
+func (addr *IPv6Address) GetHostSectionLen(prefLen BitCount) *IPv6AddressSection {
+	return addr.GetSection().GetHostSectionLen(prefLen)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
