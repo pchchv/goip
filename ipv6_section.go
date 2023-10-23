@@ -733,6 +733,32 @@ func (section *IPv6AddressSection) BlockIterator(segmentCount int) Iterator[*IPv
 	return ipv6SectionIterator{section.blockIterator(segmentCount)}
 }
 
+// SequentialBlockIterator iterates through the sequential address sections that make up this address section.
+//
+// Practically, this means finding the count of segments for which the segments that follow are not full range,
+// and then using BlockIterator with that segment count.
+//
+// Use GetSequentialBlockCount to get the number of iterated elements.
+func (section *IPv6AddressSection) SequentialBlockIterator() Iterator[*IPv6AddressSection] {
+	return ipv6SectionIterator{section.sequentialBlockIterator()}
+}
+
+// ReverseSegments returns a new section with the segments reversed.
+func (section *IPv6AddressSection) ReverseSegments() *IPv6AddressSection {
+	if section.GetSegmentCount() <= 1 {
+		if section.IsPrefixed() {
+			return section.WithoutPrefixLen()
+		}
+		return section
+	}
+	res, _ := section.reverseSegments(
+		func(i int) (*AddressSegment, address_error.IncompatibleAddressError) {
+			return section.GetSegment(i).WithoutPrefixLen().ToSegmentBase(), nil
+		},
+	)
+	return res.ToIPv6()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
