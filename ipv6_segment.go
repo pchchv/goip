@@ -533,6 +533,27 @@ func (seg *IPv6AddressSegment) GetWildcardString() string {
 	return seg.init().getWildcardString()
 }
 
+// Iterator provides an iterator to iterate through the individual address segments of this address segment.
+//
+// When iterating, the prefix length is preserved.
+// Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual address segments.
+//
+// Call IsMultiple to determine if this instance represents multiple address segments, or GetValueCount for the count.
+func (seg *IPv6AddressSegment) Iterator() Iterator[*IPv6AddressSegment] {
+	if seg == nil {
+		return ipv6SegmentIterator{nilSegIterator()}
+	}
+	return ipv6SegmentIterator{seg.init().iterator()}
+}
+
+// PrefixBlockIterator provides an iterator to iterate through the individual prefix blocks, one for each prefix of this address segment.
+// Each iterated address segment will be a prefix block with the same prefix length as this address segment.
+//
+// If this address segment has no prefix length, then this is equivalent to Iterator.
+func (seg *IPv6AddressSegment) PrefixBlockIterator() Iterator[*IPv6AddressSegment] {
+	return ipv6SegmentIterator{seg.init().prefixBlockIterator()}
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
