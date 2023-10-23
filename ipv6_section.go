@@ -715,6 +715,24 @@ func (section *IPv6AddressSection) AssignMinPrefixForBlock() *IPv6AddressSection
 	return section.assignMinPrefixForBlock().ToIPv6()
 }
 
+// Iterator provides an iterator to iterate through the individual address sections of this address section.
+//
+// When iterating, the prefix length is preserved.  Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual address sections.
+//
+// Call IsMultiple to determine if this instance represents multiple address sections, or GetCount for the count.
+func (section *IPv6AddressSection) Iterator() Iterator[*IPv6AddressSection] {
+	if section == nil {
+		return ipv6SectionIterator{nilSectIterator()}
+	}
+	return ipv6SectionIterator{section.sectionIterator(nil)}
+}
+
+// BlockIterator Iterates through the address sections that can be obtained by iterating through all the upper segments up to the given segment count.
+// The segments following remain the same in all iterated sections.
+func (section *IPv6AddressSection) BlockIterator(segmentCount int) Iterator[*IPv6AddressSection] {
+	return ipv6SectionIterator{section.blockIterator(segmentCount)}
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
