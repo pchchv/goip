@@ -574,6 +574,73 @@ func (seg *IPv6AddressSegment) PrefixIterator() Iterator[*IPv6AddressSegment] {
 	return ipv6SegmentIterator{seg.init().prefixIterator()}
 }
 
+// ReverseBits returns a segment with reversed bits.
+//
+// If this segment represents a range of values that cannot be reversed, an error is returned.
+//
+// For a range to be reversible,
+// it must include all values except possibly the largest and/or smallest that are reversed into themselves.
+// Otherwise, the result is not contiguous and therefore cannot be represented by a sequential range of values.
+//
+// If perByte is true, bits are reversed within each byte, otherwise all bits are reversed.
+func (seg *IPv6AddressSegment) ReverseBits(perByte bool) (res *IPv6AddressSegment, err address_error.IncompatibleAddressError) {
+	if seg.divisionValues == nil {
+		res = seg
+		return
+	}
+
+	if seg.isMultiple() {
+		var addrSeg *AddressSegment
+		addrSeg, err = seg.reverseMultiValSeg(perByte)
+		res = addrSeg.ToIPv6()
+		return
+	}
+
+	oldVal := IPv6SegInt(seg.GetSegmentValue())
+	val := IPv6SegInt(reverseUint16(uint16(oldVal)))
+	if perByte {
+		val = ((val & 0xff) << 8) | (val >> 8)
+	}
+
+	if oldVal == val && !seg.isPrefixed() {
+		res = seg
+	} else {
+		res = NewIPv6Segment(val)
+	}
+
+	return
+}
+
+// ReverseBytes returns a segment with the bytes reversed.
+//
+// If this segment represents a range of values that cannot be reversed, then this returns an error.
+//
+// To be reversible, a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+// Otherwise the result is not contiguous and thus cannot be represented by a sequential range of values.
+func (seg *IPv6AddressSegment) ReverseBytes() (res *IPv6AddressSegment, err address_error.IncompatibleAddressError) {
+	if seg.divisionValues == nil {
+		res = seg
+		return
+	}
+
+	if seg.isMultiple() {
+		var addrSeg *AddressSegment
+		addrSeg, err = seg.reverseMultiValSeg(false)
+		res = addrSeg.ToIPv6()
+		return
+	}
+
+	oldVal := IPv6SegInt(seg.GetSegmentValue())
+	val := IPv6SegInt(reverseUint16(uint16(oldVal)))
+	if oldVal == val && !seg.isPrefixed() {
+		res = seg
+	} else {
+		res = NewIPv6Segment(val)
+	}
+
+	return
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
