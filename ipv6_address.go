@@ -882,6 +882,26 @@ func (addr *IPv6Address) BlockIterator(segmentCount int) Iterator[*IPv6Address] 
 	return ipv6AddressIterator{addr.init().blockIterator(segmentCount)}
 }
 
+// SequentialBlockIterator iterates through the sequential subnets or addresses that make up this address or subnet.
+//
+// Practically, this means finding the count of segments for which the segments that follow are not full range, and then using BlockIterator with that segment count.
+//
+// For instance, given the IPv4 subnet "1-2.3-4.5-6.7-8", it will iterate through "1.3.5.7-8", "1.3.6.7-8", "1.4.5.7-8", "1.4.6.7-8", "2.3.5.7-8", "2.3.6.7-8", "2.4.6.7-8" and "2.4.6.7-8".
+//
+// Use GetSequentialBlockCount to get the number of iterated elements.
+func (addr *IPv6Address) SequentialBlockIterator() Iterator[*IPv6Address] {
+	return ipv6AddressIterator{addr.init().sequentialBlockIterator()}
+}
+
+// GetSequentialBlockIndex gets the minimal segment index for which all following segments are full-range blocks.
+//
+// The segment at this index is not a full-range block itself, unless all segments are full-range.
+// The segment at this index and all following segments form a sequential range.
+// For the full subnet to be sequential, the preceding segments must be single-valued.
+func (addr *IPv6Address) GetSequentialBlockIndex() int {
+	return addr.init().getSequentialBlockIndex()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
