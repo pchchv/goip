@@ -902,6 +902,21 @@ func (addr *IPv6Address) GetSequentialBlockIndex() int {
 	return addr.init().getSequentialBlockIndex()
 }
 
+// GetSequentialBlockCount provides the count of elements from the sequential block iterator,
+// the minimal number of sequential subnets that comprise this subnet.
+func (addr *IPv6Address) GetSequentialBlockCount() *big.Int {
+	return addr.getSequentialBlockCount()
+}
+
+// GetLeadingBitCount returns the number of consecutive leading one or zero bits.
+// If ones is true, returns the number of consecutive leading one bits.
+// Otherwise, returns the number of consecutive leading zero bits.
+//
+// This method applies to the lower value of the range if this is a subnet representing multiple values.
+func (addr *IPv6Address) GetLeadingBitCount(ones bool) BitCount {
+	return addr.init().getLeadingBitCount(ones)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
