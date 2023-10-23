@@ -977,6 +977,28 @@ func (addr *IPv6Address) toEUISegments(extended bool) ([]*AddressDivision, addre
 	return newSegs, nil
 }
 
+// ToEUI converts to the associated MACAddress.
+// An error is returned if the 0xfffe pattern is missing in segments 5 and 6,
+// or if an IPv6 segment's range of values cannot be split into two ranges of values.
+func (addr *IPv6Address) ToEUI(extended bool) (*MACAddress, address_error.IncompatibleAddressError) {
+	segs, err := addr.toEUISegments(extended)
+	if err != nil {
+		return nil, err
+	}
+
+	sect := newMACSectionEUI(segs)
+	return newMACAddress(sect), nil
+}
+
+// GetTrailingBitCount returns the number of consecutive trailing one or zero bits.
+// If ones is true, returns the number of consecutive trailing zero bits.
+// Otherwise, returns the number of consecutive trailing one bits.
+//
+// This method applies to the lower value of the range if this is a subnet representing multiple values.
+func (addr *IPv6Address) GetTrailingBitCount(ones bool) BitCount {
+	return addr.init().getTrailingBitCount(ones)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
