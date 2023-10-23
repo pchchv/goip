@@ -770,6 +770,17 @@ func (section *IPv6AddressSection) Replace(index int, replacement *IPv6AddressSe
 	return section.ReplaceLen(index, index+replacement.GetSegmentCount(), replacement, 0, replacement.GetSegmentCount())
 }
 
+// Append creates a new section by appending the given section to this section.
+func (section *IPv6AddressSection) Append(other *IPv6AddressSection) *IPv6AddressSection {
+	count := section.GetSegmentCount()
+	return section.ReplaceLen(count, count, other, 0, other.GetSegmentCount())
+}
+
+// Insert creates a new section by inserting the given section into this section at the given index.
+func (section *IPv6AddressSection) Insert(index int, other *IPv6AddressSection) *IPv6AddressSection {
+	return section.insert(index, other.ToIP(), ipv6BitsToSegmentBitshift).ToIPv6()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
