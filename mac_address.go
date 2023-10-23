@@ -450,6 +450,23 @@ func (addr *MACAddress) SetPrefixLenZeroed(prefixLen BitCount) (*MACAddress, add
 	return res.ToMAC(), err
 }
 
+// AssignMinPrefixForBlock returns an equivalent subnet, assigned the smallest prefix length possible,
+// such that the prefix block for that prefix length is in this subnet.
+//
+// In other words, this method assigns a prefix length to this subnet matching the largest prefix block in this subnet.
+func (addr *MACAddress) AssignMinPrefixForBlock() *MACAddress {
+	return addr.init().assignMinPrefixForBlock().ToMAC()
+}
+
+// ContainsPrefixBlock returns whether the range of this address or address collection contains the block of addresses for the given prefix length.
+//
+// Unlike ContainsSinglePrefixBlock, whether there are multiple prefix values in this item for the given prefix length makes no difference.
+//
+// Use GetMinPrefixLenForBlock to determine the smallest prefix length for which this method returns true.
+func (addr *MACAddress) ContainsPrefixBlock(prefixLen BitCount) bool {
+	return addr.init().addressInternal.ContainsPrefixBlock(prefixLen)
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
