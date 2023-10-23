@@ -759,6 +759,17 @@ func (section *IPv6AddressSection) ReverseSegments() *IPv6AddressSection {
 	return res.ToIPv6()
 }
 
+// ReplaceLen replaces the segments starting from startIndex and ending before endIndex with the segments starting at replacementStartIndex and
+// ending before replacementEndIndex from the replacement section.
+func (section *IPv6AddressSection) ReplaceLen(startIndex, endIndex int, replacement *IPv6AddressSection, replacementStartIndex, replacementEndIndex int) *IPv6AddressSection {
+	return section.replaceLen(startIndex, endIndex, replacement.ToIP(), replacementStartIndex, replacementEndIndex, ipv6BitsToSegmentBitshift).ToIPv6()
+}
+
+// Replace replaces the segments of this section starting at the given index with the given replacement segments.
+func (section *IPv6AddressSection) Replace(index int, replacement *IPv6AddressSection) *IPv6AddressSection {
+	return section.ReplaceLen(index, index+replacement.GetSegmentCount(), replacement, 0, replacement.GetSegmentCount())
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
