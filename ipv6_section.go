@@ -781,6 +781,37 @@ func (section *IPv6AddressSection) Insert(index int, other *IPv6AddressSection) 
 	return section.insert(index, other.ToIP(), ipv6BitsToSegmentBitshift).ToIPv6()
 }
 
+func (section *IPv6AddressSection) createEmbeddedIPv4AddressSection() (sect *IPv4AddressSection, err address_error.IncompatibleAddressError) {
+	nonMixedCount := IPv6MixedOriginalSegmentCount
+	segCount := section.GetSegmentCount()
+	mixedCount := segCount - nonMixedCount
+	lastIndex := segCount - 1
+	var mixed []*AddressDivision
+	if mixedCount == 0 {
+		mixed = []*AddressDivision{}
+	} else if mixedCount == 1 {
+		mixed = make([]*AddressDivision, section.GetBytesPerSegment())
+		last := section.GetSegment(lastIndex)
+		if err := last.splitIntoIPv4Segments(mixed, 0); err != nil {
+			return nil, err
+		}
+	} else {
+		bytesPerSeg := section.GetBytesPerSegment()
+		mixed = make([]*AddressDivision, bytesPerSeg<<1)
+		low := section.GetSegment(lastIndex)
+		high := section.GetSegment(lastIndex - 1)
+		if err := high.splitIntoIPv4Segments(mixed, 0); err != nil {
+			return nil, err
+		}
+		if err := low.splitIntoIPv4Segments(mixed, bytesPerSeg); err != nil {
+			return nil, err
+		}
+	}
+	sect = createIPv4Section(mixed)
+	sect.initMultAndPrefLen()
+	return
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
