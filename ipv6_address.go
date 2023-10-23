@@ -1016,6 +1016,20 @@ func (addr *IPv6Address) toMinUpper() *IPv6Address {
 	return addr.init().addressInternal.toMinUpper().ToIPv6()
 }
 
+// GetIPv6Address creates an IPv6 mixed address using the given address for the trailing embedded IPv4 segments
+func (addr *IPv6Address) GetIPv6Address(embedded IPv4Address) (*IPv6Address, address_error.IncompatibleAddressError) {
+	return embedded.getIPv6Address(addr.WithoutPrefixLen().getDivisionsInternal())
+}
+
+// Mask applies the given mask to all addresses represented by this IPv6Address.
+// The mask is applied to all individual addresses.
+//
+// If this represents multiple addresses, and applying the mask to all addresses creates a set of addresses
+// that cannot be represented as a sequential range within each segment, then an error is returned.
+func (addr *IPv6Address) Mask(other *IPv6Address) (masked *IPv6Address, err address_error.IncompatibleAddressError) {
+	return addr.maskPrefixed(other, true)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
