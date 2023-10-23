@@ -502,3 +502,19 @@ func NewMACAddressFromBytes(bytes net.HardwareAddr) (*MACAddress, address_error.
 	}
 	return createAddress(section.ToSectionBase(), NoZone).ToMAC(), nil
 }
+
+// NewMACAddressFromUint64Ext constructs a 6 or 8-byte MAC address from the given value.
+// If isExtended is true, it is an 8-byte address, 6 otherwise.
+// If 6 bytes, then the bytes are taken from the lower 48 bits of the uint64.
+func NewMACAddressFromUint64Ext(val uint64, isExtended bool) *MACAddress {
+	section := NewMACSectionFromUint64(val, getMacSegCount(isExtended))
+	return createAddress(section.ToSectionBase(), NoZone).ToMAC()
+}
+
+// NewMACAddressFromValsExt constructs a 6 or 8-byte MAC address from the given values.
+// If isExtended is true, it will be 8 bytes.
+func NewMACAddressFromValsExt(vals MACSegmentValueProvider, isExtended bool) (addr *MACAddress) {
+	section := NewMACSectionFromVals(vals, getMacSegCount(isExtended))
+	addr = newMACAddress(section)
+	return
+}
