@@ -518,3 +518,11 @@ func NewMACAddressFromValsExt(vals MACSegmentValueProvider, isExtended bool) (ad
 	addr = newMACAddress(section)
 	return
 }
+
+// NewMACAddressFromRangeExt constructs a 6 or 8-byte MAC address collection from the given values.
+// If isExtended is true, it will be 8 bytes.
+func NewMACAddressFromRangeExt(vals, upperVals MACSegmentValueProvider, isExtended bool) (addr *MACAddress) {
+	section := NewMACSectionFromRange(vals, upperVals, getMacSegCount(isExtended))
+	addr = newMACAddress(section)
+	return
+}
