@@ -403,6 +403,16 @@ func (addr *MACAddress) Wrap() WrappedAddress {
 	return wrapAddress(addr.ToAddressBase())
 }
 
+// Uint64Value returns the lowest address in the address collection as a uint64.
+func (addr *MACAddress) Uint64Value() uint64 {
+	return addr.GetSection().Uint64Value()
+}
+
+// UpperUint64Value returns the highest address in the address collection as a uint64.
+func (addr *MACAddress) UpperUint64Value() uint64 {
+	return addr.GetSection().UpperUint64Value()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
