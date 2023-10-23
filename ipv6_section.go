@@ -660,6 +660,18 @@ func (section *IPv6AddressSection) Equal(other AddressSectionType) bool {
 	return section.equal(other)
 }
 
+// GetTrailingSection gets the subsection from the series starting from the given index.
+// The first segment is at index 0.
+func (section *IPv6AddressSection) GetTrailingSection(index int) *IPv6AddressSection {
+	return section.GetSubSection(index, section.GetSegmentCount())
+}
+
+// GetSubSection gets the subsection from the series starting from the given index and ending just before the give endIndex.
+// The first segment is at index 0.
+func (section *IPv6AddressSection) GetSubSection(index, endIndex int) *IPv6AddressSection {
+	return section.getSubSection(index, endIndex).ToIPv6()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
