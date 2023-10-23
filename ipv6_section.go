@@ -859,6 +859,37 @@ func (section *IPv6AddressSection) getEmbeddedIPv4AddressSection() (*IPv4Address
 	return sect.GetIPv4AddressSection(), nil
 }
 
+// GetIPv4AddressSection produces an IPv4 address section from a sequence of bytes in this IPv6 address section.
+func (section *IPv6AddressSection) GetIPv4AddressSection(startByteIndex, endByteIndex int) (*IPv4AddressSection, address_error.IncompatibleAddressError) {
+	if startByteIndex == IPv6MixedOriginalSegmentCount<<1 && endByteIndex == (section.GetSegmentCount()<<1) {
+		return section.getEmbeddedIPv4AddressSection()
+	}
+
+	segments := make([]*AddressDivision, endByteIndex-startByteIndex)
+	i := startByteIndex
+	j := 0
+	bytesPerSegment := section.GetBytesPerSegment()
+	if i%bytesPerSegment == 1 {
+		ipv6Segment := section.GetSegment(i >> 1)
+		i++
+		if err := ipv6Segment.splitIntoIPv4Segments(segments, j-1); err != nil {
+			return nil, err
+		}
+		j++
+	}
+
+	for ; i < endByteIndex; i, j = i+bytesPerSegment, j+bytesPerSegment {
+		ipv6Segment := section.GetSegment(i >> 1)
+		if err := ipv6Segment.splitIntoIPv4Segments(segments, j); err != nil {
+			return nil, err
+		}
+	}
+
+	res := createIPv4Section(segments)
+	res.initMultAndPrefLen()
+	return res, nil
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
