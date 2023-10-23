@@ -999,6 +999,23 @@ func (addr *IPv6Address) GetTrailingBitCount(ones bool) BitCount {
 	return addr.init().getTrailingBitCount(ones)
 }
 
+// GetSegmentStrings returns a slice with the string for
+// each segment being the string that is normalized with wildcards.
+func (addr *IPv6Address) GetSegmentStrings() []string {
+	if addr == nil {
+		return nil
+	}
+	return addr.init().getSegmentStrings()
+}
+
+func (addr *IPv6Address) toMaxLower() *IPv6Address {
+	return addr.init().addressInternal.toMaxLower().ToIPv6()
+}
+
+func (addr *IPv6Address) toMinUpper() *IPv6Address {
+	return addr.init().addressInternal.toMinUpper().ToIPv6()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
