@@ -361,6 +361,54 @@ func (grouping *largeDivisionGroupingInternal) copyDivisions(divs []*IPAddressLa
 	return
 }
 
+// GetPrefixLenForSingleBlock returns a prefix length for which the range of
+// this division grouping matches the block of addresses for that prefix.
+//
+// If no such prefix exists, GetPrefixLenForSingleBlock returns nil.
+//
+// If this division grouping represents a single value, returns the bit length.
+func (grouping *largeDivisionGroupingInternal) GetPrefixLenForSingleBlock() PrefixLen {
+	calc := func() *PrefixLen {
+		count := grouping.GetDivisionCount()
+		var totalPrefix BitCount
+		for i := 0; i < count; i++ {
+			div := grouping.getDivision(i)
+			divPrefix := div.GetPrefixLenForSingleBlock()
+			if divPrefix == nil {
+				return cacheNilPrefix()
+			}
+			divPrefLen := divPrefix.bitCount()
+			totalPrefix += divPrefLen
+			if divPrefLen < div.GetBitCount() {
+				//remaining segments must be full range or we return nil
+				for i++; i < count; i++ {
+					laterDiv := grouping.getDivision(i)
+					if !laterDiv.IsFullRange() {
+						return cacheNilPrefix()
+					}
+				}
+			}
+		}
+		return cachePrefix(totalPrefix)
+	}
+	return cachePrefLenSingleBlock(grouping.cache, grouping.getPrefixLen(), calc)
+}
+
+// IsSinglePrefixBlock returns whether the range of values matches a single subnet block for the prefix length.
+//
+// What distinguishes this method with ContainsSinglePrefixBlock is that this method returns
+// false if the series does not have a prefix length assigned to it,
+// or a prefix length that differs from the prefix length for which ContainsSinglePrefixBlock returns true.
+//
+// It is similar to IsPrefixBlock but returns false when there are multiple prefixes.
+func (grouping *largeDivisionGroupingInternal) IsSinglePrefixBlock() bool {
+	calc := func() bool {
+		prefLen := grouping.getPrefixLen()
+		return prefLen != nil && grouping.ContainsSinglePrefixBlock(prefLen.bitCount())
+	}
+	return cacheIsSinglePrefixBlock(grouping.cache, grouping.getPrefixLen(), calc)
+}
+
 type IPAddressLargeDivisionGrouping struct {
 	largeDivisionGroupingInternal
 }
