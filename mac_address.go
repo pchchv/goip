@@ -459,3 +459,46 @@ func NewMACAddressFromSegs(segments []*MACAddressSegment) (*MACAddress, address_
 	section := NewMACSection(segments)
 	return createAddress(section.ToSectionBase(), NoZone).ToMAC(), nil
 }
+
+func createMACSectionFromBytes(bytes []byte) (*MACAddressSection, address_error.AddressValueError) {
+	var segCount int
+	length := len(bytes)
+	// Round down the bytes to 6 bytes if we can.
+	// Otherwise, we round up.
+	if length < ExtendedUniqueIdentifier64SegmentCount {
+		segCount = MediaAccessControlSegmentCount
+		if length > MediaAccessControlSegmentCount {
+			for i := 0; ; i++ {
+				if bytes[i] != 0 {
+					segCount = ExtendedUniqueIdentifier64SegmentCount
+					break
+				}
+				length--
+				if length <= MediaAccessControlSegmentCount {
+					break
+				}
+			}
+		}
+	} else {
+		segCount = ExtendedUniqueIdentifier64SegmentCount
+	}
+	return NewMACSectionFromBytes(bytes, segCount)
+}
+
+// NewMACAddressFromBytes constructs a MAC address from the given byte slice.
+// An error is returned when the byte slice has too many bytes to match the maximum MAC segment count of 8.
+// There should be 8 bytes or less, although extra leading zeros are tolerated.
+func NewMACAddressFromBytes(bytes net.HardwareAddr) (*MACAddress, address_error.AddressValueError) {
+	section, err := createMACSectionFromBytes(bytes)
+	if err != nil {
+		return nil, err
+	}
+	segCount := section.GetSegmentCount()
+	if segCount != MediaAccessControlSegmentCount && segCount != ExtendedUniqueIdentifier64SegmentCount {
+		return nil, &addressValueError{
+			addressError: addressError{key: "ipaddress.error.invalid.size"},
+			val:          segCount,
+		}
+	}
+	return createAddress(section.ToSectionBase(), NoZone).ToMAC(), nil
+}
