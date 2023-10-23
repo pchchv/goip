@@ -812,6 +812,53 @@ func (section *IPv6AddressSection) createEmbeddedIPv4AddressSection() (sect *IPv
 	return
 }
 
+func (section *IPv6AddressSection) getMixedAddressGrouping() (*IPv6v4MixedAddressGrouping, address_error.IncompatibleAddressError) {
+	cache := section.cache
+	var sect *IPv6v4MixedAddressGrouping
+	var mCache *mixedCache
+	if cache != nil {
+		mCache = (*mixedCache)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.mixed))))
+		if mCache != nil {
+			sect = mCache.defaultMixedAddressSection
+		}
+	}
+
+	if sect == nil {
+		mixedSect, err := section.createEmbeddedIPv4AddressSection()
+		if err != nil {
+			return nil, err
+		}
+		sect = newIPv6v4MixedGrouping(
+			section.createNonMixedSection(),
+			mixedSect,
+		)
+		if cache != nil {
+			mixed := &mixedCache{
+				defaultMixedAddressSection: sect,
+				embeddedIPv6Section:        sect.GetIPv6AddressSection(),
+				embeddedIPv4Section:        sect.GetIPv4AddressSection(),
+			}
+			dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.mixed))
+			atomicStorePointer(dataLoc, unsafe.Pointer(mixed))
+		}
+	}
+	return sect, nil
+}
+
+// Gets the IPv4 section corresponding to the lowest (least-significant) 4 bytes in the original address,
+// which will correspond to between 0 and 4 bytes in this address.  Many IPv4 to IPv6 mapping schemes (but not all) use these 4 bytes for a mapped IPv4 address.
+func (section *IPv6AddressSection) getEmbeddedIPv4AddressSection() (*IPv4AddressSection, address_error.IncompatibleAddressError) {
+	cache := section.cache
+	if cache == nil {
+		return section.createEmbeddedIPv4AddressSection()
+	}
+	sect, err := section.getMixedAddressGrouping()
+	if err != nil {
+		return nil, err
+	}
+	return sect.GetIPv4AddressSection(), nil
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
