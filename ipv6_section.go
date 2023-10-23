@@ -635,6 +635,31 @@ func (section *IPv6AddressSection) createNonMixedSection() *EmbeddedIPv6AddressS
 	}
 }
 
+// Contains returns whether this is same type and version as the given address section and whether it contains all values in the given section.
+//
+// Sections must also have the same number of segments to be comparable, otherwise false is returned.
+func (section *IPv6AddressSection) Contains(other AddressSectionType) bool {
+	if section == nil {
+		return other == nil || other.ToSectionBase() == nil
+	}
+	return section.contains(other)
+}
+
+// Equal returns whether the given address section is equal to this address section.
+// Two address sections are equal if they represent the same set of sections.
+// They must match:
+//   - type/version: IPv6
+//   - segment count
+//   - segment value ranges
+//
+// Prefix lengths are ignored.
+func (section *IPv6AddressSection) Equal(other AddressSectionType) bool {
+	if section == nil {
+		return other == nil || other.ToSectionBase() == nil
+	}
+	return section.equal(other)
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
