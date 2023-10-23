@@ -672,6 +672,25 @@ func (section *IPv6AddressSection) GetSubSection(index, endIndex int) *IPv6Addre
 	return section.getSubSection(index, endIndex).ToIPv6()
 }
 
+// BitwiseOr does the bitwise disjunction with this address section, useful when subnetting.
+// It is similar to Mask which does the bitwise conjunction.
+//
+// The operation is applied to all individual addresses and the result is returned.
+//
+// If this represents multiple address sections, and applying the operation to all sections creates a set of sections
+// that cannot be represented as a sequential range within each segment, then an error is returned.
+func (section *IPv6AddressSection) BitwiseOr(other *IPv6AddressSection) (res *IPv6AddressSection, err address_error.IncompatibleAddressError) {
+	return section.bitwiseOrPrefixed(other, true)
+}
+
+func (section *IPv6AddressSection) bitwiseOrPrefixed(other *IPv6AddressSection, retainPrefix bool) (res *IPv6AddressSection, err address_error.IncompatibleAddressError) {
+	sec, err := section.bitwiseOr(other.ToIP(), retainPrefix)
+	if err == nil {
+		res = sec.ToIPv6()
+	}
+	return
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
