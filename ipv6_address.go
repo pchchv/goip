@@ -917,6 +917,66 @@ func (addr *IPv6Address) GetLeadingBitCount(ones bool) BitCount {
 	return addr.init().getLeadingBitCount(ones)
 }
 
+// Prefix length in this section is ignored when converting to MAC.
+func (addr *IPv6Address) toEUISegments(extended bool) ([]*AddressDivision, address_error.IncompatibleAddressError) {
+	seg1 := addr.GetSegment(5)
+	seg2 := addr.GetSegment(6)
+	if !seg1.MatchesWithMask(0xff, 0xff) || !seg2.MatchesWithPrefixMask(0xfe00, 8) {
+		return nil, &incompatibleAddressError{addressError{key: "ipaddress.mac.error.not.eui.convertible"}}
+	}
+
+	var macSegCount int
+	macStartIndex := 0
+	if extended {
+		macSegCount = ExtendedUniqueIdentifier64SegmentCount
+	} else {
+		macSegCount = ExtendedUniqueIdentifier48SegmentCount
+	}
+
+	newSegs := createSegmentArray(macSegCount)
+	seg0 := addr.GetSegment(4)
+	if err := seg0.splitIntoMACSegments(newSegs, macStartIndex); err != nil {
+		return nil, err
+	}
+	// toggle the u/l bit
+	macSegment0 := newSegs[0].ToMAC()
+	lower0 := macSegment0.GetSegmentValue()
+	upper0 := macSegment0.GetUpperSegmentValue()
+	mask2ndBit := SegInt(0x2)
+	if !macSegment0.MatchesWithMask(mask2ndBit&lower0, mask2ndBit) { // ensures that bit remains constant
+		return nil, &incompatibleAddressError{addressError{key: "ipaddress.mac.error.not.eui.convertible"}}
+	}
+
+	lower0 ^= mask2ndBit // flip the universal/local bit
+	upper0 ^= mask2ndBit
+	newSegs[0] = NewMACRangeSegment(MACSegInt(lower0), MACSegInt(upper0)).ToDiv()
+	macStartIndex += 2
+	if err := seg1.splitIntoMACSegments(newSegs, macStartIndex); err != nil { //a ff fe b
+		return nil, err
+	}
+
+	if extended {
+		macStartIndex += 2
+		if err := seg2.splitIntoMACSegments(newSegs, macStartIndex); err != nil {
+			return nil, err
+		}
+	} else {
+		first := newSegs[macStartIndex]
+		if err := seg2.splitIntoMACSegments(newSegs, macStartIndex); err != nil {
+			return nil, err
+		}
+		newSegs[macStartIndex] = first
+	}
+
+	macStartIndex += 2
+	seg3 := addr.GetSegment(7)
+	if err := seg3.splitIntoMACSegments(newSegs, macStartIndex); err != nil {
+		return nil, err
+	}
+
+	return newSegs, nil
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
