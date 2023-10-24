@@ -995,6 +995,24 @@ func (section *ipAddressSectionInternal) IsOneBit(prefixBitIndex BitCount) bool 
 	return section.addressSectionInternal.IsOneBit(prefixBitIndex)
 }
 
+func (section *ipAddressSectionInternal) getNetworkMask(network IPAddressNetwork) *IPAddressSection {
+	var prefLen BitCount
+	if section.isPrefixed() {
+		prefLen = section.getNetworkPrefixLen().bitCount()
+	} else {
+		prefLen = section.GetBitCount()
+	}
+	return network.GetNetworkMask(prefLen).GetSubSection(0, section.GetSegmentCount())
+}
+
+func (section *ipAddressSectionInternal) getHostMask(network IPAddressNetwork) *IPAddressSection {
+	var prefLen BitCount
+	if section.isPrefixed() {
+		prefLen = section.getNetworkPrefixLen().bitCount()
+	}
+	return network.GetHostMask(prefLen).GetSubSection(0, section.GetSegmentCount())
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
