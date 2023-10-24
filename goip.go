@@ -750,6 +750,29 @@ func (addr *IPAddress) IsLinkLocal() bool {
 	return false
 }
 
+// IsLocal returns true if the address is link local, site local,
+// organization local, administered locally, or unspecified.
+// This includes both unicast and multicast.
+func (addr *IPAddress) IsLocal() bool {
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		return thisAddr.IsLocal()
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		return thisAddr.IsLocal()
+	}
+	return false
+}
+
+// IsLoopback returns whether this address is a loopback address,
+// such as "::1" or "127.0.0.1".
+func (addr *IPAddress) IsLoopback() bool {
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		return thisAddr.IsLoopback()
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		return thisAddr.IsLoopback()
+	}
+	return false
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
