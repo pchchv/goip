@@ -1,5 +1,7 @@
 package goip
 
+var _ DivisionType = &IPAddressLargeDivision{}
+
 // DivisionType serves as a common interface to all divisions
 type DivisionType interface {
 	AddressItem
