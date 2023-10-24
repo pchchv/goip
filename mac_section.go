@@ -363,6 +363,28 @@ func (section *MACAddressSection) ForEachSegment(consumer func(segmentIndex int,
 	return len(divArray)
 }
 
+// GetTrailingSection gets the subsection from the series starting from the given index.
+// The first segment is at index 0.
+func (section *MACAddressSection) GetTrailingSection(index int) *MACAddressSection {
+	return section.GetSubSection(index, section.GetSegmentCount())
+}
+
+// GetSubSection gets the subsection from the series starting from the given index and ending just before the give endIndex.
+// The first segment is at index 0.
+func (section *MACAddressSection) GetSubSection(index, endIndex int) *MACAddressSection {
+	return section.getSubSection(index, endIndex).ToMAC()
+}
+
+// CopySubSegments copies the existing segments from the given start index until but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (section *MACAddressSection) CopySubSegments(start, end int, segs []*MACAddressSegment) (count int) {
+	start, end, targetStart := adjust1To1StartIndices(start, end, section.GetDivisionCount(), len(segs))
+	segs = segs[targetStart:]
+	return section.forEachSubDivision(start, end, func(index int, div *AddressDivision) {
+		segs[index] = div.ToMAC()
+	}, len(segs))
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
