@@ -304,6 +304,23 @@ func (section WrappedIPAddressSection) GetSection() *IPAddressSection {
 	return section.IPAddressSection
 }
 
+// Contains returns whether this is same type and version as
+// the given address series and whether it contains all values in the given series.
+//
+// Series must also have the same number of segments to be comparable, otherwise false is returned.
+func (section WrappedIPAddressSection) Contains(other ExtendedIPSegmentSeries) bool {
+	s, ok := other.Unwrap().(AddressSectionType)
+	return ok && section.IPAddressSection.Contains(s)
+}
+
+// Equal returns whether the given address series is equal to this address series.
+// Two address series are equal if they represent the same set of series.
+// Both must be equal sections.
+func (section WrappedIPAddressSection) Equal(other ExtendedIPSegmentSeries) bool {
+	s, ok := other.Unwrap().(AddressSectionType)
+	return ok && section.IPAddressSection.Equal(s)
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }
