@@ -773,6 +773,33 @@ func (addr *IPAddress) IsLoopback() bool {
 	return false
 }
 
+// ReverseBytes returns a new address with the bytes reversed.  Any prefix length is dropped.
+//
+// If each segment is more than 1 byte long,
+// and the bytes within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, then this returns an error.
+//
+// In practice this means that to be reversible,
+// a segment range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+func (addr *IPAddress) ReverseBytes() (*IPAddress, address_error.IncompatibleAddressError) {
+	res, err := addr.init().reverseBytes()
+	return res.ToIP(), err
+}
+
+// ReverseBits returns a new address with the bits reversed.  Any prefix length is dropped.
+//
+// If the bits within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, this returns an error.
+//
+// In practice this means that to be reversible,
+// a segment range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (addr *IPAddress) ReverseBits(perByte bool) (*IPAddress, address_error.IncompatibleAddressError) {
+	res, err := addr.init().reverseBits(perByte)
+	return res.ToIP(), err
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
