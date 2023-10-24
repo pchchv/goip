@@ -385,6 +385,40 @@ func (section *MACAddressSection) CopySubSegments(start, end int, segs []*MACAdd
 	}, len(segs))
 }
 
+// Iterator provides an iterator to iterate through the individual address sections of this address section.
+//
+// When iterating, the prefix length is preserved.
+// Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual address sections.
+//
+// Call IsMultiple to determine if this instance represents multiple address sections, or GetCount for the count.
+func (section *MACAddressSection) Iterator() Iterator[*MACAddressSection] {
+	if section == nil {
+		return macSectionIterator{nilSectIterator()}
+	}
+	return macSectionIterator{section.sectionIterator(nil)}
+}
+
+// ReverseBytes returns a new section with the bytes reversed.  Any prefix length is dropped.
+func (section *MACAddressSection) ReverseBytes() *MACAddressSection {
+	return section.ReverseSegments()
+}
+
+// ReverseSegments returns a new section with the segments reversed.
+func (section *MACAddressSection) ReverseSegments() *MACAddressSection {
+	if section.GetSegmentCount() <= 1 {
+		if section.IsPrefixed() {
+			return section.WithoutPrefixLen()
+		}
+		return section
+	}
+	res, _ := section.reverseSegments(
+		func(i int) (*AddressSegment, address_error.IncompatibleAddressError) {
+			return section.GetSegment(i).ToSegmentBase(), nil
+		},
+	)
+	return res.ToMAC()
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
