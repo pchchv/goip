@@ -1461,6 +1461,29 @@ func (section *addressSectionInternal) reverseBytes(perSegment bool) (res *Addre
 	)
 }
 
+func (section *addressSectionInternal) toDecimalStringZoned(zone Zone) (string, address_error.IncompatibleAddressError) {
+	if isDual, err := section.isDualString(); err != nil {
+		return "", err
+	} else {
+		var largeGrouping *IPAddressLargeDivisionGrouping
+		if section.hasNoDivisions() {
+			largeGrouping = NewIPAddressLargeDivGrouping(nil)
+		} else {
+			bytes := section.getBytes()
+			prefLen := section.getPrefixLen()
+			bitCount := section.GetBitCount()
+			var div *IPAddressLargeDivision
+			if isDual {
+				div = NewIPAddressLargeRangePrefixDivision(bytes, section.getUpperBytes(), prefLen, bitCount, 10)
+			} else {
+				div = NewIPAddressLargePrefixDivision(bytes, prefLen, bitCount, 10)
+			}
+			largeGrouping = NewIPAddressLargeDivGrouping([]*IPAddressLargeDivision{div})
+		}
+		return toNormalizedZonedString(decimalParams, largeGrouping, zone), nil
+	}
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
