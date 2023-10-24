@@ -1107,6 +1107,44 @@ func (addr *Address) Wrap() WrappedAddress {
 	return wrapAddress(addr.init())
 }
 
+// ReverseBytes returns a new address with the bytes reversed.  Any prefix length is dropped.
+//
+// If each segment is more than 1 byte long,
+// and the bytes within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, then this returns an error.
+//
+// In practice this means that to be reversible,
+// a segment range must include all values except possibly the largest and/or smallest,
+// which reverse to themselves.
+func (addr *Address) ReverseBytes() (*Address, address_error.IncompatibleAddressError) {
+	return addr.init().reverseBytes()
+}
+
+// ReverseBits returns a new address with the bits reversed.  Any prefix length is dropped.
+//
+// If the bits within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, this returns an error.
+//
+// In practice this means that to be reversible,
+// a segment range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (addr *Address) ReverseBits(perByte bool) (*Address, address_error.IncompatibleAddressError) {
+	return addr.init().reverseBits(perByte)
+}
+
+// IsLocal returns whether the address can be considered a local address (as opposed to a global one).
+func (addr *Address) IsLocal() bool {
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		return thisAddr.IsLocal()
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		return thisAddr.IsLocal()
+	} else if thisAddr := addr.ToMAC(); thisAddr != nil {
+		return thisAddr.IsLocal()
+	}
+	return false
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
