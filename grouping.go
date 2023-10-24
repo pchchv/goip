@@ -695,6 +695,38 @@ func (grouping addressDivisionGroupingInternal) Format(state fmt.State, verb run
 	grouping.defaultFormat(state, verb)
 }
 
+// GetPrefixLenForSingleBlock returns a prefix length for which the range of this division grouping matches the block of addresses for that prefix.
+//
+// If no such prefix exists, GetPrefixLenForSingleBlock returns nil.
+//
+// If this division grouping represents a single value, returns the bit length.
+func (grouping *addressDivisionGroupingInternal) GetPrefixLenForSingleBlock() PrefixLen {
+	calc := func() *PrefixLen {
+		count := grouping.GetDivisionCount()
+		var totalPrefix BitCount
+		for i := 0; i < count; i++ {
+			div := grouping.getDivision(i)
+			divPrefix := div.GetPrefixLenForSingleBlock()
+			if divPrefix == nil {
+				return cacheNilPrefix()
+			}
+			divPrefLen := divPrefix.bitCount()
+			totalPrefix += divPrefLen
+			if divPrefLen < div.GetBitCount() {
+				//remaining segments must be full range or we return nil
+				for i++; i < count; i++ {
+					laterDiv := grouping.getDivision(i)
+					if !laterDiv.IsFullRange() {
+						return cacheNilPrefix()
+					}
+				}
+			}
+		}
+		return cachePrefix(totalPrefix)
+	}
+	return cachePrefLenSingleBlock(grouping.cache, grouping.getPrefixLen(), calc)
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
