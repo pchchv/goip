@@ -1470,3 +1470,51 @@ func NewIPAddressFromVals(version IPVersion, lowerValueProvider SegmentValueProv
 	}
 	return nil
 }
+
+// NewIPAddressFromPrefixedVals constructs an IPAddress from the provided segment values and prefix length.
+// If the given version is indeterminate, then nil is returned.
+// The prefix length is adjusted to 0 if negative or to the bit count if larger.
+func NewIPAddressFromPrefixedVals(version IPVersion, lowerValueProvider, upperValueProvider SegmentValueProvider, prefixLength PrefixLen) *IPAddress {
+	return NewIPAddressFromPrefixedZonedVals(version, lowerValueProvider, upperValueProvider, prefixLength, "")
+}
+
+// NewIPAddressFromPrefixedZonedVals constructs an IPAddress from the provided segment values, prefix length, and zone.
+// If the given version is indeterminate, then nil is returned.
+// If the version is IPv4, then the zone is ignored.
+// The prefix length is adjusted to 0 if negative or to the bit count if larger.
+func NewIPAddressFromPrefixedZonedVals(version IPVersion, lowerValueProvider, upperValueProvider SegmentValueProvider, prefixLength PrefixLen, zone string) *IPAddress {
+	if version.IsIPv4() {
+		return NewIPv4AddressFromPrefixedRange(
+			WrapSegmentValueProviderForIPv4(lowerValueProvider),
+			WrapSegmentValueProviderForIPv4(upperValueProvider),
+			prefixLength).ToIP()
+	} else if version.IsIPv6() {
+		return NewIPv6AddressFromPrefixedZonedRange(
+			WrapSegmentValueProviderForIPv6(lowerValueProvider),
+			WrapSegmentValueProviderForIPv6(upperValueProvider),
+			prefixLength,
+			zone).ToIP()
+	}
+	return nil
+}
+
+// NewIPAddressFromValueProvider constructs an IPAddress from the provided segment values, prefix length, and zone,
+// all of which are supplied by the implementation of IPAddressValueProvider.
+// If the given version is indeterminate, then nil is returned.
+// If the version is IPv4, then the zone is ignored.
+// The prefix length is adjusted to 0 if negative or to the bit count if larger.
+func NewIPAddressFromValueProvider(valueProvider IPAddressValueProvider) *IPAddress {
+	if valueProvider.GetIPVersion().IsIPv4() {
+		return NewIPv4AddressFromPrefixedRange(
+			WrapSegmentValueProviderForIPv4(valueProvider.GetValues()),
+			WrapSegmentValueProviderForIPv4(valueProvider.GetUpperValues()),
+			valueProvider.GetPrefixLen()).ToIP()
+	} else if valueProvider.GetIPVersion().IsIPv6() {
+		return NewIPv6AddressFromPrefixedZonedRange(
+			WrapSegmentValueProviderForIPv6(valueProvider.GetValues()),
+			WrapSegmentValueProviderForIPv6(valueProvider.GetUpperValues()),
+			valueProvider.GetPrefixLen(),
+			valueProvider.GetZone()).ToIP()
+	}
+	return nil
+}
