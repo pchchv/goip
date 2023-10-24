@@ -573,6 +573,14 @@ func (addr *MACAddress) ToEUI64(asMAC bool) (*MACAddress, address_error.Incompat
 	return nil, &incompatibleAddressError{addressError{key: "ipaddress.mac.error.not.eui.convertible"}}
 }
 
+func (addr *MACAddress) toMaxLower() *MACAddress {
+	return addr.init().addressInternal.toMaxLower().ToMAC()
+}
+
+func (addr *MACAddress) toMinUpper() *MACAddress {
+	return addr.init().addressInternal.toMinUpper().ToMAC()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
