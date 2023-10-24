@@ -518,6 +518,61 @@ func (addr *MACAddress) GetSequentialBlockIndex() int {
 	return addr.init().getSequentialBlockIndex()
 }
 
+// GetSequentialBlockCount provides the count of elements from the sequential block iterator, the minimal number of sequential address ranges that comprise this address collection.
+func (addr *MACAddress) GetSequentialBlockCount() *big.Int {
+	return addr.init().getSequentialBlockCount()
+}
+
+// GetSegmentStrings returns a slice with the string for each segment being the string that is normalized with wildcards.
+func (addr *MACAddress) GetSegmentStrings() []string {
+	if addr == nil {
+		return nil
+	}
+	return addr.init().getSegmentStrings()
+}
+
+// ToEUI64 converts to IPv6 EUI-64 section.
+//
+// If asMAC if true, this address is considered MAC and the EUI-64 is extended using ff-ff, otherwise this address is considered EUI-48 and extended using ff-fe
+// Note that IPv6 treats MAC as EUI-48 and extends MAC to IPv6 addresses using ff-fe
+func (addr *MACAddress) ToEUI64(asMAC bool) (*MACAddress, address_error.IncompatibleAddressError) {
+	section := addr.GetSection()
+	if addr.GetSegmentCount() == ExtendedUniqueIdentifier48SegmentCount {
+		segs := createSegmentArray(ExtendedUniqueIdentifier64SegmentCount)
+		section.copySubDivisions(0, 3, segs)
+		segs[3] = ffMACSeg.ToDiv()
+		if asMAC {
+			segs[4] = ffMACSeg.ToDiv()
+		} else {
+			segs[4] = feMACSeg.ToDiv()
+		}
+		section.copySubDivisions(3, 6, segs[5:])
+		prefixLen := addr.getPrefixLen()
+		if prefixLen != nil {
+			if prefixLen.bitCount() >= 24 {
+				prefixLen = cacheBitCount(prefixLen.bitCount() + (MACBitsPerSegment << 1)) //two segments
+			}
+		}
+		newSect := createInitializedSection(segs, prefixLen, addr.getAddrType()).ToMAC()
+		return newMACAddress(newSect), nil
+	}
+
+	seg3 := section.GetSegment(3)
+	seg4 := section.GetSegment(4)
+	if seg3.matches(0xff) {
+		if asMAC {
+			if seg4.matches(0xff) {
+				return addr, nil
+			}
+		} else {
+			if seg4.matches(0xfe) {
+				return addr, nil
+			}
+		}
+	}
+	return nil, &incompatibleAddressError{addressError{key: "ipaddress.mac.error.not.eui.convertible"}}
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
