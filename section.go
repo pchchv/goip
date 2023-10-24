@@ -1399,6 +1399,68 @@ func (section *addressSectionInternal) sequentialBlockIterator() Iterator[*Addre
 	return section.blockIterator(section.GetSequentialBlockIndex())
 }
 
+func (section *addressSectionInternal) reverseBits(perByte bool) (res *AddressSection, err address_error.IncompatibleAddressError) {
+	if perByte {
+		isSame := !section.isPrefixed() //when reversing, the prefix must go
+		count := section.GetSegmentCount()
+		newSegs := createSegmentArray(count)
+		for i := 0; i < count; i++ {
+			seg := section.GetSegment(i)
+			var reversedSeg *AddressSegment
+			reversedSeg, err = seg.ReverseBits(perByte)
+			if err != nil {
+				return
+			}
+			newSegs[i] = reversedSeg.ToDiv()
+			if isSame && !segValsSame(seg.getSegmentValue(), reversedSeg.getSegmentValue(), seg.getUpperSegmentValue(), reversedSeg.getUpperSegmentValue()) {
+				isSame = false
+			}
+		}
+		if isSame {
+			res = section.toAddressSection() //We can do this because for ipv6 startIndex stays the same and for mac startIndex and extended stays the same
+			return
+		}
+		res = deriveAddressSectionPrefLen(section.toAddressSection(), newSegs, nil)
+		return
+	}
+	return section.reverseSegments(
+		func(i int) (*AddressSegment, address_error.IncompatibleAddressError) {
+			return section.GetSegment(i).ReverseBits(perByte)
+		},
+	)
+}
+
+func (section *addressSectionInternal) reverseBytes(perSegment bool) (res *AddressSection, err address_error.IncompatibleAddressError) {
+	if perSegment {
+		isSame := !section.isPrefixed() //when reversing, the prefix must go
+		count := section.GetSegmentCount()
+		newSegs := createSegmentArray(count)
+		for i := 0; i < count; i++ {
+			seg := section.GetSegment(i)
+			var reversedSeg *AddressSegment
+			reversedSeg, err = seg.ReverseBytes()
+			if err != nil {
+				return
+			}
+			newSegs[i] = reversedSeg.ToDiv()
+			if isSame && !segValsSame(seg.getSegmentValue(), reversedSeg.getSegmentValue(), seg.getUpperSegmentValue(), reversedSeg.getUpperSegmentValue()) {
+				isSame = false
+			}
+		}
+		if isSame {
+			res = section.toAddressSection() //We can do this because for ipv6 startIndex stays the same and for mac startIndex and extended stays the same
+			return
+		}
+		res = deriveAddressSectionPrefLen(section.toAddressSection(), newSegs, nil)
+		return
+	}
+	return section.reverseSegments(
+		func(i int) (*AddressSegment, address_error.IncompatibleAddressError) {
+			return section.GetSegment(i).ReverseBytes()
+		},
+	)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
