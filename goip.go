@@ -1424,3 +1424,17 @@ func addrFromPrefixedIP(ip net.IP, prefixLen PrefixLen) (addr *IPAddress, err ad
 	}
 	return addrFromPrefixedBytes(ip, prefixLen)
 }
+
+// NewIPAddressFromPrefixedNetIP constructs an address or subnet from a net.IP with a prefix length.
+// An error is returned when the IP has an invalid number of bytes.  IPv4 should have 4 bytes or less,
+// IPv6 16 bytes or less, although extra leading zeros are tolerated.
+func NewIPAddressFromPrefixedNetIP(ip net.IP, prefixLength PrefixLen) (*IPAddress, address_error.AddressValueError) {
+	return addrFromPrefixedIP(ip, prefixLength)
+}
+
+// NewIPAddressFromPrefixedNetIPAddr constructs an address or subnet from a net.IPAddr with a prefix length.
+// An error is returned when the IP has an invalid number of bytes.  IPv4 should have 4 bytes or less, IPv6 16 bytes or less,
+// although extra leading zeros are tolerated.
+func NewIPAddressFromPrefixedNetIPAddr(addr *net.IPAddr, prefixLength PrefixLen) (*IPAddress, address_error.AddressValueError) {
+	return addrFromPrefixedZonedIP(addr, prefixLength)
+}
