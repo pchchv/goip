@@ -340,6 +340,29 @@ func (section *MACAddressSection) AssignMinPrefixForBlock() *MACAddressSection {
 	return section.assignMinPrefixForBlock().ToMAC()
 }
 
+// GetSegment returns the segment at the given index.
+// The first segment is at index 0.
+// GetSegment will panic given a negative index or an index matching or larger than the segment count.
+func (section *MACAddressSection) GetSegment(index int) *MACAddressSegment {
+	return section.getDivision(index).ToMAC()
+}
+
+// ForEachSegment visits each segment in order from most-significant to least,
+// the most significant with index 0, calling the given function for each,
+// terminating early if the function returns true.
+// Returns the number of visited segments.
+func (section *MACAddressSection) ForEachSegment(consumer func(segmentIndex int, segment *MACAddressSegment) (stop bool)) int {
+	divArray := section.getDivArray()
+	if divArray != nil {
+		for i, div := range divArray {
+			if consumer(i, div.ToMAC()) {
+				return i + 1
+			}
+		}
+	}
+	return len(divArray)
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
