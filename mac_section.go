@@ -419,6 +419,28 @@ func (section *MACAddressSection) ReverseSegments() *MACAddressSection {
 	return res.ToMAC()
 }
 
+// ReplaceLen replaces segments starting from startIndex and ending before endIndex with the segments starting at replacementStartIndex and
+// ending before replacementEndIndex from the replacement section.
+func (section *MACAddressSection) ReplaceLen(startIndex, endIndex int, replacement *MACAddressSection, replacementStartIndex, replacementEndIndex int) *MACAddressSection {
+	return section.replaceLen(startIndex, endIndex, replacement.ToSectionBase(), replacementStartIndex, replacementEndIndex, macBitsToSegmentBitshift).ToMAC()
+}
+
+// Append creates a new section by appending the given section to this section.
+func (section *MACAddressSection) Append(other *MACAddressSection) *MACAddressSection {
+	count := section.GetSegmentCount()
+	return section.ReplaceLen(count, count, other, 0, other.GetSegmentCount())
+}
+
+// Insert creates a new section by inserting the given section into this section at the given index.
+func (section *MACAddressSection) Insert(index int, other *MACAddressSection) *MACAddressSection {
+	return section.ReplaceLen(index, index, other, 0, other.GetSegmentCount())
+}
+
+// Replace replaces the segments of this section starting at the given index with the given replacement segments.
+func (section *MACAddressSection) Replace(index int, replacement *MACAddressSection) *MACAddressSection {
+	return section.ReplaceLen(index, index+replacement.GetSegmentCount(), replacement, 0, replacement.GetSegmentCount())
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
