@@ -1680,3 +1680,13 @@ func NewIPAddressFromValueProvider(valueProvider IPAddressValueProvider) *IPAddr
 	}
 	return nil
 }
+
+func allVersionsMatch(one *IPAddress, two []*IPAddress) bool {
+	addrType := one.getAddrType()
+	for _, addr := range two {
+		if addr.getAddrType() != addrType {
+			return false
+		}
+	}
+	return true
+}
