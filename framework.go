@@ -9,6 +9,8 @@ import (
 	"github.com/pchchv/goip/address_error"
 )
 
+var _ AddressDivisionSeries = &IPAddressLargeDivisionGrouping{}
+
 // AddressComponent represents all addresses, address sections and address segments.
 type AddressComponent interface { //AddressSegment and above, AddressSegmentSeries and above
 	// TestBit returns true if the bit in the lowest value of the address component by the given index is 1,
