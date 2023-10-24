@@ -10,6 +10,11 @@ type WrappedIPAddress struct {
 	*IPAddress
 }
 
+// GetSection returns the backing section for this series, comprising all segments.
+func (addr WrappedIPAddress) GetSection() *IPAddressSection {
+	return addr.IPAddress.GetSection()
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
