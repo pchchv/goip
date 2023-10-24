@@ -600,6 +600,22 @@ func (addr *addressInternal) sequentialBlockIterator() Iterator[*Address] {
 	return addr.blockIterator(addr.getSequentialBlockIndex())
 }
 
+func (addr *addressInternal) reverseBytes() (*Address, address_error.IncompatibleAddressError) {
+	sect, err := addr.section.ReverseBytes()
+	if err != nil {
+		return nil, err
+	}
+	return addr.checkIdentity(sect), nil
+}
+
+func (addr *addressInternal) reverseBits(perByte bool) (*Address, address_error.IncompatibleAddressError) {
+	sect, err := addr.section.ReverseBits(perByte)
+	if err != nil {
+		return nil, err
+	}
+	return addr.checkIdentity(sect), nil
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
