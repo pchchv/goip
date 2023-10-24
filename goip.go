@@ -1152,6 +1152,27 @@ func (creator IPAddressCreator) NewIPSectionFromPrefixedBytes(bytes []byte, segm
 	return nil, &addressValueError{addressError: addressError{key: "ipaddress.error.ipVersionIndeterminate"}}
 }
 
+// NewIPAddressFromVals constructs an IPAddress from the provided segment values.
+// If the IP version of this IPAddressCreator is indeterminate, then nil is returned.
+func (creator IPAddressCreator) NewIPAddressFromVals(lowerValueProvider SegmentValueProvider) *IPAddress {
+	return NewIPAddressFromVals(creator.IPVersion, lowerValueProvider)
+}
+
+// NewIPAddressFromPrefixedVals constructs an IPAddress from the provided segment values and prefix length.
+// If the IP version of this IPAddressCreator is indeterminate, then nil is returned.
+// The prefix length is adjusted to 0 if negative or to the bit count if larger.
+func (creator IPAddressCreator) NewIPAddressFromPrefixedVals(lowerValueProvider, upperValueProvider SegmentValueProvider, prefixLength PrefixLen) *IPAddress {
+	return NewIPAddressFromPrefixedVals(creator.IPVersion, lowerValueProvider, upperValueProvider, prefixLength)
+}
+
+// NewIPAddressFromPrefixedZonedVals constructs an IPAddress from the provided segment values, prefix length, and zone.
+// If the IP version of this IPAddressCreator is indeterminate, then nil is returned.
+// If the version is IPv4, then the zone is ignored.
+// The prefix length is adjusted to 0 if negative or to the bit count if larger.
+func (creator IPAddressCreator) NewIPAddressFromPrefixedZonedVals(lowerValueProvider, upperValueProvider SegmentValueProvider, prefixLength PrefixLen, zone string) *IPAddress {
+	return NewIPAddressFromPrefixedZonedVals(creator.IPVersion, lowerValueProvider, upperValueProvider, prefixLength, zone)
+}
+
 func createIPAddress(section *AddressSection, zone Zone) *IPAddress {
 	return &IPAddress{
 		ipAddressInternal{
@@ -1456,7 +1477,6 @@ func NewIPAddressFromNetNetIPPrefix(prefixedAddr netip.Prefix) (*IPAddress, addr
 		addr, _ := addrFromPrefixedBytes(res, &p)
 		return addr.ToIP(), nil
 	}
-	
 	return nil, &addressValueError{addressError: addressError{key: "ipaddress.error.ipVersionIndeterminate"}}
 }
 
