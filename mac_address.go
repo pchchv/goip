@@ -467,6 +467,31 @@ func (addr *MACAddress) ContainsPrefixBlock(prefixLen BitCount) bool {
 	return addr.init().addressInternal.ContainsPrefixBlock(prefixLen)
 }
 
+// GetMinPrefixLenForBlock returns the smallest prefix length such that this includes the block of addresses for that prefix length.
+//
+// If the entire range can be described this way, then this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// There may be a single prefix, or multiple possible prefix values in this item for the returned prefix length.
+// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values.
+//
+// If this represents just a single address, returns the bit length of this address.
+func (addr *MACAddress) GetMinPrefixLenForBlock() BitCount {
+	return addr.init().addressInternal.GetMinPrefixLenForBlock()
+}
+
+// Iterator provides an iterator to iterate through the individual addresses of this address or subnet.
+//
+// When iterating, the prefix length is preserved.
+// Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual addresses.
+//
+// Call IsMultiple to determine if this instance represents multiple addresses, or GetCount for the count.
+func (addr *MACAddress) Iterator() Iterator[*MACAddress] {
+	if addr == nil {
+		return macAddressIterator{nilAddrIterator()}
+	}
+	return macAddressIterator{addr.init().addrIterator(nil)}
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
