@@ -1874,6 +1874,30 @@ func (section *AddressSection) GetSegmentStrings() []string {
 	return section.getSegmentStrings()
 }
 
+// ReverseBits returns a new section with the bits reversed.  Any prefix length is dropped.
+//
+// If the bits within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, this returns an error.
+//
+// In practice this means that to be reversible, a range must include all values except possibly the largest and/or smallest,
+// which reverse to themselves.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (section *AddressSection) ReverseBits(perByte bool) (*AddressSection, address_error.IncompatibleAddressError) {
+	return section.reverseBits(perByte)
+}
+
+// ReverseBytes returns a new section with the bytes reversed.  Any prefix length is dropped.
+//
+// If each segment is more than 1 byte long, and the bytes within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, then this returns an error.
+//
+// In practice this means that to be reversible, a range must include all values except possibly the largest and/or smallest,
+// which reverse to themselves.
+func (section *AddressSection) ReverseBytes() (*AddressSection, address_error.IncompatibleAddressError) {
+	return section.reverseBytes(false)
+}
+
 // AssignMinPrefixForBlock returns an equivalent address section, assigned the smallest prefix length possible,
 // such that the prefix block for that prefix length is in this address section.
 //
