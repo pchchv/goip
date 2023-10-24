@@ -671,6 +671,49 @@ func (addr *IPAddress) GetSubSection(index, endIndex int) *IPAddressSection {
 	return addr.GetSection().GetSubSection(index, endIndex)
 }
 
+// CopyNetIP copies the value of the lowest individual address in the subnet into a net.IP.
+//
+// If the value can fit in the given net.IP slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (addr *IPAddress) CopyNetIP(ip net.IP) net.IP {
+	if ipv4Addr := addr.ToIPv4(); ipv4Addr != nil {
+		return ipv4Addr.CopyNetIP(ip) // this shrinks the arg to 4 bytes if it was 16, we need only 4
+	}
+	return addr.CopyBytes(ip)
+}
+
+// CopyUpperNetIP copies the value of the highest individual address in the subnet into a net.IP.
+//
+// If the value can fit in the given net.IP slice,
+// the value is copied into that slice and a length-adjusted sub-slice is returned.
+// Otherwise, a new slice is created and returned with the value.
+func (addr *IPAddress) CopyUpperNetIP(ip net.IP) net.IP {
+	if ipv4Addr := addr.ToIPv4(); ipv4Addr != nil {
+		return ipv4Addr.CopyUpperNetIP(ip) // this shrinks the arg to 4 bytes if it was 16, we need only 4
+	}
+	return addr.CopyUpperBytes(ip)
+}
+
+// MatchesWithMask applies the mask to this address and then compares the result with the given address,
+// returning true if they match, false otherwise.
+func (addr *IPAddress) MatchesWithMask(other *IPAddress, mask *IPAddress) bool {
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		if oth := other.ToIPv4(); oth != nil {
+			if msk := mask.ToIPv4(); mask != nil {
+				return thisAddr.MatchesWithMask(oth, msk)
+			}
+		}
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		if oth := other.ToIPv6(); oth != nil {
+			if msk := mask.ToIPv6(); mask != nil {
+				return thisAddr.MatchesWithMask(oth, msk)
+			}
+		}
+	}
+	return false
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
