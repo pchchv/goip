@@ -6,9 +6,16 @@ import (
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string"
 )
 
 const SegIntSize = 32 // must match the bit count of SegInt
+
+var (
+	// wildcards differ, for divs we use only range since div size not implicit, here we use both range and *
+	hexParamsSeg     = new(address_string.IPStringOptionsBuilder).SetRadix(16).SetSegmentStrPrefix(HexPrefix).ToOptions()
+	decimalParamsSeg = new(address_string.IPStringOptionsBuilder).SetRadix(10).ToOptions()
+)
 
 // SegInt is an integer type for holding generic address segment values.
 // It is at least as large as all address segment values: [IPv6SegInt], [IPv4SegInt], [MACSegInt].
