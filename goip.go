@@ -1389,7 +1389,6 @@ func addrFromPrefixedZonedIP(addr *net.IPAddr, prefixLen PrefixLen) (*IPAddress,
 			return res, err
 		}
 	}
-	
 	return nil, &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
 }
 
@@ -1437,4 +1436,37 @@ func NewIPAddressFromPrefixedNetIP(ip net.IP, prefixLength PrefixLen) (*IPAddres
 // although extra leading zeros are tolerated.
 func NewIPAddressFromPrefixedNetIPAddr(addr *net.IPAddr, prefixLength PrefixLen) (*IPAddress, address_error.AddressValueError) {
 	return addrFromPrefixedZonedIP(addr, prefixLength)
+}
+
+func NewIPAddressFromNetNetIPPrefix(prefixedAddr netip.Prefix) (*IPAddress, address_error.AddressError) {
+	prefixLen := prefixedAddr.Bits()
+	if prefixLen < 0 {
+		return nil, &addressValueError{addressError: addressError{key: "ipaddress.error.invalidCIDRPrefix"}}
+	}
+
+	addr := prefixedAddr.Addr()
+	if res := addr.AsSlice(); res != nil {
+		var p PrefixBitCount = PrefixBitCount(prefixLen)
+		if addr.Is6() {
+			if zone := addr.Zone(); zone != "" {
+				addr, _ := NewIPv6AddressFromPrefixedZonedBytes(res, &p, zone)
+				return addr.ToIP(), nil
+			}
+		}
+		addr, _ := addrFromPrefixedBytes(res, &p)
+		return addr.ToIP(), nil
+	}
+	
+	return nil, &addressValueError{addressError: addressError{key: "ipaddress.error.ipVersionIndeterminate"}}
+}
+
+// NewIPAddressFromVals constructs an IPAddress from the provided segment values.
+// If the given version is indeterminate, then nil is returned.
+func NewIPAddressFromVals(version IPVersion, lowerValueProvider SegmentValueProvider) *IPAddress {
+	if version.IsIPv4() {
+		return NewIPv4AddressFromVals(WrapSegmentValueProviderForIPv4(lowerValueProvider)).ToIP()
+	} else if version.IsIPv6() {
+		return NewIPv6AddressFromVals(WrapSegmentValueProviderForIPv6(lowerValueProvider)).ToIP()
+	}
+	return nil
 }
