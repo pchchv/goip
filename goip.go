@@ -1365,3 +1365,62 @@ func NewIPAddressFromNetNetIPAddr(addr netip.Addr) *IPAddress {
 func NewIPAddressFromSegs(segments []*IPAddressSegment) (res *IPAddress, err address_error.AddressValueError) {
 	return NewIPAddressFromPrefixedSegments(segments, nil)
 }
+
+func addrFromPrefixedZonedIP(addr *net.IPAddr, prefixLen PrefixLen) (*IPAddress, address_error.AddressValueError) {
+	ip := addr.IP
+	if ipv4 := ip.To4(); ipv4 != nil {
+		ip = ipv4
+	}
+
+	if len(ip) == 0 {
+		return &IPAddress{}, nil
+	} else if len(ip) <= IPv4ByteCount {
+		res, err := NewIPv4AddressFromPrefixedBytes(ip, prefixLen)
+		return res.ToIP(), err
+	} else if len(ip) <= IPv6ByteCount {
+		res, err := NewIPv6AddressFromPrefixedZonedBytes(ip, prefixLen, addr.Zone)
+		return res.ToIP(), err
+	} else {
+		extraCount := len(ip) - IPv6ByteCount
+		if isAllZeros(ip[:extraCount]) {
+			var addr6 *IPv6Address
+			addr6, err := NewIPv6AddressFromPrefixedZonedBytes(ip[extraCount:], prefixLen, addr.Zone)
+			res := addr6.ToIP()
+			return res, err
+		}
+	}
+	
+	return nil, &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
+}
+
+func addrFromPrefixedBytes(ip []byte, prefixLen PrefixLen) (addr *IPAddress, err address_error.AddressValueError) {
+	addrLen := len(ip)
+	if len(ip) == 0 {
+		return &IPAddress{}, nil
+	} else if addrLen <= IPv4ByteCount {
+		var addr4 *IPv4Address
+		addr4, err = NewIPv4AddressFromPrefixedBytes(ip, prefixLen)
+		addr = addr4.ToIP()
+	} else if addrLen <= IPv6ByteCount {
+		var addr6 *IPv6Address
+		addr6, err = NewIPv6AddressFromPrefixedBytes(ip, prefixLen)
+		addr = addr6.ToIP()
+	} else {
+		extraCount := len(ip) - IPv6ByteCount
+		if isAllZeros(ip[:extraCount]) {
+			var addr6 *IPv6Address
+			addr6, err = NewIPv6AddressFromPrefixedBytes(ip[extraCount:], prefixLen)
+			addr = addr6.ToIP()
+		} else {
+			err = &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
+		}
+	}
+	return
+}
+
+func addrFromPrefixedIP(ip net.IP, prefixLen PrefixLen) (addr *IPAddress, err address_error.AddressValueError) {
+	if ipv4 := ip.To4(); ipv4 != nil {
+		ip = ipv4
+	}
+	return addrFromPrefixedBytes(ip, prefixLen)
+}
