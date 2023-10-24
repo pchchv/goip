@@ -714,6 +714,42 @@ func (addr *IPAddress) MatchesWithMask(other *IPAddress, mask *IPAddress) bool {
 	return false
 }
 
+// Mask applies the given mask to all addresses represented by this IPAddress.
+// The mask is applied to all individual addresses.
+//
+// If the mask is a different version than this, then an error is returned.
+//
+// If this represents multiple addresses, and applying the mask to all addresses creates a set of addresses
+// that cannot be represented as a sequential range within each segment, then an error is returned.
+func (addr *IPAddress) Mask(other *IPAddress) (masked *IPAddress, err address_error.IncompatibleAddressError) {
+	return addr.maskPrefixed(other, true)
+}
+
+func (addr *IPAddress) maskPrefixed(other *IPAddress, retainPrefix bool) (*IPAddress, address_error.IncompatibleAddressError) {
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		if oth := other.ToIPv4(); oth != nil {
+			result, err := thisAddr.maskPrefixed(oth, retainPrefix)
+			return result.ToIP(), err
+		}
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		if oth := other.ToIPv6(); oth != nil {
+			result, err := thisAddr.maskPrefixed(oth, retainPrefix)
+			return result.ToIP(), err
+		}
+	}
+	return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.ipMismatch"}}
+}
+
+// IsLinkLocal returns whether the address or subnet is entirely link local, whether unicast or multicast.
+func (addr *IPAddress) IsLinkLocal() bool {
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		return thisAddr.IsLinkLocal()
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		return thisAddr.IsLinkLocal()
+	}
+	return false
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
