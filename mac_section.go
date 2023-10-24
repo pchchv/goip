@@ -460,6 +460,47 @@ func (section *MACAddressSection) GetSegments() (res []*MACAddressSegment) {
 	return
 }
 
+// GetDottedGrouping returns an AddressDivisionGrouping which organizes the address section into segments of bit-length 16,
+// rather than the more typical 8 bits per segment.
+//
+// If this represents a collection of MAC addresses, this returns an error when unable to join two address segments,
+// the first with a range of values, into a division of the larger bit-length that represents the same set of values.
+func (section *MACAddressSection) GetDottedGrouping() (*AddressDivisionGrouping, address_error.IncompatibleAddressError) {
+	var newSegs []*AddressDivision
+	var segIndex, newSegIndex int
+	segmentCount := section.GetSegmentCount()
+	bitsPerSeg := section.GetBitsPerSegment()
+	newSegmentCount := (segmentCount + 1) >> 1
+	newSegmentBitCount := section.GetBitsPerSegment() << 1
+	newSegs = make([]*AddressDivision, newSegmentCount)
+
+	for segIndex+1 < segmentCount {
+		segment1 := section.GetSegment(segIndex)
+		segIndex++
+		segment2 := section.GetSegment(segIndex)
+		segIndex++
+		if segment1.isMultiple() && !segment2.IsFullRange() {
+			return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.invalid.joined.ranges"}}
+		}
+		val := (segment1.GetSegmentValue() << uint(bitsPerSeg)) | segment2.GetSegmentValue()
+		upperVal := (segment1.GetUpperSegmentValue() << uint(bitsPerSeg)) | segment2.GetUpperSegmentValue()
+		vals := newRangeDivision(DivInt(val), DivInt(upperVal), newSegmentBitCount)
+		newSegs[newSegIndex] = createAddressDivision(vals)
+		newSegIndex++
+	}
+
+	if segIndex < segmentCount {
+		segment := section.GetSegment(segIndex)
+		val := segment.GetSegmentValue() << uint(bitsPerSeg)
+		upperVal := segment.GetUpperSegmentValue() << uint(bitsPerSeg)
+		vals := newRangeDivision(DivInt(val), DivInt(upperVal), newSegmentBitCount)
+		newSegs[newSegIndex] = createAddressDivision(vals)
+	}
+
+	grouping := createInitializedGrouping(newSegs, section.getPrefixLen())
+	return grouping, nil
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
