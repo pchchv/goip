@@ -658,6 +658,19 @@ func (addr *IPAddress) GetNetwork() IPAddressNetwork {
 	return addr.getNetwork()
 }
 
+// GetTrailingSection gets the subsection from the series starting from the given index.
+// The first segment is at index 0.
+func (addr *IPAddress) GetTrailingSection(index int) *IPAddressSection {
+	return addr.GetSection().GetTrailingSection(index)
+}
+
+// GetSubSection gets the subsection from the series starting from
+// the given index and ending just before the give endIndex.
+// The first segment is at index 0.
+func (addr *IPAddress) GetSubSection(index, endIndex int) *IPAddressSection {
+	return addr.GetSection().GetSubSection(index, endIndex)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
