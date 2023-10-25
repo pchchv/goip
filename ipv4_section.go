@@ -713,6 +713,44 @@ func (section *IPv4AddressSection) ToZeroNetwork() *IPv4AddressSection {
 	return section.toZeroNetwork().ToIPv4()
 }
 
+// ToMaxHost converts the address section to one in which all individual address sections have a host of all one-bits, the max value,
+// the host being the bits following the prefix length.
+// If the address section has no prefix length, then it returns an all-ones section, the max address section.
+//
+// The returned address section will have the same prefix and prefix length.
+//
+// This returns an error if the address section is a range of address sections which cannot be converted to a range in which all sections have max hosts,
+// because the conversion results in a segment that is not a sequential range of values.
+func (section *IPv4AddressSection) ToMaxHost() (*IPv4AddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.toMaxHost()
+	return res.ToIPv4(), err
+}
+
+// ToMaxHostLen converts the address section to one in which all individual address sections have a host of all one-bits, the max host,
+// the host being the bits following the given prefix length.
+// If this section has the same prefix length, then the resulting section will too, otherwise the resulting section will have no prefix length.
+//
+// This returns an error if the section is a range of address sections which cannot be converted to a range in which all address sections have max hosts,
+// because the conversion results in a segment that is not a sequential range of values.
+func (section *IPv4AddressSection) ToMaxHostLen(prefixLength BitCount) (*IPv4AddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.toMaxHostLen(prefixLength)
+	return res.ToIPv4(), err
+}
+
+// ReverseBits returns a new section with the bits reversed.  Any prefix length is dropped.
+//
+// If the bits within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, this returns an error.
+//
+// In practice this means that to be reversible,
+// a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (section *IPv4AddressSection) ReverseBits(perByte bool) (*IPv4AddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.reverseBits(perByte)
+	return res.ToIPv4(), err
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
