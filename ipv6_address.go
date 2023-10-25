@@ -1055,6 +1055,38 @@ func (addr *IPv6Address) GetEmbeddedIPv4AddressSection() (*IPv4AddressSection, a
 	return addr.init().GetSection().getEmbeddedIPv4AddressSection()
 }
 
+// GetEmbeddedIPv4Address gets the IPv4 address corresponding to the lowest (least-significant) 2 segments (4 bytes) in this address.
+// Many IPv4 to IPv6 mapping schemes (but not all) use these 4 bytes for a mapped IPv4 address.
+// An error can result when one of the associated IPv6 segments has a range of values that cannot be split into two ranges.
+func (addr *IPv6Address) GetEmbeddedIPv4Address() (*IPv4Address, address_error.IncompatibleAddressError) {
+	section, err := addr.GetEmbeddedIPv4AddressSection()
+	if err != nil {
+		return nil, err
+	}
+	return newIPv4Address(section), nil
+}
+
+// GetEmbeddedIPv4AddressAt produces an IPv4 address corresponding to any sequence of 4 bytes in this IPv6 address, starting at the given index.
+func (addr *IPv6Address) GetEmbeddedIPv4AddressAt(byteIndex int) (*IPv4Address, address_error.IncompatibleAddressError) {
+	if byteIndex == IPv6MixedOriginalSegmentCount*IPv6BytesPerSegment {
+		return addr.GetEmbeddedIPv4Address()
+	}
+
+	if byteIndex > IPv6ByteCount-IPv4ByteCount {
+		return nil, &addressValueError{
+			addressError: addressError{key: "ipaddress.error.invalid.size"},
+			val:          byteIndex,
+		}
+	}
+
+	section, err := addr.init().GetSection().GetIPv4AddressSection(byteIndex, byteIndex+IPv4ByteCount)
+	if err != nil {
+		return nil, err
+	}
+
+	return newIPv4Address(section), nil
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
