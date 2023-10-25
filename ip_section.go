@@ -1625,6 +1625,33 @@ func (section *IPAddressSection) ToMaxHostLen(prefixLength BitCount) (*IPAddress
 	return section.toMaxHostLen(prefixLength)
 }
 
+// ReverseBits returns a new section with the bits reversed.  Any prefix length is dropped.
+//
+// If the bits within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, this returns an error.
+//
+// In practice this means that to be reversible,
+// a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (section *IPAddressSection) ReverseBits(perByte bool) (*IPAddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.reverseBits(perByte)
+	return res.ToIP(), err
+}
+
+// ReverseBytes returns a new section with the bytes reversed.  Any prefix length is dropped.
+//
+// If each segment is more than 1 byte long, and the bytes within
+// a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, then this returns an error.
+//
+// In practice this means that to be reversible,
+// a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+func (section *IPAddressSection) ReverseBytes() (*IPAddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.reverseBytes(false)
+	return res.ToIP(), err
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
