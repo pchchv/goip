@@ -693,6 +693,26 @@ func (section *IPv4AddressSection) ToZeroHost() (*IPv4AddressSection, address_er
 	return res.ToIPv4(), err
 }
 
+// ToZeroHostLen converts the address section to one in which all individual sections have a host of zero,
+// the host being the bits following the given prefix length.
+// If this address section has the same prefix length, then the returned one will too, otherwise the returned section will have no prefix length.
+//
+// This returns an error if the section is a range of which cannot be converted to a range in which all sections have zero hosts,
+// because the conversion results in a segment that is not a sequential range of values.
+func (section *IPv4AddressSection) ToZeroHostLen(prefixLength BitCount) (*IPv4AddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.toZeroHostLen(prefixLength)
+	return res.ToIPv4(), err
+}
+
+// ToZeroNetwork converts the address section to one in which all individual address sections have a network of zero,
+// the network being the bits within the prefix length.
+// If the address section has no prefix length, then it returns an all-zero address section.
+//
+// The returned address section will have the same prefix length.
+func (section *IPv4AddressSection) ToZeroNetwork() *IPv4AddressSection {
+	return section.toZeroNetwork().ToIPv4()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
