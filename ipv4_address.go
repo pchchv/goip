@@ -907,6 +907,19 @@ func (addr *IPv4Address) BitwiseOr(other *IPv4Address) (masked *IPv4Address, err
 	return addr.bitwiseOrPrefixed(other, true)
 }
 
+// ReverseBytes returns a new address with the bytes reversed.
+// Any prefix length is dropped.
+func (addr *IPv4Address) ReverseBytes() *IPv4Address {
+	addr = addr.init()
+	return addr.checkIdentity(addr.GetSection().ReverseBytes())
+}
+
+// ReverseSegments returns a new address with the segments reversed.
+func (addr *IPv4Address) ReverseSegments() *IPv4Address {
+	addr = addr.init()
+	return addr.checkIdentity(addr.GetSection().ReverseSegments())
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
