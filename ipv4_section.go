@@ -667,6 +667,32 @@ func (section *IPv4AddressSection) joinSegments(joinCount int) (*AddressDivision
 	return newRangePrefixDivision(lower, upper, prefix, (BitCount(joinCount)+1)<<3), nil
 }
 
+// GetNetworkMask returns the network mask associated with the CIDR network prefix length of this address section.
+// If this section has no prefix length, then the all-ones mask is returned.
+func (section *IPv4AddressSection) GetNetworkMask() *IPv4AddressSection {
+	return section.getNetworkMask(ipv4Network).ToIPv4()
+}
+
+// GetHostMask returns the host mask associated with the CIDR network prefix length of this address section.
+// If this section has no prefix length, then the all-ones mask is returned.
+func (section *IPv4AddressSection) GetHostMask() *IPv4AddressSection {
+	return section.getHostMask(ipv4Network).ToIPv4()
+}
+
+// ToZeroHost converts the address section to one in which all individual address sections have a host of zero,
+// the host being the bits following the prefix length.
+// If the address section has no prefix length, then it returns an all-zero address section.
+//
+// The returned section will have the same prefix and prefix length.
+//
+// This returns an error if the section is a range of address sections which cannot be converted to
+// a range in which all sections have zero hosts,
+// because the conversion results in a segment that is not a sequential range of values.
+func (section *IPv4AddressSection) ToZeroHost() (*IPv4AddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.toZeroHost(false)
+	return res.ToIPv4(), err
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
