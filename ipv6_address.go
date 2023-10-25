@@ -1042,6 +1042,19 @@ func (addr *IPv6Address) GetSubSection(index, endIndex int) *IPv6AddressSection 
 	return addr.GetSection().GetSubSection(index, endIndex)
 }
 
+// GetMixedAddressGrouping creates a grouping by combining an IPv6 address section comprising the first six segments (most significant) in this address
+// with the IPv4 section corresponding to the lowest (least-significant) two segments in this address, as produced by GetEmbeddedIPv4Address.
+func (addr *IPv6Address) GetMixedAddressGrouping() (*IPv6v4MixedAddressGrouping, address_error.IncompatibleAddressError) {
+	return addr.init().GetSection().getMixedAddressGrouping()
+}
+
+// GetEmbeddedIPv4AddressSection gets the IPv4 section corresponding to the lowest (least-significant) 2 segments (4 bytes) in this address.
+// Many IPv4 to IPv6 mapping schemes (but not all) use these 4 bytes for a mapped IPv4 address.
+// An error can result when one of the associated IPv6 segments has a range of values that cannot be split into two ranges.
+func (addr *IPv6Address) GetEmbeddedIPv4AddressSection() (*IPv4AddressSection, address_error.IncompatibleAddressError) {
+	return addr.init().GetSection().getEmbeddedIPv4AddressSection()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
