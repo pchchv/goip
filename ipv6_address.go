@@ -1087,6 +1087,16 @@ func (addr *IPv6Address) GetEmbeddedIPv4AddressAt(byteIndex int) (*IPv4Address, 
 	return newIPv4Address(section), nil
 }
 
+// GetIPv4AddressSection produces an IPv4 address section corresponding to any sequence of bytes in this IPv6 address section
+func (addr *IPv6Address) GetIPv4AddressSection(startIndex, endIndex int) (*IPv4AddressSection, address_error.IncompatibleAddressError) {
+	return addr.init().GetSection().GetIPv4AddressSection(startIndex, endIndex)
+}
+
+// Get6To4IPv4Address Returns the second and third segments as an IPv4Address.
+func (addr *IPv6Address) Get6To4IPv4Address() (*IPv4Address, address_error.IncompatibleAddressError) {
+	return addr.GetEmbeddedIPv4AddressAt(2)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
