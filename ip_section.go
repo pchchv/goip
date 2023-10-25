@@ -1053,6 +1053,43 @@ func (section *ipAddressSectionInternal) toZeroHost(boundariesOnly bool) (res *I
 	return section.createZeroHost(prefLen, boundariesOnly)
 }
 
+func (section *ipAddressSectionInternal) toZeroNetwork() *IPAddressSection {
+	segmentCount := section.GetSegmentCount()
+	if segmentCount == 0 {
+		return section.toIPAddressSection()
+	}
+
+	if !section.isPrefixed() {
+		mask := section.addrType.getIPNetwork().GetHostMask(section.GetBitCount())
+		return mask.GetSubSection(0, segmentCount)
+	}
+
+	return section.createZeroNetwork()
+}
+
+func (section *ipAddressSectionInternal) toMaxHost() (res *IPAddressSection, err address_error.IncompatibleAddressError) {
+	segmentCount := section.GetSegmentCount()
+	if segmentCount == 0 {
+		return section.toIPAddressSection(), nil
+	}
+
+	if !section.isPrefixed() {
+		mask := section.addrType.getIPNetwork().GetPrefixedHostMask(0)
+		res = mask.GetSubSection(0, segmentCount)
+		return
+	}
+
+	if section.IsMaxHostLen(section.getPrefixLen().bitCount()) {
+		return section.toIPAddressSection(), nil
+	}
+
+	if section.IncludesMaxHost() && section.IsSingleNetwork() {
+		return section.getUpper().ToIP(), nil // cached
+	}
+
+	return section.createMaxHost()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
