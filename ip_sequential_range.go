@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/netip"
 	"strings"
+	"unsafe"
 )
 
 // DefaultSeqRangeSeparator is the low to high value separator used when creating strings for IP ranges.
@@ -740,6 +741,84 @@ func (rng *SequentialRange[T]) Subtract(other *SequentialRange[T]) []*Sequential
 // GetIPVersion returns the IP version of this IP address sequential range
 func (rng *SequentialRange[T]) GetIPVersion() IPVersion {
 	return rng.init().lower.GetIPVersion()
+}
+
+func (rng *SequentialRange[T]) getCachedCount(copy bool) (res *big.Int) {
+	cache := rng.cache
+	count := (*big.Int)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.cachedCount))))
+	if count == nil {
+		if !rng.IsMultiple() {
+			count = bigOne()
+		} else {
+			lower := rng.lower
+			upper := rng.upper
+			if ipv4Lower, ok := any(lower).(*IPv4Address); ok {
+				ipv4Upper := any(upper).(*IPv4Address)
+				val := int64(ipv4Upper.Uint32Value()) - int64(ipv4Lower.Uint32Value()) + 1
+				count = new(big.Int).SetInt64(val)
+			} else {
+				count = upper.GetValue()
+				res = lower.GetValue()
+				count.Sub(count, res).Add(count, bigOneConst())
+				res.Set(count)
+			}
+		}
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.cachedCount))
+		atomicStorePointer(dataLoc, unsafe.Pointer(count))
+	}
+
+	if res == nil {
+		if copy {
+			res = new(big.Int).Set(count)
+		} else {
+			res = count
+		}
+	}
+
+	return
+}
+
+// GetPrefixCountLen returns the count of the number of distinct values within
+// the prefix part of the range of addresses.
+func (rng *SequentialRange[T]) GetPrefixCountLen(prefixLen BitCount) *big.Int {
+	if !rng.IsMultiple() { // also checks for zero-ranges
+		return bigOne()
+	}
+
+	bitCount := rng.lower.GetBitCount()
+	if prefixLen <= 0 {
+		return bigOne()
+	} else if prefixLen >= bitCount {
+		return rng.GetCount()
+	}
+
+	shiftAdjustment := bitCount - prefixLen
+	lower := rng.lower
+	if ipv4Lower, ok := any(lower).(*IPv4Address); ok {
+		ipv4Upper := any(rng.upper).(*IPv4Address)
+		upperAdjusted := ipv4Upper.Uint32Value() >> uint(shiftAdjustment)
+		lowerAdjusted := ipv4Lower.Uint32Value() >> uint(shiftAdjustment)
+		result := int64(upperAdjusted) - int64(lowerAdjusted) + 1
+		return new(big.Int).SetInt64(result)
+	}
+
+	upperVal := rng.upper.GetValue()
+	ushiftAdjustment := uint(shiftAdjustment)
+	upperVal.Rsh(upperVal, ushiftAdjustment)
+	lowerVal := lower.GetValue()
+	lowerVal.Rsh(lowerVal, ushiftAdjustment)
+	upperVal.Sub(upperVal, lowerVal).Add(upperVal, bigOneConst())
+	return upperVal
+}
+
+// GetCount returns the count of addresses that this sequential range spans.
+//
+// Use IsMultiple if you simply want to know if the count is greater than 1.
+func (rng *SequentialRange[T]) GetCount() *big.Int {
+	if rng == nil {
+		return bigZero()
+	}
+	return rng.init().getCachedCount(true)
 }
 
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
