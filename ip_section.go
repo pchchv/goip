@@ -1580,6 +1580,51 @@ func (section *IPAddressSection) GetHostMask() *IPAddressSection {
 	return section.getHostMask(section.getNetwork())
 }
 
+// ToZeroHost converts the address section to one in which all individual address sections have a host of zero,
+// the host being the bits following the prefix length.
+// If the address section has no prefix length, then it returns an all-zero address section.
+//
+// The returned section will have the same prefix and prefix length.
+//
+// This returns an error if the section is a range of address sections which cannot be converted to
+// a range in which all sections have zero hosts,
+// because the conversion results in a segment that is not a sequential range of values.
+func (section *IPAddressSection) ToZeroHost() (res *IPAddressSection, err address_error.IncompatibleAddressError) {
+	return section.toZeroHost(false)
+}
+
+// ToZeroNetwork converts the address section to one in which all individual address sections have a network of zero,
+// the network being the bits within the prefix length.
+// If the address section has no prefix length, then it returns an all-zero address section.
+//
+// The returned address section will have the same prefix length.
+func (section *IPAddressSection) ToZeroNetwork() *IPAddressSection {
+	return section.toZeroNetwork()
+}
+
+// ToMaxHost converts the address section to one in which all individual address sections have a host of all one-bits, the max value,
+// the host being the bits following the prefix length.
+// If the address section has no prefix length, then it returns an all-ones section, the max address section.
+//
+// The returned address section will have the same prefix and prefix length.
+//
+// This returns an error if the address section is a range of address sections which cannot be converted to
+// a range in which all sections have max hosts,
+// because the conversion results in a segment that is not a sequential range of values.
+func (section *IPAddressSection) ToMaxHost() (res *IPAddressSection, err address_error.IncompatibleAddressError) {
+	return section.toMaxHost()
+}
+
+// ToMaxHostLen converts the address section to one in which all individual address sections have a host of all one-bits, the max host,
+// the host being the bits following the given prefix length.
+// If this section has the same prefix length, then the resulting section will too, otherwise the resulting section will have no prefix length.
+//
+// This returns an error if the section is a range of address sections which cannot be converted to a range in which all address sections have max hosts,
+// because the conversion results in a segment that is not a sequential range of values.
+func (section *IPAddressSection) ToMaxHostLen(prefixLength BitCount) (*IPAddressSection, address_error.IncompatibleAddressError) {
+	return section.toMaxHostLen(prefixLength)
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
