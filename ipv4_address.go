@@ -887,6 +887,26 @@ func (addr *IPv4Address) GetSubSection(index, endIndex int) *IPv4AddressSection 
 	return addr.GetSection().GetSubSection(index, endIndex)
 }
 
+func (addr *IPv4Address) bitwiseOrPrefixed(other *IPv4Address, retainPrefix bool) (masked *IPv4Address, err address_error.IncompatibleAddressError) {
+	addr = addr.init()
+	sect, err := addr.GetSection().bitwiseOrPrefixed(other.GetSection(), retainPrefix)
+	if err == nil {
+		masked = addr.checkIdentity(sect)
+	}
+	return
+}
+
+// BitwiseOr does the bitwise disjunction with this address or subnet, useful when subnetting.
+// It is similar to Mask which does the bitwise conjunction.
+//
+// The operation is applied to all individual addresses and the result is returned.
+//
+// If this is a subnet representing multiple addresses, and applying the operation to all addresses creates a set of addresses
+// that cannot be represented as a sequential range within each segment, then an error is returned.
+func (addr *IPv4Address) BitwiseOr(other *IPv4Address) (masked *IPv4Address, err address_error.IncompatibleAddressError) {
+	return addr.bitwiseOrPrefixed(other, true)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
