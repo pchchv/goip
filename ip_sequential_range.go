@@ -821,6 +821,36 @@ func (rng *SequentialRange[T]) GetCount() *big.Int {
 	return rng.init().getCachedCount(true)
 }
 
+// Compare returns a negative integer, zero, or a positive integer if
+// this sequential address range is less than, equal, or greater than the given item.
+// Any address item is comparable to any other.
+// All address items use CountComparator to compare.
+func (rng *SequentialRange[T]) Compare(item AddressItem) int {
+	if rng != nil {
+		rng = rng.init()
+	}
+	return CountComparator.Compare(rng, item)
+}
+
+// CompareSize compares the counts of two address ranges or items,
+// the number of individual addresses or items within each.
+//
+// Rather than calculating counts with GetCount,
+// there can be more efficient ways of determining whether this range spans more individual addresses than another item.
+//
+// CompareSize returns a positive integer if this range has a larger count than the item given,
+// zero if they are the same, or a negative integer if the other has a larger count.
+func (rng *SequentialRange[T]) CompareSize(other AddressItem) int {
+	if rng == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// we have size 0, other has size >= 1
+		return -1
+	}
+	return compareCount(rng, other)
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
