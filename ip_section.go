@@ -1568,6 +1568,18 @@ func (section *IPAddressSection) ReverseSegments() *IPAddressSection {
 	return res.ToIP()
 }
 
+// GetNetworkMask returns the network mask associated with the CIDR network prefix length of this address section.
+// If this section has no prefix length, then the all-ones mask is returned.
+func (section *IPAddressSection) GetNetworkMask() *IPAddressSection {
+	return section.getNetworkMask(section.getNetwork())
+}
+
+// GetHostMask returns the host mask associated with the CIDR network prefix length of this address section.
+// If this section has no prefix length, then the all-ones mask is returned.
+func (section *IPAddressSection) GetHostMask() *IPAddressSection {
+	return section.getHostMask(section.getNetwork())
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
