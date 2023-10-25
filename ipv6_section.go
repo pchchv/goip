@@ -890,6 +890,18 @@ func (section *IPv6AddressSection) GetIPv4AddressSection(startByteIndex, endByte
 	return res, nil
 }
 
+// GetNetworkMask returns the network mask associated with the CIDR network prefix length of this address section.
+// If this section has no prefix length, then the all-ones mask is returned.
+func (section *IPv6AddressSection) GetNetworkMask() *IPv6AddressSection {
+	return section.getNetworkMask(ipv6Network).ToIPv6()
+}
+
+// GetHostMask returns the host mask associated with the CIDR network prefix length of this address section.
+// If this section has no prefix length, then the all-ones mask is returned.
+func (section *IPv6AddressSection) GetHostMask() *IPv6AddressSection {
+	return section.getHostMask(ipv6Network).ToIPv6()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
