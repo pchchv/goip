@@ -1013,6 +1013,46 @@ func (section *ipAddressSectionInternal) getHostMask(network IPAddressNetwork) *
 	return network.GetHostMask(prefLen).GetSubSection(0, section.GetSegmentCount())
 }
 
+// GetPrefixLenForSingleBlock returns a prefix length for which the range of
+// this address section matches the block of addresses for that prefix.
+//
+// If no such prefix exists, GetPrefixLenForSingleBlock returns nil.
+//
+// If this address section represents a single value, returns the bit length.
+func (section *ipAddressSectionInternal) GetPrefixLenForSingleBlock() PrefixLen {
+	return section.addressSectionInternal.GetPrefixLenForSingleBlock()
+}
+
+func (section *ipAddressSectionInternal) toZeroHost(boundariesOnly bool) (res *IPAddressSection, err address_error.IncompatibleAddressError) {
+	segmentCount := section.GetSegmentCount()
+	if segmentCount == 0 {
+		return section.toIPAddressSection(), nil
+	}
+
+	var prefLen BitCount
+
+	if section.isPrefixed() {
+		prefLen = section.getPrefixLen().bitCount()
+	}
+
+	if section.IsZeroHostLen(prefLen) {
+		return section.toIPAddressSection(), nil
+	}
+
+	if section.IncludesZeroHost() && section.IsSingleNetwork() {
+		res = section.getLower().ToIP() //cached
+		return
+	}
+
+	if !section.isPrefixed() {
+		mask := section.addrType.getIPNetwork().GetPrefixedNetworkMask(0)
+		res = mask.GetSubSection(0, segmentCount)
+		return
+	}
+
+	return section.createZeroHost(prefLen, boundariesOnly)
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
