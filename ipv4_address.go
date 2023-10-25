@@ -875,6 +875,18 @@ func (addr *IPv4Address) GetUpperNetIPAddr() *net.IPAddr {
 	}
 }
 
+// GetTrailingSection gets the subsection from the series starting from the given index.
+// The first segment is at index 0.
+func (addr *IPv4Address) GetTrailingSection(index int) *IPv4AddressSection {
+	return addr.GetSection().GetTrailingSection(index)
+}
+
+// GetSubSection gets the subsection from the series starting from the given index and ending just before the give endIndex.
+// The first segment is at index 0.
+func (addr *IPv4Address) GetSubSection(index, endIndex int) *IPv4AddressSection {
+	return addr.GetSection().GetSubSection(index, endIndex)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
