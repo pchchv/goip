@@ -1097,6 +1097,31 @@ func (addr *IPv6Address) Get6To4IPv4Address() (*IPv4Address, address_error.Incom
 	return addr.GetEmbeddedIPv4AddressAt(2)
 }
 
+// BitwiseOr does the bitwise disjunction with this address or subnet, useful when subnetting.
+// It is similar to Mask which does the bitwise conjunction.
+//
+// The operation is applied to all individual addresses and the result is returned.
+//
+// If this is a subnet representing multiple addresses, and applying the operation to all addresses creates a set of addresses
+// that cannot be represented as a sequential range within each segment, then an error is returned.
+func (addr *IPv6Address) BitwiseOr(other *IPv6Address) (masked *IPv6Address, err address_error.IncompatibleAddressError) {
+	return addr.bitwiseOrPrefixed(other, true)
+}
+
+func (addr *IPv6Address) bitwiseOrPrefixed(other *IPv6Address, retainPrefix bool) (masked *IPv6Address, err address_error.IncompatibleAddressError) {
+	addr = addr.init()
+	sect, err := addr.GetSection().bitwiseOrPrefixed(other.GetSection(), retainPrefix)
+	if err == nil {
+		masked = addr.checkIdentity(sect)
+	}
+	return
+}
+
+// ReverseSegments returns a new address with the segments reversed.
+func (addr *IPv6Address) ReverseSegments() *IPv6Address {
+	return addr.checkIdentity(addr.GetSection().ReverseSegments())
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
