@@ -1030,6 +1030,18 @@ func (addr *IPv6Address) Mask(other *IPv6Address) (masked *IPv6Address, err addr
 	return addr.maskPrefixed(other, true)
 }
 
+// GetTrailingSection gets the subsection from the series starting from the given index.
+// The first segment is at index 0.
+func (addr *IPv6Address) GetTrailingSection(index int) *IPv6AddressSection {
+	return addr.GetSection().GetTrailingSection(index)
+}
+
+// GetSubSection gets the subsection from the series starting from the given index and ending just before the give endIndex.
+// The first segment is at index 0.
+func (addr *IPv6Address) GetSubSection(index, endIndex int) *IPv6AddressSection {
+	return addr.GetSection().GetSubSection(index, endIndex)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
