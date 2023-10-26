@@ -832,6 +832,19 @@ func (addr *IPAddress) ToSinglePrefixBlockOrAddress() *IPAddress {
 	return addr.init().toSinglePrefixBlockOrAddr().ToIP()
 }
 
+func (addr *IPAddress) toSinglePrefixBlockOrAddress() (*IPAddress, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.address.not.block"}}
+	}
+
+	res := addr.ToSinglePrefixBlockOrAddress()
+	if res == nil {
+		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.address.not.block"}}
+	}
+
+	return res, nil
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
