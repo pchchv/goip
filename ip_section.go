@@ -1521,6 +1521,15 @@ func (section *IPAddressSection) AssignMinPrefixForBlock() *IPAddressSection {
 	return section.assignMinPrefixForBlock().ToIP()
 }
 
+// AssignPrefixForSingleBlock returns the equivalent prefix block that matches exactly the range of values in this address section.
+// The returned block will have an assigned prefix length indicating the prefix length for the block.
+//
+// There may be no such address section - it is required that the range of values match the range of a prefix block.
+// If there is no such address section, then nil is returned.
+func (section *IPAddressSection) AssignPrefixForSingleBlock() *IPAddressSection {
+	return section.assignPrefixForSingleBlock().ToIP()
+}
+
 // Iterator provides an iterator to iterate through the individual address sections of this address section.
 //
 // When iterating, the prefix length is preserved.
