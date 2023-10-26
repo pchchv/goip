@@ -102,3 +102,11 @@ type IPv4AddressKey struct {
 }
 
 type testComparableConstraint[T comparable] struct{}
+
+type keyContents struct {
+	vals [2]struct {
+		lower,
+		upper uint64
+	}
+	zone Zone
+}
