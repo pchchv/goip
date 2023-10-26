@@ -952,6 +952,34 @@ func (section *IPv6AddressSection) ToMaxHost() (*IPv6AddressSection, address_err
 	return res.ToIPv6(), err
 }
 
+// ReverseBits returns a new section with the bits reversed.  Any prefix length is dropped.
+//
+// If the bits within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, this returns an error.
+//
+// In practice this means that to be reversible,
+// a range must include all values except possibly the largest and/or smallest,
+// which reverse to themselves.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (section *IPv6AddressSection) ReverseBits(perByte bool) (*IPv6AddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.reverseBits(perByte)
+	return res.ToIPv6(), err
+}
+
+// ReverseBytes returns a new section with the bytes reversed.
+// Any prefix length is dropped.
+//
+// If the bytes within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, then this returns an error.
+//
+// In practice this means that to be reversible,
+// a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+func (section *IPv6AddressSection) ReverseBytes() (*IPv6AddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.reverseBytes(false)
+	return res.ToIPv6(), err
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
