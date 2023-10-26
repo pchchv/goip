@@ -604,6 +604,18 @@ func (addr *MACAddress) GetODISection() *MACAddressSection {
 	return addr.GetTrailingSection(MACOrganizationalUniqueIdentifierSegmentCount)
 }
 
+// CopySubSegments copies the existing segments from the given start index until but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (addr *MACAddress) CopySubSegments(start, end int, segs []*MACAddressSegment) (count int) {
+	return addr.GetSection().CopySubSegments(start, end, segs)
+}
+
+// CopySegments copies the existing segments into the given slice,
+// as much as can be fit into the slice, returning the number of segments copied.
+func (addr *MACAddress) CopySegments(segs []*MACAddressSegment) (count int) {
+	return addr.GetSection().CopySegments(segs)
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
