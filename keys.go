@@ -3,9 +3,11 @@ package goip
 var (
 	_ IPv4AddressKey
 	_ IPv6AddressKey
+	_ MACAddressKey
 
 	_ testComparableConstraint[IPv4AddressKey]
 	_ testComparableConstraint[IPv6AddressKey]
+	_ testComparableConstraint[MACAddressKey]
 )
 
 // SequentialRangeKey is a representation of SequentialRange that is comparable as defined by the language specification.
@@ -123,4 +125,20 @@ type keyContents struct {
 // IPv6Address can be compared using the Compare or Equal methods, or using an AddressComparator.
 type IPv6AddressKey struct {
 	keyContents
+}
+
+// MACAddressKey is a representation of a MAC address that is comparable as defined by the language specification.
+//
+// It can be used as a map key.  It can be obtained from its originating address instances.
+// The zero value corresponds to the zero-value for MACAddress.
+// Keys do not incorporate prefix length to ensure that all equal addresses have equal keys.
+// To create a key that has prefix length,
+// combine into a struct with the PrefixKey obtained by passing the address into PrefixKeyFrom.
+// MACAddress can be compared using the Compare or Equal methods, or using an AddressComparator.
+type MACAddressKey struct {
+	vals struct {
+		lower,
+		upper uint64
+	}
+	additionalByteCount uint8 // 0 for MediaAccessControlSegmentCount or 2 for ExtendedUniqueIdentifier64SegmentCount
 }
