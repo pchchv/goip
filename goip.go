@@ -913,6 +913,44 @@ func (addr *IPAddress) ToZeroHostLen(prefixLength BitCount) (*IPAddress, address
 	return addr.init().toZeroHostLen(prefixLength)
 }
 
+// ToZeroNetwork converts the address or subnet to one in which all individual addresses have a network of zero,
+// the network being the bits within the prefix length.
+// If the address or subnet has no prefix length, then it returns an all-zero address.
+//
+// The returned address or subnet will have the same prefix length.
+func (addr *IPAddress) ToZeroNetwork() *IPAddress {
+	return addr.init().toZeroNetwork()
+}
+
+// ToMaxHost converts the address or subnet to one in which all individual addresses have a host of all one-bits, the max value,
+// the host being the bits following the prefix length.
+// If the address or subnet has no prefix length, then it returns an all-ones address, the max address.
+//
+// The returned address or subnet will have the same prefix and prefix length.
+//
+// For instance, the max host of "1.2.3.4/16" gives the broadcast address "1.2.255.255/16".
+//
+// This returns an error if the subnet is a range of addresses which cannot be converted to
+// a range in which all addresses have max hosts,
+// because the conversion results in a subnet segment that is not a sequential range of values.
+func (addr *IPAddress) ToMaxHost() (*IPAddress, address_error.IncompatibleAddressError) {
+	return addr.init().toMaxHost()
+}
+
+// ToMaxHostLen converts the address or subnet to one in which all individual addresses have a host of all one-bits, the max host,
+// the host being the bits following the given prefix length.
+// If this address or subnet has the same prefix length, then the resulting one will too,
+// otherwise the resulting address or subnet will have no prefix length.
+//
+// For instance, the zero host of "1.2.3.4" for the prefix length of 16 is the address "1.2.255.255".
+//
+// This returns an error if the subnet is a range of addresses which cannot be converted to
+// a range in which all addresses have max hosts,
+// because the conversion results in a subnet segment that is not a sequential range of values.
+func (addr *IPAddress) ToMaxHostLen(prefixLength BitCount) (*IPAddress, address_error.IncompatibleAddressError) {
+	return addr.init().toMaxHostLen(prefixLength)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
