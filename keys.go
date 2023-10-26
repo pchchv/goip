@@ -1,5 +1,7 @@
 package goip
 
+var _ IPv4AddressKey
+
 // SequentialRangeKey is a representation of SequentialRange that is comparable as defined by the language specification.
 //
 // It can be used as a map key.
@@ -80,4 +82,17 @@ func (key SequentialRangeKey[T]) ToSeqRange() *SequentialRange[T] {
 // String calls the String method in the corresponding sequential range.
 func (key SequentialRangeKey[T]) String() string {
 	return key.ToSeqRange().String()
+}
+
+// IPv4AddressKey is a representation of an IPv4 address that is comparable as defined by the language specification.
+//
+// It can be used as a map key.
+// It can be obtained from its originating address instances.
+// The zero value corresponds to the zero-value for IPv4Address.
+// Keys do not incorporate prefix length to ensure that all equal addresses have equal keys.
+// To create a key that has prefix length, combine into a struct with
+// the PrefixKey obtained by passing the address into PrefixKeyFrom.
+// IPv4Address can be compared using the Compare or Equal methods, or using an AddressComparator.
+type IPv4AddressKey struct {
+	vals uint64 // upper and lower combined into one uint64
 }
