@@ -1201,6 +1201,40 @@ func (addr *Address) IsLocal() bool {
 	return false
 }
 
+// AssignPrefixForSingleBlock returns the equivalent prefix block
+// that matches exactly the range of values in this address.
+// The returned block will have an assigned prefix length indicating
+// the prefix length for the block.
+//
+// There may be no such address - it is required that
+// the range of values match the range of a prefix block.
+// If there is no such address, then nil is returned.
+//
+// Examples:
+//   - 1.2.3.4 returns 1.2.3.4/32
+//   - 1.2.*.* returns 1.2.0.0/16
+//   - 1.2.*.0/24 returns 1.2.0.0/16
+//   - 1.2.*.4 returns nil
+//   - 1.2.0-1.* returns 1.2.0.0/23
+//   - 1.2.1-2.* returns nil
+//   - 1.2.252-255.* returns 1.2.252.0/22
+//   - 1.2.3.4/16 returns 1.2.3.4/32
+func (addr *Address) AssignPrefixForSingleBlock() *Address {
+	return addr.init().assignPrefixForSingleBlock()
+}
+
+// ToSinglePrefixBlockOrAddress converts to a single prefix block or address.
+// If the given address is a single prefix block, it is returned.
+// If it can be converted to a single prefix block by assigning a prefix length, the converted block is returned.
+// If it is a single address, any prefix length is removed and the address is returned.
+// Otherwise, nil is returned.
+// This method provides the address formats used by tries.
+// ToSinglePrefixBlockOrAddress is quite similar to AssignPrefixForSingleBlock,
+// which always returns prefixed addresses, while this does not.
+func (addr *Address) ToSinglePrefixBlockOrAddress() *Address {
+	return addr.init().toSinglePrefixBlockOrAddr()
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
