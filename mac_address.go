@@ -616,6 +616,31 @@ func (addr *MACAddress) CopySegments(segs []*MACAddressSegment) (count int) {
 	return addr.GetSection().CopySegments(segs)
 }
 
+// GetSegments returns a slice with the address segments.
+// The returned slice is not backed by the same array as this address.
+func (addr *MACAddress) GetSegments() []*MACAddressSegment {
+	return addr.GetSection().GetSegments()
+}
+
+// ForEachSegment visits each segment in order from most-significant to least,
+// the most significant with index 0, calling the given function for each,
+// terminating early if the function returns true.
+// Returns the number of visited segments.
+func (addr *MACAddress) ForEachSegment(consumer func(segmentIndex int, segment *MACAddressSegment) (stop bool)) int {
+	return addr.GetSection().ForEachSegment(consumer)
+}
+
+// ReverseBytes returns a new address with the bytes reversed.
+// Any prefix length is dropped.
+func (addr *MACAddress) ReverseBytes() *MACAddress {
+	return addr.checkIdentity(addr.GetSection().ReverseBytes())
+}
+
+// ReverseSegments returns a new address with the segments reversed.
+func (addr *MACAddress) ReverseSegments() *MACAddress {
+	return addr.checkIdentity(addr.GetSection().ReverseSegments())
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
