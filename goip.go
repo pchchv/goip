@@ -1298,6 +1298,22 @@ func (addr *ipAddressInternal) toZeroNetwork() *IPAddress {
 	return addr.checkIdentity(addr.getSection().toZeroNetwork())
 }
 
+func (addr *ipAddressInternal) toMaxHost() (res *IPAddress, err address_error.IncompatibleAddressError) {
+	section, err := addr.section.toIPAddressSection().toMaxHost()
+	if err == nil {
+		res = addr.checkIdentity(section)
+	}
+	return
+}
+
+func (addr *ipAddressInternal) toMaxHostLen(prefixLength BitCount) (res *IPAddress, err address_error.IncompatibleAddressError) {
+	section, err := addr.getSection().toMaxHostLen(prefixLength)
+	if err == nil {
+		res = addr.checkIdentity(section)
+	}
+	return
+}
+
 // IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
 type IPAddressValueProvider interface {
 	AddressValueProvider
