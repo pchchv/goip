@@ -845,6 +845,34 @@ func (addr *IPAddress) toSinglePrefixBlockOrAddress() (*IPAddress, address_error
 	return res, nil
 }
 
+// BitwiseOr does the bitwise disjunction with this address or subnet, useful when subnetting.
+// It is similar to Mask which does the bitwise conjunction.
+//
+// The operation is applied to all individual addresses and the result is returned.
+//
+// If the given address is a different version than this, then an error is returned.
+//
+// If this is a subnet representing multiple addresses, and applying the operations to all addresses creates a set of addresses
+// that cannot be represented as a sequential range within each segment, then an error is returned.
+func (addr *IPAddress) BitwiseOr(other *IPAddress) (masked *IPAddress, err address_error.IncompatibleAddressError) {
+	return addr.bitwiseOrPrefixed(other, true)
+}
+
+func (addr *IPAddress) bitwiseOrPrefixed(other *IPAddress, retainPrefix bool) (*IPAddress, address_error.IncompatibleAddressError) {
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		if oth := other.ToIPv4(); oth != nil {
+			result, err := thisAddr.bitwiseOrPrefixed(oth, retainPrefix)
+			return result.ToIP(), err
+		}
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		if oth := other.ToIPv6(); oth != nil {
+			result, err := thisAddr.bitwiseOrPrefixed(oth, retainPrefix)
+			return result.ToIP(), err
+		}
+	}
+	return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.ipMismatch"}}
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
