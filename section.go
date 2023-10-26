@@ -1484,6 +1484,34 @@ func (section *addressSectionInternal) toDecimalStringZoned(zone Zone) (string, 
 	}
 }
 
+// GetPrefixLenForSingleBlock returns a prefix length for which
+// the range of this address section matches the block of addresses for that prefix.
+//
+// If no such prefix exists, GetPrefixLenForSingleBlock returns nil.
+//
+// If this address section represents a single value, returns the bit length.
+func (section *addressSectionInternal) GetPrefixLenForSingleBlock() PrefixLen {
+	return section.addressDivisionGroupingInternal.GetPrefixLenForSingleBlock()
+}
+
+func (section *addressSectionInternal) assignPrefixForSingleBlock() *AddressSection {
+	newPrefix := section.GetPrefixLenForSingleBlock()
+	if newPrefix == nil {
+		return nil
+	}
+
+	newSect := section.setPrefixLen(newPrefix.bitCount())
+	cache := newSect.cache
+	if cache != nil {
+		// no atomic writes required since we created this new section in here
+		cache.isSinglePrefixBlock = &trueVal
+		cache.equivalentPrefix = cachePrefix(newPrefix.bitCount())
+		cache.minPrefix = newPrefix
+	}
+
+	return newSect
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
