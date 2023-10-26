@@ -76,3 +76,8 @@ func (key SequentialRangeKey[T]) ToSeqRange() *SequentialRange[T] {
 
 	return newSequRangeUnchecked(lower, upper, isMult)
 }
+
+// String calls the String method in the corresponding sequential range.
+func (key SequentialRangeKey[T]) String() string {
+	return key.ToSeqRange().String()
+}
