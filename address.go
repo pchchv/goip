@@ -1235,6 +1235,19 @@ func (addr *Address) ToSinglePrefixBlockOrAddress() *Address {
 	return addr.init().toSinglePrefixBlockOrAddr()
 }
 
+func (addr *Address) toSinglePrefixBlockOrAddress() (*Address, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.address.not.block"}}
+	}
+
+	res := addr.ToSinglePrefixBlockOrAddress()
+	if res == nil {
+		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.address.not.block"}}
+	}
+
+	return res, nil
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
