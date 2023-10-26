@@ -641,6 +641,39 @@ func (addr *MACAddress) ReverseSegments() *MACAddress {
 	return addr.checkIdentity(addr.GetSection().ReverseSegments())
 }
 
+// ReplaceLen replaces segments starting from startIndex and
+// ending before endIndex with the same number of segments starting at replacementStartIndex from the replacement section.
+// Mappings to or from indices outside the range of this or the replacement address are skipped.
+func (addr *MACAddress) ReplaceLen(startIndex, endIndex int, replacement *MACAddress, replacementIndex int) *MACAddress {
+	replacementSegCount := replacement.GetSegmentCount()
+	if replacementIndex <= 0 {
+		startIndex -= replacementIndex
+		replacementIndex = 0
+	} else if replacementIndex >= replacementSegCount {
+		return addr
+	}
+	// We must do a 1 to 1 adjustment of indices before calling the section replace which would do an adjustment of indices not 1 to 1.
+	// Here we assume replacementIndex is 0 and working on the subsection starting at that index.
+	// In other words, a replacementIndex of x on the whole section is equivalent to replacementIndex of 0 on the shorter subsection starting at x.
+	// Then afterwards we use the original replacement index to work on the whole section again, adjusting as needed.
+	startIndex, endIndex, replacementIndexAdjustment := adjust1To1Indices(startIndex, endIndex, addr.GetSegmentCount(), replacementSegCount-replacementIndex)
+	if startIndex == endIndex {
+		return addr
+	}
+	replacementIndex += replacementIndexAdjustment
+	count := endIndex - startIndex
+	return addr.init().checkIdentity(addr.GetSection().ReplaceLen(startIndex, endIndex, replacement.GetSection(), replacementIndex, replacementIndex+count))
+}
+
+// Replace replaces segments starting from startIndex with segments from the replacement section.
+func (addr *MACAddress) Replace(startIndex int, replacement *MACAddressSection) *MACAddress {
+	// We must do a 1 to 1 adjustment of indices before calling the section replace which would do an adjustment of indices not 1 to 1.
+	startIndex, endIndex, replacementIndex :=
+		adjust1To1Indices(startIndex, startIndex+replacement.GetSegmentCount(), addr.GetSegmentCount(), replacement.GetSegmentCount())
+	count := endIndex - startIndex
+	return addr.init().checkIdentity(addr.GetSection().ReplaceLen(startIndex, endIndex, replacement, replacementIndex, replacementIndex+count))
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
