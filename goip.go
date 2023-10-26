@@ -873,6 +873,46 @@ func (addr *IPAddress) bitwiseOrPrefixed(other *IPAddress, retainPrefix bool) (*
 	return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.ipMismatch"}}
 }
 
+func (addr *IPAddress) getProvider() ipAddressProvider {
+	if addr.IsPrefixed() {
+		if !addr.IsPrefixBlock() {
+			return getProviderFor(addr, addr.WithoutPrefixLen())
+		}
+		zeroedAddr, _ := addr.toZeroHost(true)
+		return getProviderFor(addr, zeroedAddr.WithoutPrefixLen())
+	}
+	return getProviderFor(addr, addr)
+}
+
+// ToZeroHost converts the address or subnet to one in which all individual addresses have a host of zero,
+// the host being the bits following the prefix length.
+// If the address or subnet has no prefix length, then it returns an all-zero address.
+//
+// The returned address or subnet will have the same prefix and prefix length.
+//
+// For instance, the zero host of "1.2.3.4/16" is the individual address "1.2.0.0/16".
+//
+// This returns an error if the subnet is a range of addresses which cannot be converted to
+// a range in which all addresses have zero hosts,
+// because the conversion results in a subnet segment that is not a sequential range of values.
+func (addr *IPAddress) ToZeroHost() (*IPAddress, address_error.IncompatibleAddressError) {
+	return addr.init().toZeroHost(false)
+}
+
+// ToZeroHostLen converts the address or subnet to one in which all individual addresses have a host of zero,
+// the host being the bits following the given prefix length.
+// If this address or subnet has the same prefix length, then the returned one will too,
+// otherwise the returned series will have no prefix length.
+//
+// For instance, the zero host of "1.2.3.4" for the prefix length of 16 is the address "1.2.0.0".
+//
+// This returns an error if the subnet is a range of addresses which cannot be converted to
+// a range in which all addresses have zero hosts,
+// because the conversion results in a subnet segment that is not a sequential range of values.
+func (addr *IPAddress) ToZeroHostLen(prefixLength BitCount) (*IPAddress, address_error.IncompatibleAddressError) {
+	return addr.init().toZeroHostLen(prefixLength)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
