@@ -1,6 +1,10 @@
 package goip
 
-var _ IPv4AddressKey
+var (
+	_ IPv4AddressKey
+
+	_ testComparableConstraint[IPv4AddressKey]
+)
 
 // SequentialRangeKey is a representation of SequentialRange that is comparable as defined by the language specification.
 //
@@ -96,3 +100,5 @@ func (key SequentialRangeKey[T]) String() string {
 type IPv4AddressKey struct {
 	vals uint64 // upper and lower combined into one uint64
 }
+
+type testComparableConstraint[T comparable] struct{}
