@@ -1277,6 +1277,27 @@ func (addr *ipAddressInternal) GetMinPrefixLenForBlock() BitCount {
 	return addr.addressInternal.GetMinPrefixLenForBlock()
 }
 
+// When boundariesOnly is true, there will be no error.
+func (addr *ipAddressInternal) toZeroHost(boundariesOnly bool) (res *IPAddress, err address_error.IncompatibleAddressError) {
+	section, err := addr.section.toIPAddressSection().toZeroHost(boundariesOnly)
+	if err == nil {
+		res = addr.checkIdentity(section)
+	}
+	return
+}
+
+func (addr *ipAddressInternal) toZeroHostLen(prefixLength BitCount) (res *IPAddress, err address_error.IncompatibleAddressError) {
+	section, err := addr.getSection().toZeroHostLen(prefixLength)
+	if err == nil {
+		res = addr.checkIdentity(section)
+	}
+	return
+}
+
+func (addr *ipAddressInternal) toZeroNetwork() *IPAddress {
+	return addr.checkIdentity(addr.getSection().toZeroNetwork())
+}
+
 // IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
 type IPAddressValueProvider interface {
 	AddressValueProvider
