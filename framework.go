@@ -9,7 +9,15 @@ import (
 	"github.com/pchchv/goip/address_error"
 )
 
-var _ AddressDivisionSeries = &IPAddressLargeDivisionGrouping{}
+var (
+	_                AddressDivisionSeries = &IPAddressLargeDivisionGrouping{}
+	_, _, _, _, _, _ IPAddressRange        = &IPAddress{},
+		&IPv4Address{},
+		&IPv6Address{},
+		&SequentialRange[*IPAddress]{},
+		&SequentialRange[*IPv4Address]{},
+		&SequentialRange[*IPv6Address]{}
+)
 
 // AddressComponent represents all addresses, address sections and address segments.
 type AddressComponent interface { //AddressSegment and above, AddressSegmentSeries and above
