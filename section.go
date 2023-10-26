@@ -1926,6 +1926,18 @@ func (section *AddressSection) ReverseBytes() (*AddressSection, address_error.In
 	return section.reverseBytes(false)
 }
 
+// AssignPrefixForSingleBlock returns the equivalent prefix block
+// that matches exactly the range of values in this address section.
+// The returned block will have an assigned prefix length indicating
+// the prefix length for the block.
+//
+// There may be no such address section - it is required that
+// the range of values match the range of a prefix block.
+// If there is no such address section, then nil is returned.
+func (section *AddressSection) AssignPrefixForSingleBlock() *AddressSection {
+	return section.assignPrefixForSingleBlock()
+}
+
 // AssignMinPrefixForBlock returns an equivalent address section, assigned the smallest prefix length possible,
 // such that the prefix block for that prefix length is in this address section.
 //
