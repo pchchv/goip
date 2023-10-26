@@ -674,7 +674,9 @@ func (addr *MACAddress) Replace(startIndex int, replacement *MACAddressSection) 
 	return addr.init().checkIdentity(addr.GetSection().ReplaceLen(startIndex, endIndex, replacement, replacementIndex, replacementIndex+count))
 }
 
-// ToLinkLocalIPv6 converts to a link-local Ipv6 address.  Any MAC prefix length is ignored.  Other elements of this address section are incorporated into the conversion.
+// ToLinkLocalIPv6 converts to a link-local Ipv6 address.
+// Any MAC prefix length is ignored.
+// Other elements of this address section are incorporated into the conversion.
 // This will provide the latter 4 segments of an IPv6 address, to be paired with the link-local IPv6 prefix of 4 segments.
 func (addr *MACAddress) ToLinkLocalIPv6() (*IPv6Address, address_error.IncompatibleAddressError) {
 	sect, err := addr.ToEUI64IPv6()
@@ -684,13 +686,15 @@ func (addr *MACAddress) ToLinkLocalIPv6() (*IPv6Address, address_error.Incompati
 	return newIPv6Address(IPv6LinkLocalPrefix.Append(sect)), nil
 }
 
-// ToEUI64IPv6 converts to an Ipv6 address section.  Any MAC prefix length is ignored.  Other elements of this address section are incorporated into the conversion.
+// ToEUI64IPv6 converts to an Ipv6 address section.  Any MAC prefix length is ignored.
+// Other elements of this address section are incorporated into the conversion.
 // This will provide the latter 4 segments of an IPv6 address, to be paired with an IPv6 prefix of 4 segments.
 func (addr *MACAddress) ToEUI64IPv6() (*IPv6AddressSection, address_error.IncompatibleAddressError) {
 	return NewIPv6SectionFromMAC(addr.init())
 }
 
-// GetDottedAddress returns an AddressDivisionGrouping which organizes the address into segments of bit-length 16, rather than the more typical 8 bits per segment.
+// GetDottedAddress returns an AddressDivisionGrouping which organizes the address into segments of bit-length 16,
+// rather than the more typical 8 bits per segment.
 //
 // If this represents a collection of MAC addresses, this returns an error when unable to join two address segments,
 // the first with a range of values, into a division of the larger bit-length that represents the same set of values.
