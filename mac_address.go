@@ -594,6 +594,16 @@ func (addr *MACAddress) GetTrailingSection(index int) *MACAddressSection {
 	return addr.GetSection().GetTrailingSection(index)
 }
 
+// GetOUISection returns a section with the first 3 segments, the organizational unique identifier
+func (addr *MACAddress) GetOUISection() *MACAddressSection {
+	return addr.GetSubSection(0, MACOrganizationalUniqueIdentifierSegmentCount)
+}
+
+// GetODISection returns a section with the segments following the first 3 segments, the organizational distinct identifier
+func (addr *MACAddress) GetODISection() *MACAddressSection {
+	return addr.GetTrailingSection(MACOrganizationalUniqueIdentifierSegmentCount)
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
