@@ -980,6 +980,66 @@ func (section *IPv6AddressSection) ReverseBytes() (*IPv6AddressSection, address_
 	return res.ToIPv6(), err
 }
 
+// ToMaxHostLen converts the address section to one in which all individual address sections have a host of all one-bits, the max host,
+// the host being the bits following the given prefix length.
+// If this section has the same prefix length,
+// then the resulting section will too, otherwise the resulting section will have no prefix length.
+//
+// For instance, the zero host of "1.2.3.4" for the prefix length of 16 is the address "1.2.255.255".
+//
+// This returns an error if the section is a range of address sections which cannot be converted to
+// a range in which all address sections have max hosts,
+// because the conversion results in a segment that is not a sequential range of values.
+func (section *IPv6AddressSection) ToMaxHostLen(prefixLength BitCount) (*IPv6AddressSection, address_error.IncompatibleAddressError) {
+	res, err := section.toMaxHostLen(prefixLength)
+	return res.ToIPv6(), err
+}
+
+// ToBase85String creates a base 85 string,
+// which is described in [RFC 1924](https://www.rfc-editor.org/rfc/rfc1924.html).
+// It may be written as a range of two values if a range is not a prefix block.
+//
+// If a multi-valued section cannot be written as a single prefix block or a range of two values,
+// an error is returned.
+func (section *IPv6AddressSection) ToBase85String() (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toBase85String(NoZone)
+	}
+
+	cacheField := &cache.base85String
+	return cacheStrErr(cacheField,
+		func() (string, address_error.IncompatibleAddressError) {
+			return section.toBase85String(NoZone)
+		})
+}
+
+func (section *IPv6AddressSection) toBase85String(zone Zone) (string, address_error.IncompatibleAddressError) {
+	if isDual, err := section.isDualString(); err != nil {
+		return "", err
+	} else {
+		var largeGrouping *IPAddressLargeDivisionGrouping
+		if section.hasNoDivisions() {
+			largeGrouping = NewIPAddressLargeDivGrouping(nil)
+		} else {
+			bytes := section.getBytes()
+			prefLen := section.getNetworkPrefixLen()
+			bitCount := section.GetBitCount()
+			var div *IPAddressLargeDivision
+			if isDual {
+				div = NewIPAddressLargeRangePrefixDivision(bytes, section.getUpperBytes(), prefLen, bitCount, 85)
+			} else {
+				div = NewIPAddressLargePrefixDivision(bytes, prefLen, bitCount, 85)
+			}
+			largeGrouping = NewIPAddressLargeDivGrouping([]*IPAddressLargeDivision{div})
+		}
+		return toNormalizedIPZonedString(base85Params, largeGrouping, zone), nil
+	}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
