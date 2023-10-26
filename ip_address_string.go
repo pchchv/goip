@@ -139,3 +139,10 @@ func (addrStr IPAddressString) Format(state fmt.State, verb rune) {
 	s := flagsFromState(state, verb)
 	_, _ = state.Write([]byte(fmt.Sprintf(s, addrStr.str)))
 }
+
+func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
+	return &IPAddressString{
+		str:             str,
+		addressProvider: addr.getProvider(),
+	}
+}
