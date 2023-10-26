@@ -581,6 +581,19 @@ func (addr *MACAddress) toMinUpper() *MACAddress {
 	return addr.init().addressInternal.toMinUpper().ToMAC()
 }
 
+// GetSubSection gets the subsection from the series starting from
+// the given index and ending just before the give endIndex.
+// The first segment is at index 0.
+func (addr *MACAddress) GetSubSection(index, endIndex int) *MACAddressSection {
+	return addr.GetSection().GetSubSection(index, endIndex)
+}
+
+// GetTrailingSection gets the subsection from the series starting from the given index.
+// The first segment is at index 0.
+func (addr *MACAddress) GetTrailingSection(index int) *MACAddressSection {
+	return addr.GetSection().GetTrailingSection(index)
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
