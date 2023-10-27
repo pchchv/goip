@@ -15,6 +15,12 @@ var (
 	_ IPv6AddressKey
 	_ MACAddressKey
 
+	_ AddressKey
+	_ IPAddressKey
+	_ IPAddressSeqRangeKey
+	_ IPv4AddressSeqRangeKey
+	_ IPv6AddressSeqRangeKey
+
 	_ Key[*IPv4Address]
 	_ Key[*IPv6Address]
 	_ Key[*MACAddress]
@@ -213,6 +219,20 @@ type (
 	IPv4AddressSeqRangeKey = SequentialRangeKey[*IPv4Address]
 	IPv6AddressSeqRangeKey = SequentialRangeKey[*IPv6Address]
 )
+
+// PrefixKey is a representation of a prefix length
+// that is comparable as defined by the language specification.
+//
+// It can be used as a map key.
+// The zero value is the absence of a prefix length.
+type PrefixKey struct {
+	// If true, the prefix length is indicated by PrefixLen.
+	// If false, this indicates no prefix length for the associated address or subnet.
+	IsPrefixed bool
+	// If IsPrefixed is true, this holds the prefix length.
+	// Otherwise, this should be zero if you wish that each address has a unique key.
+	PrefixLen PrefixBitCount
+}
 
 func newSequentialRangeKey[T SequentialRangeConstraint[T]](rng *SequentialRange[T]) (key SequentialRangeKey[T]) {
 	lower := rng.GetLower()
