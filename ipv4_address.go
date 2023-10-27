@@ -1023,6 +1023,46 @@ func (addr *IPv4Address) ToMaxHostLen(prefixLength BitCount) (*IPv4Address, addr
 	return res.ToIPv4(), err
 }
 
+// AssignPrefixForSingleBlock returns the equivalent prefix block that matches exactly the range of values in this address.
+// The returned block will have an assigned prefix length indicating the prefix length for the block.
+//
+// There may be no such address - it is required that the range of values match the range of a prefix block.
+// If there is no such address, then nil is returned.
+//
+// Examples:
+//   - 1.2.3.4 returns 1.2.3.4/32
+//   - 1.2.*.* returns 1.2.0.0/16
+//   - 1.2.*.0/24 returns 1.2.0.0/16
+//   - 1.2.*.4 returns nil
+//   - 1.2.0-1.* returns 1.2.0.0/23
+//   - 1.2.1-2.* returns nil
+//   - 1.2.252-255.* returns 1.2.252.0/22
+//   - 1.2.3.4/16 returns 1.2.3.4/32
+func (addr *IPv4Address) AssignPrefixForSingleBlock() *IPv4Address {
+	return addr.init().assignPrefixForSingleBlock().ToIPv4()
+}
+
+// GetPrefixLenForSingleBlock returns a prefix length for which the range of
+// this address subnet matches exactly the block of addresses for that prefix.
+//
+// If the range can be described this way, then this method returns the same value as GetMinPrefixLenForBlock.
+//
+// If no such prefix exists, returns nil.
+//
+// If this segment grouping represents a single value, returns the bit length of this address division series.
+//
+// Examples:
+//   - 1.2.3.4 returns 32
+//   - 1.2.3.4/16 returns 32
+//   - 1.2.*.* returns 16
+//   - 1.2.*.0/24 returns 16
+//   - 1.2.0.0/16 returns 16
+//   - 1.2.*.4 returns nil
+//   - 1.2.252-255.* returns 22
+func (addr *IPv4Address) GetPrefixLenForSingleBlock() PrefixLen {
+	return addr.init().ipAddressInternal.GetPrefixLenForSingleBlock()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
