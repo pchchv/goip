@@ -205,3 +205,11 @@ func (key Key[T]) ToAddress() T {
 func (key Key[T]) String() string {
 	return key.ToAddress().String()
 }
+
+type (
+	AddressKey             = Key[*Address]
+	IPAddressKey           = Key[*IPAddress]
+	IPAddressSeqRangeKey   = SequentialRangeKey[*IPAddress]
+	IPv4AddressSeqRangeKey = SequentialRangeKey[*IPv4Address]
+	IPv6AddressSeqRangeKey = SequentialRangeKey[*IPv6Address]
+)
