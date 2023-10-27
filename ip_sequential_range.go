@@ -851,6 +851,16 @@ func (rng *SequentialRange[T]) CompareSize(other AddressItem) int {
 	return compareCount(rng, other)
 }
 
+// ToKey creates the associated address range key.
+// While address ranges can be compared with the Compare or Equal methods
+// as well as various provided instances of AddressComparator,
+// they are not comparable with Go operators.
+// However, SequentialRangeKey instances are comparable with Go operators,
+// and thus can be used as map keys.
+func (rng *SequentialRange[T]) ToKey() SequentialRangeKey[T] {
+	return newSequentialRangeKey(rng.init())
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
