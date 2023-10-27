@@ -1089,6 +1089,24 @@ func (addr *IPv4Address) toSinglePrefixBlockOrAddress() (*IPv4Address, address_e
 	return res, nil
 }
 
+// ToBroadcastAddress returns the IPv4 broadcast address.
+// The broadcast address has the same prefix but a host that is all 1 bits.
+// If this address or subnet is not prefixed, this returns the address of all 1 bits, the "max" address.
+// This returns an error if a prefixed and ranged-valued segment cannot be converted to
+// a host of all ones and remain a range of consecutive values.
+func (addr *IPv4Address) ToBroadcastAddress() (*IPv4Address, address_error.IncompatibleAddressError) {
+	return addr.ToMaxHost()
+}
+
+// ToNetworkAddress returns the IPv4 network address.
+// The network address has the same prefix but a zero host.
+// If this address or subnet is not prefixed, this returns the zero "any" address.
+// This returns an error if a prefixed and ranged-valued segment cannot be converted to
+// a host of all zeros and remain a range of consecutive values.
+func (addr *IPv4Address) ToNetworkAddress() (*IPv4Address, address_error.IncompatibleAddressError) {
+	return addr.ToZeroHost()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
