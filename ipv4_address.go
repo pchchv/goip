@@ -1107,6 +1107,52 @@ func (addr *IPv4Address) ToNetworkAddress() (*IPv4Address, address_error.Incompa
 	return addr.ToZeroHost()
 }
 
+// ReverseBits returns a new address with the bits reversed.  Any prefix length is dropped.
+//
+// If the bits within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, this returns an error.
+//
+// In practice this means that to be reversible,
+// a segment range must include all values except possibly the largest and/or smallest,
+// which reverse to themselves.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (addr *IPv4Address) ReverseBits(perByte bool) (*IPv4Address, address_error.IncompatibleAddressError) {
+	addr = addr.init()
+	res, err := addr.GetSection().ReverseBits(perByte)
+	if err != nil {
+		return nil, err
+	}
+	return addr.checkIdentity(res), nil
+}
+
+// ToKey creates the associated address key.
+// While addresses can be compared with the Compare,
+// Equal method as well as various provided instances of AddressComparator,
+// they are not comparable with Go operators.
+// However, AddressKey instances are comparable with Go operators, and thus can be used as map keys.
+func (addr *IPv4Address) ToKey() IPv4AddressKey {
+	addr = addr.init()
+	key := IPv4AddressKey{}
+	section := addr.GetSection()
+	divs := section.getDivArray()
+	var newVal uint64
+	if addr.IsMultiple() {
+		for _, div := range divs {
+			seg := div.ToIPv4()
+			newVal = (newVal << IPv4BitsPerSegment) | uint64(seg.GetIPv4SegmentValue()) | (uint64(seg.GetIPv4UpperSegmentValue()) << IPv4BitCount)
+		}
+	} else {
+		for _, div := range divs {
+			seg := div.ToIPv4()
+			newVal = (newVal << IPv4BitsPerSegment) | uint64(seg.GetIPv4SegmentValue())
+		}
+		newVal |= newVal << IPv4BitCount
+	}
+	key.vals = newVal
+	return key
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
