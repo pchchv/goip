@@ -234,6 +234,14 @@ type PrefixKey struct {
 	PrefixLen PrefixBitCount
 }
 
+// ToPrefixLen converts this key to its corresponding prefix length.
+func (pref PrefixKey) ToPrefixLen() PrefixLen {
+	if pref.IsPrefixed {
+		return &pref.PrefixLen
+	}
+	return nil
+}
+
 func newSequentialRangeKey[T SequentialRangeConstraint[T]](rng *SequentialRange[T]) (key SequentialRangeKey[T]) {
 	lower := rng.GetLower()
 	upper := rng.GetUpper()
