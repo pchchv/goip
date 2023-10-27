@@ -1153,6 +1153,37 @@ func (addr *IPv6Address) Replace(startIndex int, replacement *IPv6AddressSection
 	return addr.init().checkIdentity(addr.GetSection().ReplaceLen(startIndex, endIndex, replacement, replacementIndex, replacementIndex+count))
 }
 
+// ToZeroHost converts the address or subnet to one in which all individual addresses have a host of zero,
+// the host being the bits following the prefix length.
+// If the address or subnet has no prefix length, then it returns an all-zero address.
+//
+// The returned address or subnet will have the same prefix and prefix length.
+//
+// For instance, the zero host of "1.2.3.4/16" is the individual address "1.2.0.0/16".
+//
+// This returns an error if the subnet is a range of addresses which cannot be converted to
+// a range in which all addresses have zero hosts,
+// because the conversion results in a subnet segment that is not a sequential range of values.
+func (addr *IPv6Address) ToZeroHost() (*IPv6Address, address_error.IncompatibleAddressError) {
+	res, err := addr.init().toZeroHost(false)
+	return res.ToIPv6(), err
+}
+
+// ToZeroHostLen converts the address or subnet to one in which all individual addresses have a host of zero,
+// the host being the bits following the given prefix length.
+// If this address or subnet has the same prefix length, then the returned one will too,
+// otherwise the returned series will have no prefix length.
+//
+// For instance, the zero host of "1.2.3.4" for the prefix length of 16 is the address "1.2.0.0".
+//
+// This returns an error if the subnet is a range of addresses which cannot be converted to
+// a range in which all addresses have zero hosts,
+// because the conversion results in a subnet segment that is not a sequential range of values.
+func (addr *IPv6Address) ToZeroHostLen(prefixLength BitCount) (*IPv6Address, address_error.IncompatibleAddressError) {
+	res, err := addr.init().toZeroHostLen(prefixLength)
+	return res.ToIPv6(), err
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
