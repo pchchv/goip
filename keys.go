@@ -1,5 +1,13 @@
 package goip
 
+const (
+	adaptiveZeroScheme addressScheme = 0 // adaptiveZeroScheme needs to be zero, to coincide with the zero value for Address and IPAddress, which is a zero-length address
+	ipv4Scheme         addressScheme = 1
+	ipv6Scheme         addressScheme = 2
+	mac48Scheme        addressScheme = 3
+	eui64Scheme        addressScheme = 4
+)
+
 var (
 	_ IPv4AddressKey
 	_ IPv6AddressKey
@@ -142,3 +150,5 @@ type MACAddressKey struct {
 	}
 	additionalByteCount uint8 // 0 for MediaAccessControlSegmentCount or 2 for ExtendedUniqueIdentifier64SegmentCount
 }
+
+type addressScheme byte
