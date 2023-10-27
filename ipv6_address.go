@@ -1431,3 +1431,22 @@ func newIPv6AddressFromPrefixedSingle(vals, upperVals IPv6SegmentValueProvider, 
 	section := newIPv6SectionFromPrefixedSingle(vals, upperVals, IPv6SegmentCount, prefixLength, true)
 	return newIPv6AddressZoned(section, zone)
 }
+
+func fromIPv6Key(key IPv6AddressKey) *IPv6Address {
+	return fromIPv6IPKey(&key.keyContents)
+}
+
+func fromIPv6IPKey(contents *keyContents) *IPv6Address {
+	return NewIPv6AddressFromZonedRange(
+		func(segmentIndex int) IPv6SegInt {
+			valsIndex := segmentIndex >> 2
+			segIndex := ((IPv6SegmentCount - 1) - segmentIndex) & 0x3
+			return IPv6SegInt(contents.vals[valsIndex].lower >> (segIndex << ipv6BitsToSegmentBitshift))
+		},
+		func(segmentIndex int) IPv6SegInt {
+			valsIndex := segmentIndex >> 2
+			segIndex := ((IPv6SegmentCount - 1) - segmentIndex) & 0x3
+			return IPv6SegInt(contents.vals[valsIndex].upper >> (segIndex << ipv6BitsToSegmentBitshift))
+		},
+		string(contents.zone))
+}
