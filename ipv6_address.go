@@ -1303,6 +1303,55 @@ func (addr *IPv6Address) ReverseBits(perByte bool) (*IPv6Address, address_error.
 	return addr.checkIdentity(res), nil
 }
 
+// ToBase85String creates the base 85 string,
+// which is described by [RFC 1924](https://www.rfc-editor.org/rfc/rfc1924.html)
+//
+// It may be written as a range of two values if a range that is not a prefixed block.
+//
+// If a subnet cannot be written as a single prefix block or a range of two values, an error is returned.
+func (addr *IPv6Address) ToBase85String() (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.GetSection().toBase85String(addr.zone)
+		}
+		var cacheField **string
+		cacheField = &cache.base85String
+		return cacheStrErr(cacheField,
+			func() (string, address_error.IncompatibleAddressError) {
+				return addr.GetSection().toBase85String(addr.zone)
+			})
+	}
+
+	return addr.GetSection().ToBase85String()
+}
+
+func (addr *IPv6Address) toIPv6Key(contents *keyContents) {
+	contents.zone = addr.GetZone()
+	section := addr.GetSection()
+	divs := section.getDivArray()
+	if addr.IsMultiple() {
+		for i, div := range divs {
+			seg := div.ToIPv6()
+			val := &contents.vals[i>>2]
+			val.lower = (val.lower << IPv6BitsPerSegment) | uint64(seg.GetIPv6SegmentValue())
+			val.upper = (val.upper << IPv6BitsPerSegment) | uint64(seg.GetIPv6UpperSegmentValue())
+		}
+	} else {
+		for i, div := range divs {
+			seg := div.ToIPv6()
+			val := &contents.vals[i>>2]
+			newLower := (val.lower << IPv6BitsPerSegment) | uint64(seg.GetIPv6SegmentValue())
+			val.lower = newLower
+			val.upper = newLower
+		}
+	}
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
