@@ -213,3 +213,56 @@ type (
 	IPv4AddressSeqRangeKey = SequentialRangeKey[*IPv4Address]
 	IPv6AddressSeqRangeKey = SequentialRangeKey[*IPv6Address]
 )
+
+func newSequentialRangeKey[T SequentialRangeConstraint[T]](rng *SequentialRange[T]) (key SequentialRangeKey[T]) {
+	lower := rng.GetLower()
+	upper := rng.GetUpper()
+	lowerIp := lower.ToIP()
+	upperIp := upper.ToIP()
+
+	var t T
+	anyt := any(t)
+	_, isIP := anyt.(*IPAddress)
+	if lowerIp.isIPv4() {
+		section := lowerIp.GetSection()
+		divs := section.getDivArray()
+		for _, div := range divs {
+			seg := div.ToIPv4()
+			val := &key.vals[0]
+			newLower := (val.lower << IPv4BitsPerSegment) | uint64(seg.GetIPv4SegmentValue())
+			val.lower = newLower
+		}
+		section = upperIp.GetSection()
+		divs = section.getDivArray()
+		for _, div := range divs {
+			seg := div.ToIPv4()
+			val := &key.vals[0]
+			newUpper := (val.upper << IPv4BitsPerSegment) | uint64(seg.GetIPv4SegmentValue())
+			val.upper = newUpper
+		}
+		if isIP {
+			key.addrType = ipv4Type
+		}
+	} else if lowerIp.isIPv6() {
+		section := lowerIp.GetSection()
+		divs := section.getDivArray()
+		for i, div := range divs {
+			seg := div.ToIPv6()
+			val := &key.vals[i>>2]
+			newLower := (val.lower << IPv6BitsPerSegment) | uint64(seg.GetIPv6SegmentValue())
+			val.lower = newLower
+		}
+		section = upperIp.GetSection()
+		divs = section.getDivArray()
+		for i, div := range divs {
+			seg := div.ToIPv6()
+			val := &key.vals[i>>2]
+			newUpper := (val.upper << IPv6BitsPerSegment) | uint64(seg.GetIPv6SegmentValue())
+			val.upper = newUpper
+		}
+		if isIP {
+			key.addrType = ipv6Type
+		}
+	}
+	return
+}
