@@ -751,6 +751,15 @@ func (section *IPv4AddressSection) ReverseBits(perByte bool) (*IPv4AddressSectio
 	return res.ToIPv4(), err
 }
 
+// AssignPrefixForSingleBlock returns the equivalent prefix block that matches exactly the range of values in this address section.
+// The returned block will have an assigned prefix length indicating the prefix length for the block.
+//
+// There may be no such address section - it is required that the range of values match the range of a prefix block.
+// If there is no such address section, then nil is returned.
+func (section *IPv4AddressSection) AssignPrefixForSingleBlock() *IPv4AddressSection {
+	return section.assignPrefixForSingleBlock().ToIPv4()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
