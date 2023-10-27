@@ -169,6 +169,12 @@ type KeyConstraint[T any] interface {
 	fromKey(addressScheme, *keyContents) T // implemented by IPAddress and Address
 }
 
+// KeyGeneratorConstraint is the generic type constraint for
+// an address type that can generate a generic address key.
+type KeyGeneratorConstraint[T KeyConstraint[T]] interface {
+	ToGenericKey() Key[T]
+}
+
 // Key is a representation of an address that is comparable as defined by the language specification.
 //
 // It can be used as a map key.  It can be obtained from its originating address instances.
