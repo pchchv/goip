@@ -1,5 +1,7 @@
 package goip
 
+import "fmt"
+
 const (
 	adaptiveZeroScheme addressScheme = 0 // adaptiveZeroScheme needs to be zero, to coincide with the zero value for Address and IPAddress, which is a zero-length address
 	ipv4Scheme         addressScheme = 1
@@ -152,3 +154,10 @@ type MACAddressKey struct {
 }
 
 type addressScheme byte
+
+// KeyConstraint is the generic type constraint for
+// an address type that can be generated from a generic address key.
+type KeyConstraint[T any] interface {
+	fmt.Stringer
+	fromKey(addressScheme, *keyContents) T // implemented by IPAddress and Address
+}
