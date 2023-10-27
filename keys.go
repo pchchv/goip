@@ -294,3 +294,13 @@ func newSequentialRangeKey[T SequentialRangeConstraint[T]](rng *SequentialRange[
 	}
 	return
 }
+
+func PrefixKeyFrom(addr AddressType) PrefixKey {
+	if addr.IsPrefixed() {
+		return PrefixKey{
+			IsPrefixed: true,
+			PrefixLen:  *addr.ToAddressBase().getPrefixLen(), // doing this instead of calling GetPrefixLen() on AddressType avoids the prefix len copy
+		}
+	}
+	return PrefixKey{}
+}
