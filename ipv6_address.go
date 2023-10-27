@@ -1271,6 +1271,38 @@ func (addr *IPv6Address) toSinglePrefixBlockOrAddress() (*IPv6Address, address_e
 	return res, nil
 }
 
+// ReverseBytes returns a new address with the bytes reversed.  Any prefix length is dropped.
+//
+// If the bytes within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, then this returns an error.
+//
+// In practice this means that to be reversible,
+// a segment range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+func (addr *IPv6Address) ReverseBytes() (*IPv6Address, address_error.IncompatibleAddressError) {
+	res, err := addr.GetSection().ReverseBytes()
+	if err != nil {
+		return nil, err
+	}
+	return addr.checkIdentity(res), nil
+}
+
+// ReverseBits returns a new address with the bits reversed.  Any prefix length is dropped.
+//
+// If the bits within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, this returns an error.
+//
+// In practice this means that to be reversible,
+// a segment range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (addr *IPv6Address) ReverseBits(perByte bool) (*IPv6Address, address_error.IncompatibleAddressError) {
+	res, err := addr.GetSection().ReverseBits(perByte)
+	if err != nil {
+		return nil, err
+	}
+	return addr.checkIdentity(res), nil
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
