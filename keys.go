@@ -155,6 +155,11 @@ type IPv6AddressKey struct {
 	keyContents
 }
 
+// ToAddress converts back to an address instance.
+func (key IPv6AddressKey) ToAddress() *IPv6Address {
+	return fromIPv6Key(key)
+}
+
 // MACAddressKey is a representation of a MAC address that is comparable as defined by the language specification.
 //
 // It can be used as a map key.  It can be obtained from its originating address instances.
