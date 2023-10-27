@@ -180,3 +180,14 @@ type Key[T KeyConstraint[T]] struct {
 	scheme addressScheme
 	keyContents
 }
+
+// ToAddress converts back to an address instance.
+func (key Key[T]) ToAddress() T {
+	var t T
+	return t.fromKey(key.scheme, &key.keyContents)
+}
+
+// String calls the String method in the corresponding address.
+func (key Key[T]) String() string {
+	return key.ToAddress().String()
+}
