@@ -1063,6 +1063,32 @@ func (addr *IPv4Address) GetPrefixLenForSingleBlock() PrefixLen {
 	return addr.init().ipAddressInternal.GetPrefixLenForSingleBlock()
 }
 
+// ToSinglePrefixBlockOrAddress converts to a single prefix block or address.
+// If the given address is a single prefix block, it is returned.
+// If it can be converted to a single prefix block by assigning a prefix length,
+// the converted block is returned.
+// If it is a single address, any prefix length is removed and the address is returned.
+// Otherwise, nil is returned.
+// This method provides the address formats used by tries.
+// ToSinglePrefixBlockOrAddress is quite similar to AssignPrefixForSingleBlock,
+// which always returns prefixed addresses, while this does not.
+func (addr *IPv4Address) ToSinglePrefixBlockOrAddress() *IPv4Address {
+	return addr.init().toSinglePrefixBlockOrAddr().ToIPv4()
+}
+
+func (addr *IPv4Address) toSinglePrefixBlockOrAddress() (*IPv4Address, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.address.not.block"}}
+	}
+
+	res := addr.ToSinglePrefixBlockOrAddress()
+	if res == nil {
+		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.address.not.block"}}
+	}
+
+	return res, nil
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
