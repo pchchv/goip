@@ -15,9 +15,16 @@ var (
 	_ IPv6AddressKey
 	_ MACAddressKey
 
+	_ Key[*IPv4Address]
+	_ Key[*IPv6Address]
+	_ Key[*MACAddress]
+
+	// ensure our 5 key types are indeed comparable
 	_ testComparableConstraint[IPv4AddressKey]
 	_ testComparableConstraint[IPv6AddressKey]
 	_ testComparableConstraint[MACAddressKey]
+	_ testComparableConstraint[Key[*IPAddress]]
+	_ testComparableConstraint[Key[*Address]]
 )
 
 // SequentialRangeKey is a representation of SequentialRange that is comparable as defined by the language specification.
@@ -160,4 +167,16 @@ type addressScheme byte
 type KeyConstraint[T any] interface {
 	fmt.Stringer
 	fromKey(addressScheme, *keyContents) T // implemented by IPAddress and Address
+}
+
+// Key is a representation of an address that is comparable as defined by the language specification.
+//
+// It can be used as a map key.  It can be obtained from its originating address instances.
+// The zero value corresponds to the zero-value for its generic address type.
+// Keys do not incorporate prefix length to ensure that all equal addresses have equal keys.
+// To create a key that has prefix length,
+// combine into a struct with the PrefixKey obtained by passing the address into PrefixKeyFrom.
+type Key[T KeyConstraint[T]] struct {
+	scheme addressScheme
+	keyContents
 }
