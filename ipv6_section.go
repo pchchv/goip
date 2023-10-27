@@ -1039,6 +1039,16 @@ func (section *IPv6AddressSection) toBase85String(zone Zone) (string, address_er
 		}
 		return toNormalizedIPZonedString(base85Params, largeGrouping, zone), nil
 	}
+}
+
+// AssignPrefixForSingleBlock returns the equivalent prefix block that matches exactly the range of values in this address section.
+// The returned block will have an assigned prefix length indicating the prefix length for the block.
+//
+// There may be no such address section - it is required that the range of values match the range of a prefix block.
+// If there is no such address section, then nil is returned.
+func (section *IPv6AddressSection) AssignPrefixForSingleBlock() *IPv6AddressSection {
+	return section.assignPrefixForSingleBlock().ToIPv6()
+}
 
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
