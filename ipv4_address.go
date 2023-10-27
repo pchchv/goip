@@ -1108,3 +1108,29 @@ func createMixedSection(newIPv6Divisions []*AddressDivision, mixedSection *IPv4A
 	}
 	return
 }
+
+func fromIPv4Key(key IPv4AddressKey) *IPv4Address {
+	keyVal := key.vals
+	return NewIPv4AddressFromRange(
+		func(segmentIndex int) IPv4SegInt {
+			segIndex := (IPv4SegmentCount - 1) - segmentIndex
+			return IPv4SegInt(keyVal >> (segIndex << ipv4BitsToSegmentBitshift))
+		},
+		func(segmentIndex int) IPv4SegInt {
+			segIndex := ((IPv4SegmentCount << 1) - 1) - segmentIndex
+			return IPv4SegInt(keyVal >> (segIndex << ipv4BitsToSegmentBitshift))
+		},
+	)
+}
+
+func fromIPv4IPKey(key *keyContents) *IPv4Address {
+	return NewIPv4AddressFromRange(
+		func(segmentIndex int) IPv4SegInt {
+			segIndex := (IPv4SegmentCount - 1) - segmentIndex
+			return IPv4SegInt(key.vals[0].lower >> (segIndex << ipv4BitsToSegmentBitshift))
+		}, func(segmentIndex int) IPv4SegInt {
+			segIndex := (IPv4SegmentCount - 1) - segmentIndex
+			return IPv4SegInt(key.vals[0].upper >> (segIndex << ipv4BitsToSegmentBitshift))
+		},
+	)
+}
