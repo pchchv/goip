@@ -128,6 +128,11 @@ type IPv4AddressKey struct {
 	vals uint64 // upper and lower combined into one uint64
 }
 
+// ToAddress converts back to an address instance.
+func (key IPv4AddressKey) ToAddress() *IPv4Address {
+	return fromIPv4Key(key)
+}
+
 type testComparableConstraint[T comparable] struct{}
 
 type keyContents struct {
