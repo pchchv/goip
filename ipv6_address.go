@@ -1222,6 +1222,31 @@ func (addr *IPv6Address) ToMaxHostLen(prefixLength BitCount) (*IPv6Address, addr
 	return res.ToIPv6(), err
 }
 
+// AssignPrefixForSingleBlock returns the equivalent prefix block
+// that matches exactly the range of values in this address.
+// The returned block will have an assigned prefix length indicating the prefix length for the block.
+//
+// There may be no such address - it is required that the range of values match
+// the range of a prefix block.
+// If there is no such address, then nil is returned.
+func (addr *IPv6Address) AssignPrefixForSingleBlock() *IPv6Address {
+	return addr.init().assignPrefixForSingleBlock().ToIPv6()
+}
+
+// GetPrefixLenForSingleBlock returns a prefix length for which the range of
+// this address subnet matches exactly the block of addresses for that prefix.
+//
+// If the range can be described this way,
+// then this method returns the same value as GetMinPrefixLenForBlock.
+//
+// If no such prefix exists, returns nil.
+//
+// If this segment grouping represents a single value,
+// returns the bit length of this address division series.
+func (addr *IPv6Address) GetPrefixLenForSingleBlock() PrefixLen {
+	return addr.init().ipAddressInternal.GetPrefixLenForSingleBlock()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
