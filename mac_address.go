@@ -748,6 +748,21 @@ func (addr *MACAddress) GetPrefixLenForSingleBlock() PrefixLen {
 	return addr.init().addressInternal.GetPrefixLenForSingleBlock()
 }
 
+func fromMACKey(key MACAddressKey) *MACAddress {
+	additionalByteCount := key.additionalByteCount
+	segCount := int(additionalByteCount) + MediaAccessControlSegmentCount
+	return NewMACAddressFromRangeExt(
+		func(segmentIndex int) MACSegInt {
+			segIndex := (segCount - 1) - segmentIndex
+			return MACSegInt(key.vals.lower >> (segIndex << macBitsToSegmentBitshift))
+		}, func(segmentIndex int) MACSegInt {
+			segIndex := (segCount - 1) - segmentIndex
+			return MACSegInt(key.vals.upper >> (segIndex << macBitsToSegmentBitshift))
+		},
+		additionalByteCount != 0,
+	)
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
