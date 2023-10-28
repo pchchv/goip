@@ -727,6 +727,27 @@ func (addr *MACAddress) ToSinglePrefixBlockOrAddress() *MACAddress {
 	return addr.init().toSinglePrefixBlockOrAddr().ToMAC()
 }
 
+// AssignPrefixForSingleBlock returns the equivalent prefix block that matches exactly the range of values in this address.
+// The returned block will have an assigned prefix length indicating the prefix length for the block.
+//
+// There may be no such address - it is required that the range of values match the range of a prefix block.
+// If there is no such address, then nil is returned.
+func (addr *MACAddress) AssignPrefixForSingleBlock() *MACAddress {
+	return addr.init().assignPrefixForSingleBlock().ToMAC()
+}
+
+// GetPrefixLenForSingleBlock returns a prefix length for which the range of
+// this address collection matches the block of addresses for that prefix.
+//
+// If the range can be described this way, then this method returns the same value as GetMinPrefixLenForBlock.
+//
+// If no such prefix exists, returns nil.
+//
+// If this segment grouping represents a single value, this returns the bit length of this address.
+func (addr *MACAddress) GetPrefixLenForSingleBlock() PrefixLen {
+	return addr.init().addressInternal.GetPrefixLenForSingleBlock()
+}
+
 func getMacSegCount(isExtended bool) (segmentCount int) {
 	if isExtended {
 		segmentCount = ExtendedUniqueIdentifier64SegmentCount
