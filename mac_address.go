@@ -799,6 +799,45 @@ func (addr *MACAddress) fromKey(scheme addressScheme, key *keyContents) *MACAddr
 	return fromMACAddrKey(scheme, key)
 }
 
+// ToGenericKey produces a generic Key[*MACAddress] that can
+// be used with generic code working with
+// [Address], [IPAddress], [IPv4Address], [IPv6Address] and [MACAddress].
+// ToKey produces a more compact key for code that is MAC-specific.
+func (addr *MACAddress) ToGenericKey() Key[*MACAddress] {
+	// Note: We intentionally do not populate the "scheme" field for MAC-48.
+	// With Key[*IPv4Address], by leaving the scheme zero for MAC-48,
+	// the zero Key[*MACAddress] matches up with the key produced here by the zero address.
+	// We do not need the scheme field for Key[*MACAddress] since the generic type indicates MAC,
+	// but we do need a flag to distinguish 64-bit EUI-64.
+	key := Key[*MACAddress]{}
+	if isExtended := addr.GetSegmentCount() == ExtendedUniqueIdentifier64SegmentCount; isExtended {
+		key.scheme = eui64Scheme
+	}
+	addr.init().toMACKey(&key.keyContents)
+	return key
+}
+
+func (addr *MACAddress) toMACKey(contents *keyContents) {
+	section := addr.GetSection()
+	divs := section.getDivArray()
+	if addr.IsMultiple() {
+		for i, div := range divs {
+			seg := div.ToMAC()
+			val := &contents.vals[i>>3]
+			val.lower = (val.lower << MACBitsPerSegment) | uint64(seg.GetMACSegmentValue())
+			val.upper = (val.upper << MACBitsPerSegment) | uint64(seg.GetMACUpperSegmentValue())
+		}
+	} else {
+		for i, div := range divs {
+			seg := div.ToMAC()
+			val := &contents.vals[i>>3]
+			newLower := (val.lower << MACBitsPerSegment) | uint64(seg.GetMACSegmentValue())
+			val.lower = newLower
+			val.upper = newLower
+		}
+	}
+}
+
 func fromMACKey(key MACAddressKey) *MACAddress {
 	additionalByteCount := key.additionalByteCount
 	segCount := int(additionalByteCount) + MediaAccessControlSegmentCount
