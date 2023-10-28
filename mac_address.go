@@ -748,6 +748,57 @@ func (addr *MACAddress) GetPrefixLenForSingleBlock() PrefixLen {
 	return addr.init().addressInternal.GetPrefixLenForSingleBlock()
 }
 
+// ReverseBits returns a new address with the bits reversed.  Any prefix length is dropped.
+//
+// If the bits within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, this returns an error.
+//
+// In practice this means that to be reversible,
+// a segment range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (addr *MACAddress) ReverseBits(perByte bool) (*MACAddress, address_error.IncompatibleAddressError) {
+	res, err := addr.GetSection().ReverseBits(perByte)
+	if err != nil {
+		return nil, err
+	}
+	return addr.checkIdentity(res), nil
+}
+
+// ToKey creates the associated address key.
+// While addresses can be compared with the Compare or Equal methods as well as various provided instances of AddressComparator,
+// they are not comparable with Go operators.
+// However, AddressKey instances are comparable with Go operators, and thus can be used as map keys.
+func (addr *MACAddress) ToKey() MACAddressKey {
+	key := MACAddressKey{
+		additionalByteCount: uint8(addr.GetSegmentCount()) - MediaAccessControlSegmentCount,
+	}
+	section := addr.GetSection()
+	divs := section.getDivArray()
+	var lowerVal, upperVal uint64
+	if addr.IsMultiple() {
+		for _, div := range divs {
+			seg := div.ToMAC()
+			lowerVal = (lowerVal << MACBitsPerSegment) | uint64(seg.GetMACSegmentValue())
+			upperVal = (upperVal << MACBitsPerSegment) | uint64(seg.GetMACUpperSegmentValue())
+		}
+	} else {
+		for _, div := range divs {
+			seg := div.ToMAC()
+			lowerVal = (lowerVal << MACBitsPerSegment) | uint64(seg.GetMACSegmentValue())
+		}
+		upperVal = lowerVal
+	}
+	key.vals.lower = lowerVal
+	key.vals.upper = upperVal
+	return key
+}
+
+func (addr *MACAddress) fromKey(scheme addressScheme, key *keyContents) *MACAddress {
+	// See ToGenericKey for details such as the fact that the scheme is populated only for eui64Scheme
+	return fromMACAddrKey(scheme, key)
+}
+
 func fromMACKey(key MACAddressKey) *MACAddress {
 	additionalByteCount := key.additionalByteCount
 	segCount := int(additionalByteCount) + MediaAccessControlSegmentCount
