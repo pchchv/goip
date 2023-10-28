@@ -835,3 +835,25 @@ func NewMACAddressFromVals(vals MACSegmentValueProvider) (addr *MACAddress) {
 func NewMACAddressFromRange(vals, upperVals MACSegmentValueProvider) (addr *MACAddress) {
 	return NewMACAddressFromRangeExt(vals, upperVals, false)
 }
+
+func fromMACAddrKey(scheme addressScheme, key *keyContents) *MACAddress {
+	segCount := MediaAccessControlSegmentCount
+	isExtended := false
+	// Note: the check here must be for eui64Scheme and not mac48Scheme
+	// ToGenericKey will only populate the scheme to eui64Scheme, it will be left as 0 otherwise
+	if isExtended = scheme == eui64Scheme; isExtended {
+		segCount = ExtendedUniqueIdentifier64SegmentCount
+	}
+	return NewMACAddressFromRangeExt(
+		func(segmentIndex int) MACSegInt {
+			valsIndex := segmentIndex >> 3
+			segIndex := ((segCount - 1) - segmentIndex) & 0x7
+			return MACSegInt(key.vals[valsIndex].lower >> (segIndex << macBitsToSegmentBitshift))
+		}, func(segmentIndex int) MACSegInt {
+			valsIndex := segmentIndex >> 3
+			segIndex := ((segCount - 1) - segmentIndex) & 0x7
+			return MACSegInt(key.vals[valsIndex].upper >> (segIndex << macBitsToSegmentBitshift))
+		},
+		isExtended,
+	)
+}
