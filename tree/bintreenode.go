@@ -44,6 +44,11 @@ func (c change) String() string {
 	return c.big.String() + " " + strconv.FormatUint(c.small, 10)
 }
 
+type changeTracker struct {
+	currentChange change
+	watched       bool
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
