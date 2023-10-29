@@ -49,6 +49,18 @@ type changeTracker struct {
 	watched       bool
 }
 
+func (c *changeTracker) changed() {
+	if c.watched {
+		c.watched = false
+		c.currentChange.increment()
+	}
+	// else nobody is watching the current change, so no need to do anything
+}
+
+func (c *changeTracker) changedSince(otherChange change) bool {
+	return !c.currentChange.Equal(otherChange)
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
