@@ -5,11 +5,14 @@ import (
 	"strconv"
 )
 
+var one = bigOne()
+
 type Key interface {
 	comparable // needed by populateCacheItem
 }
 
-var one = bigOne()
+// C represents cached values in iterators.
+type C any
 
 type change struct {
 	big   *big.Int
