@@ -73,6 +73,18 @@ func (c *changeTracker) String() string {
 type bounds[E Key] struct {
 }
 
+func (b *bounds[E]) isInBounds(_ E) bool {
+	return true
+}
+
+func (b *bounds[E]) isWithinLowerBound(_ E) bool {
+	return true
+}
+
+func (b *bounds[E]) isBelowLowerBound(_ E) bool {
+	return true
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
