@@ -85,6 +85,14 @@ func (b *bounds[E]) isBelowLowerBound(_ E) bool {
 	return true
 }
 
+func (b *bounds[E]) isWithinUpperBound(_ E) bool {
+	return true
+}
+
+func (b *bounds[E]) isAboveUpperBound(_ E) bool {
+	return true
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
