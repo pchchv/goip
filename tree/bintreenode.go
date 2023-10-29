@@ -3,6 +3,7 @@ package tree
 import (
 	"math/big"
 	"strconv"
+	"sync"
 )
 
 var one = bigOne()
@@ -94,6 +95,19 @@ func (b *bounds[E]) isWithinUpperBound(_ E) bool {
 
 func (b *bounds[E]) isAboveUpperBound(_ E) bool {
 	return true
+}
+
+type binTreeNode[E Key, V any] struct {
+	item       E // key for the node
+	value      V // only for associative trie nodes
+	storedSize int
+	added      bool       // some nodes represent elements added to the tree and others are nodes generated internally when other nodes are added
+	pool       *sync.Pool // used to store opResult objects for search operations
+	cTracker   *changeTracker
+	parent     *binTreeNode[E, V]
+	lower      *binTreeNode[E, V]
+	upper      *binTreeNode[E, V]
+	self       *binTreeNode[E, V]
 }
 
 func bigOne() *big.Int {
