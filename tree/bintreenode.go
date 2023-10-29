@@ -70,6 +70,9 @@ func (c *changeTracker) String() string {
 	return "current change: " + c.currentChange.String()
 }
 
+type bounds[E Key] struct {
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
