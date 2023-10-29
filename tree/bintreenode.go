@@ -61,6 +61,15 @@ func (c *changeTracker) changedSince(otherChange change) bool {
 	return !c.currentChange.Equal(otherChange)
 }
 
+func (c *changeTracker) getCurrent() change {
+	c.watched = true
+	return c.currentChange
+}
+
+func (c *changeTracker) String() string {
+	return "current change: " + c.currentChange.String()
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
