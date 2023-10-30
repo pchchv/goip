@@ -377,6 +377,44 @@ func (node *binTreeNode[E, V]) IsLeaf() bool {
 	return node.IsAdded() && node.getUpperSubNode() == nil && node.getLowerSubNode() == nil
 }
 
+func (node *binTreeNode[E, V]) nextAdded(end *binTreeNode[E, V], nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]) *binTreeNode[E, V] {
+	return nextTest(node, end, nextOperator, (*binTreeNode[E, V]).IsAdded)
+}
+
+//	in-order
+//
+//				8x
+//		4x					12x
+//	2x		6x			10x		14x
+//
+// 1x 3x		5x 7x		9x 11x	13x 15x
+func (node *binTreeNode[E, V]) nextNodeBounded(bound *binTreeNode[E, V]) *binTreeNode[E, V] {
+	next := node.getUpperSubNode()
+	if next != nil {
+		for {
+			nextLower := next.getLowerSubNode()
+			if nextLower == nil {
+				return next
+			}
+			next = nextLower
+		}
+	} else {
+		next = node.getParent()
+		if next == bound {
+			return nil
+		}
+		current := node
+		for next != nil && current == next.getUpperSubNode() {
+			current = next
+			next = next.getParent()
+			if next == bound {
+				return nil
+			}
+		}
+	}
+	return next
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
