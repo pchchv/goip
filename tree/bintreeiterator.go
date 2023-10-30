@@ -150,6 +150,24 @@ func (iter *subNodeCachingIterator[E, V]) populateCacheItem(current *binTreeNode
 	}
 }
 
+func (iter *subNodeCachingIterator[E, V]) Remove() *binTreeNode[E, V] {
+	if !iter.allowRemove {
+		// Example:
+		// Suppose we are at right sub-node, just visited left.  Next node is parent, but not added.
+		// When right is removed, so is the parent, so that the left takes its place.
+		// But parent is our next node.  Now our next node is invalid.  So we are lost.
+		// This is avoided for iterators that are "added" only.
+		panic("no removal allowed, this code path should not be accessible")
+	}
+	return iter.binTreeNodeIterator.Remove()
+}
+
+func (iter *subNodeCachingIterator[E, V]) checkCaching() {
+	if !iter.allowCaching {
+		panic("no caching allowed, this code path should not be accessible")
+	}
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
