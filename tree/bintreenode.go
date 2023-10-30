@@ -493,6 +493,24 @@ func (node *binTreeNode[E, V]) previousNodeBounded(bound *binTreeNode[E, V]) *bi
 	return previous
 }
 
+// previousAddedNode returns the previous node in the tree that is an added node,
+// following the tree order in reverse,
+// or nil if there is no such node.
+func (node *binTreeNode[E, V]) previousAddedNode() *binTreeNode[E, V] {
+	return node.nextAdded(nil, (*binTreeNode[E, V]).previousNodeBounded)
+}
+
+// lastAddedNode returns the last (highest valued) added node in
+// the sub-tree originating from this node,
+// or nil if there are no added entries in this tree or sub-tree
+func (node *binTreeNode[E, V]) lastAddedNode() *binTreeNode[E, V] {
+	last := node.lastNode()
+	if last.IsAdded() {
+		return last
+	}
+	return last.previousAddedNode()
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
