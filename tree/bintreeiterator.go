@@ -88,3 +88,25 @@ func (iter *binTreeNodeIterator[E, V]) Remove() *binTreeNode[E, V] {
 
 	return result
 }
+
+func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
+	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
+	if forward {
+		nextOperator = (*binTreeNode[E, V]).nextNodeBounded
+	} else {
+		nextOperator = (*binTreeNode[E, V]).previousNodeBounded
+	}
+
+	if addedOnly {
+		wrappedOp := nextOperator
+		nextOperator = func(currentNode *binTreeNode[E, V], endNode *binTreeNode[E, V]) *binTreeNode[E, V] {
+			return currentNode.nextAdded(endNode, wrappedOp)
+		}
+	}
+
+	res := binTreeNodeIterator[E, V]{end: end}
+	res.setChangeTracker(ctracker)
+	res.operator = nextOperator
+	res.next = res.getStart(start, end, nil, addedOnly)
+	return &res
+}
