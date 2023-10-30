@@ -7,7 +7,10 @@ import (
 	"unsafe"
 )
 
-var one = bigOne()
+var (
+	one        = bigOne()
+	freezeRoot = true
+)
 
 type Key interface {
 	comparable // needed by populateCacheItem
@@ -248,6 +251,36 @@ func (node *binTreeNode[E, V]) SetAdded() {
 	if !node.added {
 		node.setNodeAdded(true)
 		node.adjustCount(1)
+	}
+}
+
+func (node *binTreeNode[E, V]) removed() {
+	node.adjustCount(-1)
+	node.setNodeAdded(false)
+	node.cTracker.changed()
+	node.ClearValue()
+}
+
+func (node *binTreeNode[E, V]) replaceThisRoot(replacement *binTreeNode[E, V]) {
+	if replacement == nil {
+		node.setNodeAdded(false)
+		node.setUpper(nil)
+		node.setLower(nil)
+		if !freezeRoot {
+			var e E
+			node.setKey(e)
+			// here we'd need to replace with the default root (ie call setKey with key of 0.0.0.0/0 or ::/0 or 0:0:0:0:0:0)
+		}
+		node.storedSize = 0
+		node.ClearValue()
+	} else {
+		// We never go here when FREEZE_ROOT is true
+		node.setNodeAdded(replacement.IsAdded())
+		node.setUpper(replacement.getUpperSubNode())
+		node.setLower(replacement.getLowerSubNode())
+		node.setKey(replacement.GetKey())
+		node.storedSize = replacement.storedSize
+		node.SetValue(replacement.GetValue())
 	}
 }
 
