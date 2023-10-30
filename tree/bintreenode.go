@@ -224,6 +224,33 @@ func (node *binTreeNode[E, V]) setNodeAdded(added bool) {
 	node.added = added
 }
 
+func (node *binTreeNode[E, V]) adjustCount(delta int) {
+	if delta != 0 {
+		thisNode := node
+		for {
+			thisNode.storedSize += delta
+			thisNode = thisNode.getParent()
+			if thisNode == nil {
+				break
+			}
+		}
+	}
+}
+
+// SetAdded makes this node an added node,
+// which is equivalent to adding the corresponding key to the tree.
+// If the node is already an added node,
+// this method has no effect.
+// You cannot set an added node to non-added,
+// for that you should Remove the node from the tree by calling Remove.
+// A non-added node will only remain in the tree if it needs to in the tree.
+func (node *binTreeNode[E, V]) SetAdded() {
+	if !node.added {
+		node.setNodeAdded(true)
+		node.adjustCount(1)
+	}
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
