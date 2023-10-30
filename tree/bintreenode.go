@@ -511,6 +511,36 @@ func (node *binTreeNode[E, V]) lastAddedNode() *binTreeNode[E, V] {
 	return last.previousAddedNode()
 }
 
+func (node *binTreeNode[E, V]) firstPostOrderNode() *binTreeNode[E, V] {
+	next := node
+	var nextNext *binTreeNode[E, V]
+	for {
+		nextNext = next.getLowerSubNode()
+		if nextNext == nil {
+			nextNext = next.getUpperSubNode()
+			if nextNext == nil {
+				return next
+			}
+		}
+		next = nextNext
+	}
+}
+
+func (node *binTreeNode[E, V]) lastPreOrderNode() *binTreeNode[E, V] {
+	next := node
+	var nextNext *binTreeNode[E, V]
+	for {
+		nextNext = next.getUpperSubNode()
+		if nextNext == nil {
+			nextNext = next.getLowerSubNode()
+			if nextNext == nil {
+				return next
+			}
+		}
+		next = nextNext
+	}
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
