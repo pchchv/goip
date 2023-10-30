@@ -128,6 +128,25 @@ func (node *binTreeNode[E, V]) getChangeTracker() *changeTracker {
 	return node.cTracker
 }
 
+// when FREEZE_ROOT is true, this is never called (and FREEZE_ROOT is always true)
+func (node *binTreeNode[E, V]) setKey(item E) {
+	node.item = item
+}
+
+// Gets the key used for placing the node in the tree.
+func (node *binTreeNode[E, V]) GetKey() (key E) {
+	if node != nil {
+		key = node.item
+	}
+	return
+}
+
+// SetValue assigns a value to the node, overwriting any previous value
+func (node *binTreeNode[E, V]) SetValue(val V) {
+	// new value assignment
+	node.value = val
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
