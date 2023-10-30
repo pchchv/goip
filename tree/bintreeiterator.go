@@ -234,6 +234,23 @@ func (iter *subNodeCachingIterator[E, V]) cacheWithSecondSubNode(object C) bool 
 	return false
 }
 
+func (iter *subNodeCachingIterator[E, V]) CacheWithLowerSubNode(object C) bool {
+	iter.checkCaching()
+	if iter.isForward {
+		return iter.cacheWithFirstSubNode(object)
+	}
+	return iter.cacheWithSecondSubNode(object)
+
+}
+
+func (iter *subNodeCachingIterator[E, V]) CacheWithUpperSubNode(object C) bool {
+	iter.checkCaching()
+	if iter.isForward {
+		return iter.cacheWithSecondSubNode(object)
+	}
+	return iter.cacheWithFirstSubNode(object)
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
