@@ -111,6 +111,23 @@ type binTreeNode[E Key, V any] struct {
 	self       *binTreeNode[E, V]
 }
 
+func (node *binTreeNode[E, V]) setAddr() {
+	node.self = (*binTreeNode[E, V])(hideptr(unsafe.Pointer(node)))
+}
+
+func (node *binTreeNode[E, V]) checkCopy() {
+	if node != nil && node.self != nil && node.self != node {
+		panic("attempting to modify trie with a copied node")
+	}
+}
+
+func (node *binTreeNode[E, V]) getChangeTracker() *changeTracker {
+	if node == nil {
+		return nil
+	}
+	return node.cTracker
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
