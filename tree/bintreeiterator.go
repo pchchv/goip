@@ -338,3 +338,45 @@ func newPostOrderNodeIteratorBounded[E Key, V any](bnds *bounds[E], forward, add
 		!forward,
 		!forward || addedOnly)
 }
+
+// The caching only useful when in forward order, since you have to visit parent nodes first for it to be useful.
+func newPreOrderNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) subNodeCachingIterator[E, V] {
+	return newPreOrderNodeIteratorBounded(
+		nil,
+		forward, addedOnly,
+		start, end,
+		ctracker)
+}
+
+func newPreOrderNodeIteratorBounded[E Key, V any](bnds *bounds[E], forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) subNodeCachingIterator[E, V] {
+	var op func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
+	if forward {
+		op = (*binTreeNode[E, V]).nextPreOrderNode
+	} else {
+		op = (*binTreeNode[E, V]).previousPreOrderNode
+	}
+
+	// do the added-only filter first, because it is simpler
+	if addedOnly {
+		wrappedOp := op
+		op = func(currentNode *binTreeNode[E, V], endNode *binTreeNode[E, V]) *binTreeNode[E, V] {
+			return currentNode.nextAdded(endNode, wrappedOp)
+		}
+	}
+
+	if bnds != nil {
+		wrappedOp := op
+		op = func(currentNode *binTreeNode[E, V], endNode *binTreeNode[E, V]) *binTreeNode[E, V] {
+			return currentNode.nextInBounds(endNode, wrappedOp, bnds)
+		}
+	}
+
+	return newSubNodeCachingIterator(
+		bnds,
+		forward, addedOnly,
+		start, end,
+		ctracker,
+		op,
+		forward,
+		forward || addedOnly)
+}
