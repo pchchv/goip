@@ -209,6 +209,21 @@ func (node *binTreeNode[E, V]) setLower(lower *binTreeNode[E, V]) {
 	}
 }
 
+// IsAdded returns whether the node was "added".
+// Some binary tree nodes are considered "added" and others are not.
+// Those nodes created for key elements added to the tree are "added" nodes.
+// Those that are not added are those nodes created to serve as junctions for the added nodes.
+// Only added elements contribute to the size of a tree.
+// When removing nodes, non-added nodes are removed automatically whenever they are no longer needed,
+// which is when an added node has less than two added sub-nodes.
+func (node *binTreeNode[E, V]) IsAdded() bool {
+	return node != nil && node.added
+}
+
+func (node *binTreeNode[E, V]) setNodeAdded(added bool) {
+	node.added = added
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
