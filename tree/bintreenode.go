@@ -541,6 +541,52 @@ func (node *binTreeNode[E, V]) lastPreOrderNode() *binTreeNode[E, V] {
 	}
 }
 
+// nextNode returns the node that follows this node following the tree order
+func (node *binTreeNode[E, V]) nextNode() *binTreeNode[E, V] {
+	return node.nextNodeBounded(nil)
+}
+
+// previousNode returns the node that precedes this node following the tree order.
+func (node *binTreeNode[E, V]) previousNode() *binTreeNode[E, V] {
+	return node.previousNodeBounded(nil)
+}
+
+//	pre order
+//				1x
+//		2x						9x
+//
+// 3x		6x				10x		13x
+// 4x 5x		7x 8x		11x 12x		14x 15x
+// this one starts from root, ends at last node, all the way right
+func (node *binTreeNode[E, V]) nextPreOrderNode(end *binTreeNode[E, V]) *binTreeNode[E, V] {
+	next := node.getLowerSubNode()
+	if next == nil {
+		// cannot go left/lower
+		next = node.getUpperSubNode()
+		if next == nil {
+			// cannot go right/upper
+			current := node
+			next = node.getParent()
+			// so instead, keep going up until we can go right
+			for next != nil {
+				if next == end {
+					return nil
+				}
+				if current == next.getLowerSubNode() {
+					// parent is higher
+					nextNext := next.getUpperSubNode()
+					if nextNext != nil {
+						return nextNext
+					}
+				}
+				current = next
+				next = next.getParent()
+			}
+		}
+	}
+	return next
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
