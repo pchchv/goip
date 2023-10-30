@@ -356,6 +356,27 @@ func (node *binTreeNode[E, V]) Remove() {
 	}
 }
 
+// Clear removes this node and all sub-nodes from
+// the sub-tree with this node as the root,
+// after which isEmpty() will return true.
+func (node *binTreeNode[E, V]) Clear() {
+	node.checkCopy()
+	if node != nil {
+		node.replaceThis(nil)
+	}
+}
+
+// IsEmpty returns where there are not any elements in the sub-tree with this node as the root.
+func (node *binTreeNode[E, V]) IsEmpty() bool {
+	return !node.IsAdded() && node.getUpperSubNode() == nil && node.getLowerSubNode() == nil
+}
+
+// IsLeaf returns whether this node is in the tree (a node for which IsAdded() is true)
+// and there are no elements in the sub-tree with this node as the root.
+func (node *binTreeNode[E, V]) IsLeaf() bool {
+	return node.IsAdded() && node.getUpperSubNode() == nil && node.getLowerSubNode() == nil
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
