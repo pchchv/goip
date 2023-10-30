@@ -391,3 +391,16 @@ func bigOne() *big.Int {
 func hideptr(p unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(p) ^ 0)
 }
+
+func nextTest[E Key, V any](current, end *binTreeNode[E, V], nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V], tester func(current *binTreeNode[E, V]) bool) *binTreeNode[E, V] {
+	for {
+		current = nextOperator(current, end)
+		if current == end || current == nil {
+			return nil
+		}
+		if tester(current) {
+			break
+		}
+	}
+	return current
+}
