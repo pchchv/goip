@@ -166,6 +166,27 @@ func (node *binTreeNode[E, V]) IsRoot() bool {
 	return node != nil && node.parent == nil
 }
 
+// Gets the node from which this node is a direct child node,
+// or nil if this is the root.
+func (node *binTreeNode[E, V]) getParent() (parent *binTreeNode[E, V]) {
+	if node != nil {
+		parent = node.parent
+	}
+	return
+}
+
+func (node *binTreeNode[E, V]) setParent(parent *binTreeNode[E, V]) {
+	node.parent = parent
+}
+
+// Gets the direct child node whose key is largest in value
+func (node *binTreeNode[E, V]) getUpperSubNode() (upper *binTreeNode[E, V]) {
+	if node != nil {
+		upper = node.upper
+	}
+	return
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
