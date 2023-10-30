@@ -147,6 +147,25 @@ func (node *binTreeNode[E, V]) SetValue(val V) {
 	node.value = val
 }
 
+// GetValue returns the value assigned to the node
+func (node *binTreeNode[E, V]) GetValue() (val V) {
+	if node != nil {
+		val = node.value
+	}
+	return
+}
+
+func (node *binTreeNode[E, V]) ClearValue() {
+	var v V
+	// new value assignment
+	node.value = v
+}
+
+// IsRoot returns whether this is the root of the backing tree.
+func (node *binTreeNode[E, V]) IsRoot() bool {
+	return node != nil && node.parent == nil
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
