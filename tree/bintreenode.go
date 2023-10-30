@@ -636,13 +636,16 @@ func (node *binTreeNode[E, V]) previousPreOrderNode(end *binTreeNode[E, V]) *bin
 	if next == nil || next == end {
 		return nil
 	}
+
 	if next.getLowerSubNode() == node {
 		return next
 	}
+
 	nextNext := next.getLowerSubNode()
 	if nextNext == nil {
 		return next
 	}
+	
 	next = nextNext
 	for {
 		nextNext = next.getUpperSubNode()
@@ -654,6 +657,52 @@ func (node *binTreeNode[E, V]) previousPreOrderNode(end *binTreeNode[E, V]) *bin
 		}
 		next = nextNext
 	}
+}
+
+//	post order
+//				15x
+//		7x					14x
+//	3x		6x			10x		13x
+//
+// 1x 2x		4x 5x		8x 9x	11x 12x
+// this one starts from first node, all the way left, ends at root
+func (node *binTreeNode[E, V]) nextPostOrderNode(end *binTreeNode[E, V]) *binTreeNode[E, V] {
+	next := node.getParent()
+	if next == nil || next == end {
+		return nil
+	}
+
+	if next.getUpperSubNode() == node {
+		// we are the upper sub-node, so parent is next
+		return next
+	}
+
+	// we are the lower sub-node
+	nextNext := next.getUpperSubNode()
+	if nextNext == nil {
+		// parent has no upper sub-node, so parent is next
+		return next
+	}
+
+	// go to parent's upper sub-node
+	next = nextNext
+	// now go all the way down until we can go no further, favoring left/lower turns over right/upper
+	for {
+		nextNext = next.getLowerSubNode()
+		if nextNext == nil {
+			nextNext = next.getUpperSubNode()
+			if nextNext == nil {
+				return next
+			}
+		}
+		next = nextNext
+	}
+}
+
+func (node *binTreeNode[E, V]) nextInBounds(end *binTreeNode[E, V], nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V], bnds *bounds[E]) *binTreeNode[E, V] {
+	return nextTest(node, end, nextOperator, func(current *binTreeNode[E, V]) bool {
+		return bnds.isInBounds(current.GetKey())
+	})
 }
 
 func bigOne() *big.Int {
