@@ -327,6 +327,35 @@ func (node *binTreeNode[E, V]) replaceThisRecursive(replacement *binTreeNode[E, 
 	}
 }
 
+// Makes the parent of this point to something else, thus removing this and all sub-nodes from the tree
+func (node *binTreeNode[E, V]) replaceThis(replacement *binTreeNode[E, V]) {
+	node.replaceThisRecursive(replacement, 0)
+	node.cTracker.changed()
+}
+
+// Remove removes this node from the collection of added nodes,
+// and also removes from the tree if possible.
+// If it has two sub-nodes,
+// it cannot be removed from the tree,
+// in which case it is marked as not "added",
+// nor is it counted in the tree size.
+// Only added nodes can be removed from the tree.
+// If this node is not added, this method does nothing.
+func (node *binTreeNode[E, V]) Remove() {
+	node.checkCopy()
+	if !node.IsAdded() {
+		return
+	} else if freezeRoot && node.IsRoot() {
+		node.removed()
+	} else if node.getUpperSubNode() == nil {
+		node.replaceThis(node.getLowerSubNode()) // also handles case of lower == nil
+	} else if node.getLowerSubNode() == nil {
+		node.replaceThis(node.getUpperSubNode())
+	} else { // has two sub-nodes
+		node.removed()
+	}
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
