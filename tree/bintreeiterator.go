@@ -89,6 +89,24 @@ func (iter *binTreeNodeIterator[E, V]) Remove() *binTreeNode[E, V] {
 	return result
 }
 
+type subNodeCachingIterator[E Key, V any] struct {
+	binTreeNodeIterator[E, V]
+	cacheItem  C
+	nextKey    E
+	nextCached C
+	stack      []C
+	stackIndex int
+	bnds       *bounds[E]
+	addedOnly  bool
+	isForward  bool
+	// Both these fields are not really necessary because
+	// the caching and removal functionality should not be exposed when it is not usable.
+	// The interfaces will not include the caching and Remove() methods in the cases where they are not usable.
+	// So these fields are both runtime checks for coding errors.
+	allowCaching bool
+	allowRemove  bool
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
