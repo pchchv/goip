@@ -1,5 +1,10 @@
 package tree
 
+const (
+	ipv6BitCount = 128
+	stackSize    = ipv6BitCount + 2 // 129 for prefixes /0 to /128 and also 1 more for non-prefixed
+)
+
 type HasNext interface {
 	HasNext() bool
 }
@@ -105,6 +110,44 @@ type subNodeCachingIterator[E Key, V any] struct {
 	// So these fields are both runtime checks for coding errors.
 	allowCaching bool
 	allowRemove  bool
+}
+
+func (iter *subNodeCachingIterator[E, V]) Next() *binTreeNode[E, V] {
+	result := iter.binTreeNodeIterator.Next()
+	if result != nil && iter.allowCaching {
+		iter.populateCacheItem(result)
+	}
+	return result
+}
+
+func (iter *subNodeCachingIterator[E, V]) GetCached() C {
+	if !iter.allowCaching {
+		panic("no caching allowed, this code path should not be accessible")
+	}
+	return iter.cacheItem
+}
+
+func (iter *subNodeCachingIterator[E, V]) populateCacheItem(current *binTreeNode[E, V]) {
+	nextKey := iter.nextKey
+	if current.GetKey() == nextKey {
+		iter.cacheItem = iter.nextCached
+		iter.nextCached = nil
+	} else {
+		stack := iter.stack
+		if stack != nil {
+			stackIndex := iter.stackIndex
+			if stackIndex >= 0 && stack[stackIndex] == current.GetKey() {
+				iter.cacheItem = stack[stackIndex+stackSize].(C)
+				stack[stackIndex+stackSize] = nil
+				stack[stackIndex] = nil
+				iter.stackIndex--
+			} else {
+				iter.cacheItem = nil
+			}
+		} else {
+			iter.cacheItem = nil
+		}
+	}
 }
 
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
