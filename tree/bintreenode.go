@@ -284,6 +284,49 @@ func (node *binTreeNode[E, V]) replaceThisRoot(replacement *binTreeNode[E, V]) {
 	}
 }
 
+func (node *binTreeNode[E, V]) adjustTree(parent, replacement *binTreeNode[E, V], additionalSizeAdjustment int, replacedUpper bool) {
+	sizeAdjustment := -node.storedSize
+	if replacement == nil {
+		if !parent.IsAdded() && (!freezeRoot || !parent.IsRoot()) {
+			parent.storedSize += sizeAdjustment
+			var parentReplacement *binTreeNode[E, V]
+			if replacedUpper {
+				parentReplacement = parent.getLowerSubNode()
+			} else {
+				parentReplacement = parent.getUpperSubNode()
+			}
+			parent.replaceThisRecursive(parentReplacement, sizeAdjustment)
+		} else {
+			parent.adjustCount(sizeAdjustment + additionalSizeAdjustment)
+		}
+	} else {
+		parent.adjustCount(replacement.storedSize + sizeAdjustment + additionalSizeAdjustment)
+	}
+	node.setParent(nil)
+}
+
+func (node *binTreeNode[E, V]) replaceThisRecursive(replacement *binTreeNode[E, V], additionalSizeAdjustment int) {
+	if node.IsRoot() {
+		node.replaceThisRoot(replacement)
+		return
+	}
+
+	parent := node.getParent()
+	if parent.getUpperSubNode() == node {
+		// we adjust parents first, using the size and other characteristics of ourselves,
+		// before the parent severs the link to ourselves with the call to setUpper,
+		// since the setUpper call is allowed to change the characteristics of the child,
+		// and in some cases this does adjust the size of the child.
+		node.adjustTree(parent, replacement, additionalSizeAdjustment, true)
+		parent.setUpper(replacement)
+	} else if parent.getLowerSubNode() == node {
+		node.adjustTree(parent, replacement, additionalSizeAdjustment, false)
+		parent.setLower(replacement)
+	} else {
+		panic("corrupted trie") // will never reach here
+	}
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
