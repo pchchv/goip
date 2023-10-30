@@ -587,6 +587,75 @@ func (node *binTreeNode[E, V]) nextPreOrderNode(end *binTreeNode[E, V]) *binTree
 	return next
 }
 
+//	reverse post order
+//				1x
+//		9x					2x
+//	13x		10x			6x		3x
+//
+// 15x 14x	12x 11x		8x 7x	5x 4x
+// this one starts from root, ends at first node, all the way left
+// this is the mirror image of nextPreOrderNode, so no comments
+func (node *binTreeNode[E, V]) previousPostOrderNode(end *binTreeNode[E, V]) *binTreeNode[E, V] {
+	next := node.getUpperSubNode()
+	if next == nil {
+		next = node.getLowerSubNode()
+		if next == nil {
+			current := node
+			next = node.getParent()
+			for next != nil {
+				if next == end {
+					return nil
+				}
+				if current == next.getUpperSubNode() {
+					nextNext := next.getLowerSubNode()
+					if nextNext != nil {
+						next = nextNext
+						break
+					}
+				}
+				current = next
+				next = next.getParent()
+			}
+		}
+	}
+	return next
+}
+
+//	reverse pre order
+//
+//				15x
+//		14x					7x
+//	13x		10x			6x		3x
+//
+// 12x 11x	9x 8x		5x 4x	2x 1x
+//
+// this one starts from last node, all the way right, ends at root
+// this is the mirror image of nextPostOrderNode, so no comments
+func (node *binTreeNode[E, V]) previousPreOrderNode(end *binTreeNode[E, V]) *binTreeNode[E, V] {
+	next := node.getParent()
+	if next == nil || next == end {
+		return nil
+	}
+	if next.getLowerSubNode() == node {
+		return next
+	}
+	nextNext := next.getLowerSubNode()
+	if nextNext == nil {
+		return next
+	}
+	next = nextNext
+	for {
+		nextNext = next.getUpperSubNode()
+		if nextNext == nil {
+			nextNext = next.getLowerSubNode()
+			if nextNext == nil {
+				return next
+			}
+		}
+		next = nextNext
+	}
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
