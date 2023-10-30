@@ -187,6 +187,28 @@ func (node *binTreeNode[E, V]) getUpperSubNode() (upper *binTreeNode[E, V]) {
 	return
 }
 
+// Gets the direct child node whose key is smallest in value
+func (node *binTreeNode[E, V]) getLowerSubNode() (lower *binTreeNode[E, V]) {
+	if node != nil {
+		lower = node.lower
+	}
+	return
+}
+
+func (node *binTreeNode[E, V]) setUpper(upper *binTreeNode[E, V]) {
+	node.upper = upper
+	if upper != nil {
+		upper.setParent(node)
+	}
+}
+
+func (node *binTreeNode[E, V]) setLower(lower *binTreeNode[E, V]) {
+	node.lower = lower
+	if lower != nil {
+		lower.setParent(node)
+	}
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
