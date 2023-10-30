@@ -415,6 +415,26 @@ func (node *binTreeNode[E, V]) nextNodeBounded(bound *binTreeNode[E, V]) *binTre
 	return next
 }
 
+// nextAddedNode returns the next node in the tree that is an added node,
+// following the tree order,
+// or nil if there is no such node.
+func (node *binTreeNode[E, V]) nextAddedNode() *binTreeNode[E, V] {
+	return node.nextAdded(nil, (*binTreeNode[E, V]).nextNodeBounded)
+}
+
+// firstNode returns the first (lowest valued)
+// node in the sub-tree originating from this node.
+func (node *binTreeNode[E, V]) firstNode() *binTreeNode[E, V] {
+	first := node
+	for {
+		lower := first.getLowerSubNode()
+		if lower == nil {
+			return first
+		}
+		first = lower
+	}
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
