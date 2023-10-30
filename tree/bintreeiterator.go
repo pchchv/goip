@@ -49,3 +49,42 @@ func (iter *binTreeNodeIterator[E, V]) setChangeTracker(ctracker *changeTracker)
 		iter.cTracker, iter.currentChange = ctracker, ctracker.getCurrent()
 	}
 }
+
+func (iter *binTreeNodeIterator[E, V]) HasNext() bool {
+	return iter.next != nil
+}
+
+func (iter *binTreeNodeIterator[E, V]) Next() *binTreeNode[E, V] {
+	if !iter.HasNext() {
+		return nil
+	}
+
+	cTracker := iter.cTracker
+	if cTracker != nil && cTracker.changedSince(iter.currentChange) {
+		panic("the tree has been modified since the iterator was created")
+	}
+
+	iter.current = iter.next
+	iter.next = iter.toNext(iter.next)
+	return iter.current
+}
+
+func (iter *binTreeNodeIterator[E, V]) Remove() *binTreeNode[E, V] {
+	if iter.current == nil {
+		return nil
+	}
+
+	cTracker := iter.cTracker
+	if cTracker != nil && cTracker.changedSince(iter.currentChange) {
+		panic("the tree has been modified since the iterator was created")
+	}
+
+	result := iter.current
+	result.Remove()
+	iter.current = nil
+	if cTracker != nil {
+		iter.currentChange = cTracker.getCurrent()
+	}
+
+	return result
+}
