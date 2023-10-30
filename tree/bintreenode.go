@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"strconv"
 	"sync"
+	"unsafe"
 )
 
 var one = bigOne()
@@ -112,4 +113,15 @@ type binTreeNode[E Key, V any] struct {
 
 func bigOne() *big.Int {
 	return big.NewInt(1)
+}
+
+// This hideptr trick is used in strings.Builder
+// to trick escape analysis to ensure that this self-referential pointer
+// does not cause automatic heap allocation
+// cannot hurt to use it
+//
+//go:nosplit
+//go:nocheckptr
+func hideptr(p unsafe.Pointer) unsafe.Pointer {
+	return unsafe.Pointer(uintptr(p) ^ 0)
 }
