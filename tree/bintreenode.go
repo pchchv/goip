@@ -645,7 +645,6 @@ func (node *binTreeNode[E, V]) previousPreOrderNode(end *binTreeNode[E, V]) *bin
 	if nextNext == nil {
 		return next
 	}
-	
 	next = nextNext
 	for {
 		nextNext = next.getUpperSubNode()
@@ -703,6 +702,33 @@ func (node *binTreeNode[E, V]) nextInBounds(end *binTreeNode[E, V], nextOperator
 	return nextTest(node, end, nextOperator, func(current *binTreeNode[E, V]) bool {
 		return bnds.isInBounds(current.GetKey())
 	})
+}
+
+func (node *binTreeNode[E, V]) configuredNodeIterator(forward, addedOnly bool) nodeIteratorRem[E, V] {
+	var startNode *binTreeNode[E, V]
+	if forward {
+		startNode = node.firstNode()
+	} else {
+		startNode = node.lastNode()
+	}
+	return newNodeIterator[E, V](
+		forward,
+		addedOnly,
+		startNode,
+		node.getParent(),
+		node.getChangeTracker())
+}
+
+// Iterates through the added nodes of the sub-tree with this node as the root,
+// in forward or reverse tree order.
+func (node *binTreeNode[E, V]) nodeIterator(forward bool) nodeIteratorRem[E, V] {
+	return node.configuredNodeIterator(forward, true)
+}
+
+// Iterates through all the nodes of the sub-tree with this node as the root,
+// in forward or reverse tree order.
+func (node *binTreeNode[E, V]) allNodeIterator(forward bool) nodeIteratorRem[E, V] {
+	return node.configuredNodeIterator(forward, false)
 }
 
 func bigOne() *big.Int {
