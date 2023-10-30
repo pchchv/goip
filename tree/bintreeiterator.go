@@ -25,3 +25,27 @@ type binTreeNodeIterator[E Key, V any] struct {
 	cTracker      *changeTracker
 	currentChange change
 }
+
+func (iter *binTreeNodeIterator[E, V]) toNext(current *binTreeNode[E, V]) *binTreeNode[E, V] {
+	return iter.operator(current, iter.end)
+}
+
+func (iter *binTreeNodeIterator[E, V]) getStart(start, end *binTreeNode[E, V], bounds *bounds[E], addedOnly bool) *binTreeNode[E, V] {
+	if start == end || start == nil {
+		return nil
+	}
+
+	if !addedOnly || start.IsAdded() {
+		if bounds == nil || bounds.isInBounds(start.GetKey()) {
+			return start
+		}
+	}
+
+	return iter.toNext(start)
+}
+
+func (iter *binTreeNodeIterator[E, V]) setChangeTracker(ctracker *changeTracker) {
+	if ctracker != nil {
+		iter.cTracker, iter.currentChange = ctracker, ctracker.getCurrent()
+	}
+}
