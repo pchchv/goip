@@ -15,3 +15,13 @@ type nodeIteratorRem[E Key, V any] interface {
 	// If there is no such element, it returns nil.
 	Remove() *binTreeNode[E, V]
 }
+
+type binTreeNodeIterator[E Key, V any] struct {
+	// takes current node and end as args
+	operator      func(currentNode *binTreeNode[E, V], endNode *binTreeNode[E, V]) (nextNode *binTreeNode[E, V])
+	current       *binTreeNode[E, V]
+	next          *binTreeNode[E, V]
+	end           *binTreeNode[E, V] // a non-nil node that denotes the end, possibly parent of the starting node
+	cTracker      *changeTracker
+	currentChange change
+}
