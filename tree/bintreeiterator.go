@@ -168,6 +168,72 @@ func (iter *subNodeCachingIterator[E, V]) checkCaching() {
 	}
 }
 
+// the sub-node will be the next visited node
+func (iter *subNodeCachingIterator[E, V]) cacheWithFirstSubNode(object C) bool {
+	iter.checkCaching()
+	if iter.current != nil {
+		var firstNode *binTreeNode[E, V]
+		if iter.isForward {
+			firstNode = iter.current.getLowerSubNode()
+		} else {
+			firstNode = iter.current.getUpperSubNode()
+		}
+		if firstNode != nil {
+			if (iter.addedOnly && !firstNode.IsAdded()) || (iter.bnds != nil && !iter.bnds.isInBounds(firstNode.GetKey())) {
+				firstNode = iter.operator(firstNode, iter.current)
+			}
+			if firstNode != nil {
+				// the lower sub-node is always next if it exists
+				iter.nextKey = firstNode.GetKey()
+				iter.nextCached = object
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// the sub-node will only be the next visited node if there is no other sub-node,
+// otherwise it might not be visited for a while
+func (iter *subNodeCachingIterator[E, V]) cacheWithSecondSubNode(object C) bool {
+	iter.checkCaching()
+	if iter.current != nil {
+		var secondNode *binTreeNode[E, V]
+		if iter.isForward {
+			secondNode = iter.current.getUpperSubNode()
+		} else {
+			secondNode = iter.current.getLowerSubNode()
+		}
+		if secondNode != nil {
+			if (iter.addedOnly && !secondNode.IsAdded()) || (iter.bnds != nil && !iter.bnds.isInBounds(secondNode.GetKey())) {
+				secondNode = iter.operator(secondNode, iter.current)
+			}
+			if secondNode != nil {
+				// if there is no lower node, we can use the nextCached field since upper is next when no lower sub-node
+				var firstNode *binTreeNode[E, V]
+				if iter.isForward {
+					firstNode = iter.current.getLowerSubNode()
+				} else {
+					firstNode = iter.current.getUpperSubNode()
+				}
+				if firstNode == nil {
+					iter.nextKey = secondNode.GetKey()
+					iter.nextCached = object
+				} else {
+					if iter.stack == nil {
+						iter.stack = make([]C, stackSize<<1)
+					}
+					iter.stackIndex++
+					iter.stack[iter.stackIndex] = secondNode.GetKey()
+					iter.stack[iter.stackIndex+stackSize] = object
+				}
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
