@@ -272,3 +272,69 @@ func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeN
 	res.next = res.getStart(start, end, nil, addedOnly)
 	return &res
 }
+
+// The caching only useful when in reverse order, since you have to visit parent nodes first for it to be useful.
+func newPostOrderNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) subNodeCachingIterator[E, V] {
+	return newPostOrderNodeIteratorBounded(
+		nil,
+		forward, addedOnly,
+		start, end,
+		ctracker)
+}
+
+func newSubNodeCachingIterator[E Key, V any](
+	bnds *bounds[E],
+	forward, addedOnly bool,
+	start, end *binTreeNode[E, V],
+	ctracker *changeTracker,
+	nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V],
+	allowCaching,
+	allowRemove bool,
+) subNodeCachingIterator[E, V] {
+	res := subNodeCachingIterator[E, V]{
+		allowCaching:        allowCaching,
+		allowRemove:         allowRemove,
+		stackIndex:          -1,
+		bnds:                bnds,
+		isForward:           forward,
+		addedOnly:           addedOnly,
+		binTreeNodeIterator: binTreeNodeIterator[E, V]{end: end},
+	}
+	res.setChangeTracker(ctracker)
+	res.operator = nextOperator
+	res.next = res.getStart(start, end, bnds, addedOnly)
+	return res
+}
+
+func newPostOrderNodeIteratorBounded[E Key, V any](bnds *bounds[E], forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) subNodeCachingIterator[E, V] {
+	var op func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
+	if forward {
+		op = (*binTreeNode[E, V]).nextPostOrderNode
+	} else {
+		op = (*(binTreeNode[E, V])).previousPostOrderNode
+	}
+
+	// do the added-only filter first, because it is simpler
+	if addedOnly {
+		wrappedOp := op
+		op = func(currentNode *binTreeNode[E, V], endNode *binTreeNode[E, V]) *binTreeNode[E, V] {
+			return currentNode.nextAdded(endNode, wrappedOp)
+		}
+	}
+
+	if bnds != nil {
+		wrappedOp := op
+		op = func(currentNode *binTreeNode[E, V], endNode *binTreeNode[E, V]) *binTreeNode[E, V] {
+			return currentNode.nextInBounds(endNode, wrappedOp, bnds)
+		}
+	}
+
+	return newSubNodeCachingIterator[E, V](
+		bnds,
+		forward, addedOnly,
+		start, end,
+		ctracker,
+		op,
+		!forward,
+		!forward || addedOnly)
+}
