@@ -435,6 +435,64 @@ func (node *binTreeNode[E, V]) firstNode() *binTreeNode[E, V] {
 	}
 }
 
+// firstAddedNode returns the first (lowest valued) added node in
+// the sub-tree originating from this node,
+// or nil if there are no added entries in this tree or sub-tree
+func (node *binTreeNode[E, V]) firstAddedNode() *binTreeNode[E, V] {
+	first := node.firstNode()
+	if first.IsAdded() {
+		return first
+	}
+	return first.nextAddedNode()
+}
+
+// lastNode returns the last (highest valued)
+// node in the sub-tree originating from this node.
+func (node *binTreeNode[E, V]) lastNode() *binTreeNode[E, V] {
+	last := node
+	for {
+		upper := last.getUpperSubNode()
+		if upper == nil {
+			return last
+		}
+		last = upper
+	}
+}
+
+//	reverse order
+//
+//				8x
+//		12x					4x
+//	14x		10x			6x		2x
+//
+// 15x 13x	11x 9x		7x 5x	3x 1x
+func (node *binTreeNode[E, V]) previousNodeBounded(bound *binTreeNode[E, V]) *binTreeNode[E, V] {
+	previous := node.getLowerSubNode()
+	if previous != nil {
+		for {
+			previousUpper := previous.getUpperSubNode()
+			if previousUpper == nil {
+				break
+			}
+			previous = previousUpper
+		}
+	} else {
+		previous = node.getParent()
+		if previous == bound {
+			return nil
+		}
+		current := node
+		for previous != nil && current == previous.getLowerSubNode() {
+			current = previous
+			previous = previous.getParent()
+			if previous == bound {
+				return nil
+			}
+		}
+	}
+	return previous
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
