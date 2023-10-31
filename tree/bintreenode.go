@@ -2,6 +2,7 @@ package tree
 
 import (
 	"math/big"
+	"reflect"
 	"strconv"
 	"sync"
 	"unsafe"
@@ -870,4 +871,13 @@ func nextTest[E Key, V any](current, end *binTreeNode[E, V], nextOperator func(c
 		}
 	}
 	return current
+}
+
+func isNil[V any](v V) bool {
+	valueType := reflect.ValueOf(&v).Elem()
+	switch valueType.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
+		return valueType.IsNil()
+	}
+	return false
 }
