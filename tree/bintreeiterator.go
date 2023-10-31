@@ -359,6 +359,53 @@ type cachingPriorityNodeIterator[E Key, V any] struct {
 	cached *cachedObjs[E, V]
 }
 
+func (iter *cachingPriorityNodeIterator[E, V]) getNextOperation(queue *nodePriorityQueue) func(currentNode *binTreeNode[E, V], endNode *binTreeNode[E, V]) *binTreeNode[E, V] {
+	return func(currentNode *binTreeNode[E, V], endNode *binTreeNode[E, V]) *binTreeNode[E, V] {
+		lower := currentNode.getLowerSubNode()
+		cacheObjs := iter.cached
+		if lower != nil {
+			cachd := &cached[E, V]{
+				node: lower,
+			}
+			cacheObjs.lowerCacheObj = cachd
+			heap.Push(queue, cachd)
+		} else {
+			cacheObjs.lowerCacheObj = nil
+		}
+		upper := currentNode.getUpperSubNode()
+		if upper != nil {
+			cachd := &cached[E, V]{
+				node: upper,
+			}
+			cacheObjs.upperCacheObj = cachd
+			heap.Push(queue, cachd)
+		} else {
+			cacheObjs.upperCacheObj = nil
+		}
+		if cacheObjs.nextCachedItem != nil {
+			cacheObjs.cacheItem = cacheObjs.nextCachedItem.cached
+		}
+		var item queueType
+		if queue.Len() > 0 {
+			item = heap.Pop(queue)
+		}
+		if item != nil {
+			cachd := item.(*cached[E, V])
+			node := cachd.node
+			if node != endNode {
+				cacheObjs.nextCachedItem = cachd
+				return node
+			}
+		}
+		cacheObjs.nextCachedItem = nil
+		return nil
+	}
+}
+
+func (iter *cachingPriorityNodeIterator[E, V]) GetCached() C {
+	return iter.cached.cacheItem
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
