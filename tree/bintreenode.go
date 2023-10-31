@@ -845,6 +845,12 @@ func (node *binTreeNode[E, V]) containingFirstAllNodeIterator(forwardSubNodeOrde
 	return node.containingFirstNodeIterator(forwardSubNodeOrder, false)
 }
 
+type nodePrinter[E Key, V any] interface {
+	GetKey() E
+	GetValue() V
+	IsAdded() bool
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
