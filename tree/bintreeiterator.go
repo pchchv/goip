@@ -251,6 +251,14 @@ func (iter *subNodeCachingIterator[E, V]) CacheWithUpperSubNode(object C) bool {
 	return iter.cacheWithFirstSubNode(object)
 }
 
+type keyIterator[E Key] interface {
+	HasNext
+	Next() E
+	// Remove removes the last iterated element from the underlying trie, and returns that element.
+	// If there is no such element, it returns nil.
+	Remove() E
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
