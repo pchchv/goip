@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"fmt"
 	"math/big"
 	"reflect"
 	"strconv"
@@ -8,7 +9,13 @@ import (
 	"unsafe"
 )
 
-const sizeUnknown = -1
+const (
+	sizeUnknown = -1
+
+	// https://en.wikipedia.org/wiki/File:Unicode_Box_Drawing_(2500-257F)_Rev_2.png
+	nonAddedNodeCircle = "\u25cb"
+	addedNodeCircle    = "\u25cf"
+)
 
 var (
 	one        = bigOne()
@@ -886,4 +893,32 @@ func isNil[V any](v V) bool {
 		return valueType.IsNil()
 	}
 	return false
+}
+
+func nilString() string {
+	return "<nil>"
+}
+
+// NodeString returns a visual representation of the given node including the key,
+// with an open circle indicating this node is not an added node,
+// a closed circle indicating this node is an added node.
+func NodeString[E Key, V any](node nodePrinter[E, V]) string {
+	if node == nil {
+		return nilString()
+	}
+
+	key := node.GetKey()
+	val := node.GetValue()
+	if _, ok := any(val).(EmptyValueType); ok || isNil(val) {
+		if node.IsAdded() {
+			return fmt.Sprint(addedNodeCircle, " ", key)
+		}
+		return fmt.Sprint(nonAddedNodeCircle, " ", key)
+	}
+
+	if node.IsAdded() {
+		return fmt.Sprint(addedNodeCircle, " ", key, " = ", val)
+	}
+
+	return fmt.Sprint(nonAddedNodeCircle, " ", key, " = ", val)
 }
