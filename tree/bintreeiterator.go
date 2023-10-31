@@ -622,3 +622,26 @@ func newPriorityNodeIterator[E Key, V any](treeSize int, addedOnly bool, start *
 		start,
 		comparator)
 }
+
+func newCachingPriorityNodeIteratorSized[E Key, V any](treeSize int, start *binTreeNode[E, V], comparator func(E, E) int) cachingPriorityNodeIterator[E, V] {
+	comp := func(one, two queueType) int {
+		cached1, cached2 := one.(*cached[E, V]), two.(*cached[E, V])
+		node1, node2 := cached1.node, cached2.node
+		addr1, addr2 := node1.GetKey(), node2.GetKey()
+		return comparator(addr1, addr2)
+	}
+
+	queue := &nodePriorityQueue{comparator: comp}
+	if treeSize > 0 {
+		queue.queue = make([]queueType, 0, (treeSize+2)>>1)
+	}
+
+	res := cachingPriorityNodeIterator[E, V]{cached: &cachedObjs[E, V]{}}
+	res.operator = res.getNextOperation(queue)
+	start = res.getStart(start, nil, nil, false)
+	if start != nil {
+		res.next = start
+		res.setChangeTracker(start.cTracker)
+	}
+	return res
+}
