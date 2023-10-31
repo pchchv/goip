@@ -354,6 +354,11 @@ type cachedObjs[E Key, V any] struct {
 	upperCacheObj  *cached[E, V]
 }
 
+type cachingPriorityNodeIterator[E Key, V any] struct {
+	binTreeNodeIterator[E, V]
+	cached *cachedObjs[E, V]
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
