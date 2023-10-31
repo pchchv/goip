@@ -43,6 +43,9 @@ type indents struct {
 	nodeIndent, subNodeInd string
 }
 
+// binTreeNodePtr only used to eliminate the method set of *binTreeNode
+type binTreeNodePtr[E Key, V any] *binTreeNode[E, V]
+
 // C represents cached values in iterators.
 type C any
 
