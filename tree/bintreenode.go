@@ -816,6 +816,26 @@ func (node *binTreeNode[E, V]) descendingIterator() keyIterator[E] {
 	return binTreeKeyIterator[E, V]{node.nodeIterator(false)}
 }
 
+func (node *binTreeNode[E, V]) containingFirstNodeIterator(forwardSubNodeOrder, addedNodesOnly bool) cachingNodeIterator[E, V] {
+	var iter subNodeCachingIterator[E, V]
+	if forwardSubNodeOrder {
+		iter = newPreOrderNodeIterator[E, V]( // remove is allowed
+			true,           // forward
+			addedNodesOnly, // added only
+			node,
+			node.getParent(),
+			node.getChangeTracker())
+	} else {
+		iter = newPostOrderNodeIterator[E, V]( // remove is allowed
+			false,          // forward
+			addedNodesOnly, // added only
+			node,
+			node.getParent(),
+			node.getChangeTracker())
+	}
+	return &iter
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
