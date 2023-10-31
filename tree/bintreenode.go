@@ -882,7 +882,6 @@ func (node *binTreeNode[E, V]) printTree(builder *strings.Builder,
 		builder.WriteByte('\n')
 		return
 	}
-	
 	iterator := node.containingFirstAllNodeIterator(true)
 	next := iterator.Next()
 	for next != nil {
@@ -944,6 +943,55 @@ func (node *binTreeNode[E, V]) TreeString(withNonAddedKeys, withSizes bool) stri
 	builder.WriteByte('\n')
 	node.printTree(&builder, indents{}, withNonAddedKeys, withSizes)
 	return builder.String()
+}
+
+// String returns a visual representation of this node including the key,
+// with an open circle indicating this node is not an added node,
+// a closed circle indicating this node is an added node.
+func (node *binTreeNode[E, V]) String() string {
+	if node == nil {
+		return NodeString[E, V](nil)
+	}
+	return NodeString[E, V](node)
+}
+
+func (node binTreeNode[E, V]) format(state fmt.State, verb rune) {
+	switch verb {
+	case 's', 'v':
+		_, _ = state.Write([]byte(node.String()))
+		return
+	}
+	s := flagsFromState(state, verb)
+	_, _ = state.Write([]byte(fmt.Sprintf(s, binTreeNodePtr[E, V](node.self))))
+}
+
+// clone clones the node.
+// Keys remain the same,
+// but the parent node and the lower and upper sub-nodes are all set to nil.
+func (node *binTreeNode[E, V]) clone() *binTreeNode[E, V] {
+	if node == nil {
+		return nil
+	}
+
+	result := *node // maintains same key and value which are not copied
+	result.setParent(nil)
+	result.setLower(nil)
+	result.setUpper(nil)
+	if node.IsAdded() {
+		result.storedSize = 1
+	} else {
+		result.storedSize = 0
+	}
+
+	// it is ok to have no change tracker, because the parent, lower and upper are nil
+	// so any attempt to remove or clear will do nothing,
+	// and you cannot add to nodes, you can only add to tries,
+	// so no calls to the change tracker
+	result.cTracker = nil
+	// no need to make use of the shared pool
+	result.pool = nil
+	result.setAddr()
+	return &result
 }
 
 func bigOne() *big.Int {
