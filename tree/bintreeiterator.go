@@ -271,6 +271,35 @@ func (iter binTreeKeyIterator[E, V]) Remove() E {
 	return iter.nodeIteratorRem.Remove().GetKey()
 }
 
+type CachingIterator interface {
+	// GetCached returns an object previously cached with the current iterated node.
+	// After Next has returned a node,
+	// if an object was cached by a call to CacheWithLowerSubNode or CacheWithUpperSubNode
+	// was called when that node's parent was previously returned by Next,
+	// then this returns that cached object.
+	GetCached() C
+	// CacheWithLowerSubNode caches an object with the lower sub-node of the current iterated node.
+	// After Next has returned a node,
+	// calling this method caches the provided object with the lower sub-node so that it can
+	// be retrieved with GetCached when the lower sub-node is visited later.
+	//
+	// Returns false if it could not be cached, either because the node has since been removed with a call to Remove,
+	// because Next has not been called yet, or because there is no lower sub node for the node previously returned by  Next.
+	//
+	// The caching and retrieval is done in constant time.
+	CacheWithLowerSubNode(C) bool
+	// CacheWithUpperSubNode caches an object with the upper sub-node of the current iterated node.
+	// After Next has returned a node,
+	// calling this method caches the provided object with the upper sub-node so that it can
+	// be retrieved with GetCached when the upper sub-node is visited later.
+	//
+	// Returns false if it could not be cached, either because the node has since been removed with a call to Remove,
+	// because Next has not been called yet, or because there is no upper sub node for the node previously returned by Next.
+	//
+	// The caching and retrieval is done in constant time.
+	CacheWithUpperSubNode(C) bool
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
