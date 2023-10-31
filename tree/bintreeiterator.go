@@ -300,6 +300,13 @@ type CachingIterator interface {
 	CacheWithUpperSubNode(C) bool
 }
 
+type cachingNodeIterator[E Key, V any] interface {
+	nodeIteratorRem[E, V]
+	CachingIterator
+}
+
+type queueType = any
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
