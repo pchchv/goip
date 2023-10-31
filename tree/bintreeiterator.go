@@ -259,6 +259,10 @@ type keyIterator[E Key] interface {
 	Remove() E
 }
 
+type binTreeKeyIterator[E Key, V any] struct {
+	nodeIteratorRem[E, V]
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
