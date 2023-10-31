@@ -1,5 +1,7 @@
 package tree
 
+import "container/heap"
+
 const (
 	ipv6BitCount = 128
 	stackSize    = ipv6BitCount + 2 // 129 for prefixes /0 to /128 and also 1 more for non-prefixed
@@ -468,4 +470,73 @@ func newPreOrderNodeIteratorBounded[E Key, V any](bnds *bounds[E], forward, adde
 		op,
 		forward,
 		forward || addedOnly)
+}
+
+func newPriorityNodeIteratorBounded[E Key, V any](
+	bnds *bounds[E],
+	treeSize int,
+	addedOnly bool,
+	start *binTreeNode[E, V],
+	comparator func(E, E) int) binTreeNodeIterator[E, V] {
+
+	comp := func(one, two queueType) int {
+		node1, node2 := one.(*binTreeNode[E, V]), two.(*binTreeNode[E, V])
+		addr1, addr2 := node1.GetKey(), node2.GetKey()
+		return comparator(addr1, addr2)
+	}
+
+	queue := &nodePriorityQueue{comparator: comp}
+	if treeSize > 0 {
+		queue.queue = make([]queueType, 0, (treeSize+2)>>1)
+	}
+
+	op := func(currentNode *binTreeNode[E, V], endNode *binTreeNode[E, V]) *binTreeNode[E, V] {
+		lower := currentNode.getLowerSubNode()
+		if lower != nil {
+			heap.Push(queue, lower)
+		}
+		upper := currentNode.getUpperSubNode()
+		if upper != nil {
+			heap.Push(queue, upper)
+		}
+		var node *binTreeNode[E, V]
+		if queue.Len() > 0 {
+			node = heap.Pop(queue).(*binTreeNode[E, V])
+		}
+		if node == endNode {
+			return nil
+		}
+		return node
+	}
+
+	if addedOnly {
+		wrappedOp := op
+		op = func(currentNode *binTreeNode[E, V], endNode *binTreeNode[E, V]) *binTreeNode[E, V] {
+			return currentNode.nextAdded(endNode, wrappedOp)
+		}
+	}
+
+	if bnds != nil {
+		wrappedOp := op
+		op = func(currentNode *binTreeNode[E, V], endNode *binTreeNode[E, V]) *binTreeNode[E, V] {
+			return currentNode.nextInBounds(endNode, wrappedOp, bnds)
+		}
+	}
+
+	res := binTreeNodeIterator[E, V]{operator: op}
+	start = res.getStart(start, nil, bnds, addedOnly)
+	if start != nil {
+		res.next = start
+		res.setChangeTracker(start.cTracker)
+	}
+	return res
+}
+
+func newPriorityNodeIterator[E Key, V any](treeSize int, addedOnly bool, start *binTreeNode[E, V], comparator func(E, E) int) binTreeNodeIterator[E, V] {
+	return newPriorityNodeIteratorBounded(
+		nil,
+		treeSize,
+		addedOnly,
+		start,
+		comparator)
 }
