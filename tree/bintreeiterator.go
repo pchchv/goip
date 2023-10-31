@@ -313,6 +313,20 @@ type nodePriorityQueue struct {
 	comparator func(one, two queueType) int // -1, 0 or 1 if one is <, == or > two
 }
 
+func (prioQueue nodePriorityQueue) Len() int {
+	return len(prioQueue.queue)
+}
+
+func (prioQueue nodePriorityQueue) Less(i, j int) bool {
+	queue := prioQueue.queue
+	return prioQueue.comparator(queue[i], queue[j]) < 0
+}
+
+func (prioQueue nodePriorityQueue) Swap(i, j int) {
+	queue := prioQueue.queue
+	queue[i], queue[j] = queue[j], queue[i]
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
