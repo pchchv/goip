@@ -764,6 +764,14 @@ func (node *binTreeNode[E, V]) containedFirstNodeIterator(forwardSubNodeOrder, a
 	return &iter
 }
 
+func (node *binTreeNode[E, V]) containedFirstIterator(forwardSubNodeOrder bool) nodeIteratorRem[E, V] {
+	return node.containedFirstNodeIterator(forwardSubNodeOrder, true)
+}
+
+func (node *binTreeNode[E, V]) containedFirstAllNodeIterator(forwardSubNodeOrder bool) nodeIterator[E, V] {
+	return node.containedFirstNodeIterator(forwardSubNodeOrder, false)
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
