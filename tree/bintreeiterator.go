@@ -327,6 +327,19 @@ func (prioQueue nodePriorityQueue) Swap(i, j int) {
 	queue[i], queue[j] = queue[j], queue[i]
 }
 
+func (prioQueue *nodePriorityQueue) Push(x queueType) {
+	prioQueue.queue = append(prioQueue.queue, x)
+}
+
+func (prioQueue *nodePriorityQueue) Pop() queueType {
+	current := prioQueue.queue
+	queueLen := len(current)
+	topNode := current[queueLen-1]
+	current[queueLen-1] = nil
+	prioQueue.queue = current[:queueLen-1]
+	return topNode
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
