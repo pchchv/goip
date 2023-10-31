@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"reflect"
 	"strconv"
+	"strings"
 	"sync"
 	"unsafe"
 )
@@ -13,8 +14,14 @@ const (
 	sizeUnknown = -1
 
 	// https://en.wikipedia.org/wiki/File:Unicode_Box_Drawing_(2500-257F)_Rev_2.png
+	// https://en.wikipedia.org/wiki/Geometric_Shapes_(Unicode_block)
 	nonAddedNodeCircle = "\u25cb"
 	addedNodeCircle    = "\u25cf"
+
+	leftElbow       = "\u251C\u2500" // |-
+	inBetweenElbows = "\u2502 "      // |
+	rightElbow      = "\u2514\u2500" // --
+	belowElbows     = "  "
 )
 
 var (
@@ -24,6 +31,12 @@ var (
 
 type Key interface {
 	comparable // needed by populateCacheItem
+}
+
+type nodePrinter[E Key, V any] interface {
+	GetKey() E
+	GetValue() V
+	IsAdded() bool
 }
 
 type indents struct {
@@ -856,10 +869,78 @@ func (node *binTreeNode[E, V]) containingFirstAllNodeIterator(forwardSubNodeOrde
 	return node.containingFirstNodeIterator(forwardSubNodeOrder, false)
 }
 
-type nodePrinter[E Key, V any] interface {
-	GetKey() E
-	GetValue() V
-	IsAdded() bool
+func (node *binTreeNode[E, V]) printTree(builder *strings.Builder,
+	initialIndents indents,
+	withNonAdded,
+	withSizes bool) {
+	if node == nil {
+		builder.WriteString(initialIndents.nodeIndent)
+		builder.WriteString(nilString())
+		builder.WriteByte('\n')
+		return
+	}
+	
+	iterator := node.containingFirstAllNodeIterator(true)
+	next := iterator.Next()
+	for next != nil {
+		cached := iterator.GetCached()
+		var nodeIndent, subNodeIndent string
+		if cached == nil {
+			nodeIndent = initialIndents.nodeIndent
+			subNodeIndent = initialIndents.subNodeInd
+		} else {
+			cachedi := cached.(indents)
+			nodeIndent = cachedi.nodeIndent
+			subNodeIndent = cachedi.subNodeInd
+		}
+		if withNonAdded || next.IsAdded() {
+			builder.WriteString(nodeIndent)
+			builder.WriteString(next.String())
+			if withSizes {
+				builder.WriteString(" (")
+				builder.WriteString(strconv.Itoa(next.Size()))
+				builder.WriteByte(')')
+			}
+			builder.WriteByte('\n')
+		} else {
+			builder.WriteString(nodeIndent)
+			builder.WriteString(nonAddedNodeCircle)
+			builder.WriteByte('\n')
+		}
+		upper, lower := next.getUpperSubNode(), next.getLowerSubNode()
+		if upper != nil {
+			if lower != nil {
+				lowerIndents := indents{
+					nodeIndent: subNodeIndent + leftElbow,
+					subNodeInd: subNodeIndent + inBetweenElbows,
+				}
+				iterator.CacheWithLowerSubNode(lowerIndents)
+			}
+			upperIndents := indents{
+				nodeIndent: subNodeIndent + rightElbow,
+				subNodeInd: subNodeIndent + belowElbows,
+			}
+			iterator.CacheWithUpperSubNode(upperIndents)
+		} else if lower != nil {
+			lowerIndents := indents{
+				nodeIndent: subNodeIndent + rightElbow,
+				subNodeInd: subNodeIndent + belowElbows,
+			}
+			iterator.CacheWithLowerSubNode(lowerIndents)
+		}
+		next = iterator.Next()
+	}
+}
+
+// TreeString returns a visual representation of the sub-tree with this node as root, with one node per line.
+//
+// withNonAddedKeys: whether to show nodes that are not added nodes
+// withSizes: whether to include the counts of added nodes in each sub-tree
+func (node *binTreeNode[E, V]) TreeString(withNonAddedKeys, withSizes bool) string {
+	builder := strings.Builder{}
+	builder.WriteByte('\n')
+	node.printTree(&builder, indents{}, withNonAddedKeys, withSizes)
+	return builder.String()
 }
 
 func bigOne() *big.Int {
