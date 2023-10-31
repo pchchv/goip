@@ -406,6 +406,24 @@ func (iter *cachingPriorityNodeIterator[E, V]) GetCached() C {
 	return iter.cached.cacheItem
 }
 
+func (iter *cachingPriorityNodeIterator[E, V]) CacheWithLowerSubNode(object C) bool {
+	cached := iter.cached
+	if cached.lowerCacheObj != nil {
+		cached.lowerCacheObj.cached = object
+		return true
+	}
+	return false
+}
+
+func (iter *cachingPriorityNodeIterator[E, V]) CacheWithUpperSubNode(object C) bool {
+	cached := iter.cached
+	if cached.upperCacheObj != nil {
+		cached.upperCacheObj.cached = object
+		return true
+	}
+	return false
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
