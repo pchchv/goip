@@ -263,6 +263,14 @@ type binTreeKeyIterator[E Key, V any] struct {
 	nodeIteratorRem[E, V]
 }
 
+func (iter binTreeKeyIterator[E, V]) Next() E {
+	return iter.nodeIteratorRem.Next().GetKey()
+}
+
+func (iter binTreeKeyIterator[E, V]) Remove() E {
+	return iter.nodeIteratorRem.Remove().GetKey()
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
