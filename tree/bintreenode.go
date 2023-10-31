@@ -731,6 +731,39 @@ func (node *binTreeNode[E, V]) allNodeIterator(forward bool) nodeIteratorRem[E, 
 	return node.configuredNodeIterator(forward, false)
 }
 
+// NodeSize returns the count of all nodes in the tree starting from this node and extending to all sub-nodes.
+// Unlike for the Size method, this is not a constant-time operation and must visit all sub-nodes of this node.
+func (node *binTreeNode[E, V]) NodeSize() int {
+	totalCount := 0
+	iterator := node.allNodeIterator(false)
+	next := iterator.Next()
+	for next != nil {
+		totalCount++
+		next = iterator.Next()
+	}
+	return totalCount
+}
+
+func (node *binTreeNode[E, V]) containedFirstNodeIterator(forwardSubNodeOrder, addedNodesOnly bool) nodeIteratorRem[E, V] {
+	var iter subNodeCachingIterator[E, V]
+	if forwardSubNodeOrder {
+		iter = newPostOrderNodeIterator[E, V]( // Remove is allowed if and only if added only
+			true,
+			addedNodesOnly, // added only
+			node.firstPostOrderNode(),
+			node.getParent(),
+			node.getChangeTracker())
+	} else {
+		iter = newPreOrderNodeIterator[E, V]( // Remove is allowed if and only if added only
+			false,
+			addedNodesOnly, // added only
+			node.lastPreOrderNode(),
+			node.getParent(),
+			node.getChangeTracker())
+	}
+	return &iter
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
