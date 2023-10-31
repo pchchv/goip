@@ -307,6 +307,12 @@ type cachingNodeIterator[E Key, V any] interface {
 
 type queueType = any
 
+// see https://pkg.go.dev/container/heap
+type nodePriorityQueue struct {
+	queue      []queueType
+	comparator func(one, two queueType) int // -1, 0 or 1 if one is <, == or > two
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
