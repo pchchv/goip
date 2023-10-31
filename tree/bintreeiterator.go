@@ -645,3 +645,7 @@ func newCachingPriorityNodeIteratorSized[E Key, V any](treeSize int, start *binT
 	}
 	return res
 }
+
+func newCachingPriorityNodeIterator[E Key, V any](start *binTreeNode[E, V], comparator func(E, E) int) cachingPriorityNodeIterator[E, V] {
+	return newCachingPriorityNodeIteratorSized(0, start, comparator)
+}
