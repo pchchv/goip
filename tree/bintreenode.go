@@ -994,6 +994,110 @@ func (node *binTreeNode[E, V]) clone() *binTreeNode[E, V] {
 	return &result
 }
 
+func (node *binTreeNode[E, V]) cloneTreeNode(cTracker *changeTracker, pool *sync.Pool) *binTreeNode[E, V] {
+	if node == nil {
+		return nil
+	}
+	result := *node // maintains same key and value which are not copied
+	result.setParent(nil)
+	result.cTracker = cTracker
+	result.pool = pool
+	result.setAddr()
+	return &result
+}
+
+func (node *binTreeNode[E, V]) cloneTreeTrackerBounds(ctracker *changeTracker, pool *sync.Pool, bnds *bounds[E]) *binTreeNode[E, V] {
+	if node == nil {
+		return nil
+	}
+
+	rootClone := node.cloneTreeNode(ctracker, pool)
+	clonedNode := rootClone
+	iterator := clonedNode.containingFirstAllNodeIterator(true).(*subNodeCachingIterator[E, V])
+	recalculateSize := false
+	for {
+		lower := clonedNode.getLowerSubNode()
+		if bnds != nil {
+			for {
+				if lower == nil {
+					break
+				} else if bnds.isWithinLowerBound(lower.GetKey()) {
+					if !lower.IsAdded() {
+						next := lower.getLowerSubNode()
+						for bnds.isBelowLowerBound(next.GetKey()) {
+							next = next.getUpperSubNode()
+							if next == nil {
+								lower = lower.getUpperSubNode()
+								recalculateSize = true
+								break
+							}
+						}
+					}
+					break
+				}
+				recalculateSize = true
+				// outside bounds, try again
+				lower = lower.getUpperSubNode()
+			}
+		}
+		if lower != nil {
+			clonedNode.setLower(lower.cloneTreeNode(ctracker, pool))
+		} else {
+			clonedNode.setLower(nil)
+		}
+		upper := clonedNode.getUpperSubNode()
+		if bnds != nil {
+			for {
+				if upper == nil {
+					break
+				} else if bnds.isWithinUpperBound(upper.GetKey()) {
+					if !upper.IsAdded() {
+						next := upper.getUpperSubNode()
+						for bnds.isAboveUpperBound(next.GetKey()) {
+							next = next.getLowerSubNode()
+							if next == nil {
+								upper = upper.getLowerSubNode()
+								recalculateSize = true
+								break
+							}
+						}
+					}
+
+					break
+				}
+				recalculateSize = true
+				// outside bounds, try again
+				upper = upper.getLowerSubNode()
+			}
+		}
+		if upper != nil {
+			clonedNode.setUpper(upper.cloneTreeNode(ctracker, pool))
+		} else {
+			clonedNode.setUpper(nil)
+		}
+		iterator.Next() // returns current clonedNode
+		clonedNode = iterator.next
+		if !iterator.HasNext() { /* basically this checks clonedNode != nil */
+			break
+		}
+	}
+
+	if !rootClone.IsAdded() && !node.IsRoot() {
+		lower := rootClone.getLowerSubNode()
+		if lower == nil {
+			rootClone = rootClone.getUpperSubNode()
+		} else if rootClone.getUpperSubNode() == nil {
+			rootClone = lower
+		}
+	}
+
+	if recalculateSize && rootClone != nil {
+		rootClone.storedSize = sizeUnknown
+		rootClone.Size()
+	}
+	return rootClone
+}
+
 func bigOne() *big.Int {
 	return big.NewInt(1)
 }
