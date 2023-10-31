@@ -7,6 +7,8 @@ import (
 	"unsafe"
 )
 
+const sizeUnknown = -1
+
 var (
 	one        = bigOne()
 	freezeRoot = true
@@ -770,6 +772,48 @@ func (node *binTreeNode[E, V]) containedFirstIterator(forwardSubNodeOrder bool) 
 
 func (node *binTreeNode[E, V]) containedFirstAllNodeIterator(forwardSubNodeOrder bool) nodeIterator[E, V] {
 	return node.containedFirstNodeIterator(forwardSubNodeOrder, false)
+}
+
+// Size returns the count of nodes added to
+// the sub-tree starting from this node as root and moving downwards to sub-nodes.
+// This is a constant-time operation since the size is maintained in each node and
+// adjusted with each add and Remove operation in the sub-tree.
+func (node *binTreeNode[E, V]) Size() (storedSize int) {
+	if node != nil {
+		storedSize = node.storedSize
+		if storedSize == sizeUnknown {
+			iterator := node.containedFirstAllNodeIterator(true)
+			for next := iterator.Next(); next != nil; next = iterator.Next() {
+				var nodeSize int
+				if next.IsAdded() {
+					nodeSize = 1
+				}
+				lower := next.getLowerSubNode()
+				if lower != nil {
+					nodeSize += lower.storedSize
+				}
+				upper := next.getUpperSubNode()
+				if upper != nil {
+					nodeSize += upper.storedSize
+				}
+				next.storedSize = nodeSize
+			}
+			storedSize = node.storedSize
+		}
+	}
+	return
+}
+
+// Returns an iterator that iterates through the elements of the sub-tree with this node as the root.
+// The iteration is in sorted element order.
+func (node *binTreeNode[E, V]) iterator() keyIterator[E] {
+	return binTreeKeyIterator[E, V]{node.nodeIterator(true)}
+}
+
+// Returns an iterator that iterates through the elements of the subtrie with this node as the root.
+// The iteration is in reverse sorted element order.
+func (node *binTreeNode[E, V]) descendingIterator() keyIterator[E] {
+	return binTreeKeyIterator[E, V]{node.nodeIterator(false)}
 }
 
 func bigOne() *big.Int {
