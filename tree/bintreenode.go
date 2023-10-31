@@ -26,6 +26,10 @@ type Key interface {
 	comparable // needed by populateCacheItem
 }
 
+type indents struct {
+	nodeIndent, subNodeInd string
+}
+
 // C represents cached values in iterators.
 type C any
 
