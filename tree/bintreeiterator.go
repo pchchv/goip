@@ -342,6 +342,18 @@ func (prioQueue *nodePriorityQueue) Pop() queueType {
 	return topNode
 }
 
+type cached[E Key, V any] struct {
+	node   *binTreeNode[E, V]
+	cached C
+}
+
+type cachedObjs[E Key, V any] struct {
+	cacheItem      C
+	nextCachedItem *cached[E, V]
+	lowerCacheObj  *cached[E, V]
+	upperCacheObj  *cached[E, V]
+}
+
 func newNodeIterator[E Key, V any](forward, addedOnly bool, start, end *binTreeNode[E, V], ctracker *changeTracker) nodeIteratorRem[E, V] {
 	var nextOperator func(current *binTreeNode[E, V], end *binTreeNode[E, V]) *binTreeNode[E, V]
 	if forward {
