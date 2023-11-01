@@ -1,5 +1,7 @@
 package tree
 
+import "unsafe"
+
 const (
 	doNothing remapAction = iota
 	removeNode
@@ -127,4 +129,20 @@ type remapAction int
 
 type BinTrieNode[E TrieKey[E], V any] struct {
 	binTreeNode[E, V]
+}
+
+// toBinTreeNode works with nil.
+func (node *BinTrieNode[E, V]) toBinTreeNode() *binTreeNode[E, V] {
+	return (*binTreeNode[E, V])(unsafe.Pointer(node))
+}
+
+// setKey sets the key used for placing the node in the tree.
+// when freezeRoot is true, this is never called (and freezeRoot is always true)
+func (node *BinTrieNode[E, V]) setKey(item E) {
+	node.binTreeNode.setKey(item)
+}
+
+// GetKey gets the key used for placing the node in the tree.
+func (node *BinTrieNode[E, V]) GetKey() E {
+	return node.toBinTreeNode().GetKey()
 }
