@@ -45,3 +45,16 @@ func (trie *BinTrie[E, V]) absoluteRoot() (root *BinTrieNode[E, V]) {
 	}
 	return
 }
+
+// Size returns the number of elements in the tree.
+// Only nodes for which IsAdded() returns true are counted.
+// When zero is returned, IsEmpty() returns true.
+func (trie *BinTrie[E, V]) Size() int {
+	return trie.toBinTree().Size()
+}
+
+// NodeSize returns the number of nodes in the tree,
+// which is always more than the number of elements.
+func (trie *BinTrie[E, V]) NodeSize() int {
+	return trie.toBinTree().NodeSize()
+}
