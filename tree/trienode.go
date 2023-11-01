@@ -124,3 +124,7 @@ type TrieKey[E any] interface {
 }
 
 type remapAction int
+
+type BinTrieNode[E TrieKey[E], V any] struct {
+	binTreeNode[E, V]
+}
