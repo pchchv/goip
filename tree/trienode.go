@@ -205,3 +205,29 @@ func (node *BinTrieNode[E, V]) Remove() {
 func (node *BinTrieNode[E, V]) NodeSize() int {
 	return node.toBinTreeNode().NodeSize()
 }
+
+// Size returns the count of nodes added to
+// the sub-tree starting from this node as root
+// and moving downwards to sub-nodes.
+// This is a constant-time operation since
+// the size is maintained in each node and adjusted with each add
+// and Remove operation in the sub-tree.
+func (node *BinTrieNode[E, V]) Size() int {
+	return node.toBinTreeNode().Size()
+}
+
+// TreeString returns a visual representation of the sub-tree with this node as root,
+// with one node per line.
+//
+// withNonAddedKeys: whether to show nodes that are not added nodes
+// withSizes: whether to include the counts of added nodes in each sub-tree
+func (node *BinTrieNode[E, V]) TreeString(withNonAddedKeys, withSizes bool) string {
+	return node.toBinTreeNode().TreeString(withNonAddedKeys, withSizes)
+}
+
+// Returns a visual representation of this node including the key,
+// with an open circle indicating this node is not an added node,
+// a closed circle indicating this node is an added node.
+func (node *BinTrieNode[E, V]) String() string {
+	return node.toBinTreeNode().String()
+}
