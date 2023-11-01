@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"fmt"
 	"reflect"
 	"unsafe"
 )
@@ -364,6 +365,29 @@ func (node *BinTrieNode[E, V]) DeepEqual(other *BinTrieNode[E, V]) bool {
 		return false
 	}
 	return node.GetKey().Compare(other.GetKey()) == 0 && reflect.DeepEqual(node.GetValue(), other.GetValue())
+}
+
+// Compare returns -1, 0 or 1 if this node is less than, equal,
+// or greater than the other, according to the key and the trie order.
+func (node *BinTrieNode[E, V]) Compare(other *BinTrieNode[E, V]) int {
+	if node == nil {
+		if other == nil {
+			return 0
+		}
+		return -1
+	} else if other == nil {
+		return 1
+	}
+	return node.GetKey().Compare(other.GetKey())
+}
+
+// For some reason Format must be here and not in addressTrieNode for nil node.
+// It panics in fmt code either way, but if in here then it is handled by a recover() call in fmt properly.
+// Seems to be a problem only in the debugger.
+//
+// Format implements the fmt.Formatter interface
+func (node BinTrieNode[E, V]) Format(state fmt.State, verb rune) {
+	node.format(state, verb)
 }
 
 // BlockSizeCompare compares keys by block size and then by prefix value if block sizes are equal
