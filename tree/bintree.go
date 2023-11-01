@@ -29,3 +29,22 @@ func (tree *binTree[E, V]) NodeSize() int {
 	}
 	return tree.GetRoot().NodeSize()
 }
+
+// Clear removes all added nodes from the tree,
+// after which IsEmpty() will return true
+func (tree *binTree[E, V]) Clear() {
+	if root := tree.GetRoot(); root != nil {
+		root.Clear()
+	}
+}
+
+// IsEmpty returns true if there are not any added nodes within this tree
+func (tree *binTree[E, V]) IsEmpty() bool {
+	return tree.Size() == 0
+}
+
+// TreeString returns a visual representation of the tree with one node per line,
+// with or without the non-added keys.
+func (tree *binTree[E, V]) TreeString(withNonAddedKeys bool) string {
+	return tree.GetRoot().TreeString(withNonAddedKeys, true)
+}
