@@ -4,6 +4,13 @@ import "unsafe"
 
 type EmptyValueType struct{}
 
+type AddedSubnodeMapping any // AddedSubnodeMapping / any is always SubNodesMapping[E,V]
+
+type SubNodesMapping[E TrieKey[E], V any] struct {
+	Value    V
+	SubNodes []*BinTrieNode[E, AddedSubnodeMapping] // subNodes is the list of direct and indirect added subnodes in the original trie
+}
+
 // BinTrie is a binary trie.
 //
 // To use BinTrie, your keys implement TrieKey.
