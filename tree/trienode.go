@@ -182,3 +182,26 @@ func (node *BinTrieNode[E, V]) IsLeaf() bool {
 func (node *BinTrieNode[E, V]) GetValue() (val V) {
 	return node.toBinTreeNode().GetValue()
 }
+
+func (node *BinTrieNode[E, V]) ClearValue() {
+	node.toBinTreeNode().ClearValue()
+}
+
+// Remove removes this node from the collection of added nodes,
+// and also removes from the tree if possible.
+// If it has two sub-nodes, it cannot be removed from the tree,
+// in which case it is marked as not "added",
+// nor is it counted in the tree size.
+// Only added nodes can be removed from the tree.
+// If this node is not added, this method does nothing.
+func (node *BinTrieNode[E, V]) Remove() {
+	node.toBinTreeNode().Remove()
+}
+
+// NodeSize returns the count of all nodes in
+// the tree starting from this node and extending to all sub-nodes.
+// Unlike for the Size method, this is not
+// a constant-time operation and must visit all sub-nodes of this node.
+func (node *BinTrieNode[E, V]) NodeSize() int {
+	return node.toBinTreeNode().NodeSize()
+}
