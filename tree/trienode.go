@@ -335,3 +335,37 @@ func (node *BinTrieNode[E, V]) LastNode() *BinTrieNode[E, V] {
 func (node *BinTrieNode[E, V]) LastAddedNode() *BinTrieNode[E, V] {
 	return toTrieNode(node.toBinTreeNode().lastAddedNode())
 }
+
+// BlockSizeCompare compares keys by block size and then by prefix value if block sizes are equal
+func BlockSizeCompare[E TrieKey[E]](key1, key2 E, reverseBlocksEqualSize bool) int {
+	if key2 == key1 {
+		return 0
+	}
+
+	pref2 := key2.GetPrefixLen()
+	pref1 := key1.GetPrefixLen()
+	if pref2 != nil {
+		if pref1 != nil {
+			val := pref2.Len() - pref1.Len()
+			if val == 0 {
+				compVal := key2.Compare(key1)
+				if reverseBlocksEqualSize {
+					compVal = -compVal
+				}
+				return compVal
+			}
+			return val
+		}
+		return -1
+	}
+
+	if pref1 != nil {
+		return 1
+	}
+
+	compVal := key2.Compare(key1)
+	if reverseBlocksEqualSize {
+		compVal = -compVal
+	}
+	return compVal
+}
