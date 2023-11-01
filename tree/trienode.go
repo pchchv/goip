@@ -1,6 +1,9 @@
 package tree
 
-import "unsafe"
+import (
+	"reflect"
+	"unsafe"
+)
 
 const (
 	doNothing remapAction = iota
@@ -334,6 +337,33 @@ func (node *BinTrieNode[E, V]) LastNode() *BinTrieNode[E, V] {
 
 func (node *BinTrieNode[E, V]) LastAddedNode() *BinTrieNode[E, V] {
 	return toTrieNode(node.toBinTreeNode().lastAddedNode())
+}
+
+// Clone clones the node.
+// Keys remain the same, but the parent node and the lower and upper sub-nodes are all set to nil.
+func (node *BinTrieNode[E, V]) Clone() *BinTrieNode[E, V] {
+	return toTrieNode(node.toBinTreeNode().clone())
+}
+
+// Equal returns whether the key matches the key of the given node
+func (node *BinTrieNode[E, V]) Equal(other *BinTrieNode[E, V]) bool {
+	if node == nil {
+		return other == nil
+	} else if other == nil {
+		return false
+	}
+	return node == other || node.GetKey().Compare(other.GetKey()) == 0
+}
+
+// DeepEqual returns whether the key matches the key of the given node using Compare,
+// and whether the value matches the other value using reflect.DeepEqual
+func (node *BinTrieNode[E, V]) DeepEqual(other *BinTrieNode[E, V]) bool {
+	if node == nil {
+		return other == nil
+	} else if other == nil {
+		return false
+	}
+	return node.GetKey().Compare(other.GetKey()) == 0 && reflect.DeepEqual(node.GetValue(), other.GetValue())
 }
 
 // BlockSizeCompare compares keys by block size and then by prefix value if block sizes are equal
