@@ -327,3 +327,11 @@ func (node *BinTrieNode[E, V]) FirstNode() *BinTrieNode[E, V] {
 func (node *BinTrieNode[E, V]) FirstAddedNode() *BinTrieNode[E, V] {
 	return toTrieNode(node.toBinTreeNode().firstAddedNode())
 }
+
+func (node *BinTrieNode[E, V]) LastNode() *BinTrieNode[E, V] {
+	return toTrieNode(node.toBinTreeNode().lastNode())
+}
+
+func (node *BinTrieNode[E, V]) LastAddedNode() *BinTrieNode[E, V] {
+	return toTrieNode(node.toBinTreeNode().lastAddedNode())
+}
