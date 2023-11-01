@@ -8,3 +8,7 @@ type PrefixBitCount uint8
 // However, all methods adjust bit counts to match address size,
 // so negative bit counts or bit counts larger than address size are meaningless.
 type BitCount = int // using signed integers allows for easier arithmetic
+
+// A PrefixLen indicates the length of the prefix for an address, section, division grouping, segment, or division.
+// The zero value, which is nil, indicates that there is no prefix length.
+type PrefixLen = *PrefixBitCount
