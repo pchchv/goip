@@ -146,3 +146,24 @@ func (node *BinTrieNode[E, V]) setKey(item E) {
 func (node *BinTrieNode[E, V]) GetKey() E {
 	return node.toBinTreeNode().GetKey()
 }
+
+// IsRoot returns whether this is the root of the backing tree.
+func (node *BinTrieNode[E, V]) IsRoot() bool {
+	return node.toBinTreeNode().IsRoot()
+}
+
+// IsAdded returns whether the node was "added".
+// Some binary tree nodes are considered "added" and others are not.
+// Those nodes created for key elements added to the tree are "added" nodes.
+// Those that are not added are those nodes created to serve as junctions for the added nodes.
+// Only added elements contribute to the size of a tree.
+// When removing nodes, non-added nodes are removed automatically whenever they are no longer needed,
+// which is when an added node has less than two added sub-nodes.
+func (node *BinTrieNode[E, V]) IsAdded() bool {
+	return node.toBinTreeNode().IsAdded()
+}
+
+// Clear removes this node and all sub-nodes from the tree, after which isEmpty() will return true.
+func (node *BinTrieNode[E, V]) Clear() {
+	node.toBinTreeNode().Clear()
+}
