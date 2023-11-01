@@ -314,3 +314,16 @@ func (node *BinTrieNode[E, V]) NextAddedNode() *BinTrieNode[E, V] {
 func (node *BinTrieNode[E, V]) NextNode() *BinTrieNode[E, V] {
 	return toTrieNode(node.toBinTreeNode().nextNode())
 }
+
+// PreviousNode returns the node that precedes this node following the tree order.
+func (node *BinTrieNode[E, V]) PreviousNode() *BinTrieNode[E, V] {
+	return toTrieNode(node.toBinTreeNode().previousNode())
+}
+
+func (node *BinTrieNode[E, V]) FirstNode() *BinTrieNode[E, V] {
+	return toTrieNode(node.toBinTreeNode().firstNode())
+}
+
+func (node *BinTrieNode[E, V]) FirstAddedNode() *BinTrieNode[E, V] {
+	return toTrieNode(node.toBinTreeNode().firstAddedNode())
+}
