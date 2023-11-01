@@ -231,3 +231,21 @@ func (node *BinTrieNode[E, V]) TreeString(withNonAddedKeys, withSizes bool) stri
 func (node *BinTrieNode[E, V]) String() string {
 	return node.toBinTreeNode().String()
 }
+
+func (node *BinTrieNode[E, V]) setUpper(upper *BinTrieNode[E, V]) {
+	node.binTreeNode.setUpper(&upper.binTreeNode)
+}
+
+func (node *BinTrieNode[E, V]) setLower(lower *BinTrieNode[E, V]) {
+	node.binTreeNode.setLower(&lower.binTreeNode)
+}
+
+// GetUpperSubNode gets the direct child node whose key is largest in value.
+func (node *BinTrieNode[E, V]) GetUpperSubNode() *BinTrieNode[E, V] {
+	return toTrieNode(node.toBinTreeNode().getUpperSubNode())
+}
+
+// GetLowerSubNode gets the direct child node whose key is smallest in value.
+func (node *BinTrieNode[E, V]) GetLowerSubNode() *BinTrieNode[E, V] {
+	return toTrieNode(node.toBinTreeNode().getLowerSubNode())
+}
