@@ -1,5 +1,11 @@
 package tree
 
+const (
+	doNothing remapAction = iota
+	removeNode
+	remapValue
+)
+
 type TrieKeyData struct {
 	Is32Bits  bool
 	Is128Bits bool
@@ -116,3 +122,5 @@ type TrieKey[E any] interface {
 	// Implementing this method is optional, even for 32-bit and 128-bit keys, it can return nil.
 	GetTrieKeyData() *TrieKeyData
 }
+
+type remapAction int
