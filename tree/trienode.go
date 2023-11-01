@@ -167,3 +167,18 @@ func (node *BinTrieNode[E, V]) IsAdded() bool {
 func (node *BinTrieNode[E, V]) Clear() {
 	node.toBinTreeNode().Clear()
 }
+
+// IsEmpty returns where there are not any elements in the sub-tree with this node as the root.
+func (node *BinTrieNode[E, V]) IsEmpty() bool {
+	return node.toBinTreeNode().IsEmpty()
+}
+
+// IsLeaf returns whether this node is in the tree (a node for which IsAdded() is true)
+// and there are no elements in the sub-tree with this node as the root.
+func (node *BinTrieNode[E, V]) IsLeaf() bool {
+	return node.toBinTreeNode().IsLeaf()
+}
+
+func (node *BinTrieNode[E, V]) GetValue() (val V) {
+	return node.toBinTreeNode().GetValue()
+}
