@@ -1,5 +1,7 @@
 package tree
 
+import "unsafe"
+
 type EmptyValueType struct{}
 
 // BinTrie is a binary trie.
@@ -20,4 +22,26 @@ type EmptyValueType struct{}
 // in which case the value will be ignored in functions that print node strings.
 type BinTrie[E TrieKey[E], V any] struct {
 	binTree[E, V]
+}
+
+func (trie *BinTrie[E, V]) toBinTree() *binTree[E, V] {
+	return (*binTree[E, V])(unsafe.Pointer(trie))
+}
+
+// GetRoot returns the root of this trie (in the case of bounded tries,
+// this would be the bounded root)
+func (trie *BinTrie[E, V]) GetRoot() (root *BinTrieNode[E, V]) {
+	if trie != nil {
+		root = toTrieNode(trie.root)
+	}
+	return
+}
+
+// Returns the root of this trie (in the case of bounded tries,
+// the absolute root ignores the bounds)
+func (trie *BinTrie[E, V]) absoluteRoot() (root *BinTrieNode[E, V]) {
+	if trie != nil {
+		root = toTrieNode(trie.root)
+	}
+	return
 }
