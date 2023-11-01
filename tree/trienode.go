@@ -295,3 +295,22 @@ func (node *BinTrieNode[E, V]) replaceToSub(newAssignedKey E, totalMatchingBits 
 	}
 	return newNode
 }
+
+// PreviousAddedNode returns the previous node in the tree that is an added node,
+// following the tree order in reverse,
+// or nil if there is no such node.
+func (node *BinTrieNode[E, V]) PreviousAddedNode() *BinTrieNode[E, V] {
+	return toTrieNode(node.toBinTreeNode().previousAddedNode())
+}
+
+// NextAddedNode returns the next node in the tree that is an added node,
+// following the tree order,
+// or nil if there is no such node.
+func (node *BinTrieNode[E, V]) NextAddedNode() *BinTrieNode[E, V] {
+	return toTrieNode(node.toBinTreeNode().nextAddedNode())
+}
+
+// NextNode returns the node that follows this node following the tree order
+func (node *BinTrieNode[E, V]) NextNode() *BinTrieNode[E, V] {
+	return toTrieNode(node.toBinTreeNode().nextNode())
+}
