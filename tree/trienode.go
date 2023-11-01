@@ -369,3 +369,35 @@ func BlockSizeCompare[E TrieKey[E]](key1, key2 E, reverseBlocksEqualSize bool) i
 	}
 	return compVal
 }
+
+// TrieIncrement returns the next key according to the trie ordering.
+// The zero value is returned when there is no next key.
+func TrieIncrement[E TrieKey[E]](key E) (next E, hasNext bool) {
+	prefLen := key.GetPrefixLen()
+	if prefLen != nil {
+		return key.ToMinUpper(), true
+	}
+
+	bitCount := key.GetBitCount()
+	trailingBits := key.GetTrailingBitCount(false)
+	if trailingBits < bitCount {
+		return key.ToPrefixBlockLen(bitCount - (trailingBits + 1)), true
+	}
+	return
+}
+
+// TrieDecrement returns the previous key according to the trie ordering
+// The zero value is returned when there is no previous key.
+func TrieDecrement[E TrieKey[E]](key E) (next E, hasNext bool) {
+	prefLen := key.GetPrefixLen()
+	if prefLen != nil {
+		return key.ToMaxLower(), true
+	}
+
+	bitCount := key.GetBitCount()
+	trailingBits := key.GetTrailingBitCount(true)
+	if trailingBits < bitCount {
+		return key.ToPrefixBlockLen(bitCount - (trailingBits + 1)), true
+	}
+	return
+}
