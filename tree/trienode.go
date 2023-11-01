@@ -249,3 +249,49 @@ func (node *BinTrieNode[E, V]) GetUpperSubNode() *BinTrieNode[E, V] {
 func (node *BinTrieNode[E, V]) GetLowerSubNode() *BinTrieNode[E, V] {
 	return toTrieNode(node.toBinTreeNode().getLowerSubNode())
 }
+
+// GetParent gets the node from which this node is a direct child node,
+// or nil if this is the root.
+func (node *BinTrieNode[E, V]) GetParent() *BinTrieNode[E, V] {
+	return toTrieNode(node.toBinTreeNode().getParent())
+}
+
+func (node *BinTrieNode[E, V]) createNew(newKey E) *BinTrieNode[E, V] {
+	res := &BinTrieNode[E, V]{
+		binTreeNode: binTreeNode[E, V]{
+			item:     newKey,
+			cTracker: node.cTracker,
+			pool:     node.pool,
+		},
+	}
+	res.setAddr()
+	return res
+}
+
+// The current node is replaced by a new block of the given key.
+// The current node and given node become sub-nodes.
+func (node *BinTrieNode[E, V]) replaceToSub(newAssignedKey E, totalMatchingBits BitCount, newSubNode *BinTrieNode[E, V]) *BinTrieNode[E, V] {
+	newNode := node.createNew(newAssignedKey)
+	newNode.storedSize = node.storedSize
+	parent := node.GetParent()
+	if parent.GetUpperSubNode() == node {
+		parent.setUpper(newNode)
+	} else if parent.GetLowerSubNode() == node {
+		parent.setLower(newNode)
+	}
+
+	existingKey := node.GetKey()
+	if totalMatchingBits < existingKey.GetBitCount() &&
+		existingKey.IsOneBit(totalMatchingBits) {
+		if newSubNode != nil {
+			newNode.setLower(newSubNode)
+		}
+		newNode.setUpper(node)
+	} else {
+		newNode.setLower(node)
+		if newSubNode != nil {
+			newNode.setUpper(newSubNode)
+		}
+	}
+	return newNode
+}
