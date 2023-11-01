@@ -1191,3 +1191,7 @@ func flagsFromState(state fmt.State, verb rune) string {
 	vals = append(vals, verb)
 	return string(vals)
 }
+
+func toTrieNode[E TrieKey[E], V any](node *binTreeNode[E, V]) *BinTrieNode[E, V] {
+	return (*BinTrieNode[E, V])(unsafe.Pointer(node))
+}
