@@ -2,8 +2,11 @@ package tree
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
+
+const treeKeyWildcard = '*'
 
 type binTree[E Key, V any] struct {
 	root *binTreeNode[E, V]
@@ -87,4 +90,51 @@ func (tree *binTree[E, V]) printTree(builder *strings.Builder, inds indents, wit
 	} else {
 		tree.GetRoot().printTree(builder, inds, withNonAddedKeys, true)
 	}
+}
+
+// Produces a visual representation of the given tries joined by a single root node, with one node per line.
+func treesString[E Key, V any](withNonAddedKeys bool, trees ...*binTree[E, V]) string {
+	totalEntrySize := 0
+	for _, tree := range trees {
+		totalEntrySize += tree.Size()
+	}
+
+	builder := strings.Builder{}
+	builder.Grow(totalEntrySize * 120) // 2 labels 60 chars each
+	builder.WriteByte('\n')
+	builder.WriteString(nonAddedNodeCircle)
+	isEmpty := len(trees) == 0
+	if !isEmpty {
+		totalSize := 0
+		for _, tree := range trees {
+			totalSize += tree.Size()
+		}
+		if withNonAddedKeys {
+			builder.WriteByte(' ')
+			builder.WriteByte(treeKeyWildcard)
+			builder.WriteString(" (")
+			builder.WriteString(strconv.Itoa(totalSize))
+			builder.WriteByte(')')
+		}
+		builder.WriteByte('\n')
+		lastTreeIndex := len(trees) - 1
+		for i := 0; i < lastTreeIndex; i++ {
+			trees[i].printTree(&builder, indents{
+				nodeIndent: leftElbow,
+				subNodeInd: inBetweenElbows,
+			}, withNonAddedKeys)
+		}
+		trees[lastTreeIndex].printTree(&builder, indents{
+			nodeIndent: rightElbow,
+			subNodeInd: belowElbows,
+		}, withNonAddedKeys)
+	} else {
+		if withNonAddedKeys {
+			builder.WriteByte(' ')
+			builder.WriteByte(treeKeyWildcard)
+			builder.WriteString(" (0)")
+		}
+		builder.WriteByte('\n')
+	}
+	return builder.String()
 }
