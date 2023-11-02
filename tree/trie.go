@@ -113,3 +113,11 @@ func (trie *BinTrie[E, V]) TreeString(withNonAddedKeys bool) string {
 func (trie BinTrie[E, V]) Format(state fmt.State, verb rune) {
 	trie.format(state, verb)
 }
+
+func (trie *BinTrie[E, V]) FirstNode() *BinTrieNode[E, V] {
+	return trie.absoluteRoot().FirstNode()
+}
+
+func (trie *BinTrie[E, V]) FirstAddedNode() *BinTrieNode[E, V] {
+	return trie.absoluteRoot().FirstAddedNode()
+}
