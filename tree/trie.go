@@ -24,6 +24,11 @@ func (p printWrapper[E, V]) GetValue() V {
 	return nodeValue.(SubNodesMapping[E, V]).Value
 }
 
+type indentsNode[E TrieKey[E]] struct {
+	inds indents
+	node *BinTrieNode[E, AddedSubnodeMapping]
+}
+
 // BinTrie is a binary trie.
 //
 // To use BinTrie, your keys implement TrieKey.
