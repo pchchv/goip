@@ -163,3 +163,34 @@ func (path *Path[E, V]) GetRoot() *PathNode[E, V] {
 func (path *Path[E, V]) GetLeaf() *PathNode[E, V] {
 	return path.leaf
 }
+
+// Size returns the count of nodes in the list
+// This is a constant-time operation since the size is maintained in each node.
+func (path *Path[E, V]) Size() (storedSize int) {
+	if path == nil || path.root == nil {
+		return 0
+	}
+	return path.root.Size()
+}
+
+// String returns a visual representation of the Path with one node per line.
+func (path *Path[E, V]) String() string {
+	return path.ListString(true)
+}
+
+// ListString returns a visual representation of the tree with one node per line,
+// with or without the non-added keys.
+func (path *Path[E, V]) ListString(withNonAddedKeys bool) string {
+	if path.Size() == 0 {
+		builder := strings.Builder{}
+		builder.WriteByte('\n')
+		if path == nil || !withNonAddedKeys {
+			builder.WriteString(nilString())
+		} else {
+			builder.WriteString(nonAddedNodeCircle)
+		}
+		builder.WriteByte('\n')
+		return builder.String()
+	}
+	return path.GetRoot().ListString(withNonAddedKeys, true)
+}
