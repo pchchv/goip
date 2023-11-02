@@ -129,3 +129,15 @@ func (trie *BinTrie[E, V]) LastNode() *BinTrieNode[E, V] {
 func (trie *BinTrie[E, V]) LastAddedNode() *BinTrieNode[E, V] {
 	return trie.absoluteRoot().LastAddedNode()
 }
+
+func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
+	binTrees := make([]*binTree[E, V], 0, len(tries))
+	for _, trie := range tries {
+		binTrees = append(binTrees, tobinTree(trie))
+	}
+	return treesString(withNonAddedKeys, binTrees...)
+}
+
+func tobinTree[E TrieKey[E], V any](trie *BinTrie[E, V]) *binTree[E, V] {
+	return (*binTree[E, V])(unsafe.Pointer(trie))
+}
