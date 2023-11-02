@@ -151,3 +151,15 @@ type Path[E Key, V any] struct {
 	root *PathNode[E, V]
 	leaf *PathNode[E, V]
 }
+
+// GetRoot returns the beginning of the Path,
+// which may or may not match the tree root of the originating tree.
+func (path *Path[E, V]) GetRoot() *PathNode[E, V] {
+	return path.root
+}
+
+// GetLeaf returns the end of the Path,
+// which may or may not match a leaf in the originating tree.
+func (path *Path[E, V]) GetLeaf() *PathNode[E, V] {
+	return path.leaf
+}
