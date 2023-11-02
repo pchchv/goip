@@ -121,3 +121,11 @@ func (trie *BinTrie[E, V]) FirstNode() *BinTrieNode[E, V] {
 func (trie *BinTrie[E, V]) FirstAddedNode() *BinTrieNode[E, V] {
 	return trie.absoluteRoot().FirstAddedNode()
 }
+
+func (trie *BinTrie[E, V]) LastNode() *BinTrieNode[E, V] {
+	return trie.absoluteRoot().LastNode()
+}
+
+func (trie *BinTrie[E, V]) LastAddedNode() *BinTrieNode[E, V] {
+	return trie.absoluteRoot().LastAddedNode()
+}
