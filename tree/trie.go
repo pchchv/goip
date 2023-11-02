@@ -11,6 +11,19 @@ type SubNodesMapping[E TrieKey[E], V any] struct {
 	SubNodes []*BinTrieNode[E, AddedSubnodeMapping] // subNodes is the list of direct and indirect added subnodes in the original trie
 }
 
+type printWrapper[E TrieKey[E], V any] struct {
+	*BinTrieNode[E, AddedSubnodeMapping]
+}
+
+func (p printWrapper[E, V]) GetValue() V {
+	var nodeValue AddedSubnodeMapping = p.BinTrieNode.GetValue()
+	if nodeValue == nil {
+		var v V
+		return v
+	}
+	return nodeValue.(SubNodesMapping[E, V]).Value
+}
+
 // BinTrie is a binary trie.
 //
 // To use BinTrie, your keys implement TrieKey.
