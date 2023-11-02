@@ -390,6 +390,64 @@ func (node BinTrieNode[E, V]) Format(state fmt.State, verb rune) {
 	node.format(state, verb)
 }
 
+type nodeCompare[E TrieKey[E], V any] struct {
+	result *opResult[E, V]
+	node   *BinTrieNode[E, V]
+}
+
+type opResult[E TrieKey[E], V any] struct {
+	key E
+	// whether near is searching for a floor or ceiling
+	// a floor is greatest element below addr
+	// a ceiling is lowest element above addr
+	nearestFloor bool
+	// whether near cannot be an exact match
+	nearExclusive bool
+	op            operation
+	// remaps values based on their current contents
+	remapper func(val V, exists bool) (V, remapAction)
+	// lookups:
+	//
+	// an inserted tree element matches the supplied argument
+	// exists is set to true only for "added" nodes
+	exists bool
+	// the matching tree element, when doing a lookup operation, or the pre-existing node for an insert operation
+	// existingNode is set for both added and not added nodes
+	existingNode,
+	// the closest tree element, when doing a near operation
+	nearestNode,
+	// if searching for a floor/lower, and the nearest node is above addr, then we must backtrack to get below
+	// if searching for a ceiling/higher, and the nearest node is below addr, then we must backtrack to get above
+	backtrackNode,
+	// contained by:
+	// this tree is contained by the supplied argument
+	containedBy,
+	// deletions:
+	// this tree was deleted
+	deleted *BinTrieNode[E, V]
+	// contains:
+	//
+	// A linked list of the tree elements, from largest to smallest,
+	// that contain the supplied argument, and the end of the list
+	containing, containingEnd *PathNode[E, V]
+	// Of the tree nodes with elements containing the subnet or address,
+	// those with the smallest or largets subnet or address
+	smallestContaining, largestContaining *BinTrieNode[E, V]
+	// adds and puts:
+	// new and existing values for add, put and remap operations
+	newValue, existingValue V
+	// this added tree node was newly created for an add
+	inserted,
+	// this added tree node previously existed but had not been added yet
+	added,
+	// this added tree node was already added to the trie
+	//
+	// for searching use
+	//
+	nodeComp nodeCompare[E, V]
+	comp KeyCompareResult
+}
+
 // BlockSizeCompare compares keys by block size and then by prefix value if block sizes are equal
 func BlockSizeCompare[E TrieKey[E]](key1, key2 E, reverseBlocksEqualSize bool) int {
 	if key2 == key1 {
