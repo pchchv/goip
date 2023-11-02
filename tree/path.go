@@ -1,5 +1,10 @@
 package tree
 
+import (
+	"strconv"
+	"strings"
+)
+
 // PathNode is an element in the list of a Path
 type PathNode[E Key, V any] struct {
 	previous   *PathNode[E, V]
@@ -85,4 +90,51 @@ func (node *PathNode[E, V]) String() string {
 		return NodeString[E, V](nil)
 	}
 	return NodeString[E, V](node)
+}
+
+// ListString returns a visual representation of the sub-list with this node as root,
+// with one node per line.
+//
+// withNonAddedKeys: whether to show nodes that are not added nodes
+// withSizes: whether to include the counts of added nodes in each sub-list
+func (node *PathNode[E, V]) ListString(withNonAddedKeys, withSizes bool) string {
+	builder := strings.Builder{}
+	builder.WriteByte('\n')
+	node.printList(&builder, indents{}, withNonAddedKeys, withSizes)
+	return builder.String()
+}
+
+func (node *PathNode[E, V]) printList(builder *strings.Builder,
+	indents indents,
+	withNonAdded,
+	withSizes bool) {
+	if node == nil {
+		builder.WriteString(indents.nodeIndent)
+		builder.WriteString(nilString())
+		builder.WriteByte('\n')
+		return
+	}
+
+	next := node
+	for {
+		if withNonAdded || next.IsAdded() {
+			builder.WriteString(indents.nodeIndent)
+			builder.WriteString(next.String())
+			if withSizes {
+				builder.WriteString(" (")
+				builder.WriteString(strconv.Itoa(next.Size()))
+				builder.WriteByte(')')
+			}
+			builder.WriteByte('\n')
+		} else {
+			builder.WriteString(indents.nodeIndent)
+			builder.WriteString(nonAddedNodeCircle)
+			builder.WriteByte('\n')
+		}
+		indents.nodeIndent = indents.subNodeInd + rightElbow
+		indents.subNodeInd = indents.subNodeInd + belowElbows
+		if next = next.next; next == nil {
+			break
+		}
+	}
 }
