@@ -1,6 +1,9 @@
 package tree
 
-import "unsafe"
+import (
+	"fmt"
+	"unsafe"
+)
 
 type EmptyValueType struct{}
 
@@ -82,4 +85,31 @@ func (trie *BinTrie[E, V]) Size() int {
 // which is always more than the number of elements.
 func (trie *BinTrie[E, V]) NodeSize() int {
 	return trie.toBinTree().NodeSize()
+}
+
+// String returns a visual representation of the tree with one node per line.
+func (trie *BinTrie[E, V]) String() string {
+	if trie == nil {
+		return nilString()
+	}
+	return trie.binTree.String()
+}
+
+// TreeString returns a visual representation of the tree with one node per line,
+// with or without the non-added keys.
+func (trie *BinTrie[E, V]) TreeString(withNonAddedKeys bool) string {
+	if trie == nil {
+		return "\n" + nilString()
+	}
+	return trie.binTree.TreeString(withNonAddedKeys)
+}
+
+// For some reason Format must be here and not in addressTrieNode for nil node.
+// It panics in fmt code either way,
+// but if in here then it is handled by a recover() call in fmt properly.
+// Seems to be a problem only in the debugger.
+//
+// Format implements the fmt.Formatter interface
+func (trie BinTrie[E, V]) Format(state fmt.State, verb rune) {
+	trie.format(state, verb)
 }
