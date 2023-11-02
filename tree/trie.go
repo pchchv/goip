@@ -2,6 +2,7 @@ package tree
 
 import (
 	"fmt"
+	"strings"
 	"unsafe"
 )
 
@@ -140,4 +141,67 @@ func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E
 
 func tobinTree[E TrieKey[E], V any](trie *BinTrie[E, V]) *binTree[E, V] {
 	return (*binTree[E, V])(unsafe.Pointer(trie))
+}
+
+// AddedNodesTreeString provides a flattened version of
+// the trie showing only the contained added nodes and their containment structure,
+// which is non-binary.
+// The root node is included, which may or may not be added.
+func AddedNodesTreeString[E TrieKey[E], V any](addedTree *BinTrieNode[E, AddedSubnodeMapping]) string {
+	var stack []indentsNode[E]
+	builder := strings.Builder{}
+	builder.WriteByte('\n')
+	nodeIndent, subNodeIndent := "", ""
+	nextNode := addedTree
+	for {
+		builder.WriteString(nodeIndent)
+		builder.WriteString(NodeString[E, V](printWrapper[E, V]{nextNode}))
+		builder.WriteByte('\n')
+
+		var nextVal AddedSubnodeMapping // SubNodesMapping[E, V]
+		nextVal = nextNode.GetValue()
+		var nextNodes []*BinTrieNode[E, AddedSubnodeMapping]
+		if nextVal != nil {
+			mapping := nextVal.(SubNodesMapping[E, V])
+			if mapping.SubNodes != nil {
+				nextNodes = mapping.SubNodes
+			}
+		}
+		if len(nextNodes) > 0 {
+			i := len(nextNodes) - 1
+			lastIndents := indents{
+				nodeIndent: subNodeIndent + rightElbow,
+				subNodeInd: subNodeIndent + belowElbows,
+			}
+
+			var nNode *BinTrieNode[E, AddedSubnodeMapping] // SubNodesMapping[E, V]
+			nNode = nextNodes[i]
+			if stack == nil {
+				stack = make([]indentsNode[E], 0, addedTree.Size())
+			}
+			stack = append(stack, indentsNode[E]{lastIndents, nNode})
+			if len(nextNodes) > 1 {
+				firstIndents := indents{
+					nodeIndent: subNodeIndent + leftElbow,
+					subNodeInd: subNodeIndent + inBetweenElbows,
+				}
+				for i--; i >= 0; i-- {
+					nNode = nextNodes[i]
+					stack = append(stack, indentsNode[E]{firstIndents, nNode})
+				}
+			}
+		}
+		stackLen := len(stack)
+		if stackLen == 0 {
+			break
+		}
+		newLen := stackLen - 1
+		nextItem := stack[newLen]
+		stack = stack[:newLen]
+		nextNode = nextItem.node
+		nextIndents := nextItem.inds
+		nodeIndent = nextIndents.nodeIndent
+		subNodeIndent = nextIndents.subNodeInd
+	}
+	return builder.String()
 }
