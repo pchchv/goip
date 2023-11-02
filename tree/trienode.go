@@ -448,6 +448,56 @@ type opResult[E TrieKey[E], V any] struct {
 	comp KeyCompareResult
 }
 
+func (result *opResult[E, V]) clean() {
+	result.exists = false
+	result.existingNode = nil
+	result.nearestNode = nil
+	result.backtrackNode = nil
+	result.containedBy = nil
+	result.containing = nil
+	result.containingEnd = nil
+	result.smallestContaining = nil
+	result.largestContaining = nil
+	// the remainder do not need cleaning,
+	// only those fields used by ops that use pooling of opResult,
+	// the "search" operations
+}
+
+func (result *opResult[E, V]) getContaining() *Path[E, V] {
+	containing := result.containing
+	if containing == nil {
+		return &Path[E, V]{}
+	}
+	return &Path[E, V]{
+		root: containing,
+		leaf: result.containingEnd,
+	}
+}
+
+// add to the list of tree elements that contain the supplied argument
+func (result *opResult[E, V]) addContaining(containingSub *BinTrieNode[E, V]) {
+	if containingSub.IsAdded() {
+		node := &PathNode[E, V]{
+			item:       containingSub.item,
+			value:      containingSub.value,
+			storedSize: 1,
+			added:      true,
+		}
+		if result.containing == nil {
+			result.containing = node
+		} else {
+			last := result.containingEnd
+			last.next = node
+			node.previous = last
+			last.storedSize++
+			for next := last.previous; next != nil; next = next.previous {
+				next.storedSize++
+			}
+		}
+		result.containingEnd = node
+	}
+}
+
 // BlockSizeCompare compares keys by block size and then by prefix value if block sizes are equal
 func BlockSizeCompare[E TrieKey[E]](key1, key2 E, reverseBlocksEqualSize bool) int {
 	if key2 == key1 {
