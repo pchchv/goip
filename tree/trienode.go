@@ -702,6 +702,18 @@ func (result *opResult[E, V]) addContaining(containingSub *BinTrieNode[E, V]) {
 	}
 }
 
+type TrieKeyIterator[E TrieKey[E]] interface {
+	HasNext
+	Next() E
+	// Remove removes the last iterated element from the underlying trie, and returns that element.
+	// If there is no such element, it returns the zero value.
+	Remove() E
+}
+
+type trieKeyIterator[E TrieKey[E]] struct {
+	keyIterator[E]
+}
+
 // BlockSizeCompare compares keys by block size and then by prefix value if block sizes are equal
 func BlockSizeCompare[E TrieKey[E]](key1, key2 E, reverseBlocksEqualSize bool) int {
 	if key2 == key1 {
