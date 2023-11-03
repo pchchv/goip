@@ -718,6 +718,33 @@ func (node *BinTrieNode[E, V]) TreeDeepEqual(other *BinTrieNode[E, V]) bool {
 	return true
 }
 
+// AsNewTrie creates a new sub-trie,
+// copying the nodes starting with this node as root.
+// The nodes are copies of the nodes in this sub-trie,
+// but their keys and values are not copies.
+func (node *BinTrieNode[E, V]) AsNewTrie() *BinTrie[E, V] {
+	key := node.GetKey()
+	trie := &BinTrie[E, V]{binTree[E, V]{}}
+	rootKey := key.ToPrefixBlockLen(0)
+	trie.setRoot(rootKey)
+	root := trie.root
+	newNode := node.cloneTreeTrackerBounds(root.cTracker, root.pool, nil)
+	if rootKey.Compare(key) == 0 {
+		root.setUpper(newNode.upper)
+		root.setLower(newNode.lower)
+		if node.IsAdded() {
+			root.SetAdded()
+		}
+		root.SetValue(node.GetValue())
+	} else if key.IsOneBit(0) {
+		root.setUpper(newNode)
+	} else {
+		root.setLower(newNode)
+	}
+	root.storedSize = sizeUnknown
+	return trie
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
