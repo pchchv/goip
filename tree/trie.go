@@ -173,6 +173,14 @@ func (trie *BinTrie[E, V]) ContainingFirstAllNodeIterator(forwardSubNodeOrder bo
 	return trie.absoluteRoot().ContainingFirstAllNodeIterator(forwardSubNodeOrder)
 }
 
+func (trie *BinTrie[E, V]) ContainedFirstIterator(forwardSubNodeOrder bool) TrieNodeIteratorRem[E, V] {
+	return trie.absoluteRoot().ContainedFirstIterator(forwardSubNodeOrder)
+}
+
+func (trie *BinTrie[E, V]) ContainedFirstAllNodeIterator(forwardSubNodeOrder bool) TrieNodeIterator[E, V] {
+	return trie.absoluteRoot().ContainedFirstAllNodeIterator(forwardSubNodeOrder)
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
