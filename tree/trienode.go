@@ -511,6 +511,49 @@ func (node *BinTrieNode[E, V]) findNearestFromMatch(result *opResult[E, V]) {
 	}
 }
 
+func (node *BinTrieNode[E, V]) findNearest(result *opResult[E, V], differingBitIndex BitCount) {
+	thisKey := node.GetKey()
+	if differingBitIndex < thisKey.GetBitCount() && thisKey.IsOneBit(differingBitIndex) {
+		// this element and all below are > than the query address
+		if result.nearestFloor {
+			// looking for greatest element < or <= queried address, so no need to go further
+			// need to backtrack and find the last right turn to find node < than the query address again
+			result.backtrackNode = node
+		} else {
+			// looking for smallest element > or >= queried address
+			lower := node
+			var last *BinTrieNode[E, V]
+			for {
+				last = lower
+				lower = lower.GetLowerSubNode()
+				if lower == nil {
+					break
+				}
+			}
+			result.nearestNode = last
+		}
+	} else {
+		// this element and all below are < than the query address
+		if result.nearestFloor {
+			// looking for greatest element < or <= queried address
+			upper := node
+			var last *BinTrieNode[E, V]
+			for {
+				last = upper
+				upper = upper.GetUpperSubNode()
+				if upper == nil {
+					break
+				}
+			}
+			result.nearestNode = last
+		} else {
+			// looking for smallest element > or >= queried address, so no need to go further
+			// need to backtrack and find the last left turn to find node > than the query address again
+			result.backtrackNode = node
+		}
+	}
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
