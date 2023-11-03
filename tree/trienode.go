@@ -714,6 +714,14 @@ type trieKeyIterator[E TrieKey[E]] struct {
 	keyIterator[E]
 }
 
+func (iter trieKeyIterator[E]) Next() E {
+	return iter.keyIterator.Next()
+}
+
+func (iter trieKeyIterator[E]) Remove() E {
+	return iter.keyIterator.Remove()
+}
+
 // BlockSizeCompare compares keys by block size and then by prefix value if block sizes are equal
 func BlockSizeCompare[E TrieKey[E]](key1, key2 E, reverseBlocksEqualSize bool) int {
 	if key2 == key1 {
