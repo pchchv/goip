@@ -151,6 +151,20 @@ func (trie *BinTrie[E, V]) BlockSizeNodeIterator(lowerSubNodeFirst bool) TrieNod
 	return trie.absoluteRoot().BlockSizeNodeIterator(lowerSubNodeFirst)
 }
 
+// BlockSizeAllNodeIterator returns an iterator that iterates all nodes in the trie,
+// ordered by keys from largest prefix blocks to smallest, and then to individual addresses.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first, otherwise the reverse order
+func (trie *BinTrie[E, V]) BlockSizeAllNodeIterator(lowerSubNodeFirst bool) TrieNodeIteratorRem[E, V] {
+	return trie.absoluteRoot().BlockSizeAllNodeIterator(lowerSubNodeFirst)
+}
+
+// BlockSizeCachingAllNodeIterator returns an iterator that iterates all nodes,
+// ordered by keys from largest prefix blocks to smallest, and then to individual addresses.
+func (trie *BinTrie[E, V]) BlockSizeCachingAllNodeIterator() CachingTrieNodeIterator[E, V] {
+	return trie.absoluteRoot().BlockSizeCachingAllNodeIterator()
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
