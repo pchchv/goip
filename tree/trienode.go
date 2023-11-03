@@ -606,6 +606,45 @@ func (node *BinTrieNode[E, V]) AllNodeIterator(forward bool) TrieNodeIteratorRem
 	return trieNodeIteratorRem[E, V]{node.toBinTreeNode().allNodeIterator(forward)}
 }
 
+func (node *BinTrieNode[E, V]) blockSizeNodeIterator(lowerSubNodeFirst, addedNodesOnly bool) TrieNodeIteratorRem[E, V] {
+	var size int
+	reverseBlocksEqualSize := !lowerSubNodeFirst
+	if addedNodesOnly {
+		size = node.Size()
+	}
+
+	iter := newPriorityNodeIterator(
+		size,
+		addedNodesOnly,
+		node.toBinTreeNode(),
+		func(one, two E) int {
+			val := BlockSizeCompare(one, two, reverseBlocksEqualSize)
+			return -val
+		})
+	return trieNodeIteratorRem[E, V]{&iter}
+}
+
+// BlockSizeNodeIterator returns an iterator that iterates the added nodes,
+// ordered by keys from largest prefix blocks (smallest prefix length)
+// to smallest (largest prefix length) and then to individual addresses,
+// in the sub-trie with this node as the root.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first,
+// otherwise the reverse order is taken.
+func (node *BinTrieNode[E, V]) BlockSizeNodeIterator(lowerSubNodeFirst bool) TrieNodeIteratorRem[E, V] {
+	return node.blockSizeNodeIterator(lowerSubNodeFirst, true)
+}
+
+// BlockSizeAllNodeIterator returns an iterator that iterates all the nodes,
+// ordered by keys from largest prefix blocks to smallest and then to individual addresses,
+// in the sub-trie with this node as the root.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first,
+// otherwise the reverse order
+func (node *BinTrieNode[E, V]) BlockSizeAllNodeIterator(lowerSubNodeFirst bool) TrieNodeIteratorRem[E, V] {
+	return node.blockSizeNodeIterator(lowerSubNodeFirst, false)
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
