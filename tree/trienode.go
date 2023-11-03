@@ -735,6 +735,18 @@ type TrieNodeIteratorRem[E TrieKey[E], V any] interface {
 	Remove() *BinTrieNode[E, V]
 }
 
+type trieNodeIteratorRem[E TrieKey[E], V any] struct {
+	nodeIteratorRem[E, V]
+}
+
+func (iter trieNodeIteratorRem[E, V]) Next() *BinTrieNode[E, V] {
+	return toTrieNode(iter.nodeIteratorRem.Next())
+}
+
+func (iter trieNodeIteratorRem[E, V]) Remove() *BinTrieNode[E, V] {
+	return toTrieNode(iter.nodeIteratorRem.Remove())
+}
+
 // BlockSizeCompare compares keys by block size and then by prefix value if block sizes are equal
 func BlockSizeCompare[E TrieKey[E]](key1, key2 E, reverseBlocksEqualSize bool) int {
 	if key2 == key1 {
