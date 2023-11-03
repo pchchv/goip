@@ -677,6 +677,47 @@ func (node *BinTrieNode[E, V]) ContainedFirstAllNodeIterator(forwardSubNodeOrder
 	return trieNodeIterator[E, V]{node.toBinTreeNode().containedFirstAllNodeIterator(forwardSubNodeOrder)}
 }
 
+// TreeEqual returns whether the sub-tree represented by
+// this node as the root node matches the given sub-tree,
+// matching the trie keys using the Compare method
+func (node *BinTrieNode[E, V]) TreeEqual(other *BinTrieNode[E, V]) bool {
+	if other == node {
+		return true
+	} else if other.Size() != node.Size() {
+		return false
+	}
+
+	these, others := node.Iterator(), other.Iterator()
+	if these.HasNext() {
+		for thisKey := these.Next(); these.HasNext(); thisKey = these.Next() {
+			if thisKey.Compare(others.Next()) != 0 {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// TreeDeepEqual returns whether the sub-tree represented by
+// this node as the root node matches the given sub-tree,
+// matching the nodes using DeepEqual
+func (node *BinTrieNode[E, V]) TreeDeepEqual(other *BinTrieNode[E, V]) bool {
+	if other == node {
+		return true
+	} else if other.Size() != node.Size() {
+		return false
+	}
+
+	these, others := node.NodeIterator(true), other.NodeIterator(true)
+	thisNode := these.Next()
+	for ; thisNode != nil; thisNode = these.Next() {
+		if thisNode.DeepEqual(others.Next()) {
+			return false
+		}
+	}
+	return true
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
