@@ -3,6 +3,7 @@ package tree
 import (
 	"fmt"
 	"reflect"
+	"sync"
 	"unsafe"
 )
 
@@ -552,6 +553,27 @@ func (node *BinTrieNode[E, V]) findNearest(result *opResult[E, V], differingBitI
 			result.backtrackNode = node
 		}
 	}
+}
+
+func (node *BinTrieNode[E, V]) cloneTreeBounds(bnds *bounds[E]) *BinTrieNode[E, V] {
+	if node == nil {
+		return nil
+	}
+	return toTrieNode(node.cloneTreeTrackerBounds(&changeTracker{}, &sync.Pool{
+		New: func() any { return &opResult[E, V]{} },
+	}, bnds))
+}
+
+// Clones the sub-tree starting with this node as root.
+// The nodes are cloned, but their keys and values are not cloned.
+func (node *BinTrieNode[E, V]) cloneTree() *BinTrieNode[E, V] {
+	return node.cloneTreeBounds(nil)
+}
+
+// CloneTree clones the sub-tree starting with this node as root.
+// The nodes are cloned, but their keys and values are not cloned.
+func (node *BinTrieNode[E, V]) CloneTree() *BinTrieNode[E, V] {
+	return node.cloneTree()
 }
 
 type nodeCompare[E TrieKey[E], V any] struct {
