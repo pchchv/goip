@@ -3,6 +3,7 @@ package tree
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"unsafe"
 )
 
@@ -199,6 +200,27 @@ func (trie *BinTrie[E, V]) DeepEqual(other *BinTrie[E, V]) bool {
 // a set of nodes with the same keys as in this trie according to the Compare method
 func (trie *BinTrie[E, V]) Equal(other *BinTrie[E, V]) bool {
 	return trie.absoluteRoot().TreeEqual(other.absoluteRoot())
+}
+
+func (trie *BinTrie[E, V]) ensureRoot(key E) *BinTrieNode[E, V] {
+	root := trie.root
+	if root == nil {
+		root = trie.setRoot(key.ToPrefixBlockLen(0))
+	}
+	return toTrieNode(root)
+}
+
+func (trie *BinTrie[E, V]) setRoot(key E) *binTreeNode[E, V] {
+	root := &binTreeNode[E, V]{
+		item:     key,
+		cTracker: &changeTracker{},
+		pool: &sync.Pool{
+			New: func() any { return &opResult[E, V]{} },
+		},
+	}
+	root.setAddr()
+	trie.root = root
+	return root
 }
 
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
