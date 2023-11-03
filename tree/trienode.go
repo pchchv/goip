@@ -580,6 +580,20 @@ func (node *BinTrieNode[E, V]) CloneTree() *BinTrieNode[E, V] {
 	return node.cloneTree()
 }
 
+// Iterator returns an iterator that iterates through the elements of
+// the sub-tree with this node as the root.
+// The iteration is in sorted element order.
+func (node *BinTrieNode[E, V]) Iterator() TrieKeyIterator[E] {
+	return trieKeyIterator[E]{node.toBinTreeNode().iterator()}
+}
+
+// DescendingIterator returns an iterator that iterates through the elements of
+// the subtrie with this node as the root.
+// The iteration is in reverse sorted element order.
+func (node *BinTrieNode[E, V]) DescendingIterator() TrieKeyIterator[E] {
+	return trieKeyIterator[E]{node.toBinTreeNode().descendingIterator()}
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
