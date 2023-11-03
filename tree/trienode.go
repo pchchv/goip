@@ -12,7 +12,11 @@ const (
 	removeNode
 	remapValue
 
-	containing    operation = iota // find a single node whose keys contain E
+	// Given a key E
+	near          operation = iota // closest match, going down trie to get element considered closest. Whether one thing is closer than another is determined by the sorted order.
+	remap                          // alters nodes based on the existing nodes and their values
+	insert                         // add node for E if not already there
+	containing                     // find a single node whose keys contain E
 	allContaining                  // list the nodes whose keys contain E
 )
 
@@ -579,6 +583,20 @@ func (node *BinTrieNode[E, V]) CloneTree() *BinTrieNode[E, V] {
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
+}
+
+func (comp nodeCompare[E, V]) MismatchCallbackRequired() bool {
+	op := comp.result.op
+	return op == insert || op == near || op == remap
+}
+
+func (comp nodeCompare[E, V]) BitsMatchPartially() bool {
+	node, result := comp.node, comp.result
+	if node.IsAdded() {
+		node.handleContains(result)
+		return result.op != containing // we can stop if we are "containing" since we have the answer
+	}
+	return true
 }
 
 type opResult[E TrieKey[E], V any] struct {
