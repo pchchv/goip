@@ -645,6 +645,26 @@ func (node *BinTrieNode[E, V]) BlockSizeAllNodeIterator(lowerSubNodeFirst bool) 
 	return node.blockSizeNodeIterator(lowerSubNodeFirst, false)
 }
 
+// BlockSizeCachingAllNodeIterator returns an iterator of all nodes,
+// ordered by keys from largest prefix blocks to smallest and then to individual addresses,
+// in the sub-trie with this node as the root.
+//
+// This iterator allows you to cache an object with subnodes so
+// that when those nodes are visited the cached object can be retrieved.
+func (node *BinTrieNode[E, V]) BlockSizeCachingAllNodeIterator() CachingTrieNodeIterator[E, V] {
+	iter := newCachingPriorityNodeIterator(
+		node.toBinTreeNode(),
+		func(one, two E) int {
+			val := BlockSizeCompare(one, two, false)
+			return -val
+		})
+	return &cachingTrieNodeIterator[E, V]{&iter}
+}
+
+func (node *BinTrieNode[E, V]) ContainingFirstIterator(forwardSubNodeOrder bool) CachingTrieNodeIterator[E, V] {
+	return &cachingTrieNodeIterator[E, V]{node.toBinTreeNode().containingFirstIterator(forwardSubNodeOrder)}
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
