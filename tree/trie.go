@@ -165,6 +165,14 @@ func (trie *BinTrie[E, V]) BlockSizeCachingAllNodeIterator() CachingTrieNodeIter
 	return trie.absoluteRoot().BlockSizeCachingAllNodeIterator()
 }
 
+func (trie *BinTrie[E, V]) ContainingFirstIterator(forwardSubNodeOrder bool) CachingTrieNodeIterator[E, V] {
+	return trie.absoluteRoot().ContainingFirstIterator(forwardSubNodeOrder)
+}
+
+func (trie *BinTrie[E, V]) ContainingFirstAllNodeIterator(forwardSubNodeOrder bool) CachingTrieNodeIterator[E, V] {
+	return trie.absoluteRoot().ContainingFirstAllNodeIterator(forwardSubNodeOrder)
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
