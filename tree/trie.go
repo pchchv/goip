@@ -181,6 +181,26 @@ func (trie *BinTrie[E, V]) ContainedFirstAllNodeIterator(forwardSubNodeOrder boo
 	return trie.absoluteRoot().ContainedFirstAllNodeIterator(forwardSubNodeOrder)
 }
 
+func (trie *BinTrie[E, V]) Clone() *BinTrie[E, V] {
+	if trie == nil {
+		return nil
+	}
+	return &BinTrie[E, V]{binTree[E, V]{root: trie.absoluteRoot().CloneTree().toBinTreeNode()}}
+}
+
+// DeepEqual returns whether the given argument is a trie with
+// a set of nodes with the same keys as in this trie according to the Compare method,
+// and the same values according to the reflect.DeepEqual method
+func (trie *BinTrie[E, V]) DeepEqual(other *BinTrie[E, V]) bool {
+	return trie.absoluteRoot().TreeDeepEqual(other.absoluteRoot())
+}
+
+// Equal returns whether the given argument is a trie with
+// a set of nodes with the same keys as in this trie according to the Compare method
+func (trie *BinTrie[E, V]) Equal(other *BinTrie[E, V]) bool {
+	return trie.absoluteRoot().TreeEqual(other.absoluteRoot())
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
