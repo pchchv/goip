@@ -223,6 +223,18 @@ func (trie *BinTrie[E, V]) setRoot(key E) *binTreeNode[E, V] {
 	return root
 }
 
+// Iterator returns an iterator that iterates through the elements of the sub-tree with this node as the root.
+// The iteration is in sorted element order.
+func (trie *BinTrie[E, V]) Iterator() TrieKeyIterator[E] {
+	return trie.GetRoot().Iterator()
+}
+
+// DescendingIterator returns an iterator that iterates through the elements of the subtrie with this node as the root.
+// The iteration is in reverse sorted element order.
+func (trie *BinTrie[E, V]) DescendingIterator() TrieKeyIterator[E] {
+	return trie.GetRoot().DescendingIterator()
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
