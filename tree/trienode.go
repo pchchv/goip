@@ -864,6 +864,47 @@ func (node *BinTrieNode[E, V]) matchSubNode(bitsFollowing uint64, result *opResu
 	return nil
 }
 
+// traverses the tree, matching bits with prefix block nodes, until we can match no longer,
+// at which point it completes the operation, whatever that operation is
+func (node *BinTrieNode[E, V]) matchBitsFromIndex(bitIndex int, result *opResult[E, V]) {
+	matchNode := node
+	existingKey := node.GetKey()
+	newKey := result.key
+	if newKey.GetBitCount() != existingKey.GetBitCount() {
+		panic("mismatched bit length between trie keys")
+	}
+
+	newKeyData := newKey.GetTrieKeyData()
+
+	op := result.op
+	simpleMatch := !(op == insert || op == near || op == remap)
+
+	// having these allocated in result eliminates gc activity
+	result.nodeComp.result = result
+	result.comp = &result.nodeComp
+	for {
+		result.nodeComp.node = matchNode
+		continueToNext, followingBitsFlag := newKey.MatchBits(existingKey, bitIndex, simpleMatch, result.comp, newKeyData)
+		if continueToNext {
+			// matched all node bits up the given count, so move into sub-nodes
+			matchNode = matchNode.matchSubNode(followingBitsFlag, result)
+			if matchNode == nil {
+				// reached the end of the line
+				break
+			}
+			// Matched a sub-node.
+			// The sub-node was chosen according to the next bit.
+			// That bit is therefore now a match,
+			// so increment the matched bits by 1, and keep going.
+			bitIndex = existingKey.GetPrefixLen().bitCount() + 1
+			existingKey = matchNode.GetKey()
+		} else {
+			// reached the end of the line
+			break
+		}
+	}
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
