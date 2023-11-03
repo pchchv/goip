@@ -594,6 +594,18 @@ func (node *BinTrieNode[E, V]) DescendingIterator() TrieKeyIterator[E] {
 	return trieKeyIterator[E]{node.toBinTreeNode().descendingIterator()}
 }
 
+// NodeIterator returns an iterator that iterates through the added nodes of
+// the sub-tree with this node as the root, in forward or reverse tree order.
+func (node *BinTrieNode[E, V]) NodeIterator(forward bool) TrieNodeIteratorRem[E, V] {
+	return trieNodeIteratorRem[E, V]{node.toBinTreeNode().nodeIterator(forward)}
+}
+
+// AllNodeIterator returns an iterator that iterates through all the nodes of
+// the sub-tree with this node as the root, in forward or reverse tree order.
+func (node *BinTrieNode[E, V]) AllNodeIterator(forward bool) TrieNodeIteratorRem[E, V] {
+	return trieNodeIteratorRem[E, V]{node.toBinTreeNode().allNodeIterator(forward)}
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
