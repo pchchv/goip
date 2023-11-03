@@ -390,6 +390,16 @@ func (node BinTrieNode[E, V]) Format(state fmt.State, verb rune) {
 	node.format(state, verb)
 }
 
+func (node *BinTrieNode[E, V]) removeSubtree(result *opResult[E, V]) {
+	result.deleted = node
+	node.Clear()
+}
+
+func (node *BinTrieNode[E, V]) removeOp(result *opResult[E, V]) {
+	result.deleted = node
+	node.binTreeNode.Remove()
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
