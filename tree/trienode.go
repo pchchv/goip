@@ -665,6 +665,18 @@ func (node *BinTrieNode[E, V]) ContainingFirstIterator(forwardSubNodeOrder bool)
 	return &cachingTrieNodeIterator[E, V]{node.toBinTreeNode().containingFirstIterator(forwardSubNodeOrder)}
 }
 
+func (node *BinTrieNode[E, V]) ContainingFirstAllNodeIterator(forwardSubNodeOrder bool) CachingTrieNodeIterator[E, V] {
+	return &cachingTrieNodeIterator[E, V]{node.toBinTreeNode().containingFirstAllNodeIterator(forwardSubNodeOrder)}
+}
+
+func (node *BinTrieNode[E, V]) ContainedFirstIterator(forwardSubNodeOrder bool) TrieNodeIteratorRem[E, V] {
+	return trieNodeIteratorRem[E, V]{node.toBinTreeNode().containedFirstIterator(forwardSubNodeOrder)}
+}
+
+func (node *BinTrieNode[E, V]) ContainedFirstAllNodeIterator(forwardSubNodeOrder bool) TrieNodeIterator[E, V] {
+	return trieNodeIterator[E, V]{node.toBinTreeNode().containedFirstAllNodeIterator(forwardSubNodeOrder)}
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
