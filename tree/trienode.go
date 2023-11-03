@@ -745,6 +745,25 @@ func (node *BinTrieNode[E, V]) AsNewTrie() *BinTrie[E, V] {
 	return trie
 }
 
+// this node is newly inserted and added
+func (node *BinTrieNode[E, V]) inserted(result *opResult[E, V]) {
+	result.inserted = node
+	node.added(result)
+}
+
+// this node previously existed but was not added til now
+func (node *BinTrieNode[E, V]) existingAdded(result *opResult[E, V]) {
+	result.existingNode = node
+	result.added = node
+	node.added(result)
+}
+
+func (node *BinTrieNode[E, V]) remapNonAdded(result *opResult[E, V]) {
+	if node.remap(result, false) {
+		node.existingAdded(result)
+	}
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
