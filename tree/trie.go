@@ -131,6 +131,26 @@ func (trie *BinTrie[E, V]) LastAddedNode() *BinTrieNode[E, V] {
 	return trie.absoluteRoot().LastAddedNode()
 }
 
+// NodeIterator returns an iterator that iterates through the added nodes of
+// the trie in forward or reverse tree order.
+func (trie *BinTrie[E, V]) NodeIterator(forward bool) TrieNodeIteratorRem[E, V] {
+	return trie.absoluteRoot().NodeIterator(forward)
+}
+
+// AllNodeIterator returns an iterator that iterates through all
+// the nodes of the trie in forward or reverse tree order.
+func (trie *BinTrie[E, V]) AllNodeIterator(forward bool) TrieNodeIteratorRem[E, V] {
+	return trie.absoluteRoot().AllNodeIterator(forward)
+}
+
+// BlockSizeNodeIterator returns an iterator that iterates the added nodes in the trie,
+// ordered by keys from largest prefix blocks to smallest, and then to individual addresses.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first, otherwise the reverse order
+func (trie *BinTrie[E, V]) BlockSizeNodeIterator(lowerSubNodeFirst bool) TrieNodeIteratorRem[E, V] {
+	return trie.absoluteRoot().BlockSizeNodeIterator(lowerSubNodeFirst)
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
