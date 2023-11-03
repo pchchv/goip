@@ -10,6 +10,9 @@ const (
 	doNothing remapAction = iota
 	removeNode
 	remapValue
+
+	containing    operation = iota // find a single node whose keys contain E
+	allContaining                  // list the nodes whose keys contain E
 )
 
 type TrieKeyData struct {
@@ -398,6 +401,60 @@ func (node *BinTrieNode[E, V]) removeSubtree(result *opResult[E, V]) {
 func (node *BinTrieNode[E, V]) removeOp(result *opResult[E, V]) {
 	result.deleted = node
 	node.binTreeNode.Remove()
+}
+
+func (node *BinTrieNode[E, V]) handleContains(result *opResult[E, V]) bool {
+	if result.op == containing {
+		result.largestContaining = node // used by ElementContains
+		return true
+	} else if result.op == allContaining {
+		result.addContaining(node) // used by ElementsContaining
+		return true
+	}
+	result.smallestContaining = node // used by longest prefix match, which uses the lookup op
+	return false
+}
+
+// Remaps the value for a node to a new value.
+// This operation works on mapped values
+// It returns true if a new node needs to be created (match is nil) or added (match is non-nil)
+func (node *BinTrieNode[E, V]) remap(result *opResult[E, V], isMatch bool) bool {
+	remapper := result.remapper
+	change := node.cTracker.getCurrent()
+	var existingValue V
+	if isMatch {
+		existingValue = node.GetValue()
+	}
+
+	result.existingValue = existingValue
+	newValue, action := remapper(existingValue, isMatch)
+	if action == doNothing {
+		return false
+	} else if action == removeNode {
+		if isMatch {
+			cTracker := node.cTracker
+			if cTracker != nil && cTracker.changedSince(change) {
+				panic("the tree has been modified by the remapper")
+			}
+			node.ClearValue()
+			node.removeOp(result)
+		}
+		return false
+	} else { // action is remapValue
+		cTracker := node.cTracker
+		if cTracker != nil && cTracker.changedSince(change) {
+			panic("the tree has been modified by the remapper")
+		}
+		result.newValue = newValue
+		return true
+	}
+}
+
+func (node *BinTrieNode[E, V]) remapNonExisting(result *opResult[E, V]) *BinTrieNode[E, V] {
+	if node.remap(result, false) {
+		return node.createNew(result.key)
+	}
+	return nil
 }
 
 type nodeCompare[E TrieKey[E], V any] struct {
