@@ -764,6 +764,106 @@ func (node *BinTrieNode[E, V]) remapNonAdded(result *opResult[E, V]) {
 	}
 }
 
+func (node *BinTrieNode[E, V]) matchSubNode(bitsFollowing uint64, result *opResult[E, V]) *BinTrieNode[E, V] {
+	newKey := result.key
+	if !freezeRoot && node.IsEmpty() {
+		if result.op == remap {
+			node.remapNonAdded(result)
+		} else if result.op == insert {
+			node.setKey(newKey)
+			node.existingAdded(result)
+		}
+	} else if bitsFollowing != 0 {
+		upper := node.GetUpperSubNode()
+		if upper == nil {
+			// no match
+			op := result.op
+			if op == insert {
+				upper = node.createNew(newKey)
+				node.setUpper(upper)
+				upper.inserted(result)
+			} else if op == near {
+				if result.nearestFloor {
+					// With only one sub-node at most, normally that would mean this node must be added.
+					// But there is one exception, when we are the non-added root node.
+					// So must check for added here.
+					if node.IsAdded() {
+						result.nearestNode = node
+					} else {
+						// check if our lower sub-node is there and added.  It is underneath addr too.
+						// find the highest node in that direction.
+						lower := node.GetLowerSubNode()
+						if lower != nil {
+							res := lower
+							next := res.GetUpperSubNode()
+							for next != nil {
+								res = next
+								next = res.GetUpperSubNode()
+							}
+							result.nearestNode = res
+						}
+					}
+				} else {
+					result.backtrackNode = node
+				}
+			} else if op == remap {
+				upper = node.remapNonExisting(result)
+				if upper != nil {
+					node.setUpper(upper)
+					upper.inserted(result)
+				}
+			}
+		} else {
+			return upper
+		}
+	} else {
+		// In most cases, however, there are more bits in newKey, the former, to look at.
+		lower := node.GetLowerSubNode()
+		if lower == nil {
+			// no match
+			op := result.op
+			if op == insert {
+				lower = node.createNew(newKey)
+				node.setLower(lower)
+				lower.inserted(result)
+			} else if op == near {
+				if result.nearestFloor {
+					result.backtrackNode = node
+				} else {
+					// With only one sub-node at most, normally that would mean this node must be added.
+					// But there is one exception, when we are the non-added root node.
+					// So must check for added here.
+					if node.IsAdded() {
+						result.nearestNode = node
+					} else {
+						// check if our upper sub-node is there and added.  It is above addr too.
+						// find the highest node in that direction.
+						upper := node.GetUpperSubNode()
+						if upper != nil {
+							res := upper
+							next := res.GetLowerSubNode()
+							for next != nil {
+								res = next
+								next = res.GetLowerSubNode()
+							}
+							result.nearestNode = res
+						}
+					}
+				}
+			} else if op == remap {
+				lower = node.remapNonExisting(result)
+				if lower != nil {
+					node.setLower(lower)
+					lower.inserted(result)
+				}
+			}
+		} else {
+			return lower
+		}
+	}
+	return nil
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
