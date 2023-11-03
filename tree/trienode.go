@@ -457,6 +457,60 @@ func (node *BinTrieNode[E, V]) remapNonExisting(result *opResult[E, V]) *BinTrie
 	return nil
 }
 
+// this node matched when doing a lookup
+func (node *BinTrieNode[E, V]) matched(result *opResult[E, V]) {
+	result.existingNode = node
+	result.nearestNode = node
+}
+
+func (node *BinTrieNode[E, V]) added(result *opResult[E, V]) {
+	node.setNodeAdded(true)
+	node.adjustCount(1)
+	node.SetValue(result.newValue)
+	node.cTracker.changed()
+}
+
+// only called when lower/higher and not floor/ceiling since for a match ends things for the latter.
+func (node *BinTrieNode[E, V]) findNearestFromMatch(result *opResult[E, V]) {
+	if result.nearestFloor {
+		// looking for greatest element < queried address
+		// since we have matched the address, we must go lower again,
+		// and if we cannot, we must backtrack
+		lower := node.GetLowerSubNode()
+		if lower == nil {
+			// no nearest node yet
+			result.backtrackNode = node
+		} else {
+			var last *BinTrieNode[E, V]
+			for {
+				last = lower
+				lower = lower.GetUpperSubNode()
+				if lower == nil {
+					break
+				}
+			}
+			result.nearestNode = last
+		}
+	} else {
+		// looking for smallest element > queried address
+		upper := node.GetUpperSubNode()
+		if upper == nil {
+			// no nearest node yet
+			result.backtrackNode = node
+		} else {
+			var last *BinTrieNode[E, V]
+			for {
+				last = upper
+				upper = upper.GetLowerSubNode()
+				if upper == nil {
+					break
+				}
+			}
+			result.nearestNode = last
+		}
+	}
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
