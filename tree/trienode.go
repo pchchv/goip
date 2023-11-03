@@ -755,6 +755,15 @@ func (iter trieNodeIterator[E, V]) Next() *BinTrieNode[E, V] {
 	return toTrieNode(iter.nodeIterator.Next())
 }
 
+type CachingTrieNodeIterator[E TrieKey[E], V any] interface {
+	TrieNodeIteratorRem[E, V]
+	CachingIterator
+}
+
+type cachingTrieNodeIterator[E TrieKey[E], V any] struct {
+	cachingNodeIterator[E, V] // an interface
+}
+
 // BlockSizeCompare compares keys by block size and then by prefix value if block sizes are equal
 func BlockSizeCompare[E TrieKey[E]](key1, key2 E, reverseBlocksEqualSize bool) int {
 	if key2 == key1 {
