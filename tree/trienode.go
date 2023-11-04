@@ -13,12 +13,13 @@ const (
 	remapValue
 
 	// Given a key E
-	near          operation = iota // closest match, going down trie to get element considered closest. Whether one thing is closer than another is determined by the sorted order.
-	remap                          // alters nodes based on the existing nodes and their values
-	insert                         // add node for E if not already there
-	lookup                         // find node for E, traversing all containing elements along the way
-	containing                     // find a single node whose keys contain E
-	allContaining                  // list the nodes whose keys contain E
+	near           operation = iota // closest match, going down trie to get element considered closest. Whether one thing is closer than another is determined by the sorted order.
+	remap                           // alters nodes based on the existing nodes and their values
+	insert                          // add node for E if not already there
+	lookup                          // find node for E, traversing all containing elements along the way
+	containing                      // find a single node whose keys contain E
+	allContaining                   // list the nodes whose keys contain E
+	insertedDelete                  // Remove node for E
 )
 
 type TrieKeyData struct {
@@ -966,6 +967,78 @@ func (node *BinTrieNode[E, V]) doLookup(key E, longestPrefixMatch, contains bool
 		pool.Put(result)
 	}
 	return
+}
+
+func (node *BinTrieNode[E, V]) Get(key E) (V, bool) {
+	var result *opResult[E, V]
+	if node == nil {
+		var v V
+		return v, false
+	}
+
+	pool := node.pool
+	if pool != nil {
+		result = pool.Get().(*opResult[E, V])
+		result.key = key
+		result.op = lookup
+	} else {
+		result = &opResult[E, V]{
+			key: key,
+			op:  lookup,
+		}
+	}
+
+	node.matchBits(result)
+	resultNode := result.existingNode
+	if pool != nil {
+		result.clean()
+		pool.Put(result)
+	}
+
+	if resultNode == nil {
+		var v V
+		return v, false
+	}
+	return resultNode.GetValue(), true
+}
+
+func (node *BinTrieNode[E, V]) Contains(addr E) bool {
+	if node == nil {
+		return false
+	}
+
+	var result *opResult[E, V]
+	pool := node.pool
+	if pool != nil {
+		result = pool.Get().(*opResult[E, V])
+		result.key = addr
+		result.op = lookup
+	} else {
+		result = &opResult[E, V]{
+			key: addr,
+			op:  lookup,
+		}
+	}
+
+	node.matchBits(result)
+	res := result.exists
+	if pool != nil {
+		result.clean()
+		pool.Put(result)
+	}
+	return res
+}
+
+func (node *BinTrieNode[E, V]) RemoveNode(key E) bool {
+	if node == nil {
+		return false
+	}
+	result := &opResult[E, V]{
+		key: key,
+		op:  insertedDelete,
+	}
+	node.matchBits(result)
+	return result.exists
 }
 
 type nodeCompare[E TrieKey[E], V any] struct {
