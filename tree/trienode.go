@@ -16,6 +16,7 @@ const (
 	near          operation = iota // closest match, going down trie to get element considered closest. Whether one thing is closer than another is determined by the sorted order.
 	remap                          // alters nodes based on the existing nodes and their values
 	insert                         // add node for E if not already there
+	lookup                         // find node for E, traversing all containing elements along the way
 	containing                     // find a single node whose keys contain E
 	allContaining                  // list the nodes whose keys contain E
 )
@@ -920,6 +921,51 @@ func (node *BinTrieNode[E, V]) remapNonExistingSplit(result *opResult[E, V], tot
 	if node.remap(result, false) {
 		node.split(result, totalMatchingBits, node.createNew(result.key))
 	}
+}
+
+func (node *BinTrieNode[E, V]) handleSplitNode(result *opResult[E, V], totalMatchingBits BitCount) {
+	op := result.op
+	if op == insert {
+		node.split(result, totalMatchingBits, node.createNew(result.key))
+	} else if op == near {
+		node.findNearest(result, totalMatchingBits)
+	} else if op == remap {
+		node.remapNonExistingSplit(result, totalMatchingBits)
+	}
+}
+
+func (node *BinTrieNode[E, V]) doLookup(key E, longestPrefixMatch, contains bool) (res *BinTrieNode[E, V]) {
+	var result *opResult[E, V]
+	if node == nil {
+		return nil
+	}
+
+	pool := node.pool
+	if pool != nil {
+		result = pool.Get().(*opResult[E, V])
+		result.key = key
+		result.op = lookup
+	} else {
+		result = &opResult[E, V]{
+			key: key,
+			op:  lookup,
+		}
+	}
+
+	node.matchBits(result)
+	if longestPrefixMatch {
+		res = result.smallestContaining
+	} else if contains {
+		res = result.containedBy
+	} else {
+		res = result.existingNode
+	}
+
+	if pool != nil {
+		result.clean()
+		pool.Put(result)
+	}
+	return
 }
 
 type nodeCompare[E TrieKey[E], V any] struct {
