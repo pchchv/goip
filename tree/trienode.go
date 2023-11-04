@@ -1140,6 +1140,22 @@ func (node *BinTrieNode[E, V]) ElementContains(key E) bool {
 	return node.elementContains(key) != nil
 }
 
+// ShortestPrefixMatch finds the shortest matching prefix amongst keys added to the trie.
+// Only added nodes are considered.
+// It is quicker than LongestPrefixMatch in that once it finds the first containing node, the look-up is done.
+func (node *BinTrieNode[E, V]) ShortestPrefixMatch(key E) (E, bool) {
+	res := node.ShortestPrefixMatchNode(key)
+	if res == nil {
+		var e E
+		return e, false
+	}
+	return res.GetKey(), true
+}
+
+func (node *BinTrieNode[E, V]) ShortestPrefixMatchNode(key E) *BinTrieNode[E, V] {
+	return node.elementContains(key)
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
