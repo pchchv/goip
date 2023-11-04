@@ -1093,6 +1093,22 @@ func (node *BinTrieNode[E, V]) ElementsContainedBy(key E) *BinTrieNode[E, V] {
 	return node.doLookup(key, false, true)
 }
 
+// LongestPrefixMatch finds the longest matching prefix amongst keys added to the trie.
+func (node *BinTrieNode[E, V]) LongestPrefixMatch(key E) (E, bool) {
+	res := node.LongestPrefixMatchNode(key)
+	if res == nil {
+		var e E
+		return e, false
+	}
+	return res.GetKey(), true
+}
+
+// LongestPrefixMatchNode finds the node with the longest matching prefix.
+// Only added nodes are considered.
+func (node *BinTrieNode[E, V]) LongestPrefixMatchNode(key E) *BinTrieNode[E, V] {
+	return node.doLookup(key, true, false)
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
