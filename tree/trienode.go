@@ -19,6 +19,7 @@ const (
 	lookup                          // find node for E, traversing all containing elements along the way
 	containing                      // find a single node whose keys contain E
 	allContaining                   // list the nodes whose keys contain E
+	subtreeDelete                   // Remove nodes whose keys are contained by E
 	insertedDelete                  // Remove node for E
 )
 
@@ -1059,6 +1060,37 @@ func (node *BinTrieNode[E, V]) GetAddedNode(key E) *BinTrieNode[E, V] {
 		return res
 	}
 	return nil
+}
+
+func (node *BinTrieNode[E, V]) RemoveElementsContainedBy(key E) *BinTrieNode[E, V] {
+	if node == nil {
+		return nil
+	}
+	result := &opResult[E, V]{
+		key: key,
+		op:  subtreeDelete,
+	}
+	node.matchBits(result)
+	return result.deleted
+}
+
+// ElementsContaining finds the trie nodes containing the given key
+// and returns them as a linked list
+// only added nodes are added to the linked list
+func (node *BinTrieNode[E, V]) ElementsContaining(key E) *Path[E, V] {
+	if node == nil {
+		return nil
+	}
+	result := &opResult[E, V]{
+		key: key,
+		op:  allContaining,
+	}
+	node.matchBits(result)
+	return result.getContaining()
+}
+
+func (node *BinTrieNode[E, V]) ElementsContainedBy(key E) *BinTrieNode[E, V] {
+	return node.doLookup(key, false, true)
 }
 
 type nodeCompare[E TrieKey[E], V any] struct {
