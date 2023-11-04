@@ -1109,6 +1109,37 @@ func (node *BinTrieNode[E, V]) LongestPrefixMatchNode(key E) *BinTrieNode[E, V] 
 	return node.doLookup(key, true, false)
 }
 
+func (node *BinTrieNode[E, V]) elementContains(key E) *BinTrieNode[E, V] {
+	if node == nil {
+		return nil
+	}
+
+	var result *opResult[E, V]
+	pool := node.pool
+	if pool != nil {
+		result = pool.Get().(*opResult[E, V])
+		result.key = key
+		result.op = containing
+	} else {
+		result = &opResult[E, V]{
+			key: key,
+			op:  containing,
+		}
+	}
+
+	node.matchBits(result)
+	res := result.largestContaining
+	if pool != nil {
+		result.clean()
+		pool.Put(result)
+	}
+	return res
+}
+
+func (node *BinTrieNode[E, V]) ElementContains(key E) bool {
+	return node.elementContains(key) != nil
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
