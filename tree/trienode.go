@@ -905,6 +905,23 @@ func (node *BinTrieNode[E, V]) matchBitsFromIndex(bitIndex int, result *opResult
 	}
 }
 
+func (node *BinTrieNode[E, V]) matchBits(result *opResult[E, V]) {
+	node.matchBitsFromIndex(0, result)
+}
+
+// The current node and the new node both become sub-nodes of a new block node taking the position of the current node.
+func (node *BinTrieNode[E, V]) split(result *opResult[E, V], totalMatchingBits BitCount, newSubNode *BinTrieNode[E, V]) {
+	newBlock := node.GetKey().ToPrefixBlockLen(totalMatchingBits)
+	node.replaceToSub(newBlock, totalMatchingBits, newSubNode)
+	newSubNode.inserted(result)
+}
+
+func (node *BinTrieNode[E, V]) remapNonExistingSplit(result *opResult[E, V], totalMatchingBits BitCount) {
+	if node.remap(result, false) {
+		node.split(result, totalMatchingBits, node.createNew(result.key))
+	}
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
