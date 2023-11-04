@@ -1041,6 +1041,26 @@ func (node *BinTrieNode[E, V]) RemoveNode(key E) bool {
 	return result.exists
 }
 
+// GetNode gets the node in the trie corresponding to the given address,
+// or returns nil if not such element exists.
+//
+// It returns any node, whether added or not,
+// including any prefix block node that was not added.
+func (node *BinTrieNode[E, V]) GetNode(key E) *BinTrieNode[E, V] {
+	return node.doLookup(key, false, false)
+}
+
+// GetAddedNode gets trie nodes representing added elements.
+//
+// Use Contains to check for the existence of a given address in the trie,
+// as well as GetNode to search for all nodes including those not-added but also auto-generated nodes for subnet blocks.
+func (node *BinTrieNode[E, V]) GetAddedNode(key E) *BinTrieNode[E, V] {
+	if res := node.GetNode(key); res == nil || res.IsAdded() {
+		return res
+	}
+	return nil
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
