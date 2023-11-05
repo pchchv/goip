@@ -1156,6 +1156,28 @@ func (node *BinTrieNode[E, V]) ShortestPrefixMatchNode(key E) *BinTrieNode[E, V]
 	return node.elementContains(key)
 }
 
+// The current node is replaced by the new node and becomes a sub-node of the new node.
+func (node *BinTrieNode[E, V]) replace(result *opResult[E, V], totalMatchingBits BitCount) {
+	result.containedBy = node
+	newNode := node.replaceToSub(result.key, totalMatchingBits, nil)
+	newNode.inserted(result)
+}
+
+func (node *BinTrieNode[E, V]) remapNonExistingReplace(result *opResult[E, V], totalMatchingBits BitCount) {
+	if node.remap(result, false) {
+		node.replace(result, totalMatchingBits)
+	}
+}
+
+// similar to matched, but when inserting we see it already there.
+// this added node had already been added before
+func (node *BinTrieNode[E, V]) matchedInserted(result *opResult[E, V]) {
+	result.existingNode = node
+	result.addedAlready = node
+	result.existingValue = node.GetValue()
+	node.SetValue(result.newValue)
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
