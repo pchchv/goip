@@ -262,6 +262,14 @@ func (trie *BinTrie[E, V]) ElementContains(key E) bool {
 	return trie.absoluteRoot().ElementContains(key)
 }
 
+func (trie *BinTrie[E, V]) ElementsContainedBy(key E) *BinTrieNode[E, V] {
+	return trie.absoluteRoot().ElementsContainedBy(key)
+}
+
+func (trie *BinTrie[E, V]) ElementsContaining(key E) *Path[E, V] {
+	return trie.absoluteRoot().ElementsContaining(key)
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
