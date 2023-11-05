@@ -308,6 +308,61 @@ func (trie *BinTrie[E, V]) GetAddedNode(key E) *BinTrieNode[E, V] {
 	return trie.absoluteRoot().GetAddedNode(key)
 }
 
+// Put associates the specified value with the specified key in this map.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The Partition type can be used to convert the argument to
+// single addresses and prefix blocks before calling this method.
+//
+// If this map previously contained a mapping for a key,
+// the old value is replaced by the specified value,
+// and false is returned along with the old value,
+// which may be the zero value.
+// If this map did not previously contain a mapping for the key,
+// true is returned along with the zero value.
+func (trie *BinTrie[E, V]) Put(key E, value V) (V, bool) {
+	root := trie.ensureRoot(key)
+	result := &opResult[E, V]{
+		key:      key,
+		op:       insert,
+		newValue: value,
+		// new value assignment
+	}
+	root.matchBits(result)
+	return result.existingValue, !result.exists
+}
+
+func (trie *BinTrie[E, V]) PutNode(key E, value V) *BinTrieNode[E, V] {
+	root := trie.ensureRoot(key)
+	result := &opResult[E, V]{
+		key:      key,
+		op:       insert,
+		newValue: value,
+		// new value assignment
+	}
+	root.matchBits(result)
+	resultNode := result.existingNode
+	if resultNode == nil {
+		resultNode = result.inserted
+	}
+	return resultNode
+}
+
+func (trie *BinTrie[E, V]) remapImpl(key E, remapper func(val V, exists bool) (V, remapAction)) *BinTrieNode[E, V] {
+	root := trie.ensureRoot(key)
+	result := &opResult[E, V]{
+		key:      key,
+		op:       remap,
+		remapper: remapper,
+	}
+	root.matchBits(result)
+	resultNode := result.existingNode
+	if resultNode == nil {
+		resultNode = result.inserted
+	}
+	return resultNode
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
