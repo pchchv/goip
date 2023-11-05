@@ -1225,6 +1225,84 @@ func (node *BinTrieNode[E, V]) handleContained(result *opResult[E, V], newPref B
 	}
 }
 
+// a node exists for the given key but the node is not added,
+// so not a match, but a split not required
+func (node *BinTrieNode[E, V]) handleNodeMatch(result *opResult[E, V]) {
+	op := result.op
+	if op == lookup {
+		result.existingNode = node
+	} else if op == insert {
+		node.existingAdded(result)
+	} else if op == subtreeDelete {
+		node.removeSubtree(result)
+	} else if op == near {
+		node.findNearestFromMatch(result)
+	} else if op == remap {
+		node.remapNonAdded(result)
+	}
+}
+
+func (node *BinTrieNode[E, V]) findNodeNear(key E, below, exclusive bool) *BinTrieNode[E, V] {
+	var result *opResult[E, V]
+	if node == nil {
+		return nil
+	}
+
+	pool := node.pool
+	if pool != nil {
+		result = pool.Get().(*opResult[E, V])
+		result.key = key
+		result.op = near
+		result.nearestFloor = below
+		result.nearExclusive = exclusive
+	} else {
+		result = &opResult[E, V]{
+			key:           key,
+			op:            near,
+			nearestFloor:  below,
+			nearExclusive: exclusive,
+		}
+	}
+
+	node.matchBits(result)
+	backtrack := result.backtrackNode
+	if backtrack != nil {
+		parent := backtrack.GetParent()
+		for parent != nil {
+			if below {
+				if backtrack != parent.GetLowerSubNode() {
+					break
+				}
+			} else {
+				if backtrack != parent.GetUpperSubNode() {
+					break
+				}
+			}
+			backtrack = parent
+			parent = backtrack.GetParent()
+		}
+		if parent != nil {
+			if parent.IsAdded() {
+				result.nearestNode = parent
+			} else {
+				if below {
+					result.nearestNode = parent.PreviousAddedNode()
+				} else {
+					result.nearestNode = parent.NextAddedNode()
+				}
+
+			}
+		}
+	}
+
+	res := result.nearestNode
+	if pool != nil {
+		result.clean()
+		pool.Put(result)
+	}
+	return res
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
