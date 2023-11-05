@@ -270,6 +270,16 @@ func (trie *BinTrie[E, V]) ElementsContaining(key E) *Path[E, V] {
 	return trie.absoluteRoot().ElementsContaining(key)
 }
 
+// LongestPrefixMatch finds the added key with the longest matching prefix.
+func (trie *BinTrie[E, V]) LongestPrefixMatch(key E) (E, bool) {
+	return trie.absoluteRoot().LongestPrefixMatch(key)
+}
+
+// LongestPrefixMatchNode finds the added node with the longest matching prefix.
+func (trie *BinTrie[E, V]) LongestPrefixMatchNode(key E) *BinTrieNode[E, V] {
+	return trie.absoluteRoot().LongestPrefixMatchNode(key)
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
