@@ -1303,6 +1303,14 @@ func (node *BinTrieNode[E, V]) findNodeNear(key E, below, exclusive bool) *BinTr
 	return res
 }
 
+func (node *BinTrieNode[E, V]) LowerAddedNode(key E) *BinTrieNode[E, V] {
+	return node.findNodeNear(key, true, true)
+}
+
+func (node *BinTrieNode[E, V]) HigherAddedNode(key E) *BinTrieNode[E, V] {
+	return node.findNodeNear(key, false, true)
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
