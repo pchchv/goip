@@ -406,6 +406,30 @@ func (trie *BinTrie[E, V]) CeilingAddedNode(key E) *BinTrieNode[E, V] {
 	return trie.absoluteRoot().CeilingAddedNode(key)
 }
 
+// AddNode is similar to Add but returns the new or existing node.
+func (trie *BinTrie[E, V]) AddNode(key E) *BinTrieNode[E, V] {
+	root := trie.ensureRoot(key)
+	result := &opResult[E, V]{
+		key: key,
+		op:  insert,
+	}
+	root.matchBits(result)
+	node := result.existingNode
+	if node == nil {
+		node = result.inserted
+	}
+	return node
+}
+
+func (trie *BinTrie[E, V]) addNode(result *opResult[E, V], fromNode *BinTrieNode[E, V]) *BinTrieNode[E, V] {
+	fromNode.matchBitsFromIndex(fromNode.GetKey().GetPrefixLen().Len(), result)
+	node := result.existingNode
+	if node == nil {
+		return result.inserted
+	}
+	return node
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
