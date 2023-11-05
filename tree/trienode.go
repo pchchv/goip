@@ -1338,6 +1338,51 @@ func (comp nodeCompare[E, V]) BitsMatchPartially() bool {
 	return true
 }
 
+func (comp nodeCompare[E, V]) BitsDoNotMatch(matchedBits BitCount) {
+	comp.node.handleSplitNode(comp.result, matchedBits)
+}
+
+func (comp nodeCompare[E, V]) BitsMatch() {
+	node := comp.node
+	result := comp.result
+	result.containedBy = node
+	existingKey := node.GetKey()
+	existingPref := existingKey.GetPrefixLen()
+	newKey := result.key
+	newPrefixLen := newKey.GetPrefixLen()
+	if existingPref == nil {
+		if newPrefixLen == nil {
+			// note that "added" is already true here,
+			// we can only be here if explicitly inserted already
+			// since it is a non-prefixed full address
+			node.handleMatch(result)
+		} else {
+			newPrefBitCount := newPrefixLen.bitCount()
+			if newPrefBitCount == newKey.GetBitCount() {
+				node.handleMatch(result)
+			} else {
+				node.handleContained(result, newPrefBitCount)
+			}
+		}
+	} else {
+		// we know newPrefixLen != nil since we know all the bits of newAddr match,
+		// which is impossible if newPrefixLen is nil and existingPref not nil
+		existingPrefBitCount := existingPref.bitCount()
+		newPrefBitCount := newPrefixLen.bitCount()
+		if newPrefBitCount == existingPrefBitCount {
+			if node.IsAdded() {
+				node.handleMatch(result)
+			} else {
+				node.handleNodeMatch(result)
+			}
+		} else if existingPrefBitCount == existingKey.GetBitCount() {
+			node.handleMatch(result)
+		} else { // existing prefix > newPrefixLen
+			node.handleContained(result, newPrefBitCount)
+		}
+	}
+}
+
 type opResult[E TrieKey[E], V any] struct {
 	key E
 	// whether near is searching for a floor or ceiling
