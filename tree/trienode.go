@@ -1311,6 +1311,14 @@ func (node *BinTrieNode[E, V]) HigherAddedNode(key E) *BinTrieNode[E, V] {
 	return node.findNodeNear(key, false, true)
 }
 
+func (node *BinTrieNode[E, V]) FloorAddedNode(key E) *BinTrieNode[E, V] {
+	return node.findNodeNear(key, true, false)
+}
+
+func (node *BinTrieNode[E, V]) CeilingAddedNode(key E) *BinTrieNode[E, V] {
+	return node.findNodeNear(key, false, false)
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
