@@ -430,6 +430,81 @@ func (trie *BinTrie[E, V]) addNode(result *opResult[E, V], fromNode *BinTrieNode
 	return node
 }
 
+// ConstructAddedNodesTree provides an associative trie in which the
+// root and each added node of this trie are mapped to a list of their respective direct added sub-nodes.
+// This trie provides an alternative non-binary tree structure of the added nodes.
+// It is used by ToAddedNodesTreeString to produce a string showing the alternative structure.
+// If there are no non-added nodes in this trie,
+// then the alternative tree structure provided by this method is the same as the original trie.
+// The trie values of this trie are of type []*BinTrieNode
+func (trie *BinTrie[E, V]) ConstructAddedNodesTree() BinTrie[E, AddedSubnodeMapping] {
+	var newRoot *binTreeNode[E, AddedSubnodeMapping]
+	existingRoot := trie.GetRoot()
+	if existingRoot != nil {
+		newRoot := &binTreeNode[E, AddedSubnodeMapping]{
+			item:     trie.root.item,
+			cTracker: &changeTracker{},
+			pool: &sync.Pool{
+				New: func() any { return &opResult[E, V]{} },
+			},
+		}
+		newRoot.setAddr()
+		if trie.root.IsAdded() {
+			newRoot.SetAdded()
+		}
+	}
+	newTrie := BinTrie[E, AddedSubnodeMapping]{binTree[E, AddedSubnodeMapping]{newRoot}}
+
+	// populate the keys from the original trie into the new trie
+	AddTrieKeys(&newTrie, existingRoot)
+
+	// now, as we iterate,
+	// we find our parent and add ourselves to that parent's list of subnodes
+
+	var cachingIterator CachingTrieNodeIterator[E, AddedSubnodeMapping]
+	cachingIterator = newTrie.ContainingFirstAllNodeIterator(true)
+	thisIterator := trie.ContainingFirstAllNodeIterator(true)
+	var newNext *BinTrieNode[E, AddedSubnodeMapping]
+	var thisNext *BinTrieNode[E, V]
+	for newNext, thisNext = cachingIterator.Next(), thisIterator.Next(); newNext != nil; newNext, thisNext = cachingIterator.Next(), thisIterator.Next() {
+
+		// populate the values from the original trie into the new trie
+		newNext.SetValue(SubNodesMapping[E, V]{Value: thisNext.GetValue()})
+
+		cachingIterator.CacheWithLowerSubNode(newNext)
+		cachingIterator.CacheWithUpperSubNode(newNext)
+
+		// the cached object is our parent
+		if newNext.IsAdded() {
+			var parent *BinTrieNode[E, AddedSubnodeMapping]
+			parent = cachingIterator.GetCached().(*BinTrieNode[E, AddedSubnodeMapping])
+
+			if parent != nil {
+				// find added parent, or the root if no added parent
+				for !parent.IsAdded() {
+					parentParent := parent.GetParent()
+					if parentParent == nil {
+						break
+					}
+					parent = parentParent
+				}
+				// store ourselves with that added parent or root
+				var val SubNodesMapping[E, V]
+				val = parent.GetValue().(SubNodesMapping[E, V])
+				var list []*BinTrieNode[E, AddedSubnodeMapping]
+				if val.SubNodes == nil {
+					list = make([]*BinTrieNode[E, AddedSubnodeMapping], 0, 3)
+				} else {
+					list = val.SubNodes
+				}
+				val.SubNodes = append(list, newNext)
+				parent.SetValue(val)
+			} // else root
+		}
+	}
+	return newTrie
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
