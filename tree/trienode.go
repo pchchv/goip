@@ -571,7 +571,7 @@ func (node *BinTrieNode[E, V]) cloneTreeBounds(bnds *bounds[E]) *BinTrieNode[E, 
 	}, bnds))
 }
 
-// Clones the sub-tree starting with this node as root.
+// cloneTree clones the sub-tree starting with this node as root.
 // The nodes are cloned, but their keys and values are not cloned.
 func (node *BinTrieNode[E, V]) cloneTree() *BinTrieNode[E, V] {
 	return node.cloneTreeBounds(nil)
@@ -1429,11 +1429,12 @@ type opResult[E TrieKey[E], V any] struct {
 	// this added tree node previously existed but had not been added yet
 	added,
 	// this added tree node was already added to the trie
+	addedAlready *BinTrieNode[E, V]
 	//
 	// for searching use
 	//
 	nodeComp nodeCompare[E, V]
-	comp KeyCompareResult
+	comp     KeyCompareResult
 }
 
 func (result *opResult[E, V]) clean() {
