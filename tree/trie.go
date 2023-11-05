@@ -505,6 +505,58 @@ func (trie *BinTrie[E, V]) ConstructAddedNodesTree() BinTrie[E, AddedSubnodeMapp
 	return newTrie
 }
 
+func (trie *BinTrie[E, V]) addTrie(addedTreeNode *BinTrieNode[E, V], withValues bool) *BinTrieNode[E, V] {
+	if addedTreeNode == nil { // can be nil when the root of a zero-valued trie
+		return nil
+	}
+
+	var firstNode *BinTrieNode[E, V]
+	iterator := addedTreeNode.ContainingFirstAllNodeIterator(true)
+	toAdd := iterator.Next()
+	firstKey := toAdd.GetKey()
+	result := &opResult[E, V]{
+		key: firstKey,
+		op:  insert,
+	}
+	root := trie.ensureRoot(firstKey)
+	firstAdded := toAdd.IsAdded()
+	if firstAdded {
+		if withValues {
+			result.newValue = toAdd.GetValue()
+			// new value assignment
+		}
+		firstNode = trie.addNode(result, root)
+	} else {
+		firstNode = root
+	}
+
+	lastAddedNode := firstNode
+	for iterator.HasNext() {
+		iterator.CacheWithLowerSubNode(lastAddedNode)
+		iterator.CacheWithUpperSubNode(lastAddedNode)
+		toAdd = iterator.Next()
+		cachedNode := iterator.GetCached().(*BinTrieNode[E, V])
+		if toAdd.IsAdded() {
+			addrNext := toAdd.GetKey()
+			result.key = addrNext
+			result.existingNode = nil
+			result.inserted = nil
+			if withValues {
+				result.newValue = toAdd.GetValue()
+				// new value assignment
+			}
+			lastAddedNode = trie.addNode(result, cachedNode)
+		} else {
+			lastAddedNode = cachedNode
+		}
+	}
+
+	if !firstAdded {
+		firstNode = trie.GetNode(addedTreeNode.GetKey())
+	}
+	return firstNode
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
