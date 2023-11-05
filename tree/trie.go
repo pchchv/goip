@@ -235,6 +235,25 @@ func (trie *BinTrie[E, V]) DescendingIterator() TrieKeyIterator[E] {
 	return trie.GetRoot().DescendingIterator()
 }
 
+// Add adds the given key to the trie, returning true if not there already.
+func (trie *BinTrie[E, V]) Add(key E) bool {
+	root := trie.ensureRoot(key)
+	result := &opResult[E, V]{
+		key: key,
+		op:  insert,
+	}
+	root.matchBits(result)
+	return !result.exists
+}
+
+func (trie *BinTrie[E, V]) Contains(key E) bool {
+	return trie.absoluteRoot().Contains(key)
+}
+
+func (trie *BinTrie[E, V]) Remove(key E) bool {
+	return trie.absoluteRoot().RemoveNode(key)
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
