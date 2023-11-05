@@ -1178,6 +1178,53 @@ func (node *BinTrieNode[E, V]) matchedInserted(result *opResult[E, V]) {
 	node.SetValue(result.newValue)
 }
 
+func (node *BinTrieNode[E, V]) remapMatch(result *opResult[E, V]) {
+	result.existingNode = node
+	if node.remap(result, true) {
+		node.matchedInserted(result)
+	}
+}
+
+func (node *BinTrieNode[E, V]) handleMatch(result *opResult[E, V]) {
+	result.exists = true
+	if !node.handleContains(result) {
+		op := result.op
+		if op == lookup {
+			node.matched(result)
+		} else if op == insert {
+			node.matchedInserted(result)
+		} else if op == insertedDelete {
+			node.removeOp(result)
+		} else if op == subtreeDelete {
+			node.removeSubtree(result)
+		} else if op == near {
+			if result.nearExclusive {
+				node.findNearestFromMatch(result)
+			} else {
+				node.matched(result)
+			}
+		} else if op == remap {
+			node.remapMatch(result)
+		}
+	}
+}
+
+func (node *BinTrieNode[E, V]) handleContained(result *opResult[E, V], newPref BitCount) {
+	op := result.op
+	if op == insert {
+		// if we have 1.2.3.4 and 1.2.3.4/32, and we are looking at the last segment,
+		// then there are no more bits to look at, and this makes the former a sub-node of the latter.
+		// In most cases, however, there are more bits in existingAddr, the latter, to look at.
+		node.replace(result, newPref)
+	} else if op == subtreeDelete {
+		node.removeSubtree(result)
+	} else if op == near {
+		node.findNearest(result, newPref)
+	} else if op == remap {
+		node.remapNonExistingReplace(result, newPref)
+	}
+}
+
 type nodeCompare[E TrieKey[E], V any] struct {
 	result *opResult[E, V]
 	node   *BinTrieNode[E, V]
