@@ -703,3 +703,16 @@ func AddTrieKeys[E TrieKey[E], V1 any, V2 any](trie *BinTrie[E, V1], addedTreeNo
 	}
 	return firstNode
 }
+
+// NewBinTrie creates a new trie with root key.ToPrefixBlockLen(0).
+// If the key argument is not Equal to its zero-length prefix block,
+// then the key will be added as well.
+func NewBinTrie[E TrieKey[E], V any](key E) BinTrie[E, V] {
+	trie := BinTrie[E, V]{binTree[E, V]{}}
+	root := key.ToPrefixBlockLen(0)
+	trie.setRoot(root)
+	if key.Compare(root) != 0 {
+		trie.Add(key)
+	}
+	return trie
+}
