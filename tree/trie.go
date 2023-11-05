@@ -290,6 +290,24 @@ func (trie *BinTrie[E, V]) ShortestPrefixMatchNode(key E) *BinTrieNode[E, V] {
 	return trie.absoluteRoot().ShortestPrefixMatchNode(key)
 }
 
+// GetNode gets the node in the sub-trie corresponding to the given address,
+// or returns nil if not such element exists.
+//
+// It returns any node, whether added or not,
+// including any prefix block node that was not added.
+func (trie *BinTrie[E, V]) GetNode(key E) *BinTrieNode[E, V] {
+	return trie.absoluteRoot().GetNode(key)
+}
+
+// GetAddedNode gets trie nodes representing added elements.
+//
+// Use Contains to check for the existence of a given address in the trie,
+// as well as GetNode to search for all nodes including those not-added
+// but also auto-generated nodes for subnet blocks.
+func (trie *BinTrie[E, V]) GetAddedNode(key E) *BinTrieNode[E, V] {
+	return trie.absoluteRoot().GetAddedNode(key)
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
