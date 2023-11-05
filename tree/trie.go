@@ -504,3 +504,47 @@ func AddedNodesTreeString[E TrieKey[E], V any](addedTree *BinTrieNode[E, AddedSu
 	}
 	return builder.String()
 }
+
+// AddTrieKeys copies the trie node structure of addedTrie into trie, but does not copy node mapped values.
+func AddTrieKeys[E TrieKey[E], V1 any, V2 any](trie *BinTrie[E, V1], addedTreeNode *BinTrieNode[E, V2]) *BinTrieNode[E, V1] {
+	if addedTreeNode == nil { // can be nil when the root of a zero-valued trie
+		return nil
+	}
+
+	var firstNode *BinTrieNode[E, V1]
+	iterator := addedTreeNode.ContainingFirstAllNodeIterator(true)
+	toAdd := iterator.Next()
+	firstKey := toAdd.GetKey()
+	result := &opResult[E, V1]{
+		key: firstKey,
+		op:  insert,
+	}
+	root := trie.ensureRoot(firstKey)
+	firstAdded := toAdd.IsAdded()
+	if firstAdded {
+		firstNode = trie.addNode(result, root)
+	} else {
+		firstNode = root
+	}
+
+	lastAddedNode := firstNode
+	for iterator.HasNext() {
+		iterator.CacheWithLowerSubNode(lastAddedNode)
+		iterator.CacheWithUpperSubNode(lastAddedNode)
+		toAdd = iterator.Next()
+		cachedNode := iterator.GetCached().(*BinTrieNode[E, V1])
+		if toAdd.IsAdded() {
+			result.key = toAdd.GetKey()
+			result.existingNode = nil
+			result.inserted = nil
+			lastAddedNode = trie.addNode(result, cachedNode)
+		} else {
+			lastAddedNode = cachedNode
+		}
+	}
+
+	if !firstAdded {
+		firstNode = trie.GetNode(addedTreeNode.GetKey())
+	}
+	return firstNode
+}
