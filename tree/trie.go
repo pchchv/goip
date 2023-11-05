@@ -557,6 +557,34 @@ func (trie *BinTrie[E, V]) addTrie(addedTreeNode *BinTrieNode[E, V], withValues 
 	return firstNode
 }
 
+// AddedNodesTreeString provides a flattened version of the
+// trie showing only the contained added nodes and their containment structure,
+// which is non-binary.
+// The root node is included, which may or may not be added.
+func (trie *BinTrie[E, V]) AddedNodesTreeString() string {
+	if trie == nil {
+		return "\n" + nilString()
+	}
+	addedTree := trie.ConstructAddedNodesTree()
+	return AddedNodesTreeString[E, V](addedTree.GetRoot())
+}
+
+func (trie *BinTrie[E, V]) AddTrie(trieNode *BinTrieNode[E, V]) *BinTrieNode[E, V] {
+	if trieNode == nil {
+		return nil
+	}
+	trie.ensureRoot(trieNode.GetKey())
+	return trie.addTrie(trieNode, false)
+}
+
+func (trie *BinTrie[E, V]) PutTrie(trieNode *BinTrieNode[E, V]) *BinTrieNode[E, V] {
+	if trieNode == nil {
+		return nil
+	}
+	trie.ensureRoot(trieNode.GetKey())
+	return trie.addTrie(trieNode, true)
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
