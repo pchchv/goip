@@ -398,6 +398,14 @@ func (trie *BinTrie[E, V]) HigherAddedNode(key E) *BinTrieNode[E, V] {
 	return trie.absoluteRoot().HigherAddedNode(key)
 }
 
+func (trie *BinTrie[E, V]) FloorAddedNode(key E) *BinTrieNode[E, V] {
+	return trie.absoluteRoot().FloorAddedNode(key)
+}
+
+func (trie *BinTrie[E, V]) CeilingAddedNode(key E) *BinTrieNode[E, V] {
+	return trie.absoluteRoot().CeilingAddedNode(key)
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
