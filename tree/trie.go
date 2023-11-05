@@ -280,6 +280,16 @@ func (trie *BinTrie[E, V]) LongestPrefixMatchNode(key E) *BinTrieNode[E, V] {
 	return trie.absoluteRoot().LongestPrefixMatchNode(key)
 }
 
+// ShortestPrefixMatch finds the added key with the shortest matching prefix.
+func (trie *BinTrie[E, V]) ShortestPrefixMatch(key E) (E, bool) {
+	return trie.absoluteRoot().ShortestPrefixMatch(key)
+}
+
+// ShortestPrefixMatchNode finds the added node whose key has the shortest matching prefix.
+func (trie *BinTrie[E, V]) ShortestPrefixMatchNode(key E) *BinTrieNode[E, V] {
+	return trie.absoluteRoot().ShortestPrefixMatchNode(key)
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
