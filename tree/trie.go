@@ -363,6 +363,33 @@ func (trie *BinTrie[E, V]) remapImpl(key E, remapper func(val V, exists bool) (V
 	return resultNode
 }
 
+func (trie *BinTrie[E, V]) Remap(key E, remapper func(existing V, found bool) (mapped V, mapIt bool)) *BinTrieNode[E, V] {
+	return trie.remapImpl(key,
+		func(existingVal V, exists bool) (V, remapAction) {
+			result, mapIt := remapper(existingVal, exists)
+			if mapIt {
+				return result, remapValue
+			}
+			var v V
+			return v, removeNode
+		})
+}
+
+func (trie *BinTrie[E, V]) RemapIfAbsent(key E, supplier func() V) *BinTrieNode[E, V] {
+	return trie.remapImpl(key,
+		func(existingVal V, exists bool) (V, remapAction) {
+			if !exists {
+				return supplier(), remapValue
+			}
+			var v V
+			return v, doNothing
+		})
+}
+
+func (trie *BinTrie[E, V]) Get(key E) (V, bool) {
+	return trie.absoluteRoot().Get(key)
+}
+
 func TreesString[E TrieKey[E], V any](withNonAddedKeys bool, tries ...*BinTrie[E, V]) string {
 	binTrees := make([]*binTree[E, V], 0, len(tries))
 	for _, trie := range tries {
