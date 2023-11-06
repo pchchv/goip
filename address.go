@@ -711,6 +711,27 @@ func (addr *addressInternal) constructTrieCache() *tree.TrieKeyData {
 	return cache
 }
 
+func (addr *addressInternal) assignTrieCache() {
+	cache := addr.cache
+	if cache != nil && cache.trieKeyCache != nil {
+		cache.trieKeyCache = addr.constructTrieCache()
+	}
+}
+
+func (addr *addressInternal) getTrieCache() *tree.TrieKeyData {
+	cache := addr.cache
+	if cache != nil {
+		cached := (*tree.TrieKeyData)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.trieKeyCache))))
+		if cached == nil {
+			cached = addr.constructTrieCache()
+			dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.trieKeyCache))
+			atomicStorePointer(dataLoc, unsafe.Pointer(cached))
+		}
+		return cached
+	}
+	return &tree.TrieKeyData{}
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
