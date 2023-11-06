@@ -5,6 +5,7 @@ import (
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/tree"
 )
 
 const (
@@ -65,6 +66,7 @@ type addressCache struct {
 	addrsCache    *addrsCache
 	stringCache   *stringCache // only used by IPv6 when there is a zone
 	identifierStr *identifierStr
+	trieKeyCache  *tree.TrieKeyData
 }
 
 type addressInternal struct {
@@ -670,6 +672,43 @@ func (addr *addressInternal) toSinglePrefixBlockOrAddr() *Address {
 		}
 	}
 	return nil
+}
+
+func (addr *addressInternal) constructTrieCache() *tree.TrieKeyData {
+	sect := addr.section
+	prefLen := sect.getPrefixLen()
+	var cache *tree.TrieKeyData
+	if sectionIPv4 := sect.ToIPv4(); sectionIPv4 != nil {
+		cache = &tree.TrieKeyData{
+			Is32Bits:  true,
+			PrefLen:   tree.PrefixLen(prefLen),
+			Uint32Val: sectionIPv4.Uint32Value(),
+		}
+		if prefLen != nil {
+			bits := prefLen.bitCount()
+			cache.NextBitMask32Val = uint32(0x80000000) >> bits
+			cache.Mask32Val = ipv4NetworkMasks[bits]
+		}
+	} else if sectionIPv6 := sect.ToIPv6(); sectionIPv6 != nil {
+		cache = &tree.TrieKeyData{
+			Is128Bits: true,
+			PrefLen:   tree.PrefixLen(prefLen),
+		}
+		cache.Uint64HighVal, cache.Uint64LowVal = sectionIPv6.Uint64Values()
+		if prefLen != nil {
+			bits := prefLen.bitCount()
+			mask := ipv6NetworkMasks[bits]
+			cache.Mask64HighVal, cache.Mask64LowVal = mask[0], mask[1]
+			if bits > 63 {
+				cache.NextBitMask64Val = uint64(0x8000000000000000) >> (bits - 64)
+			} else {
+				cache.NextBitMask64Val = uint64(0x8000000000000000) >> bits
+			}
+		}
+	} else {
+		cache = &tree.TrieKeyData{}
+	}
+	return cache
 }
 
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
