@@ -85,6 +85,22 @@ func (a trieKey[T]) Compare(other trieKey[T]) int {
 	return a.address.trieCompare(other.address.toAddressBase())
 }
 
+func (a trieKey[T]) GetTrieKeyData() *tree.TrieKeyData {
+	return a.address.toAddressBase().getTrieCache()
+}
+
+// ToMaxLower changes this key to a new key with a 0 at the first bit beyond the prefix,
+// followed by all ones, and with no prefix length.
+func (a trieKey[T]) ToMaxLower() trieKey[T] {
+	return createKey(a.address.toMaxLower())
+}
+
+// ToMinUpper changes this key to a new key with a 1 at the first bit beyond the prefix,
+// followed by all zeros, and with no prefix length.
+func (a trieKey[T]) ToMinUpper() trieKey[T] {
+	return createKey(a.address.toMinUpper())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
