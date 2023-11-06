@@ -410,6 +410,21 @@ func (node *trieNode[T, V]) getKey() (t T) {
 	return node.toBinTrieNode().GetKey().address
 }
 
+func (node *trieNode[T, V]) get(addr T) (V, bool) {
+	addr = mustBeBlockOrAddress(addr)
+	return node.toBinTrieNode().Get(createKey(addr))
+}
+
+func (node *trieNode[T, V]) lowerAddedNode(addr T) *tree.BinTrieNode[trieKey[T], V] {
+	addr = mustBeBlockOrAddress(addr)
+	return node.toBinTrieNode().LowerAddedNode(createKey(addr))
+}
+
+func (node *trieNode[T, V]) higherAddedNode(addr T) *tree.BinTrieNode[trieKey[T], V] {
+	addr = mustBeBlockOrAddress(addr)
+	return node.toBinTrieNode().HigherAddedNode(createKey(addr))
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
