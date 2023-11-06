@@ -396,6 +396,10 @@ func (a trieKey[T]) MatchBits(key trieKey[T], bitIndex int, simpleSearch bool, h
 	}
 }
 
+type trieNode[T TrieKeyConstraint[T], V any] struct {
+	binNode tree.BinTrieNode[trieKey[T], V]
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
