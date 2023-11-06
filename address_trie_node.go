@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/tree"
 )
 
 // TrieKeyConstraint is the generic type constraint used for tree keys,
@@ -25,4 +26,22 @@ type TrieKeyConstraint[T any] interface {
 
 type trieKey[T TrieKeyConstraint[T]] struct {
 	address T
+}
+
+// ToPrefixBlockLen returns the address key associated with the prefix length provided,
+// the address key whose prefix of that length matches the prefix of this address key, and the remaining bits span all values.
+//
+// The returned address key will represent all addresses with the same prefix as this one, the prefix "block".
+func (a trieKey[T]) ToPrefixBlockLen(bitCount BitCount) trieKey[T] {
+	addr := a.address.ToPrefixBlockLen(bitCount)
+	addr.toAddressBase().assignTrieCache()
+	return trieKey[T]{address: addr}
+}
+
+func (a trieKey[T]) GetBitCount() tree.BitCount {
+	return a.address.GetBitCount()
+}
+
+func (a trieKey[T]) String() string {
+	return a.address.String()
 }
