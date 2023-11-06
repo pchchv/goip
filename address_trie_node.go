@@ -2,6 +2,7 @@ package goip
 
 import (
 	"fmt"
+	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/tree"
@@ -398,6 +399,15 @@ func (a trieKey[T]) MatchBits(key trieKey[T], bitIndex int, simpleSearch bool, h
 
 type trieNode[T TrieKeyConstraint[T], V any] struct {
 	binNode tree.BinTrieNode[trieKey[T], V]
+}
+
+func (node *trieNode[T, V]) toBinTrieNode() *tree.BinTrieNode[trieKey[T], V] {
+	return (*tree.BinTrieNode[trieKey[T], V])(unsafe.Pointer(node))
+}
+
+// getKey gets the key used for placing the node in the trie.
+func (node *trieNode[T, V]) getKey() (t T) {
+	return node.toBinTrieNode().GetKey().address
 }
 
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
