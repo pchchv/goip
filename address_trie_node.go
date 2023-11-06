@@ -45,3 +45,11 @@ func (a trieKey[T]) GetBitCount() tree.BitCount {
 func (a trieKey[T]) String() string {
 	return a.address.String()
 }
+
+func (a trieKey[T]) IsOneBit(bitIndex tree.BitCount) bool {
+	return a.address.IsOneBit(bitIndex)
+}
+
+func (a trieKey[T]) GetTrailingBitCount(ones bool) tree.BitCount {
+	return a.address.getTrailingBitCount(ones)
+}
