@@ -1308,6 +1308,52 @@ func (addr *Address) toSinglePrefixBlockOrAddress() (*Address, address_error.Inc
 	return res, nil
 }
 
+// ToKey creates the associated address key.
+// While addresses can be compared with the Compare,
+// TrieCompare or Equal methods as well as various provided instances of AddressComparator,
+// they are not comparable with Go operators.
+// However, AddressKey instances are comparable with Go operators, and thus can be used as map keys.
+func (addr *Address) ToKey() Key[*Address] {
+	key := Key[*Address]{}
+	contents := &key.keyContents
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		key.scheme = ipv4Scheme
+		thisAddr.toIPv4Key(contents)
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		key.scheme = ipv6Scheme
+		thisAddr.toIPv6Key(contents)
+	} else if thisAddr := addr.ToMAC(); thisAddr != nil {
+		if addr.GetSegmentCount() == ExtendedUniqueIdentifier64SegmentCount {
+			key.scheme = eui64Scheme
+		} else {
+			key.scheme = mac48Scheme
+		}
+		thisAddr.toMACKey(contents)
+	} // else key.scheme == adaptiveZeroScheme
+	return key
+}
+
+// ToGenericKey produces a generic Key[*Address] that can be used with generic code working with
+// [Address], [IPAddress], [IPv4Address], [IPv6Address] and [MACAddress].
+func (addr *Address) ToGenericKey() Key[*Address] {
+	return addr.ToKey()
+}
+
+func (addr *Address) fromKey(scheme addressScheme, key *keyContents) *Address {
+	if scheme == ipv4Scheme {
+		ipv4Addr := fromIPv4IPKey(key)
+		return ipv4Addr.ToAddressBase()
+	} else if scheme == ipv6Scheme {
+		ipv6Addr := fromIPv6IPKey(key)
+		return ipv6Addr.ToAddressBase()
+	} else if scheme == eui64Scheme || scheme == mac48Scheme {
+		macAddr := fromMACAddrKey(scheme, key)
+		return macAddr.ToAddressBase()
+	}
+	zeroAddr := Address{}
+	return zeroAddr.init()
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
