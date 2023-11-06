@@ -7,6 +7,14 @@ import (
 	"github.com/pchchv/goip/tree"
 )
 
+var (
+	_ tree.BinTrieNode[trieKey[*Address], any]
+	_ tree.BinTrieNode[trieKey[*IPAddress], any]
+	_ tree.BinTrieNode[trieKey[*IPv4Address], any]
+	_ tree.BinTrieNode[trieKey[*IPv6Address], any]
+	_ tree.BinTrieNode[trieKey[*MACAddress], any]
+)
+
 // TrieKeyConstraint is the generic type constraint used for tree keys,
 // which are individual addresses and prefix block subnets.
 type TrieKeyConstraint[T any] interface {
@@ -99,6 +107,293 @@ func (a trieKey[T]) ToMaxLower() trieKey[T] {
 // followed by all zeros, and with no prefix length.
 func (a trieKey[T]) ToMinUpper() trieKey[T] {
 	return createKey(a.address.toMinUpper())
+}
+
+// MatchBits returns false if we need to keep going and try to match sub-nodes.
+// MatchBits returns true if the bits do not match, or the bits match to the very end.
+func (a trieKey[T]) MatchBits(key trieKey[T], bitIndex int, simpleSearch bool, handleMatch tree.KeyCompareResult, newTrieCache *tree.TrieKeyData) (continueToNext bool, followingBitsFlag uint64) {
+	existingAddr := key.address.toAddressBase()
+
+	if simpleSearch {
+		// this is the optimized path for the case where we do not need to know how many of the initial bits match in a mismatch
+		// when we have a match, all bits match
+		// when we have a mismatch, we do not need to know how many of the initial bits match
+		// So there is no callback for a mismatch here.
+
+		// The non-optimized code has 8 cases, 2 for each fully nested if or else block
+		// I have added comments to see how this code matches up to those 8 cases
+
+		existingTrieCache := existingAddr.getTrieCache()
+		if existingTrieCache.Is32Bits {
+			if newTrieCache != nil && newTrieCache.Is32Bits {
+				existingVal := existingTrieCache.Uint32Val
+				existingPrefLen := PrefixLen(existingTrieCache.PrefLen)
+				if existingPrefLen == nil {
+					newVal := newTrieCache.Uint32Val
+					if newVal == existingVal {
+						handleMatch.BitsMatch()
+					} else {
+						newPrefLen := PrefixLen(newTrieCache.PrefLen)
+						if newPrefLen != nil {
+							newMask := newTrieCache.Mask32Val
+							if newVal&newMask == existingVal&newMask {
+								// rest of case 1 and rest of case 5
+								handleMatch.BitsMatch()
+							}
+						}
+					}
+				} else {
+					existingPrefLenBits := existingPrefLen.bitCount()
+					newPrefLen := PrefixLen(newTrieCache.PrefLen)
+					if existingPrefLenBits == 0 {
+						if newPrefLen != nil && newPrefLen.bitCount() == 0 {
+							handleMatch.BitsMatch()
+						} else {
+							handleMatch.BitsMatchPartially()
+							continueToNext = true
+							followingBitsFlag = uint64(newTrieCache.Uint32Val & 0x80000000)
+						}
+					} else if existingPrefLenBits == bitIndex {
+						if newPrefLen != nil && existingPrefLenBits >= newPrefLen.bitCount() {
+							handleMatch.BitsMatch()
+						} else if handleMatch.BitsMatchPartially() {
+							continueToNext = true
+							nextBitMask := existingTrieCache.NextBitMask32Val
+							followingBitsFlag = uint64(newTrieCache.Uint32Val & nextBitMask)
+						}
+					} else {
+						existingMask := existingTrieCache.Mask32Val
+						newVal := newTrieCache.Uint32Val
+						if newVal&existingMask == existingVal&existingMask {
+							if newPrefLen != nil && existingPrefLenBits >= newPrefLen.bitCount() {
+								handleMatch.BitsMatch()
+							} else if handleMatch.BitsMatchPartially() {
+								continueToNext = true
+								nextBitMask := existingTrieCache.NextBitMask32Val
+								followingBitsFlag = uint64(newVal & nextBitMask)
+							}
+						} else if newPrefLen != nil {
+							newPrefLenBits := newPrefLen.bitCount()
+							if existingPrefLenBits > newPrefLenBits {
+								newMask := newTrieCache.Mask32Val
+								if newTrieCache.Uint32Val&newMask == existingVal&newMask {
+									// rest of case 1 and rest of case 5
+									handleMatch.BitsMatch()
+								}
+							}
+						} // else case 4, 7
+					}
+				}
+				return
+			}
+		} else if existingTrieCache.Is128Bits {
+			if newTrieCache != nil && newTrieCache.Is128Bits {
+				existingPrefLen := PrefixLen(existingTrieCache.PrefLen)
+				if existingPrefLen == nil {
+					newLowVal := newTrieCache.Uint64LowVal
+					existingLowVal := existingTrieCache.Uint64LowVal
+					if newLowVal == existingLowVal &&
+						newTrieCache.Uint64HighVal == existingTrieCache.Uint64HighVal {
+						handleMatch.BitsMatch()
+					} else {
+						newPrefLen := PrefixLen(newTrieCache.PrefLen)
+						if newPrefLen != nil {
+							newMaskLow := newTrieCache.Mask64LowVal
+							if newLowVal&newMaskLow == existingLowVal&newMaskLow {
+								newMaskHigh := newTrieCache.Mask64HighVal
+								if newTrieCache.Uint64HighVal&newMaskHigh == existingTrieCache.Uint64HighVal&newMaskHigh {
+									// rest of case 1 and rest of case 5
+									handleMatch.BitsMatch()
+								}
+							}
+						} // else case 4, 7
+					}
+				} else {
+					existingPrefLenBits := existingPrefLen.bitCount()
+					newPrefLen := PrefixLen(newTrieCache.PrefLen)
+					if existingPrefLenBits == 0 {
+						if newPrefLen != nil && newPrefLen.bitCount() == 0 {
+							handleMatch.BitsMatch()
+						} else {
+							handleMatch.BitsMatchPartially()
+							continueToNext = true
+							followingBitsFlag = newTrieCache.Uint64HighVal & 0x8000000000000000
+						}
+					} else if existingPrefLenBits == bitIndex {
+						if newPrefLen != nil && existingPrefLenBits >= newPrefLen.bitCount() {
+							handleMatch.BitsMatch()
+						} else if handleMatch.BitsMatchPartially() {
+							continueToNext = true
+							nextBitMask := existingTrieCache.NextBitMask64Val
+							if bitIndex > 63 /* IPv6BitCount - 65 */ {
+								followingBitsFlag = newTrieCache.Uint64LowVal & nextBitMask
+							} else {
+								followingBitsFlag = newTrieCache.Uint64HighVal & nextBitMask
+							}
+						}
+					} else if existingPrefLenBits == 64 {
+						if newTrieCache.Uint64HighVal == existingTrieCache.Uint64HighVal {
+							if newPrefLen != nil && newPrefLen.bitCount() <= 64 {
+								handleMatch.BitsMatch()
+							} else if handleMatch.BitsMatchPartially() {
+								continueToNext = true
+								followingBitsFlag = newTrieCache.Uint64LowVal & 0x8000000000000000
+							}
+						} else {
+							if newPrefLen != nil && newPrefLen.bitCount() < 64 {
+								newMaskHigh := newTrieCache.Mask64HighVal
+								if newTrieCache.Uint64HighVal&newMaskHigh == existingTrieCache.Uint64HighVal&newMaskHigh {
+									// rest of case 1 and rest of case 5
+									handleMatch.BitsMatch()
+								}
+							}
+						} // else case 4, 7
+					} else if existingPrefLenBits > 64 {
+						existingMaskLow := existingTrieCache.Mask64LowVal
+						newLowVal := newTrieCache.Uint64LowVal
+						if newLowVal&existingMaskLow == existingTrieCache.Uint64LowVal&existingMaskLow {
+							existingMaskHigh := existingTrieCache.Mask64HighVal
+							if newTrieCache.Uint64HighVal&existingMaskHigh == existingTrieCache.Uint64HighVal&existingMaskHigh {
+								if newPrefLen != nil && existingPrefLenBits >= newPrefLen.bitCount() {
+									handleMatch.BitsMatch()
+								} else if handleMatch.BitsMatchPartially() {
+									continueToNext = true
+									nextBitMask := existingTrieCache.NextBitMask64Val
+									followingBitsFlag = newLowVal & nextBitMask
+								}
+							} else if newPrefLen != nil && existingPrefLenBits > newPrefLen.bitCount() {
+								newMaskLow := newTrieCache.Mask64LowVal
+								if newTrieCache.Uint64LowVal&newMaskLow == existingTrieCache.Uint64LowVal&newMaskLow {
+									newMaskHigh := newTrieCache.Mask64HighVal
+									if newTrieCache.Uint64HighVal&newMaskHigh == existingTrieCache.Uint64HighVal&newMaskHigh {
+										// rest of case 1 and rest of case 5
+										handleMatch.BitsMatch()
+									}
+								}
+							} // else case 4, 7
+						} else if newPrefLen != nil && existingPrefLenBits > newPrefLen.bitCount() {
+							newMaskLow := newTrieCache.Mask64LowVal
+							if newTrieCache.Uint64LowVal&newMaskLow == existingTrieCache.Uint64LowVal&newMaskLow {
+								newMaskHigh := newTrieCache.Mask64HighVal
+								if newTrieCache.Uint64HighVal&newMaskHigh == existingTrieCache.Uint64HighVal&newMaskHigh {
+									// rest of case 1 and rest of case 5
+									handleMatch.BitsMatch()
+								}
+							}
+						} // else case 4, 7
+					} else { // existingPrefLen.bitCount() < 64
+						existingMaskHigh := existingTrieCache.Mask64HighVal
+						newHighVal := newTrieCache.Uint64HighVal
+						if newHighVal&existingMaskHigh == existingTrieCache.Uint64HighVal&existingMaskHigh {
+							if newPrefLen != nil && existingPrefLenBits >= newPrefLen.bitCount() {
+								handleMatch.BitsMatch()
+							} else if handleMatch.BitsMatchPartially() {
+								continueToNext = true
+								nextBitMask := existingTrieCache.NextBitMask64Val
+								followingBitsFlag = newHighVal & nextBitMask
+							}
+						} else if newPrefLen != nil && existingPrefLenBits > newPrefLen.bitCount() {
+							newMaskHigh := newTrieCache.Mask64HighVal
+							if newTrieCache.Uint64HighVal&newMaskHigh == existingTrieCache.Uint64HighVal&newMaskHigh {
+								// rest of case 1 and rest of case 5
+								handleMatch.BitsMatch()
+							}
+						} // else case 4, 7
+					}
+				}
+				return
+			}
+		}
+	}
+
+	newAddr := a.address.toAddressBase()
+	bitsPerSegment := existingAddr.GetBitsPerSegment()
+	bytesPerSegment := existingAddr.GetBytesPerSegment()
+	segmentIndex := getHostSegmentIndex(bitIndex, bytesPerSegment, bitsPerSegment)
+	segmentCount := existingAddr.GetSegmentCount()
+	// the caller already checks total bits, so we only need to check either bitsPerSegment or segmentCount, but not both
+	if /* newAddr.GetSegmentCount() != segmentCount || */ bitsPerSegment != newAddr.GetBitsPerSegment() {
+		panic("mismatched segment bit length between address trie keys")
+	}
+	existingPref := existingAddr.GetPrefixLen()
+	newPrefLen := newAddr.GetPrefixLen()
+
+	// this block handles cases like matching ::ffff:102:304 to ::ffff:102:304/127,
+	// and we found a subnode to match, but we know the final bit is a match due to the subnode being lower or upper,
+	// so there is actually not more bits to match
+	if segmentIndex >= segmentCount {
+		// all the bits match
+		handleMatch.BitsMatch()
+		return
+	}
+
+	bitsMatchedSoFar := getTotalBits(segmentIndex, bytesPerSegment, bitsPerSegment)
+	for {
+		existingSegment := existingAddr.getSegment(segmentIndex)
+		newSegment := newAddr.getSegment(segmentIndex)
+		existingSegmentPref := getSegmentPrefLen(existingAddr, existingPref, bitsPerSegment, bitsMatchedSoFar, existingSegment)
+		newSegmentPref := getSegmentPrefLen(newAddr, newPrefLen, bitsPerSegment, bitsMatchedSoFar, newSegment)
+		if existingSegmentPref != nil {
+			existingSegmentPrefLen := existingSegmentPref.bitCount()
+			newPrefixLen := newSegmentPref.Len()
+			if newSegmentPref != nil && newPrefixLen <= existingSegmentPrefLen {
+				matchingBits := getMatchingBits(existingSegment, newSegment, newPrefixLen, bitsPerSegment)
+				if matchingBits >= newPrefixLen {
+					handleMatch.BitsMatch()
+				} else {
+					// no match - the bits don't match
+					// matchingBits < newPrefLen <= segmentPrefLen
+					handleMatch.BitsDoNotMatch(bitsMatchedSoFar + matchingBits)
+				}
+			} else {
+				matchingBits := getMatchingBits(existingSegment, newSegment, existingSegmentPrefLen, bitsPerSegment)
+				if matchingBits >= existingSegmentPrefLen { // match - the current subnet/address is a match so far, and we must go further to check smaller subnets
+					if handleMatch.BitsMatchPartially() {
+						continueToNext = true
+						if existingSegmentPrefLen == bitsPerSegment {
+							segmentIndex++
+							if segmentIndex == segmentCount {
+								return
+							}
+							newSegment = newAddr.getSegment(segmentIndex)
+							existingSegmentPrefLen = 0
+						}
+						if newSegment.IsOneBit(existingSegmentPrefLen) {
+							followingBitsFlag = 0x8000000000000000
+						}
+					}
+					return
+				}
+				// matchingBits < segmentPrefLen - no match - the bits in current prefix do not match the prefix of the existing address
+				handleMatch.BitsDoNotMatch(bitsMatchedSoFar + matchingBits)
+			}
+			return
+		} else if newSegmentPref != nil {
+			newSegmentPrefLen := newSegmentPref.bitCount()
+			matchingBits := getMatchingBits(existingSegment, newSegment, newSegmentPrefLen, bitsPerSegment)
+			if matchingBits >= newSegmentPrefLen { // the current bits match the current prefix, but the existing has no prefix
+				handleMatch.BitsMatch()
+			} else {
+				// no match - the current subnet does not match the existing address
+				handleMatch.BitsDoNotMatch(bitsMatchedSoFar + matchingBits)
+			}
+			return
+		} else {
+			matchingBits := getMatchingBits(existingSegment, newSegment, bitsPerSegment, bitsPerSegment)
+			if matchingBits < bitsPerSegment { // no match - the current subnet/address is not here
+				handleMatch.BitsDoNotMatch(bitsMatchedSoFar + matchingBits)
+				return
+			} else {
+				segmentIndex++
+				if segmentIndex == segmentCount { // match - the current subnet/address is a match
+					// note that "added" is already true here, we can only be here if explicitly inserted already since it is a non-prefixed full address
+					handleMatch.BitsMatch()
+					return
+				}
+			}
+			bitsMatchedSoFar += bitsPerSegment
+		}
+	}
 }
 
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
