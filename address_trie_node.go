@@ -425,6 +425,16 @@ func (node *trieNode[T, V]) higherAddedNode(addr T) *tree.BinTrieNode[trieKey[T]
 	return node.toBinTrieNode().HigherAddedNode(createKey(addr))
 }
 
+func (node *trieNode[T, V]) floorAddedNode(addr T) *tree.BinTrieNode[trieKey[T], V] {
+	addr = mustBeBlockOrAddress(addr)
+	return node.toBinTrieNode().FloorAddedNode(createKey(addr))
+}
+
+func (node *trieNode[T, V]) ceilingAddedNode(addr T) *tree.BinTrieNode[trieKey[T], V] {
+	addr = mustBeBlockOrAddress(addr)
+	return node.toBinTrieNode().CeilingAddedNode(createKey(addr))
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
