@@ -22,3 +22,7 @@ type TrieKeyConstraint[T any] interface {
 	getTrailingBitCount(ones bool) BitCount
 	toSinglePrefixBlockOrAddress() (T, address_error.IncompatibleAddressError)
 }
+
+type trieKey[T TrieKeyConstraint[T]] struct {
+	address T
+}
