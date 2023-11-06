@@ -84,3 +84,7 @@ func (a trieKey[T]) GetPrefixLen() tree.PrefixLen {
 func (a trieKey[T]) Compare(other trieKey[T]) int {
 	return a.address.trieCompare(other.address.toAddressBase())
 }
+
+func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
+	return trieKey[T]{address: addr}
+}
