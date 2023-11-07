@@ -650,3 +650,7 @@ func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 func toContainmentPath[T TrieKeyConstraint[T], V any](path *tree.Path[trieKey[T], V]) *containmentPath[T, V] {
 	return (*containmentPath[T, V])(unsafe.Pointer(path))
 }
+
+func toAddressTrieNode[T TrieKeyConstraint[T], V any](node *tree.BinTrieNode[trieKey[T], V]) *TrieNode[T] {
+	return (*TrieNode[T])(unsafe.Pointer(node))
+}
