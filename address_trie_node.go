@@ -494,6 +494,14 @@ func (node *trieNode[T, V]) containingFirstAllNodeIterator(forwardSubNodeOrder b
 	return node.toBinTrieNode().ContainingFirstAllNodeIterator(forwardSubNodeOrder)
 }
 
+func (node *trieNode[T, V]) containedFirstIterator(forwardSubNodeOrder bool) tree.TrieNodeIteratorRem[trieKey[T], V] {
+	return node.toBinTrieNode().ContainedFirstIterator(forwardSubNodeOrder)
+}
+
+func (node *trieNode[T, V]) containedFirstAllNodeIterator(forwardSubNodeOrder bool) tree.TrieNodeIterator[trieKey[T], V] {
+	return node.toBinTrieNode().ContainedFirstAllNodeIterator(forwardSubNodeOrder)
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
