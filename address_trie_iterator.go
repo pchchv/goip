@@ -16,3 +16,15 @@ func (iter addressKeyIterator[T]) Next() (t T) {
 func (iter addressKeyIterator[T]) Remove() (t T) {
 	return iter.TrieKeyIterator.Remove().address
 }
+
+type addressTrieNodeIteratorRem[T TrieKeyConstraint[T], V any] struct {
+	tree.TrieNodeIteratorRem[trieKey[T], V]
+}
+
+func (iter addressTrieNodeIteratorRem[T, V]) Next() *TrieNode[T] {
+	return toAddressTrieNode[T](iter.TrieNodeIteratorRem.Next())
+}
+
+func (iter addressTrieNodeIteratorRem[T, V]) Remove() *TrieNode[T] {
+	return toAddressTrieNode[T](iter.TrieNodeIteratorRem.Remove())
+}
