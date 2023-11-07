@@ -599,6 +599,27 @@ func (node *TrieNode[T]) tobase() *trieNode[T, emptyValue] {
 	return (*trieNode[T, emptyValue])(unsafe.Pointer(node))
 }
 
+// GetKey gets the key used to place the node in the trie.
+func (node *TrieNode[T]) GetKey() T {
+	return node.tobase().getKey()
+}
+
+// IsRoot returns whether this node is the root of the trie.
+func (node *TrieNode[T]) IsRoot() bool {
+	return node.toBinTrieNode().IsRoot()
+}
+
+// IsAdded returns whether the node was "added".
+// Some binary trie nodes are considered "added" and others are not.
+// Those nodes created for key elements added to the trie are "added" nodes.
+// Those that are not added are those nodes created to serve as junctions for the added nodes.
+// Only added elements contribute to the size of a trie.
+// When removing nodes, non-added nodes are removed automatically whenever they are no longer needed,
+// which is when an added node has less than two added sub-nodes.
+func (node *TrieNode[T]) IsAdded() bool {
+	return node.toBinTrieNode().IsAdded()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
