@@ -502,6 +502,21 @@ func (node *trieNode[T, V]) containedFirstAllNodeIterator(forwardSubNodeOrder bo
 	return node.toBinTrieNode().ContainedFirstAllNodeIterator(forwardSubNodeOrder)
 }
 
+func (node *trieNode[T, V]) contains(addr T) bool {
+	addr = mustBeBlockOrAddress(addr)
+	return node.toBinTrieNode().Contains(createKey(addr))
+}
+
+func (node *trieNode[T, V]) removeNode(addr T) bool {
+	addr = mustBeBlockOrAddress(addr)
+	return node.toBinTrieNode().RemoveNode(createKey(addr))
+}
+
+func (node *trieNode[T, V]) removeElementsContainedBy(addr T) *tree.BinTrieNode[trieKey[T], V] {
+	addr = mustBeBlockOrAddress(addr)
+	return node.toBinTrieNode().RemoveElementsContainedBy(createKey(addr))
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
