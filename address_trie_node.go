@@ -543,6 +543,14 @@ func (node *trieNode[T, V]) getNode(addr T) *tree.BinTrieNode[trieKey[T], V] {
 	return node.toBinTrieNode().GetNode(createKey(addr))
 }
 
+// ContainmentPath represents a path through the trie of containing subnets,
+// each node in the path contained by the previous node,
+// the first node corresponding to the shortest prefix match,
+// the last element corresponding to the longest prefix match.
+type containmentPath[T TrieKeyConstraint[T], V any] struct {
+	path tree.Path[trieKey[T], V]
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
