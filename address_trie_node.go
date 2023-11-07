@@ -672,6 +672,21 @@ func (node *TrieNode[T]) NextAddedNode() *TrieNode[T] {
 	return toAddressTrieNode[T](node.toBinTrieNode().NextAddedNode())
 }
 
+// NextNode returns the node that follows this node following the trie order.
+func (node *TrieNode[T]) NextNode() *TrieNode[T] {
+	return toAddressTrieNode[T](node.toBinTrieNode().NextNode())
+}
+
+// PreviousNode eturns the node that precedes this node following the trie order.
+func (node *TrieNode[T]) PreviousNode() *TrieNode[T] {
+	return toAddressTrieNode[T](node.toBinTrieNode().PreviousNode())
+}
+
+// FirstNode returns the first (the lowest valued) node in the sub-trie originating from this node.
+func (node *TrieNode[T]) FirstNode() *TrieNode[T] {
+	return toAddressTrieNode[T](node.toBinTrieNode().FirstNode())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
