@@ -583,6 +583,12 @@ func (path *containmentPath[T, V]) string() string {
 // emptyValue changes the way values in strings are printed using EmptyValueType.
 type emptyValue = tree.EmptyValueType
 
+// TrieNode is a node in a compact binary prefix trie whose keys
+// are prefix block subnets or addresses.
+type TrieNode[T TrieKeyConstraint[T]] struct {
+	trieNode[T, emptyValue]
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
