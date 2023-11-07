@@ -620,6 +620,29 @@ func (node *TrieNode[T]) IsAdded() bool {
 	return node.toBinTrieNode().IsAdded()
 }
 
+// SetAdded makes this node an added node,
+// which is equivalent to adding the corresponding key to the trie.
+// If the node is already an added node,
+// this method has no effect.
+// You cannot set an added node to non-added,
+// for that you should Remove the node from the trie by calling Remove.
+// A non-added node will only remain in the trie if it needs to be in the trie.
+func (node *TrieNode[T]) SetAdded() {
+	node.toBinTrieNode().SetAdded()
+}
+
+// Clear removes this node and all sub-nodes from the trie,
+// after which isEmpty will return true.
+func (node *TrieNode[T]) Clear() {
+	node.toBinTrieNode().Clear()
+}
+
+// IsLeaf returns whether this node is in the trie (a node for which IsAdded is true)
+// and there are no elements in the sub-trie with this node as the root.
+func (node *TrieNode[T]) IsLeaf() bool {
+	return node.toBinTrieNode().IsLeaf()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
