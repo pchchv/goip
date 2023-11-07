@@ -705,6 +705,34 @@ func (node *TrieNode[T]) LastAddedNode() *TrieNode[T] {
 	return toAddressTrieNode[T](node.toBinTrieNode().LastAddedNode())
 }
 
+// LowerAddedNode returns the added node,
+// in this sub-trie with this node as the root,
+// whose address is the highest address strictly less than the given address.
+func (node *TrieNode[T]) LowerAddedNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](node.tobase().lowerAddedNode(addr))
+}
+
+// FloorAddedNode returns the added node,
+// in this sub-trie with this node as the root,
+// whose address is the highest address less than or equal to the given address.
+func (node *TrieNode[T]) FloorAddedNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](node.tobase().floorAddedNode(addr))
+}
+
+// HigherAddedNode returns the added node,
+// in this sub-trie with this node as the root,
+// whose address is the lowest address strictly greater than the given address.
+func (node *TrieNode[T]) HigherAddedNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](node.tobase().higherAddedNode(addr))
+}
+
+// CeilingAddedNode returns the added node,
+// in this sub-trie with this node as the root,
+// whose address is the lowest address greater than or equal to the given address.
+func (node *TrieNode[T]) CeilingAddedNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](node.tobase().ceilingAddedNode(addr))
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
