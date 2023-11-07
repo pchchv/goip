@@ -479,6 +479,13 @@ func (node *trieNode[T, V]) blockSizeAllNodeIterator(lowerSubNodeFirst bool) tre
 	return node.toBinTrieNode().BlockSizeAllNodeIterator(lowerSubNodeFirst)
 }
 
+// blockSizeCachingAllNodeIterator iterates all nodes,
+// ordered by keys from the largest prefix blocks to smallest and then to individual addresses,
+// in the sub-trie with this node as the root.
+func (node *trieNode[T, V]) blockSizeCachingAllNodeIterator() tree.CachingTrieNodeIterator[trieKey[T], V] {
+	return node.toBinTrieNode().BlockSizeCachingAllNodeIterator()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
