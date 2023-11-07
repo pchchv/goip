@@ -554,3 +554,7 @@ type containmentPath[T TrieKeyConstraint[T], V any] struct {
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
+
+func toContainmentPath[T TrieKeyConstraint[T], V any](path *tree.Path[trieKey[T], V]) *containmentPath[T, V] {
+	return (*containmentPath[T, V])(unsafe.Pointer(path))
+}
