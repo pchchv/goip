@@ -461,6 +461,24 @@ func (node *trieNode[T, V]) allNodeIterator(forward bool) tree.TrieNodeIteratorR
 	return node.toBinTrieNode().AllNodeIterator(forward)
 }
 
+// blockSizeNodeIterator iterates the added nodes,
+// ordered by keys from the largest prefix blocks to smallest and then to individual addresses,
+// in the sub-trie with this node as the root.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first, otherwise the reverse order is taken.
+func (node *trieNode[T, V]) blockSizeNodeIterator(lowerSubNodeFirst bool) tree.TrieNodeIteratorRem[trieKey[T], V] {
+	return node.toBinTrieNode().BlockSizeNodeIterator(lowerSubNodeFirst)
+}
+
+// blockSizeAllNodeIterator iterates all the nodes,
+// ordered by keys from the largest prefix blocks to smallest and then to individual addresses,
+// in the sub-trie with this node as the root.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first, otherwise the reverse order
+func (node *trieNode[T, V]) blockSizeAllNodeIterator(lowerSubNodeFirst bool) tree.TrieNodeIteratorRem[trieKey[T], V] {
+	return node.toBinTrieNode().BlockSizeAllNodeIterator(lowerSubNodeFirst)
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
