@@ -580,6 +580,9 @@ func (path *containmentPath[T, V]) string() string {
 	return path.path.String()
 }
 
+// emptyValue changes the way values in strings are printed using EmptyValueType.
+type emptyValue = tree.EmptyValueType
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
