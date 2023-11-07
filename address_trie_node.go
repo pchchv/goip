@@ -533,6 +533,16 @@ func (node *trieNode[T, V]) longestPrefixMatchNode(addr T) *tree.BinTrieNode[tri
 	return node.toBinTrieNode().LongestPrefixMatchNode(createKey(addr))
 }
 
+func (node *trieNode[T, V]) elementContains(addr T) bool {
+	addr = mustBeBlockOrAddress(addr)
+	return node.toBinTrieNode().ElementContains(createKey(addr))
+}
+
+func (node *trieNode[T, V]) getNode(addr T) *tree.BinTrieNode[trieKey[T], V] {
+	addr = mustBeBlockOrAddress(addr)
+	return node.toBinTrieNode().GetNode(createKey(addr))
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
