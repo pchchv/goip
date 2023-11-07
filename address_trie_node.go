@@ -486,6 +486,14 @@ func (node *trieNode[T, V]) blockSizeCachingAllNodeIterator() tree.CachingTrieNo
 	return node.toBinTrieNode().BlockSizeCachingAllNodeIterator()
 }
 
+func (node *trieNode[T, V]) containingFirstIterator(forwardSubNodeOrder bool) tree.CachingTrieNodeIterator[trieKey[T], V] {
+	return node.toBinTrieNode().ContainingFirstIterator(forwardSubNodeOrder)
+}
+
+func (node *trieNode[T, V]) containingFirstAllNodeIterator(forwardSubNodeOrder bool) tree.CachingTrieNodeIterator[trieKey[T], V] {
+	return node.toBinTrieNode().ContainingFirstAllNodeIterator(forwardSubNodeOrder)
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
