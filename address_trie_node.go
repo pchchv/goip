@@ -589,6 +589,16 @@ type TrieNode[T TrieKeyConstraint[T]] struct {
 	trieNode[T, emptyValue]
 }
 
+func (node *TrieNode[T]) toBinTrieNode() *tree.BinTrieNode[trieKey[T], emptyValue] {
+	return (*tree.BinTrieNode[trieKey[T], emptyValue])(unsafe.Pointer(node))
+}
+
+// tobase is used to convert the pointer rather than doing a field dereference,
+// so that nil pointer handling can be done in *addressTrieNode
+func (node *TrieNode[T]) tobase() *trieNode[T, emptyValue] {
+	return (*trieNode[T, emptyValue])(unsafe.Pointer(node))
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
