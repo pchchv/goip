@@ -449,6 +449,18 @@ func (node *trieNode[T, V]) descendingIterator() Iterator[T] {
 	return addressKeyIterator[T]{node.toBinTrieNode().DescendingIterator()}
 }
 
+// nodeIterator iterates through the added nodes of the sub-trie with this node as the root,
+// in forward or reverse tree order.
+func (node *trieNode[T, V]) nodeIterator(forward bool) tree.TrieNodeIteratorRem[trieKey[T], V] {
+	return node.toBinTrieNode().NodeIterator(forward)
+}
+
+// allNodeIterator iterates through all the nodes of the sub-trie with this node as the root,
+// in forward or reverse tree order.
+func (node *trieNode[T, V]) allNodeIterator(forward bool) tree.TrieNodeIteratorRem[trieKey[T], V] {
+	return node.toBinTrieNode().AllNodeIterator(forward)
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
