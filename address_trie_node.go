@@ -435,6 +435,20 @@ func (node *trieNode[T, V]) ceilingAddedNode(addr T) *tree.BinTrieNode[trieKey[T
 	return node.toBinTrieNode().CeilingAddedNode(createKey(addr))
 }
 
+// iterator returns an iterator that iterates through
+// the elements of the sub-trie with this node as the root.
+// The iteration is in sorted element order.
+func (node *trieNode[T, V]) iterator() Iterator[T] {
+	return addressKeyIterator[T]{node.toBinTrieNode().Iterator()}
+}
+
+// descendingIterator returns an iterator that iterates through
+// the elements of the subtrie with this node as the root.
+// The iteration is in reverse sorted element order.
+func (node *trieNode[T, V]) descendingIterator() Iterator[T] {
+	return addressKeyIterator[T]{node.toBinTrieNode().DescendingIterator()}
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
