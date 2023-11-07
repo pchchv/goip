@@ -761,6 +761,25 @@ func (node *TrieNode[T]) AllNodeIterator(forward bool) IteratorWithRemove[*TrieN
 	return addressTrieNodeIteratorRem[T, emptyValue]{node.tobase().allNodeIterator(forward)}
 }
 
+// BlockSizeNodeIterator returns an iterator that iterates the added nodes,
+// ordered by keys from largest prefix blocks to smallest and then to individual addresses,
+// in the sub-trie with this node as the root.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first
+// , otherwise the reverse order is taken.
+func (node *TrieNode[T]) BlockSizeNodeIterator(lowerSubNodeFirst bool) IteratorWithRemove[*TrieNode[T]] {
+	return addressTrieNodeIteratorRem[T, emptyValue]{node.tobase().blockSizeNodeIterator(lowerSubNodeFirst)}
+}
+
+// BlockSizeAllNodeIterator returns an iterator that iterates all the nodes,
+// ordered by keys from largest prefix blocks to smallest and then to individual addresses,
+// in the sub-trie with this node as the root.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first, otherwise the reverse order.
+func (node *TrieNode[T]) BlockSizeAllNodeIterator(lowerSubNodeFirst bool) IteratorWithRemove[*TrieNode[T]] {
+	return addressTrieNodeIteratorRem[T, emptyValue]{node.tobase().blockSizeAllNodeIterator(lowerSubNodeFirst)}
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
