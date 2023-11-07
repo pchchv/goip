@@ -643,6 +643,16 @@ func (node *TrieNode[T]) IsLeaf() bool {
 	return node.toBinTrieNode().IsLeaf()
 }
 
+// GetUpperSubNode gets the direct child node whose key is largest in value.
+func (node *TrieNode[T]) GetUpperSubNode() *TrieNode[T] {
+	return toAddressTrieNode[T](node.toBinTrieNode().GetUpperSubNode())
+}
+
+// GetLowerSubNode gets the direct child node whose key is smallest in value.
+func (node *TrieNode[T]) GetLowerSubNode() *TrieNode[T] {
+	return toAddressTrieNode[T](node.toBinTrieNode().GetLowerSubNode())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
