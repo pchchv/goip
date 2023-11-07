@@ -36,3 +36,15 @@ type addressTrieNodeIterator[T TrieKeyConstraint[T], V any] struct {
 func (iter addressTrieNodeIterator[T, V]) Next() *TrieNode[T] {
 	return toAddressTrieNode[T](iter.TrieNodeIterator.Next())
 }
+
+type cachingAddressTrieNodeIterator[T TrieKeyConstraint[T], V any] struct {
+	tree.CachingTrieNodeIterator[trieKey[T], V]
+}
+
+func (iter cachingAddressTrieNodeIterator[T, V]) Next() *TrieNode[T] {
+	return toAddressTrieNode[T](iter.CachingTrieNodeIterator.Next())
+}
+
+func (iter cachingAddressTrieNodeIterator[T, V]) Remove() *TrieNode[T] {
+	return toAddressTrieNode[T](iter.CachingTrieNodeIterator.Remove())
+}
