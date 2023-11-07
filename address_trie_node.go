@@ -653,6 +653,25 @@ func (node *TrieNode[T]) GetLowerSubNode() *TrieNode[T] {
 	return toAddressTrieNode[T](node.toBinTrieNode().GetLowerSubNode())
 }
 
+// GetParent gets the node from which this node is a direct child node, or nil if this is the root.
+func (node *TrieNode[T]) GetParent() *TrieNode[T] {
+	return toAddressTrieNode[T](node.toBinTrieNode().GetParent())
+}
+
+// PreviousAddedNode returns the previous node in the trie that is an added node,
+// following the trie order in reverse,
+// or nil if there is no such node.
+func (node *TrieNode[T]) PreviousAddedNode() *TrieNode[T] {
+	return toAddressTrieNode[T](node.toBinTrieNode().PreviousAddedNode())
+}
+
+// NextAddedNode returns the next node in the trie that is an added node,
+// following the trie order,
+// or nil if there is no such node.
+func (node *TrieNode[T]) NextAddedNode() *TrieNode[T] {
+	return toAddressTrieNode[T](node.toBinTrieNode().NextAddedNode())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
