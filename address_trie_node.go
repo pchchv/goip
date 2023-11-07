@@ -733,6 +733,20 @@ func (node *TrieNode[T]) CeilingAddedNode(addr T) *TrieNode[T] {
 	return toAddressTrieNode[T](node.tobase().ceilingAddedNode(addr))
 }
 
+// Iterator returns an iterator that iterates through
+// the elements of the sub-trie with this node as the root.
+// The iteration is in sorted element order.
+func (node *TrieNode[T]) Iterator() Iterator[T] {
+	return node.tobase().iterator()
+}
+
+// DescendingIterator returns an iterator that iterates through
+// the elements of the subtrie with this node as the root.
+// The iteration is in reverse sorted element order.
+func (node *TrieNode[T]) DescendingIterator() Iterator[T] {
+	return node.tobase().descendingIterator()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
