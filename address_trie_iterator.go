@@ -28,3 +28,11 @@ func (iter addressTrieNodeIteratorRem[T, V]) Next() *TrieNode[T] {
 func (iter addressTrieNodeIteratorRem[T, V]) Remove() *TrieNode[T] {
 	return toAddressTrieNode[T](iter.TrieNodeIteratorRem.Remove())
 }
+
+type addressTrieNodeIterator[T TrieKeyConstraint[T], V any] struct {
+	tree.TrieNodeIterator[trieKey[T], V]
+}
+
+func (iter addressTrieNodeIterator[T, V]) Next() *TrieNode[T] {
+	return toAddressTrieNode[T](iter.TrieNodeIterator.Next())
+}
