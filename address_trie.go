@@ -11,6 +11,22 @@ type trieBase[T TrieKeyConstraint[T], V any] struct {
 	trie tree.BinTrie[trieKey[T], V]
 }
 
+// clear removes all added nodes from the trie, after which IsEmpty will return true.
+func (trie *trieBase[T, V]) clear() {
+	trie.trie.Clear()
+}
+
+// getRoot returns the root node of this trie,
+// which can be nil for an implicitly zero-valued uninitialized trie, but not for any other trie.
+func (trie *trieBase[T, V]) getRoot() *tree.BinTrieNode[trieKey[T], V] {
+	return trie.trie.GetRoot()
+}
+
+func (trie *trieBase[T, V]) add(addr T) bool {
+	addr = mustBeBlockOrAddress(addr)
+	return trie.trie.Add(createKey(addr))
+}
+
 // Trie is a compact binary trie (aka compact binary prefix tree, or binary radix trie), for addresses and/or CIDR prefix block subnets.
 // The prefixes in used by the prefix trie are the CIDR prefixes, or the full address in the case of individual addresses with no prefix length.
 // The elements of the trie are CIDR prefix blocks or addresses.
