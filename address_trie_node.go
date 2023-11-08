@@ -1010,6 +1010,24 @@ func (node *TrieNode[T]) GetAddedNode(addr T) *TrieNode[T] {
 	return toAddressTrieNode[T](node.tobase().getAddedNode(addr))
 }
 
+// NodeSize returns the number of nodes in the trie with this node as the root,
+// which is more than the number of added addresses or blocks.
+func (node *TrieNode[T]) NodeSize() int {
+	return node.toBinTrieNode().NodeSize()
+}
+
+// Size returns the number of elements in the sub-trie with this node as the root.
+// Only nodes for which IsAdded returns true are counted.
+// When zero is returned, IsEmpty returns true.
+func (node *TrieNode[T]) Size() int {
+	return node.toBinTrieNode().Size()
+}
+
+// IsEmpty returns whether the size is zero.
+func (node *TrieNode[T]) IsEmpty() bool {
+	return node.Size() == 0
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
