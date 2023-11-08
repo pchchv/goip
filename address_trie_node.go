@@ -1091,6 +1091,11 @@ func (path *ContainmentPath[T]) String() string {
 	return path.string()
 }
 
+// ContainmentPathNode is a node in a ContainmentPath.
+type containmentPathNode[T TrieKeyConstraint[T], V any] struct {
+	pathNode tree.PathNode[trieKey[T], V]
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
