@@ -1,6 +1,13 @@
 package goip
 
-import "github.com/pchchv/goip/address_error"
+import (
+	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/tree"
+)
+
+type trieBase[T TrieKeyConstraint[T], V any] struct {
+	trie tree.BinTrie[trieKey[T], V]
+}
 
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
