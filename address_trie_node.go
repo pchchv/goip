@@ -944,6 +944,18 @@ func (node *TrieNode[T]) AsNewTrie() *Trie[T] {
 	return toAddressTrie[T](node.toBinTrieNode().AsNewTrie())
 }
 
+// ElementsContaining finds the trie nodes in the trie, with this sub-node as the root,
+// containing the given key and returns them as a linked list.
+// Only added nodes are added to the linked list
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+func (node *TrieNode[T]) ElementsContaining(addr T) *ContainmentPath[T] {
+	return &ContainmentPath[T]{*node.tobase().elementsContaining(addr)}
+}
+
 // LongestPrefixMatch returns the address or subnet with the longest prefix of all the added subnets and addresses whose prefix matches the given address.
 // This is equivalent to finding the containing subnet or address with the smallest subnet size.
 //
