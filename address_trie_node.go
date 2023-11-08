@@ -1096,6 +1096,22 @@ type containmentPathNode[T TrieKeyConstraint[T], V any] struct {
 	pathNode tree.PathNode[trieKey[T], V]
 }
 
+// getKey gets the containing block or matching address corresponding to this node
+func (node *containmentPathNode[T, V]) getKey() T {
+	return node.pathNode.GetKey().address
+}
+
+// Count returns the count of containing subnets in the path of containing subnets,
+// starting from this node and moving downwards to sub-nodes.
+// This is a constant-time operation since the size is maintained in
+// each node and adjusted with each add and Remove operation in the sub-tree.
+func (node *containmentPathNode[T, V]) count() int {
+	if node == nil {
+		return 0
+	}
+	return node.pathNode.Size()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
