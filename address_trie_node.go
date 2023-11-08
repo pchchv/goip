@@ -848,6 +848,22 @@ func (node *TrieNode[T]) CloneTree() *TrieNode[T] {
 	return toAddressTrieNode[T](node.toBinTrieNode().CloneTree())
 }
 
+// Compare returns a negative integer, zero, or a positive integer if this node is less than,
+// equal, or greater than the other, according to the key and the trie order.
+func (node *TrieNode[T]) Compare(other *TrieNode[T]) int {
+	return node.toBinTrieNode().Compare(other.toBinTrieNode())
+}
+
+// Equal returns whether the address and and mapped value match those of the given node.
+func (node *TrieNode[T]) Equal(other *TrieNode[T]) bool {
+	return node.toBinTrieNode().Equal(other.toBinTrieNode())
+}
+
+// TreeEqual returns whether the sub-tree represented by this node as the root node matches the given sub-trie.
+func (node *TrieNode[T]) TreeEqual(other *TrieNode[T]) bool {
+	return node.toBinTrieNode().TreeEqual(other.toBinTrieNode())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
