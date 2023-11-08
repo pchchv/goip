@@ -1156,6 +1156,16 @@ func (node *ContainmentPathNode[T]) ListString() string {
 	return node.listString()
 }
 
+// Next gets the node contained by this node.
+func (node *ContainmentPathNode[T]) Next() *ContainmentPathNode[T] {
+	return toContainmentPathNode[T](node.pathNode.Next())
+}
+
+// Previous gets the node containing this node.
+func (node *ContainmentPathNode[T]) Previous() *ContainmentPathNode[T] {
+	return toContainmentPathNode[T](node.pathNode.Previous())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
