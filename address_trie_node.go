@@ -1112,6 +1112,21 @@ func (node *containmentPathNode[T, V]) count() int {
 	return node.pathNode.Size()
 }
 
+// String returns a visual representation of this node including the address key
+func (node *containmentPathNode[T, V]) string() string {
+	if node == nil {
+		return nilString()
+	}
+	return node.pathNode.String()
+}
+
+// ListString returns a visual representation of
+// the containing subnets starting from
+// / this node and moving downwards to sub-nodes.
+func (node *containmentPathNode[T, V]) listString() string {
+	return node.pathNode.ListString(true, true)
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
