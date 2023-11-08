@@ -828,6 +828,26 @@ func (node *TrieNode[T]) ContainedFirstIterator(forwardSubNodeOrder bool) Iterat
 	return addressTrieNodeIteratorRem[T, emptyValue]{node.tobase().containedFirstIterator(forwardSubNodeOrder)}
 }
 
+// ContainedFirstAllNodeIterator returns an iterator that does a post-order binary trie traversal of all the nodes
+// of the sub-trie with this node as the root.
+// All sub-nodes will be visited before their parent nodes.
+// For an address trie this means contained addresses and subnets will be visited before their containing subnet blocks.
+func (node *TrieNode[T]) ContainedFirstAllNodeIterator(forwardSubNodeOrder bool) Iterator[*TrieNode[T]] {
+	return addressTrieNodeIterator[T, emptyValue]{node.tobase().containedFirstAllNodeIterator(forwardSubNodeOrder)}
+}
+
+// Clone clones the node.
+// Keys remain the same, but the parent node and the lower and upper sub-nodes are all set to nil.
+func (node *TrieNode[T]) Clone() *TrieNode[T] {
+	return toAddressTrieNode[T](node.toBinTrieNode().Clone())
+}
+
+// CloneTree clones the sub-trie starting with this node as the root.
+// The nodes are cloned, but their keys and values are not cloned.
+func (node *TrieNode[T]) CloneTree() *TrieNode[T] {
+	return toAddressTrieNode[T](node.toBinTrieNode().CloneTree())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
