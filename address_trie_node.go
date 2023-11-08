@@ -903,6 +903,41 @@ func (node *TrieNode[T]) RemoveNode(addr T) bool {
 	return node.tobase().removeNode(addr)
 }
 
+// RemoveElementsContainedBy removes any single address or prefix block subnet from the trie,
+// with this node as the root, that is contained in the given individual address or prefix block subnet.
+//
+// Goes further than Remove, not requiring a match to an inserted node,
+// and also removing all the sub-nodes of any removed node or sub-node.
+//
+// For example, after inserting 1.2.3.0 and 1.2.3.1, passing 1.2.3.0/31 to RemoveElementsContainedBy will remove them both,
+// while the Remove method will remove nothing.
+// After inserting 1.2.3.0/31, then Remove(Address) will remove 1.2.3.0/31, but will leave 1.2.3.0 and 1.2.3.1 in the trie.
+//
+// It cannot partially delete a node, such as deleting a single address from a prefix block represented by a node.
+// It can only delete the whole node if the whole address or block represented by that node is contained in the given address or block.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns the root node of the subtrie that was removed from the trie, or nil if nothing was removed.
+func (node *TrieNode[T]) RemoveElementsContainedBy(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](node.tobase().removeElementsContainedBy(addr))
+}
+
+// ElementsContainedBy checks if a part of this trie, with this node as the root,
+// is contained by the given prefix block subnet or individual address.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns the root node of the contained subtrie, or nil if no subtrie is contained.
+// The node returned need not be an "added" node, see IsAdded for more details on added nodes.
+// The returned subtrie is backed by this trie,
+// so changes in this trie are reflected in those nodes and vice-versa.
+func (node *TrieNode[T]) ElementsContainedBy(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](node.tobase().elementsContainedBy(addr))
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
