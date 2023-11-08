@@ -1028,6 +1028,31 @@ func (node *TrieNode[T]) IsEmpty() bool {
 	return node.Size() == 0
 }
 
+// TreeString returns a visual representation of the sub-trie with this node as the root,
+// with one node per line.
+//
+//   - withNonAddedKeys: whether to show nodes that are not added nodes.
+//   - withSizes: whether to include the counts of added nodes in each sub-trie.
+func (node *TrieNode[T]) TreeString(withNonAddedKeys, withSizes bool) string {
+	return node.toBinTrieNode().TreeString(withNonAddedKeys, withSizes)
+}
+
+// String returns a visual representation of this node including the key,
+// with an open circle indicating this node is not an added node,
+// a closed circle indicating this node is an added node.
+func (node *TrieNode[T]) String() string {
+	return node.toBinTrieNode().String()
+}
+
+// For some reason Format must be here and not in addressTrieNode for nil node.
+// It panics in fmt code either way,
+// but if in here then it is handled by a recover() call in fmt properly in the debugger.
+//
+// Format implements the [fmt.Formatter] interface.
+func (node TrieNode[T]) Format(state fmt.State, verb rune) {
+	node.toBinTrieNode().Format(state, verb)
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
