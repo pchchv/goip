@@ -938,6 +938,12 @@ func (node *TrieNode[T]) ElementsContainedBy(addr T) *TrieNode[T] {
 	return toAddressTrieNode[T](node.tobase().elementsContainedBy(addr))
 }
 
+// AsNewTrie creates a new sub-trie, copying the nodes starting with this node as the root.
+// The nodes are copies of the nodes in this sub-trie, but their keys and values are not copies.
+func (node *TrieNode[T]) AsNewTrie() *Trie[T] {
+	return toAddressTrie[T](node.toBinTrieNode().AsNewTrie())
+}
+
 // LongestPrefixMatch returns the address or subnet with the longest prefix of all the added subnets and addresses whose prefix matches the given address.
 // This is equivalent to finding the containing subnet or address with the smallest subnet size.
 //
