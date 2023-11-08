@@ -938,6 +938,37 @@ func (node *TrieNode[T]) ElementsContainedBy(addr T) *TrieNode[T] {
 	return toAddressTrieNode[T](node.tobase().elementsContainedBy(addr))
 }
 
+// LongestPrefixMatch returns the address or subnet with the longest prefix of all the added subnets and addresses whose prefix matches the given address.
+// This is equivalent to finding the containing subnet or address with the smallest subnet size.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// The second returned argument is false if no added subnet or address contains the given argument.
+//
+// Use ElementContains to check for the existence of a containing address.
+// To get all the containing addresses (subnets with matching prefix), use ElementsContaining.
+// To get the node corresponding to the result of this method, use LongestPrefixMatchNode.
+func (node *TrieNode[T]) LongestPrefixMatch(addr T) T {
+	return node.tobase().longestPrefixMatch(addr)
+}
+
+// LongestPrefixMatchNode finds the containing subnet or address in the trie with the smallest subnet size,
+// which is equivalent to finding the subnet or address with the longest matching prefix.
+// Returns the node corresponding to that subnet.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns nil if no added subnet or address contains the given argument.
+//
+// Use ElementContains to check for the existence of a containing address.
+// To get all the containing addresses, use ElementsContaining.
+// Use LongestPrefixMatch to get only the address corresponding to the result of this method.
+func (node *TrieNode[T]) LongestPrefixMatchNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](node.tobase().longestPrefixMatchNode(addr))
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
