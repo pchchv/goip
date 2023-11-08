@@ -864,6 +864,45 @@ func (node *TrieNode[T]) TreeEqual(other *TrieNode[T]) bool {
 	return node.toBinTrieNode().TreeEqual(other.toBinTrieNode())
 }
 
+// Remove removes this node from the collection of added nodes, and also from the trie if possible.
+// If it has two sub-nodes, it cannot be removed from the trie, in which case it is marked as not "added",
+// nor is it counted in the trie size.
+// Only added nodes can be removed from the trie.  If this node is not added, this method does nothing.
+func (node *TrieNode[T]) Remove() {
+	node.toBinTrieNode().Remove()
+}
+
+// Contains returns whether the given address or prefix block subnet is in the sub-trie,
+// as an added element, with this node as the root.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns true if the prefix block or address address exists already in the trie, false otherwise.
+//
+// Use GetAddedNode  to get the node for the address rather than just checking for its existence.
+func (node *TrieNode[T]) Contains(addr T) bool {
+	return node.tobase().contains(addr)
+}
+
+// RemoveNode removes the given single address or prefix block subnet from the trie with this node as the root.
+//
+// Removing an element will not remove contained elements (nodes for contained blocks and addresses).
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns true if the prefix block or address was removed, false if not already in the trie.
+//
+// You can also remove by calling GetAddedNode to get the node and then calling Remove on the node.
+//
+// When an address is removed,
+// the corresponding node may remain in the trie if it remains a subnet block for two sub-nodes.
+// If the corresponding node can be removed from the trie, it will be removed.
+func (node *TrieNode[T]) RemoveNode(addr T) bool {
+	return node.tobase().removeNode(addr)
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
