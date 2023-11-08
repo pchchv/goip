@@ -1,6 +1,8 @@
 package goip
 
 import (
+	"unsafe"
+
 	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/tree"
 )
@@ -111,4 +113,8 @@ func mustBeBlockOrAddress[T TrieKeyConstraint[T]](addr T) T {
 		panic(err)
 	}
 	return res
+}
+
+func toAddressTrie[T TrieKeyConstraint[T]](trie *tree.BinTrie[trieKey[T], emptyValue]) *Trie[T] {
+	return (*Trie[T])(unsafe.Pointer(trie))
 }
