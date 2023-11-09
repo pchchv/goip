@@ -88,3 +88,13 @@ type CachingTrieIterator[T any] interface {
 	// The caching and retrieval is done in constant time.
 	CacheWithUpperSubNode(Cached) bool
 }
+
+type emptyIterator[T any] struct{}
+
+func (it emptyIterator[T]) HasNext() bool {
+	return false
+}
+
+func (it emptyIterator[T]) Next() (t T) {
+	return
+}
