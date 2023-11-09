@@ -465,6 +465,23 @@ func (trie *Trie[T]) GetNode(addr T) *TrieNode[T] {
 	return toAddressTrieNode[T](trie.getNode(addr))
 }
 
+// GetAddedNode gets trie nodes representing added elements.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Use Contains to check for the existence of a given address in the trie,
+// as well as GetNode to search for all nodes including those not-added but also auto-generated nodes for subnet blocks.
+func (trie *Trie[T]) GetAddedNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](trie.getAddedNode(addr))
+}
+
+// Iterator returns an iterator that iterates through the added addresses and prefix blocks in the trie.
+// The iteration is in sorted element order.
+func (trie *Trie[T]) Iterator() Iterator[T] {
+	return trie.tobase().iterator()
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
