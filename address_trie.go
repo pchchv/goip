@@ -402,6 +402,31 @@ func (trie *Trie[T]) RemoveElementsContainedBy(addr T) *TrieNode[T] {
 	return toAddressTrieNode[T](trie.removeElementsContainedBy(addr))
 }
 
+// ElementsContainedBy checks if a part of this trie is contained by the given prefix block subnet or individual address.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns the root node of the contained sub-trie, or nil if no sub-trie is contained.
+// The node returned need not be an "added" node, see IsAdded for more details on added nodes.
+// The returned sub-trie is backed by this trie,
+// so changes in this trie are reflected in those nodes and vice-versa.
+func (trie *Trie[T]) ElementsContainedBy(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](trie.elementsContainedBy(addr))
+}
+
+// ElementsContaining finds the trie nodes in the trie containing the given key and returns them as a linked list.
+// Only added nodes are added to the linked list.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert
+// the argument to single addresses and prefix blocks before calling this method.
+func (trie *Trie[T]) ElementsContaining(addr T) *ContainmentPath[T] {
+	return &ContainmentPath[T]{*trie.elementsContaining(addr)}
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
