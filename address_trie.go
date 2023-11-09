@@ -427,6 +427,20 @@ func (trie *Trie[T]) ElementsContaining(addr T) *ContainmentPath[T] {
 	return &ContainmentPath[T]{*trie.elementsContaining(addr)}
 }
 
+// LongestPrefixMatch returns the address added to the trie with
+// the longest matching prefix compared to the provided address,
+// or nil if no matching address.
+func (trie *Trie[T]) LongestPrefixMatch(addr T) T {
+	return trie.longestPrefixMatch(addr)
+}
+
+// LongestPrefixMatchNode returns the node of address added to
+// the trie with the longest matching prefix compared to the provided address,
+// or nil if no matching address.
+func (trie *Trie[T]) LongestPrefixMatchNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](trie.longestPrefixMatchNode(addr))
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
