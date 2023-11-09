@@ -482,6 +482,17 @@ func (trie *Trie[T]) Iterator() Iterator[T] {
 	return trie.tobase().iterator()
 }
 
+// DescendingIterator returns an iterator that iterates through the added addresses and prefix blocks in the trie.
+// The iteration is in reverse sorted element order.
+func (trie *Trie[T]) DescendingIterator() Iterator[T] {
+	return trie.tobase().descendingIterator()
+}
+
+// NodeIterator returns an iterator that iterates through all the added nodes in the trie in forward or reverse trie order.
+func (trie *Trie[T]) NodeIterator(forward bool) IteratorWithRemove[*TrieNode[T]] {
+	return addressTrieNodeIteratorRem[T, emptyValue]{trie.tobase().nodeIterator(forward)}
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
