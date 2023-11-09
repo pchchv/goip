@@ -493,6 +493,19 @@ func (trie *Trie[T]) NodeIterator(forward bool) IteratorWithRemove[*TrieNode[T]]
 	return addressTrieNodeIteratorRem[T, emptyValue]{trie.tobase().nodeIterator(forward)}
 }
 
+// AllNodeIterator returns an iterator that iterates through all the nodes in the trie in forward or reverse trie order.
+func (trie *Trie[T]) AllNodeIterator(forward bool) IteratorWithRemove[*TrieNode[T]] {
+	return addressTrieNodeIteratorRem[T, emptyValue]{trie.tobase().allNodeIterator(forward)}
+}
+
+// BlockSizeNodeIterator returns an iterator that iterates the added nodes in the trie,
+// ordered by keys from largest prefix blocks to smallest, and then to individual addresses.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first, otherwise the reverse order
+func (trie *Trie[T]) BlockSizeNodeIterator(lowerSubNodeFirst bool) IteratorWithRemove[*TrieNode[T]] {
+	return addressTrieNodeIteratorRem[T, emptyValue]{trie.tobase().blockSizeNodeIterator(lowerSubNodeFirst)}
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
