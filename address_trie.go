@@ -354,6 +354,54 @@ func (trie *Trie[T]) AddTrie(added *TrieNode[T]) *TrieNode[T] {
 	return toAddressTrieNode[T](trie.addTrie(added.tobase()))
 }
 
+// Contains returns whether the given address or prefix block subnet is in the trie as an added element.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns true if the prefix block or address exists already in the trie, false otherwise.
+//
+// Use GetAddedNode to get the node for the address rather than just checking for its existence.
+func (trie *Trie[T]) Contains(addr T) bool {
+	return trie.contains(addr)
+}
+
+// Remove removes the given single address or prefix block subnet from the trie.
+//
+// Removing an element will not remove contained elements (nodes for contained blocks and addresses).
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns true if the prefix block or address was removed, false if not already in the trie.
+//
+// You can also remove by calling GetAddedNode to get the node and then calling Remove on the node.
+//
+// When an address is removed, the corresponding node may remain in the trie if it remains a subnet block for two sub-nodes.
+// If the corresponding node can be removed from the trie, it will be removed.
+func (trie *Trie[T]) Remove(addr T) bool {
+	return trie.remove(addr)
+}
+
+// RemoveElementsContainedBy removes any single address or prefix block subnet from the trie that is contained in the given individual address or prefix block subnet.
+//
+// This goes further than Remove, not requiring a match to an inserted node, and also removing all the sub-nodes of any removed node or sub-node.
+//
+// For example, after inserting 1.2.3.0 and 1.2.3.1, passing 1.2.3.0/31 to RemoveElementsContainedBy will remove them both,
+// while the Remove method will remove nothing.
+// After inserting 1.2.3.0/31, then Remove will remove 1.2.3.0/31, but will leave 1.2.3.0 and 1.2.3.1 in the trie.
+//
+// It cannot partially delete a node, such as deleting a single address from a prefix block represented by a node.
+// It can only delete the whole node if the whole address or block represented by that node is contained in the given address or block.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns the root node of the sub-trie that was removed from the trie, or nil if nothing was removed.
+func (trie *Trie[T]) RemoveElementsContainedBy(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](trie.removeElementsContainedBy(addr))
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
