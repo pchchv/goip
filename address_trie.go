@@ -441,6 +441,30 @@ func (trie *Trie[T]) LongestPrefixMatchNode(addr T) *TrieNode[T] {
 	return toAddressTrieNode[T](trie.longestPrefixMatchNode(addr))
 }
 
+// ElementContains checks if a prefix block subnet or address in the trie contains the given subnet or address.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns true if the subnet or address is contained by a trie element, false otherwise.
+//
+// To get all the containing addresses, use ElementsContaining.
+func (trie *Trie[T]) ElementContains(addr T) bool {
+	return trie.elementContains(addr)
+}
+
+// GetNode gets the node in the trie corresponding to the given address,
+// or returns nil if not such element exists.
+//
+// It returns any node, whether added or not,
+// including any prefix block node that was not added.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+func (trie *Trie[T]) GetNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](trie.getNode(addr))
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
