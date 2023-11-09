@@ -105,6 +105,17 @@ func (trie *trieBase[T, V]) iterator() Iterator[T] {
 	return addressKeyIterator[T]{trie.trie.Iterator()}
 }
 
+func (trie *trieBase[T, V]) descendingIterator() Iterator[T] {
+	if trie == nil {
+		return nilAddressIterator[T]()
+	}
+	return addressKeyIterator[T]{trie.trie.DescendingIterator()}
+}
+
+func (trie *trieBase[T, V]) toTrie() *tree.BinTrie[trieKey[T], V] {
+	return (*tree.BinTrie[trieKey[T], V])(unsafe.Pointer(trie))
+}
+
 // Trie is a compact binary trie (aka compact binary prefix tree, or binary radix trie), for addresses and/or CIDR prefix block subnets.
 // The prefixes in used by the prefix trie are the CIDR prefixes, or the full address in the case of individual addresses with no prefix length.
 // The elements of the trie are CIDR prefix blocks or addresses.
