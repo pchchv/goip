@@ -333,6 +333,27 @@ func (trie *Trie[T]) AddedNodesTreeString() string {
 	return trie.toTrie().AddedNodesTreeString()
 }
 
+// Add adds the address to this trie.
+// The address must match the same type and version of any existing addresses already in the trie.
+// Returns true if the address did not already exist in the trie.
+func (trie *Trie[T]) Add(addr T) bool {
+	return trie.add(addr)
+}
+
+// AddNode adds the address to this trie.
+// The address must match the same type and version of any existing addresses already in the trie.
+// The new or existing node for the address is returned.
+func (trie *Trie[T]) AddNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](trie.addNode(addr))
+}
+
+// AddTrie adds nodes for the keys in the trie with the root node as the passed in node.
+// AddTrie returns the sub-node in the trie where the added trie begins,
+// where the first node of the added trie is located.
+func (trie *Trie[T]) AddTrie(added *TrieNode[T]) *TrieNode[T] {
+	return toAddressTrieNode[T](trie.addTrie(added.tobase()))
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
