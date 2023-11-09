@@ -550,6 +550,20 @@ func (trie *Trie[T]) ContainingFirstAllNodeIterator(forwardSubNodeOrder bool) Ca
 	return cachingAddressTrieNodeIterator[T, emptyValue]{trie.tobase().containingFirstAllNodeIterator(forwardSubNodeOrder)}
 }
 
+// ContainedFirstIterator returns an iterator that does a post-order binary tree traversal of the added nodes.
+// All added sub-nodes will be visited before their parent nodes.
+// For an address trie this means contained addresses and subnets will be visited before their containing subnet blocks.
+func (trie *Trie[T]) ContainedFirstIterator(forwardSubNodeOrder bool) IteratorWithRemove[*TrieNode[T]] {
+	return addressTrieNodeIteratorRem[T, emptyValue]{trie.tobase().containedFirstIterator(forwardSubNodeOrder)}
+}
+
+// ContainedFirstAllNodeIterator returns an iterator that does a post-order binary tree traversal.
+// All sub-nodes will be visited before their parent nodes.
+// For an address trie this means contained addresses and subnets will be visited before their containing subnet blocks.
+func (trie *Trie[T]) ContainedFirstAllNodeIterator(forwardSubNodeOrder bool) Iterator[*TrieNode[T]] {
+	return addressTrieNodeIterator[T, emptyValue]{trie.tobase().containedFirstAllNodeIterator(forwardSubNodeOrder)}
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
