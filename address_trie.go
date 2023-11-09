@@ -520,6 +520,36 @@ func (trie *Trie[T]) BlockSizeCachingAllNodeIterator() CachingTrieIterator[*Trie
 	return cachingAddressTrieNodeIterator[T, emptyValue]{trie.tobase().blockSizeCachingAllNodeIterator()}
 }
 
+// ContainingFirstIterator returns an iterator that does a pre-order binary tree traversal of the added nodes.
+// All added nodes will be visited before their added sub-nodes.
+// For an address trie this means added containing subnet blocks will be visited before their added contained addresses and subnet blocks.
+//
+// Once a given node is visited, the iterator allows you to cache an object corresponding to the
+// lower or upper sub-node that can be retrieved when you later visit that sub-node.
+//
+// Objects are cached only with nodes to be visited.
+// So for this iterator that means an object will be cached with the first added lower or upper sub-node,
+// the next lower or upper sub-node to be visited,
+// which is not necessarily the direct lower or upper sub-node of a given node.
+//
+// The caching allows you to provide iteration context from a parent to its sub-nodes when iterating.
+// The caching and retrieval is done in constant-time.
+func (trie *Trie[T]) ContainingFirstIterator(forwardSubNodeOrder bool) CachingTrieIterator[*TrieNode[T]] {
+	return cachingAddressTrieNodeIterator[T, emptyValue]{trie.tobase().containingFirstIterator(forwardSubNodeOrder)}
+}
+
+// ContainingFirstAllNodeIterator returns an iterator that does a pre-order binary tree traversal.
+// All nodes will be visited before their sub-nodes.
+// For an address trie this means containing subnet blocks will be visited before their contained addresses and subnet blocks.
+//
+// Once a given node is visited, the iterator allows you to cache an object corresponding to the
+// lower or upper sub-node that can be retrieved when you later visit that sub-node.
+// That allows you to provide iteration context from a parent to its sub-nodes when iterating.
+// The caching and retrieval is done in constant time.
+func (trie *Trie[T]) ContainingFirstAllNodeIterator(forwardSubNodeOrder bool) CachingTrieIterator[*TrieNode[T]] {
+	return cachingAddressTrieNodeIterator[T, emptyValue]{trie.tobase().containingFirstAllNodeIterator(forwardSubNodeOrder)}
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
