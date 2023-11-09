@@ -276,6 +276,27 @@ type Trie[T TrieKeyConstraint[T]] struct {
 	trieBase[T, emptyValue]
 }
 
+func (trie *Trie[T]) tobase() *trieBase[T, emptyValue] {
+	return (*trieBase[T, emptyValue])(unsafe.Pointer(trie))
+}
+
+// GetRoot returns the root node of this trie,
+// which can be nil for an implicitly zero-valued uninitialized trie,
+// but not for any other trie.
+func (trie *Trie[T]) GetRoot() *TrieNode[T] {
+	return toAddressTrieNode[T](trie.getRoot())
+}
+
+// Size returns the number of elements in the trie.
+// It does not return the number of nodes,
+// it returns the number of added nodes.
+// Only nodes for which IsAdded returns true are counted
+// (those nodes corresponding to added addresses and prefix blocks).
+// When zero is returned, IsEmpty returns true.
+func (trie *Trie[T]) Size() int {
+	return trie.toTrie().Size()
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
