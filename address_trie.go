@@ -297,6 +297,23 @@ func (trie *Trie[T]) Size() int {
 	return trie.toTrie().Size()
 }
 
+// NodeSize returns the number of nodes in the trie,
+// which is always more than the number of elements.
+func (trie *Trie[T]) NodeSize() int {
+	return trie.toTrie().NodeSize()
+}
+
+// Clear removes all added nodes from the trie,
+// after which IsEmpty will return true.
+func (trie *Trie[T]) Clear() {
+	trie.clear()
+}
+
+// IsEmpty returns true if there are not any added nodes within this trie.
+func (trie *Trie[T]) IsEmpty() bool {
+	return trie.Size() == 0
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
