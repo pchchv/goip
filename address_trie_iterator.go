@@ -98,3 +98,7 @@ func (it emptyIterator[T]) HasNext() bool {
 func (it emptyIterator[T]) Next() (t T) {
 	return
 }
+
+func nilAddressIterator[T any]() Iterator[T] {
+	return emptyIterator[T]{}
+}
