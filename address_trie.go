@@ -66,6 +66,17 @@ func (trie *trieBase[T, V]) elementsContainedBy(addr T) *tree.BinTrieNode[trieKe
 	return trie.trie.ElementsContainedBy(createKey(addr))
 }
 
+func (trie *trieBase[T, V]) elementsContaining(addr T) *containmentPath[T, V] {
+	addr = mustBeBlockOrAddress(addr)
+	return toContainmentPath[T, V](trie.trie.ElementsContaining(createKey(addr)))
+}
+
+func (trie *trieBase[T, V]) longestPrefixMatch(addr T) (t T) {
+	addr = mustBeBlockOrAddress(addr)
+	key, _ := trie.trie.LongestPrefixMatch(createKey(addr))
+	return key.address
+}
+
 // Trie is a compact binary trie (aka compact binary prefix tree, or binary radix trie), for addresses and/or CIDR prefix block subnets.
 // The prefixes in used by the prefix trie are the CIDR prefixes, or the full address in the case of individual addresses with no prefix length.
 // The elements of the trie are CIDR prefix blocks or addresses.
