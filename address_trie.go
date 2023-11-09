@@ -314,6 +314,25 @@ func (trie *Trie[T]) IsEmpty() bool {
 	return trie.Size() == 0
 }
 
+// TreeString returns a visual representation of the trie with one node per line,
+// with or without the non-added keys.
+func (trie *Trie[T]) TreeString(withNonAddedKeys bool) string {
+	return trie.toTrie().TreeString(withNonAddedKeys)
+}
+
+// String returns a visual representation of the trie with one node per line.
+func (trie *Trie[T]) String() string {
+	return trie.toTrie().String()
+}
+
+// AddedNodesTreeString provides a flattened version of
+// the trie showing only the contained added nodes and their containment structure,
+// which is non-binary.
+// The root node is included, which may or may not be added.
+func (trie *Trie[T]) AddedNodesTreeString() string {
+	return trie.toTrie().AddedNodesTreeString()
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
