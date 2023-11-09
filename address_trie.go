@@ -140,6 +140,18 @@ func (trie *trieBase[T, V]) blockSizeAllNodeIterator(lowerSubNodeFirst bool) tre
 	return trie.toTrie().BlockSizeAllNodeIterator(lowerSubNodeFirst)
 }
 
+// blockSizeCachingAllNodeIterator iterates all nodes,
+// ordered by keys from largest prefix blocks to smallest, and then to individual addresses.
+func (trie *trieBase[T, V]) blockSizeCachingAllNodeIterator() tree.CachingTrieNodeIterator[trieKey[T], V] {
+	return trie.toTrie().BlockSizeCachingAllNodeIterator()
+}
+
+// containingFirstIterator iterates all nodes,
+// ordered by keys from largest prefix blocks to smallest, and then to individual addresses.
+func (trie *trieBase[T, V]) containingFirstIterator(forwardSubNodeOrder bool) tree.CachingTrieNodeIterator[trieKey[T], V] {
+	return trie.toTrie().ContainingFirstIterator(forwardSubNodeOrder)
+}
+
 // Trie is a compact binary trie (aka compact binary prefix tree, or binary radix trie), for addresses and/or CIDR prefix block subnets.
 // The prefixes in used by the prefix trie are the CIDR prefixes, or the full address in the case of individual addresses with no prefix length.
 // The elements of the trie are CIDR prefix blocks or addresses.
