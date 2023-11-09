@@ -42,6 +42,20 @@ func (trie *trieBase[T, V]) constructAddedNodesTree() trieBase[T, tree.AddedSubn
 	return trieBase[T, tree.AddedSubnodeMapping]{trie.trie.ConstructAddedNodesTree()}
 }
 
+func (trie *trieBase[T, V]) addTrie(added *trieNode[T, V]) *tree.BinTrieNode[trieKey[T], V] {
+	return trie.trie.AddTrie(added.toBinTrieNode())
+}
+
+func (trie *trieBase[T, V]) contains(addr T) bool {
+	addr = mustBeBlockOrAddress(addr)
+	return trie.trie.Contains(createKey(addr))
+}
+
+func (trie *trieBase[T, V]) remove(addr T) bool {
+	addr = mustBeBlockOrAddress(addr)
+	return trie.trie.Remove(createKey(addr))
+}
+
 // Trie is a compact binary trie (aka compact binary prefix tree, or binary radix trie), for addresses and/or CIDR prefix block subnets.
 // The prefixes in used by the prefix trie are the CIDR prefixes, or the full address in the case of individual addresses with no prefix length.
 // The elements of the trie are CIDR prefix blocks or addresses.
