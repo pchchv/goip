@@ -598,6 +598,23 @@ func (trie *Trie[T]) FloorAddedNode(addr T) *TrieNode[T] {
 	return toAddressTrieNode[T](trie.floorAddedNode(addr))
 }
 
+// HigherAddedNode returns the added node whose address is
+// the lowest address strictly greater than the given address.
+func (trie *Trie[T]) HigherAddedNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](trie.higherAddedNode(addr))
+}
+
+// CeilingAddedNode returns the added node whose address is
+// the lowest address greater than or equal to the given address.
+func (trie *Trie[T]) CeilingAddedNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](trie.ceilingAddedNode(addr))
+}
+
+// Clone clones this trie.
+func (trie *Trie[T]) Clone() *Trie[T] {
+	return toAddressTrie[T](trie.tobase().clone())
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
