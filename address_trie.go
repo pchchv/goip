@@ -765,6 +765,20 @@ func (trie *AssociativeTrie[T, V]) ElementContains(addr T) bool {
 	return trie.elementContains(addr)
 }
 
+// Iterator returns an iterator that iterates through
+// the added addresses and prefix blocks in the trie.
+// The iteration is in sorted element order.
+func (trie *AssociativeTrie[T, V]) Iterator() Iterator[T] {
+	return trie.tobase().iterator()
+}
+
+// DescendingIterator returns an iterator that iterates through
+// the added addresses and prefix blocks in the trie.
+// The iteration is in reverse sorted element order.
+func (trie *AssociativeTrie[T, V]) DescendingIterator() Iterator[T] {
+	return trie.tobase().descendingIterator()
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
