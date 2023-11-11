@@ -748,6 +748,23 @@ func (trie *AssociativeTrie[T, V]) Remove(addr T) bool {
 	return trie.remove(addr)
 }
 
+// LongestPrefixMatch returns the address with the longest matching prefix compared to the provided address.
+func (trie *AssociativeTrie[T, V]) LongestPrefixMatch(addr T) T {
+	return trie.longestPrefixMatch(addr)
+}
+
+// ElementContains checks if a prefix block subnet or address in the trie contains the given subnet or address.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns true if the subnet or address is contained by a trie element, false otherwise.
+//
+// To get all the containing addresses, use ElementsContaining.
+func (trie *AssociativeTrie[T, V]) ElementContains(addr T) bool {
+	return trie.elementContains(addr)
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
