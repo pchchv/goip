@@ -663,6 +663,25 @@ type AssociativeTrie[T TrieKeyConstraint[T], V any] struct {
 	trieBase[T, V]
 }
 
+func (trie *AssociativeTrie[T, V]) tobase() *trieBase[T, V] {
+	return (*trieBase[T, V])(unsafe.Pointer(trie))
+}
+
+// Size returns the number of elements in the tree.
+// It does not return the number of nodes.
+// Only nodes for which IsAdded returns true are counted
+// (those nodes corresponding to added addresses and prefix blocks).
+// When zero is returned, IsEmpty returns true.
+func (trie *AssociativeTrie[T, V]) Size() int {
+	return trie.toTrie().Size()
+}
+
+// NodeSize returns the number of nodes in the tree,
+// which is always more than the number of elements.
+func (trie *AssociativeTrie[T, V]) NodeSize() int {
+	return trie.toTrie().NodeSize()
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
