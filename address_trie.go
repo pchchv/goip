@@ -634,3 +634,17 @@ func mustBeBlockOrAddress[T TrieKeyConstraint[T]](addr T) T {
 func toAddressTrie[T TrieKeyConstraint[T]](trie *tree.BinTrie[trieKey[T], emptyValue]) *Trie[T] {
 	return (*Trie[T])(unsafe.Pointer(trie))
 }
+
+// TreesString merges the tree strings (as shown by the TreeString method)
+// of multiple tries into a single merged tree string.
+func TreesString[T TrieKeyConstraint[T]](withNonAddedKeys bool, tries ...*Trie[T]) string {
+	binTries := make([]*tree.BinTrie[trieKey[T], emptyValue], 0, len(tries))
+	for _, trie := range tries {
+		binTries = append(binTries, toBinTrie[T](trie))
+	}
+	return tree.TreesString(withNonAddedKeys, binTries...)
+}
+
+func toBinTrie[T TrieKeyConstraint[T]](trie *Trie[T]) *tree.BinTrie[trieKey[T], emptyValue] {
+	return (*tree.BinTrie[trieKey[T], emptyValue])(unsafe.Pointer(trie))
+}
