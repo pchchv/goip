@@ -719,6 +719,35 @@ func (trie *AssociativeTrie[T, V]) Add(addr T) bool {
 	return trie.add(addr)
 }
 
+// Contains returns whether the given address or prefix block subnet is in the trie as an added element.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns true if the prefix block or address exists already in the trie, false otherwise.
+//
+// Use GetAddedNode  to get the node for the address rather than just checking for its existence.
+func (trie *AssociativeTrie[T, V]) Contains(addr T) bool {
+	return trie.contains(addr)
+}
+
+// Remove removes the given single address or prefix block subnet from the trie.
+//
+// Removing an element will not remove contained elements (nodes for contained blocks and addresses).
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns true if the prefix block or address was removed, false if not already in the trie.
+//
+// You can also remove by calling GetAddedNode to get the node and then calling Remove on the node.
+//
+// When an address is removed, the corresponding node may remain in the trie if it remains a subnet block for two sub-nodes.
+// If the corresponding node can be removed from the trie, it will be removed.
+func (trie *AssociativeTrie[T, V]) Remove(addr T) bool {
+	return trie.remove(addr)
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
