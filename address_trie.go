@@ -615,6 +615,20 @@ func (trie *Trie[T]) Clone() *Trie[T] {
 	return toAddressTrie[T](trie.tobase().clone())
 }
 
+// AssociativeTrie represents a binary address trie in which each added node can be associated with a value.
+// It is an instance of [Trie] that can also function as a key-value map. The keys are addresses or prefix blocks.
+// Each can be mapped to a value with type specified by the generic type V.
+//
+// For the generic type T, you can choose *Address, *IPAddress, *IPv4Address, *IPv6Address, or *MACAddress.
+// The generic value type V can be any type of your choosing.
+//
+// All the characteristics of Trie are common to AssociativeTrie.
+//
+// The zero value is a binary trie ready for use.
+type AssociativeTrie[T TrieKeyConstraint[T], V any] struct {
+	trieBase[T, V]
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
