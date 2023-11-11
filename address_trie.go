@@ -564,6 +564,22 @@ func (trie *Trie[T]) ContainedFirstAllNodeIterator(forwardSubNodeOrder bool) Ite
 	return addressTrieNodeIterator[T, emptyValue]{trie.tobase().containedFirstAllNodeIterator(forwardSubNodeOrder)}
 }
 
+// FirstNode returns the first (lowest valued) node in the trie.
+func (trie *Trie[T]) FirstNode() *TrieNode[T] {
+	return toAddressTrieNode[T](trie.trieBase.trie.FirstNode())
+}
+
+// FirstAddedNode returns the first (lowest valued) added node in this trie,
+// or nil if there are no added entries in this trie or sub-trie.
+func (trie *Trie[T]) FirstAddedNode() *TrieNode[T] {
+	return toAddressTrieNode[T](trie.trieBase.trie.FirstAddedNode())
+}
+
+// LastNode returns the last (highest valued) node in this trie.
+func (trie *Trie[T]) LastNode() *TrieNode[T] {
+	return toAddressTrieNode[T](trie.trieBase.trie.LastNode())
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
