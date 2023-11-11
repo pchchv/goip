@@ -682,6 +682,23 @@ func (trie *AssociativeTrie[T, V]) NodeSize() int {
 	return trie.toTrie().NodeSize()
 }
 
+// Clear removes all added nodes from the trie,
+// after which IsEmpty will return true.
+func (trie *AssociativeTrie[T, V]) Clear() {
+	trie.clear()
+}
+
+// IsEmpty returns true if there are not any added nodes within this tree.
+func (trie *AssociativeTrie[T, V]) IsEmpty() bool {
+	return trie.Size() == 0
+}
+
+// TreeString returns a visual representation of the tree with one node per line,
+// with or without the non-added keys.
+func (trie *AssociativeTrie[T, V]) TreeString(withNonAddedKeys bool) string {
+	return trie.toTrie().TreeString(withNonAddedKeys)
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
