@@ -699,6 +699,26 @@ func (trie *AssociativeTrie[T, V]) TreeString(withNonAddedKeys bool) string {
 	return trie.toTrie().TreeString(withNonAddedKeys)
 }
 
+// String returns a visual representation of the tree with one node per line.
+func (trie *AssociativeTrie[T, V]) String() string {
+	return trie.toTrie().String()
+}
+
+// AddedNodesTreeString provides a flattened version of the trie showing only
+// the contained added nodes and their containment structure,
+// which is non-binary.
+// The root node is included,
+// which may or may not be added.
+func (trie *AssociativeTrie[T, V]) AddedNodesTreeString() string {
+	return trie.toTrie().AddedNodesTreeString()
+}
+
+// Add adds the address to this trie.
+// Returns true if the address did not already exist in the trie.
+func (trie *AssociativeTrie[T, V]) Add(addr T) bool {
+	return trie.add(addr)
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
