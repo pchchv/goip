@@ -580,6 +580,24 @@ func (trie *Trie[T]) LastNode() *TrieNode[T] {
 	return toAddressTrieNode[T](trie.trieBase.trie.LastNode())
 }
 
+// LastAddedNode returns the last (highest valued) added node in the trie,
+// or nil if there are no added entries in this tree or sub-tree.
+func (trie *Trie[T]) LastAddedNode() *TrieNode[T] {
+	return toAddressTrieNode[T](trie.trieBase.trie.LastAddedNode())
+}
+
+// LowerAddedNode returns the added node whose address is
+// the highest address strictly less than the given address.
+func (trie *Trie[T]) LowerAddedNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](trie.lowerAddedNode(addr))
+}
+
+// FloorAddedNode returns the added node whose address is
+// the highest address less than or equal to the given address.
+func (trie *Trie[T]) FloorAddedNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](trie.floorAddedNode(addr))
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
