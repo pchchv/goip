@@ -629,6 +629,16 @@ type AssociativeTrie[T TrieKeyConstraint[T], V any] struct {
 	trieBase[T, V]
 }
 
+// AddedTree is an alternative non-binary tree data structure originating from a binary trie
+// in which the nodes of this tree are the "added" nodes of the original trie,
+// with the possible exception of the root, which matches the root node of the original.
+// The root may or may not be an added node from the original trie.
+// This tree is also read-only and is generated from the originating trie,
+// but does not change in concert with changes to the original trie.
+type AddedTree[T TrieKeyConstraint[T]] struct {
+	wrapped AssociativeTrie[T, tree.AddedSubnodeMapping]
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
