@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
@@ -613,6 +614,39 @@ func (trie *Trie[T]) CeilingAddedNode(addr T) *TrieNode[T] {
 // Clone clones this trie.
 func (trie *Trie[T]) Clone() *Trie[T] {
 	return toAddressTrie[T](trie.tobase().clone())
+}
+
+// ConstructAddedNodesTree constructs an associative trie in which the root and
+// each added node have been mapped to a slice of their respective direct added sub-nodes.
+// This trie provides an alternative non-binary tree structure of the added nodes.
+// It is used by ToAddedNodesTreeString to produce a string showing the alternative structure.
+// The returned AddedTree instance wraps the associative trie,
+// presenting it as a non-binary tree with the alternative tree structure,
+// the structure in which each node's child nodes are
+// the list of direct and indirect added child nodes in the original trie.
+// If there are no non-added nodes in this trie,
+// then the alternative tree structure provided by this method is the same as the original trie.
+func (trie *Trie[T]) ConstructAddedNodesTree() AddedTree[T] {
+	var t trieBase[T, tree.AddedSubnodeMapping] = trie.constructAddedNodesTree()
+	return AddedTree[T]{AssociativeTrie[T, tree.AddedSubnodeMapping]{t}}
+}
+
+// Equal returns whether the given argument is
+// a trie with a set of nodes with the same keys as in this trie.
+func (trie *Trie[T]) Equal(other *Trie[T]) bool {
+	return trie.toTrie().Equal(other.toTrie())
+}
+
+// For some reason Format must be here and not in addressTrieNode for nil node.
+// It panics in fmt code either way,
+// but if in here then it is handled by a recover() call in fmt properly.
+// Seems to be a problem only in the debugger.
+//
+// Format implements the [fmt.Formatter] interface.
+func (trie Trie[T]) Format(state fmt.State, verb rune) {
+	// without this, prints like {{{{<nil>}}}} or {{{{0xc00014ca50}}}}
+	// which is done by printValue in print.go of fmt
+	trie.trieBase.trie.Format(state, verb)
 }
 
 // AssociativeTrie represents a binary address trie in which each added node can be associated with a value.
