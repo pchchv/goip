@@ -1285,6 +1285,24 @@ func (node *AssociativeTrieNode[T, V]) NextNode() *AssociativeTrieNode[T, V] {
 	return toAssociativeTrieNode[T, V](node.toBinTrieNode().NextNode())
 }
 
+// PreviousNode returns the node that precedes this node following the trie order.
+func (node *AssociativeTrieNode[T, V]) PreviousNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().PreviousNode())
+}
+
+// FirstNode returns the first (the lowest valued)
+// node in the sub-trie originating from this node.
+func (node *AssociativeTrieNode[T, V]) FirstNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().FirstNode())
+}
+
+// FirstAddedNode returns the first (the lowest valued)
+// added node in the sub-trie originating from this node,
+// or nil if there are no added entries in this trie or sub-trie.
+func (node *AssociativeTrieNode[T, V]) FirstAddedNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().FirstAddedNode())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
