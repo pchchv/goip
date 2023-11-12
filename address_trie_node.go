@@ -1199,6 +1199,34 @@ func (node *AssociativeTrieNode[T, V]) GetKey() T {
 	return node.toBase().getKey()
 }
 
+// IsRoot returns whether this is the root of the backing trie.
+func (node *AssociativeTrieNode[T, V]) IsRoot() bool {
+	return node.toBinTrieNode().IsRoot()
+}
+
+// IsAdded returns whether the node was "added".
+// Some binary trie nodes are considered "added" and others are not.
+// Those nodes created for key elements added to the trie are "added" nodes.
+// Those that are not added are those nodes created
+// to serve as junctions for the added nodes.
+// Only added elements contribute to the size of a trie.
+// When removing nodes, non-added nodes
+// are removed automatically whenever they are no longer needed,
+// which is when an added node has less than two added sub-nodes.
+func (node *AssociativeTrieNode[T, V]) IsAdded() bool {
+	return node.toBinTrieNode().IsAdded()
+}
+
+// SetAdded makes this node an added node,
+// which is equivalent to adding the corresponding key to the trie.
+// If the node is already an added node, this method has no effect.
+// You cannot set an added node to non-added,
+// for that you should Remove the node from the trie by calling Remove.
+// A non-added node will only remain in the trie if it needs to be in the trie.
+func (node *AssociativeTrieNode[T, V]) SetAdded() {
+	node.toBinTrieNode().SetAdded()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
