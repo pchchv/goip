@@ -1275,6 +1275,16 @@ func (node *AssociativeTrieNode[T, V]) PreviousAddedNode() *AssociativeTrieNode[
 	return toAssociativeTrieNode[T, V](node.toBinTrieNode().PreviousAddedNode())
 }
 
+// NextAddedNode returns the first added node that follows this node following the trie order.
+func (node *AssociativeTrieNode[T, V]) NextAddedNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().NextAddedNode())
+}
+
+// NextNode returns the node that follows this node following the trie order.
+func (node *AssociativeTrieNode[T, V]) NextNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().NextNode())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
