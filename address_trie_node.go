@@ -1180,6 +1180,12 @@ func (node *ContainmentPathNode[T]) Previous() *ContainmentPathNode[T] {
 	return toContainmentPathNode[T](node.pathNode.Previous())
 }
 
+// AssociativeTrieNode represents a node of an associative compact binary prefix trie.
+// Each key is a prefix block subnet or address.  Each node also has an associated value.
+type AssociativeTrieNode[T TrieKeyConstraint[T], V any] struct {
+	trieNode[T, V]
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
