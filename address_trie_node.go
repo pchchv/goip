@@ -1445,6 +1445,26 @@ func (node *AssociativeTrieNode[T, V]) ContainedFirstAllNodeIterator(forwardSubN
 	return associativeAddressTrieNodeIterator[T, V]{node.toBase().containedFirstAllNodeIterator(forwardSubNodeOrder)}
 }
 
+// Clone clones the node.
+// Keys remain the same,
+// but the parent node and the lower and upper sub-nodes are all set to nil.
+func (node *AssociativeTrieNode[T, V]) Clone() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().Clone())
+}
+
+// CloneTree clones the sub-trie starting with this node as the root.
+// The nodes are cloned, but their keys and values are not cloned.
+func (node *AssociativeTrieNode[T, V]) CloneTree() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().CloneTree())
+}
+
+// Compare returns a negative integer, zero,
+// or a positive integer if this node is less than, equal,
+// or greater than the other, according to the key and the trie order.
+func (node *AssociativeTrieNode[T, V]) Compare(other *AssociativeTrieNode[T, V]) int {
+	return node.toBinTrieNode().Compare(other.toBinTrieNode())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
