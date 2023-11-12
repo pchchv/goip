@@ -1255,6 +1255,16 @@ func (node *AssociativeTrieNode[T, V]) GetValue() V {
 	return node.toBinTrieNode().GetValue()
 }
 
+// GetUpperSubNode gets the direct child node whose key is largest in value.
+func (node *AssociativeTrieNode[T, V]) GetUpperSubNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().GetUpperSubNode())
+}
+
+// GetLowerSubNode gets the direct child node whose key is smallest in value.
+func (node *AssociativeTrieNode[T, V]) GetLowerSubNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().GetLowerSubNode())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
