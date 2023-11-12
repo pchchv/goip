@@ -99,6 +99,10 @@ func (it emptyIterator[T]) Next() (t T) {
 	return
 }
 
+type cachingAssociativeAddressTrieNodeIteratorX[T TrieKeyConstraint[T], V any] struct {
+	tree.CachingTrieNodeIterator[trieKey[T], V]
+}
+
 func nilAddressIterator[T any]() Iterator[T] {
 	return emptyIterator[T]{}
 }
