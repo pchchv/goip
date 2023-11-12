@@ -1265,6 +1265,16 @@ func (node *AssociativeTrieNode[T, V]) GetLowerSubNode() *AssociativeTrieNode[T,
 	return toAssociativeTrieNode[T, V](node.toBinTrieNode().GetLowerSubNode())
 }
 
+// GetParent gets the node from which this node is a direct child node, or nil if this is the root.
+func (node *AssociativeTrieNode[T, V]) GetParent() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().GetParent())
+}
+
+// PreviousAddedNode returns the first added node that precedes this node following the trie order.
+func (node *AssociativeTrieNode[T, V]) PreviousAddedNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().PreviousAddedNode())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
