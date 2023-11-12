@@ -1186,6 +1186,19 @@ type AssociativeTrieNode[T TrieKeyConstraint[T], V any] struct {
 	trieNode[T, V]
 }
 
+func (node *AssociativeTrieNode[T, V]) toBinTrieNode() *tree.BinTrieNode[trieKey[T], V] {
+	return (*tree.BinTrieNode[trieKey[T], V])(unsafe.Pointer(node))
+}
+
+func (node *AssociativeTrieNode[T, V]) toBase() *trieNode[T, V] {
+	return (*trieNode[T, V])(unsafe.Pointer(node))
+}
+
+// GetKey gets the key used for placing the node in the trie.
+func (node *AssociativeTrieNode[T, V]) GetKey() T {
+	return node.toBase().getKey()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
