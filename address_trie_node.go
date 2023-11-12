@@ -1244,6 +1244,17 @@ func (node *AssociativeTrieNode[T, V]) ClearValue() {
 	node.toBinTrieNode().ClearValue()
 }
 
+// SetValue sets the value associated with this node.
+func (node *AssociativeTrieNode[T, V]) SetValue(val V) {
+	node.toBinTrieNode().SetValue(val)
+}
+
+// GetValue returns whather there is a value associated with the node,
+// and returns that value.
+func (node *AssociativeTrieNode[T, V]) GetValue() V {
+	return node.toBinTrieNode().GetValue()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
