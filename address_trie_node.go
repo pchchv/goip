@@ -1415,6 +1415,28 @@ func (node *AssociativeTrieNode[T, V]) ContainingFirstIterator(forwardSubNodeOrd
 	return cachingAssociativeAddressTrieNodeIteratorX[T, V]{node.toBase().containingFirstIterator(forwardSubNodeOrder)}
 }
 
+// ContainingFirstAllNodeIterator returns an iterator that does a pre-order binary trie traversal of all the nodes
+// of the sub-trie with this node as the root.
+//
+// All nodes will be visited before their sub-nodes.
+// For an address trie this means containing subnet blocks will be visited before their contained addresses and subnet blocks.
+//
+// Once a given node is visited, the iterator allows you to cache an object corresponding to the
+// lower or upper sub-node that can be retrieved when you later visit that sub-node.
+// That allows you to provide iteration context from a parent to its sub-nodes when iterating.
+// The caching and retrieval is done in constant-time.
+func (node *AssociativeTrieNode[T, V]) ContainingFirstAllNodeIterator(forwardSubNodeOrder bool) CachingTrieIterator[*AssociativeTrieNode[T, V]] {
+	return cachingAssociativeAddressTrieNodeIteratorX[T, V]{node.toBase().containingFirstAllNodeIterator(forwardSubNodeOrder)}
+}
+
+// ContainedFirstIterator returns an iterator that does a post-order binary trie traversal of the added nodes
+// of the sub-trie with this node as the root.
+// All added sub-nodes will be visited before their parent nodes.
+// For an address trie this means contained addresses and subnets will be visited before their containing subnet blocks.
+func (node *AssociativeTrieNode[T, V]) ContainedFirstIterator(forwardSubNodeOrder bool) IteratorWithRemove[*AssociativeTrieNode[T, V]] {
+	return associativeAddressTrieNodeIteratorRem[T, V]{node.toBase().containedFirstIterator(forwardSubNodeOrder)}
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
