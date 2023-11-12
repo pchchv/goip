@@ -1227,6 +1227,23 @@ func (node *AssociativeTrieNode[T, V]) SetAdded() {
 	node.toBinTrieNode().SetAdded()
 }
 
+// Clear removes this node and all sub-nodes from the tree,
+// after which isEmpty will return true.
+func (node *AssociativeTrieNode[T, V]) Clear() {
+	node.toBinTrieNode().Clear()
+}
+
+// IsLeaf returns whether this node is in the tree (a node for which IsAdded is true)
+// and there are no elements in the sub-tree with this node as the root.
+func (node *AssociativeTrieNode[T, V]) IsLeaf() bool {
+	return node.toBinTrieNode().IsLeaf()
+}
+
+// ClearValue makes the value associated with this node the zero-value of V.
+func (node *AssociativeTrieNode[T, V]) ClearValue() {
+	node.toBinTrieNode().ClearValue()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
