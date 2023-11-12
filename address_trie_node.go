@@ -1303,6 +1303,26 @@ func (node *AssociativeTrieNode[T, V]) FirstAddedNode() *AssociativeTrieNode[T, 
 	return toAssociativeTrieNode[T, V](node.toBinTrieNode().FirstAddedNode())
 }
 
+// LastNode returns the last (the highest valued)
+// node in the sub-trie originating from this node.
+func (node *AssociativeTrieNode[T, V]) LastNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().LastNode())
+}
+
+// LastAddedNode returns the last (the highest valued)
+// added node in the sub-trie originating from this node,
+// or nil if there are no added entries in this trie or sub-trie.
+func (node *AssociativeTrieNode[T, V]) LastAddedNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBinTrieNode().LastAddedNode())
+}
+
+// LowerAddedNode returns the added node,
+// in this sub-trie with this node as the root,
+// whose address is the highest address strictly less than the given address.
+func (node *AssociativeTrieNode[T, V]) LowerAddedNode(addr T) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBase().lowerAddedNode(addr))
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
