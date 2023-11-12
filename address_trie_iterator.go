@@ -111,6 +111,10 @@ func (iter cachingAssociativeAddressTrieNodeIteratorX[T, V]) Remove() *Associati
 	return toAssociativeTrieNode[T, V](iter.CachingTrieNodeIterator.Remove())
 }
 
+type associativeAddressTrieNodeIteratorRem[T TrieKeyConstraint[T], V any] struct {
+	tree.TrieNodeIteratorRem[trieKey[T], V]
+}
+
 func nilAddressIterator[T any]() Iterator[T] {
 	return emptyIterator[T]{}
 }
