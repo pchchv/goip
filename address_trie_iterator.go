@@ -103,6 +103,14 @@ type cachingAssociativeAddressTrieNodeIteratorX[T TrieKeyConstraint[T], V any] s
 	tree.CachingTrieNodeIterator[trieKey[T], V]
 }
 
+func (iter cachingAssociativeAddressTrieNodeIteratorX[T, V]) Next() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](iter.CachingTrieNodeIterator.Next())
+}
+
+func (iter cachingAssociativeAddressTrieNodeIteratorX[T, V]) Remove() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](iter.CachingTrieNodeIterator.Remove())
+}
+
 func nilAddressIterator[T any]() Iterator[T] {
 	return emptyIterator[T]{}
 }
