@@ -1337,6 +1337,13 @@ func (node *AssociativeTrieNode[T, V]) HigherAddedNode(addr T) *AssociativeTrieN
 	return toAssociativeTrieNode[T, V](node.toBase().higherAddedNode(addr))
 }
 
+// CeilingAddedNode returns the added node,
+// in this sub-trie with this node as the root,
+// whose address is the lowest address greater than or equal to the given address.
+func (node *AssociativeTrieNode[T, V]) CeilingAddedNode(addr T) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBase().ceilingAddedNode(addr))
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
