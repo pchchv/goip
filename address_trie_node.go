@@ -1370,6 +1370,24 @@ func (node *AssociativeTrieNode[T, V]) AllNodeIterator(forward bool) IteratorWit
 	return associativeAddressTrieNodeIteratorRem[T, V]{node.toBase().allNodeIterator(forward)}
 }
 
+// BlockSizeNodeIterator returns an iterator that iterates the added nodes,
+// ordered by keys from largest prefix blocks to smallest and then to individual addresses,
+// in the sub-trie with this node as the root.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first, otherwise the reverse order is taken.
+func (node *AssociativeTrieNode[T, V]) BlockSizeNodeIterator(lowerSubNodeFirst bool) IteratorWithRemove[*AssociativeTrieNode[T, V]] {
+	return associativeAddressTrieNodeIteratorRem[T, V]{node.toBase().blockSizeNodeIterator(lowerSubNodeFirst)}
+}
+
+// BlockSizeAllNodeIterator returns an iterator that iterates all the nodes,
+// ordered by keys from largest prefix blocks to smallest and then to individual addresses,
+// in the sub-trie with this node as the root.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first, otherwise the reverse order.
+func (node *AssociativeTrieNode[T, V]) BlockSizeAllNodeIterator(lowerSubNodeFirst bool) IteratorWithRemove[*AssociativeTrieNode[T, V]] {
+	return associativeAddressTrieNodeIteratorRem[T, V]{node.toBase().blockSizeAllNodeIterator(lowerSubNodeFirst)}
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
