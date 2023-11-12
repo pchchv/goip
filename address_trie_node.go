@@ -1358,6 +1358,18 @@ func (node *AssociativeTrieNode[T, V]) DescendingIterator() Iterator[T] {
 	return node.toBase().descendingIterator()
 }
 
+// NodeIterator returns an iterator that iterates through the added nodes of the sub-trie with this node as the root,
+// in forward or reverse trie order.
+func (node *AssociativeTrieNode[T, V]) NodeIterator(forward bool) IteratorWithRemove[*AssociativeTrieNode[T, V]] {
+	return associativeAddressTrieNodeIteratorRem[T, V]{node.toBase().nodeIterator(forward)}
+}
+
+// AllNodeIterator returns an iterator that iterates through all the nodes of the sub-trie with this node as the root,
+// in forward or reverse trie order.
+func (node *AssociativeTrieNode[T, V]) AllNodeIterator(forward bool) IteratorWithRemove[*AssociativeTrieNode[T, V]] {
+	return associativeAddressTrieNodeIteratorRem[T, V]{node.toBase().allNodeIterator(forward)}
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
