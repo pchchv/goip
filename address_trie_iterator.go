@@ -115,6 +115,14 @@ type associativeAddressTrieNodeIteratorRem[T TrieKeyConstraint[T], V any] struct
 	tree.TrieNodeIteratorRem[trieKey[T], V]
 }
 
+func (iter associativeAddressTrieNodeIteratorRem[T, V]) Next() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](iter.TrieNodeIteratorRem.Next())
+}
+
+func (iter associativeAddressTrieNodeIteratorRem[T, V]) Remove() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](iter.TrieNodeIteratorRem.Remove())
+}
+
 func nilAddressIterator[T any]() Iterator[T] {
 	return emptyIterator[T]{}
 }
