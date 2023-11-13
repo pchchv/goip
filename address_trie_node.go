@@ -1753,3 +1753,7 @@ func toContainmentPathNode[T TrieKeyConstraint[T]](node *tree.PathNode[trieKey[T
 func toAssociativeTrieNode[T TrieKeyConstraint[T], V any](node *tree.BinTrieNode[trieKey[T], V]) *AssociativeTrieNode[T, V] {
 	return (*AssociativeTrieNode[T, V])(unsafe.Pointer(node))
 }
+
+func toContainmentValuesPathNode[T TrieKeyConstraint[T], V any](node *tree.PathNode[trieKey[T], V]) *ContainmentValuesPathNode[T, V] {
+	return (*ContainmentValuesPathNode[T, V])(unsafe.Pointer(node))
+}
