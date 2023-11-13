@@ -822,3 +822,7 @@ func TreesString[T TrieKeyConstraint[T]](withNonAddedKeys bool, tries ...*Trie[T
 func toBinTrie[T TrieKeyConstraint[T]](trie *Trie[T]) *tree.BinTrie[trieKey[T], emptyValue] {
 	return (*tree.BinTrie[trieKey[T], emptyValue])(unsafe.Pointer(trie))
 }
+
+func toAssociativeTrie[T TrieKeyConstraint[T], V any](trie *tree.BinTrie[trieKey[T], V]) *AssociativeTrie[T, V] {
+	return (*AssociativeTrie[T, V])(unsafe.Pointer(trie))
+}
