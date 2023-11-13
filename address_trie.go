@@ -789,6 +789,22 @@ func (trie *AssociativeTrie[T, V]) AllNodeIterator(forward bool) IteratorWithRem
 	return associativeAddressTrieNodeIteratorRem[T, V]{trie.tobase().allNodeIterator(forward)}
 }
 
+// BlockSizeNodeIterator returns an iterator that iterates the added nodes in the trie,
+// ordered by keys from largest prefix blocks to smallest, and then to individual addresses.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first, otherwise the reverse order
+func (trie *AssociativeTrie[T, V]) BlockSizeNodeIterator(lowerSubNodeFirst bool) IteratorWithRemove[*AssociativeTrieNode[T, V]] {
+	return associativeAddressTrieNodeIteratorRem[T, V]{trie.tobase().blockSizeNodeIterator(lowerSubNodeFirst)}
+}
+
+// BlockSizeAllNodeIterator returns an iterator that iterates all nodes in the trie,
+// ordered by keys from largest prefix blocks to smallest, and then to individual addresses.
+//
+// If lowerSubNodeFirst is true, for blocks of equal size the lower is first, otherwise the reverse order
+func (trie *AssociativeTrie[T, V]) BlockSizeAllNodeIterator(lowerSubNodeFirst bool) IteratorWithRemove[*AssociativeTrieNode[T, V]] {
+	return associativeAddressTrieNodeIteratorRem[T, V]{trie.tobase().blockSizeAllNodeIterator(lowerSubNodeFirst)}
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
