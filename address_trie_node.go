@@ -1729,6 +1729,18 @@ func (path *ContainmentValuesPath[T, V]) String() string {
 	return path.string()
 }
 
+// ShortestPrefixMatch returns the beginning of the Path of containing subnets, which may or may not match the tree root of the originating tree.
+// If there are no containing elements (prefix matches) this returns nil.
+func (path *ContainmentValuesPath[T, V]) ShortestPrefixMatch() *ContainmentValuesPathNode[T, V] {
+	return toContainmentValuesPathNode[T, V](path.path.GetRoot())
+}
+
+// LongestPrefixMatch returns the end of the Path of containing subnets, which may or may not match a leaf in the originating tree.
+// If there are no containing elements (prefix matches) this returns nil.
+func (path *ContainmentValuesPath[T, V]) LongestPrefixMatch() *ContainmentValuesPathNode[T, V] {
+	return toContainmentValuesPathNode[T, V](path.path.GetLeaf())
+}
+
 // ContainmentValuesPathNode is a node in a ContainmentPath.
 type ContainmentValuesPathNode[T TrieKeyConstraint[T], V any] struct {
 	containmentPathNode[T, V]
