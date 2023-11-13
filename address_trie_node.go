@@ -1465,6 +1465,17 @@ func (node *AssociativeTrieNode[T, V]) Compare(other *AssociativeTrieNode[T, V])
 	return node.toBinTrieNode().Compare(other.toBinTrieNode())
 }
 
+// AsNewTrie creates a new sub-trie, copying the nodes starting with this node as the root.
+// The nodes are copies of the nodes in this sub-trie, but their keys and values are not copies.
+func (node *AssociativeTrieNode[T, V]) AsNewTrie() *AssociativeTrie[T, V] {
+	return toAssociativeTrie[T, V](node.toBinTrieNode().AsNewTrie())
+}
+
+// Equal returns whether the key and mapped value match those of the given node.
+func (node *AssociativeTrieNode[T, V]) Equal(other *AssociativeTrieNode[T, V]) bool {
+	return node.toBinTrieNode().Equal(other.toBinTrieNode())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
