@@ -1476,6 +1476,25 @@ func (node *AssociativeTrieNode[T, V]) Equal(other *AssociativeTrieNode[T, V]) b
 	return node.toBinTrieNode().Equal(other.toBinTrieNode())
 }
 
+// TreeEqual returns whether the sub-trie represented by
+// this node as the root node matches the given sub-trie.
+func (node *AssociativeTrieNode[T, V]) TreeEqual(other *AssociativeTrieNode[T, V]) bool {
+	return node.toBinTrieNode().TreeEqual(other.toBinTrieNode())
+}
+
+// DeepEqual returns whether the key is equal to that of
+// the given node and the value is deep equal to that of the given node.
+func (node *AssociativeTrieNode[T, V]) DeepEqual(other *AssociativeTrieNode[T, V]) bool {
+	return node.toBinTrieNode().DeepEqual(other.toBinTrieNode())
+}
+
+// TreeDeepEqual returns whether the sub-trie represented by
+// this node as the root node matches the given sub-trie,
+// matching with Compare on the keys and reflect.DeepEqual on the values.
+func (node *AssociativeTrieNode[T, V]) TreeDeepEqual(other *AssociativeTrieNode[T, V]) bool {
+	return node.toBinTrieNode().TreeDeepEqual(other.toBinTrieNode())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
