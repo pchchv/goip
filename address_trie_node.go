@@ -1495,6 +1495,32 @@ func (node *AssociativeTrieNode[T, V]) TreeDeepEqual(other *AssociativeTrieNode[
 	return node.toBinTrieNode().TreeDeepEqual(other.toBinTrieNode())
 }
 
+// Remove removes this node from the collection of added nodes,
+// and also from the trie if possible.
+// If it has two sub-nodes,
+// it cannot be removed from the trie,
+// in which case it is marked as not "added",
+// nor is it counted in the trie size.
+// Only added nodes can be removed from the trie.
+// If this node is not added, this method does nothing.
+func (node *AssociativeTrieNode[T, V]) Remove() {
+	node.toBinTrieNode().Remove()
+}
+
+// Contains returns whether the given address or prefix block subnet is in the sub-trie,
+// as an added element, with this node as the root.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to
+// single addresses and prefix blocks before calling this method.
+//
+// Returns true if the prefix block or address address exists already in the trie, false otherwise.
+//
+// Use GetAddedNode to get the node for the address rather than just checking for its existence.
+func (node *AssociativeTrieNode[T, V]) Contains(addr T) bool {
+	return node.toBase().contains(addr)
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
