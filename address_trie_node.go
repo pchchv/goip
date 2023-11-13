@@ -1589,6 +1589,35 @@ func (node *AssociativeTrieNode[T, V]) LongestPrefixMatch(addr T) T {
 	return node.toBase().longestPrefixMatch(addr)
 }
 
+// LongestPrefixMatchNode finds the containing subnet or address in the trie with the smallest subnet size,
+// which is equivalent to finding the subnet or address with the longest matching prefix.
+// Returns the node corresponding to that subnet.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns nil if no added subnet or address contains the given argument.
+//
+// Use ElementContains to check for the existence of a containing address.
+// To get all the containing addresses, use ElementsContaining.
+// Use LongestPrefixMatch to get only the address corresponding to the result of this method.
+func (node *AssociativeTrieNode[T, V]) LongestPrefixMatchNode(addr T) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBase().longestPrefixMatchNode(addr))
+}
+
+// ElementContains checks if a prefix block subnet or address in the trie, with this node as the root,
+// contains the given subnet or address.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns true if the subnet or address is contained by a trie element, false otherwise.
+//
+// To get all the containing addresses, use ElementsContaining.
+func (node *AssociativeTrieNode[T, V]) ElementContains(addr T) bool {
+	return node.toBase().elementContains(addr)
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
