@@ -1644,6 +1644,30 @@ func (node *AssociativeTrieNode[T, V]) GetAddedNode(addr T) *AssociativeTrieNode
 	return toAssociativeTrieNode[T, V](node.toBase().getAddedNode(addr))
 }
 
+// Get gets the value for the specified key in this mapped trie or subtrie.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns the value for the given key.
+// Returns nil if the contains no mapping for that key or if the mapped value is nil.
+func (node *AssociativeTrieNode[T, V]) Get(addr T) (V, bool) {
+	return node.toBase().get(addr)
+}
+
+// NodeSize returns the number of nodes in the trie with this node as the root,
+// which is more than the number of added addresses or blocks.
+func (node *AssociativeTrieNode[T, V]) NodeSize() int {
+	return node.toBinTrieNode().NodeSize()
+}
+
+// Size returns the number of elements in the trie.
+// Only nodes for which IsAdded returns true are counted.
+// When zero is returned, IsEmpty returns true.
+func (node *AssociativeTrieNode[T, V]) Size() int {
+	return node.toBinTrieNode().Size()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
