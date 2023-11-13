@@ -779,6 +779,16 @@ func (trie *AssociativeTrie[T, V]) DescendingIterator() Iterator[T] {
 	return trie.tobase().descendingIterator()
 }
 
+// NodeIterator returns an iterator that iterates through all the added nodes in the trie in forward or reverse tree order.
+func (trie *AssociativeTrie[T, V]) NodeIterator(forward bool) IteratorWithRemove[*AssociativeTrieNode[T, V]] {
+	return associativeAddressTrieNodeIteratorRem[T, V]{trie.tobase().nodeIterator(forward)}
+}
+
+// AllNodeIterator returns an iterator that iterates through all the nodes in the trie in forward or reverse tree order.
+func (trie *AssociativeTrie[T, V]) AllNodeIterator(forward bool) IteratorWithRemove[*AssociativeTrieNode[T, V]] {
+	return associativeAddressTrieNodeIteratorRem[T, V]{trie.tobase().allNodeIterator(forward)}
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
