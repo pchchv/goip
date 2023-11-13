@@ -1688,6 +1688,14 @@ func (node *AssociativeTrieNode[T, V]) String() string {
 	return node.toBinTrieNode().String()
 }
 
+// ContainmentValuesPath represents a path through the associative trie of containing subnets,
+// each node in the path contained by the previous node,
+// the first node corresponding to the shortest prefix match,
+// the last element corresponding to the longest prefix match.
+type ContainmentValuesPath[T TrieKeyConstraint[T], V any] struct {
+	containmentPath[T, V]
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
