@@ -1775,6 +1775,18 @@ func (node *ContainmentValuesPathNode[T, V]) Next() *ContainmentValuesPathNode[T
 	return toContainmentValuesPathNode[T, V](node.pathNode.Next())
 }
 
+// Previous gets the node containing this node
+func (node *ContainmentValuesPathNode[T, V]) Previous() *ContainmentValuesPathNode[T, V] {
+	return toContainmentValuesPathNode[T, V](node.pathNode.Previous())
+}
+
+// GetValue returns the value assigned to the block or address,
+// if the node was an associative node from an associative trie.
+// Otherwise, it returns the zero value.
+func (node *ContainmentValuesPathNode[T, V]) GetValue() V {
+	return node.pathNode.GetValue()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
