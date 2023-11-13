@@ -1557,6 +1557,38 @@ func (node *AssociativeTrieNode[T, V]) RemoveElementsContainedBy(addr T) *Associ
 	return toAssociativeTrieNode[T, V](node.toBase().removeElementsContainedBy(addr))
 }
 
+// ElementsContainedBy checks if a part of this trie, with this node as the root,
+// is contained by the given prefix block subnet or individual address.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns the root node of the contained subtrie,
+// or nil if no subtrie is contained.
+// The node returned need not be an "added" node,
+// see IsAdded for more details on added nodes.
+// The returned subtrie is backed by this trie,
+// so changes in this trie are reflected in those nodes and vice-versa.
+func (node *AssociativeTrieNode[T, V]) ElementsContainedBy(addr T) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBase().elementsContainedBy(addr))
+}
+
+// LongestPrefixMatch returns the address or subnet with the longest prefix of all
+// the added subnets or the address whose prefix matches the given address.
+// This is equivalent to finding the containing subnet or address with the smallest subnet size.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns nil if no added subnet or address contains the given argument.
+//
+// Use ElementContains to check for the existence of a containing address.
+// To get all the containing addresses (subnets with matching prefix), use ElementsContaining.
+// To get the node corresponding to the result of this method, use LongestPrefixMatchNode.
+func (node *AssociativeTrieNode[T, V]) LongestPrefixMatch(addr T) T {
+	return node.toBase().longestPrefixMatch(addr)
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
