@@ -1618,6 +1618,32 @@ func (node *AssociativeTrieNode[T, V]) ElementContains(addr T) bool {
 	return node.toBase().elementContains(addr)
 }
 
+// GetNode gets the node in the trie, with this subnode as the root, corresponding to the given address,
+// or returns nil if not such element exists.
+//
+// It returns any node, whether added or not,
+// including any prefix block node that was not added.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the
+// argument to single addresses and prefix blocks before calling this method.
+func (node *AssociativeTrieNode[T, V]) GetNode(addr T) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBase().getNode(addr))
+}
+
+// GetAddedNode gets trie nodes representing added elements.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to
+// single addresses and prefix blocks before calling this method.
+//
+// Use Contains to check for the existence of a given address in the trie,
+// as well as GetNode to search for all nodes including
+// those not-added but also auto-generated nodes for subnet blocks.
+func (node *AssociativeTrieNode[T, V]) GetAddedNode(addr T) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](node.toBase().getAddedNode(addr))
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
