@@ -1764,6 +1764,17 @@ func (node *ContainmentValuesPathNode[T, V]) String() string {
 	return node.string()
 }
 
+// ListString returns a visual representation of
+// the containing subnets starting from this node and moving downwards to sub-nodes.
+func (node *ContainmentValuesPathNode[T, V]) ListString() string {
+	return node.listString()
+}
+
+// Next gets the node contained by this node.
+func (node *ContainmentValuesPathNode[T, V]) Next() *ContainmentValuesPathNode[T, V] {
+	return toContainmentValuesPathNode[T, V](node.pathNode.Next())
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
