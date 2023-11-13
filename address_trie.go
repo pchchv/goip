@@ -805,6 +805,30 @@ func (trie *AssociativeTrie[T, V]) BlockSizeAllNodeIterator(lowerSubNodeFirst bo
 	return associativeAddressTrieNodeIteratorRem[T, V]{trie.tobase().blockSizeAllNodeIterator(lowerSubNodeFirst)}
 }
 
+// BlockSizeCachingAllNodeIterator returns an iterator that iterates all nodes,
+// ordered by keys from largest prefix blocks to smallest, and then to individual addresses.
+func (trie *AssociativeTrie[T, V]) BlockSizeCachingAllNodeIterator() CachingTrieIterator[*AssociativeTrieNode[T, V]] {
+	return cachingAssociativeAddressTrieNodeIteratorX[T, V]{trie.tobase().blockSizeCachingAllNodeIterator()}
+}
+
+// ContainingFirstIterator returns an iterator that does a pre-order binary trie traversal of the added nodes.
+// All added nodes will be visited before their added sub-nodes.
+// For an address trie this means added containing subnet blocks will be visited before their added contained addresses and subnet blocks.
+//
+// Once a given node is visited, the iterator allows you to cache an object corresponding to the
+// lower or upper sub-node that can be retrieved when you later visit that sub-node.
+//
+// Objects are cached only with nodes to be visited.
+// So for this iterator that means an object will be cached with the first added lower or upper sub-node,
+// the next lower or upper sub-node to be visited,
+// which is not necessarily the direct lower or upper sub-node of a given node.
+//
+// The caching allows you to provide iteration context from a parent to its sub-nodes when iterating.
+// The caching and retrieval is done in constant-time.
+func (trie *AssociativeTrie[T, V]) ContainingFirstIterator(forwardSubNodeOrder bool) CachingTrieIterator[*AssociativeTrieNode[T, V]] {
+	return cachingAssociativeAddressTrieNodeIteratorX[T, V]{trie.tobase().containingFirstIterator(forwardSubNodeOrder)}
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
