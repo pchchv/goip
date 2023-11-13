@@ -1668,6 +1668,26 @@ func (node *AssociativeTrieNode[T, V]) Size() int {
 	return node.toBinTrieNode().Size()
 }
 
+// IsEmpty returns whether the size is zero.
+func (node *AssociativeTrieNode[T, V]) IsEmpty() bool {
+	return node.Size() == 0
+}
+
+// TreeString returns a visual representation of the sub-trie with this node as the root, with one node per line.
+//
+//   - withNonAddedKeys: whether to show nodes that are not added nodes
+//   - withSizes: whether to include the counts of added nodes in each sub-trie
+func (node *AssociativeTrieNode[T, V]) TreeString(withNonAddedKeys, withSizes bool) string {
+	return node.toBinTrieNode().TreeString(withNonAddedKeys, withSizes)
+}
+
+// String returns a visual representation of this node including the key,
+// with an open circle indicating this node is not an added node,
+// a closed circle indicating this node is an added node.
+func (node *AssociativeTrieNode[T, V]) String() string {
+	return node.toBinTrieNode().String()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
