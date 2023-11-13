@@ -1688,6 +1688,26 @@ func (node *AssociativeTrieNode[T, V]) String() string {
 	return node.toBinTrieNode().String()
 }
 
+// ElementsContaining finds the trie nodes in the trie, with this sub-node as the root,
+// containing the given key and returns them as a linked list.
+// Only added nodes are added to the linked list.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+func (node *AssociativeTrieNode[T, V]) ElementsContaining(addr T) *ContainmentValuesPath[T, V] {
+	return &ContainmentValuesPath[T, V]{*node.toBase().elementsContaining(addr)}
+}
+
+// For some reason Format must be here and not in addressTrieNode for nil node.
+// It panics in fmt code either way, but if in here then it is handled by a recover() call in fmt properly in the debugger.
+//
+// Format implements the [fmt.Formatter] interface.
+func (node AssociativeTrieNode[T, V]) Format(state fmt.State, verb rune) {
+	node.toBase().binNode.Format(state, verb)
+}
+
 // ContainmentValuesPath represents a path through the associative trie of containing subnets,
 // each node in the path contained by the previous node,
 // the first node corresponding to the shortest prefix match,
