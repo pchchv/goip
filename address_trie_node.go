@@ -1716,6 +1716,19 @@ type ContainmentValuesPath[T TrieKeyConstraint[T], V any] struct {
 	containmentPath[T, V]
 }
 
+// Count returns the count of containing subnets in the path of containing subnets,
+// starting from this node and moving downwards to sub-nodes.
+// This is a constant-time operation since the size is maintained in each node and
+// adjusted with each add and Remove operation in the sub-tree.
+func (path *ContainmentValuesPath[T, V]) Count() int {
+	return path.count()
+}
+
+// String returns a visual representation of the Path with one node per line.
+func (path *ContainmentValuesPath[T, V]) String() string {
+	return path.string()
+}
+
 func createKey[T TrieKeyConstraint[T]](addr T) trieKey[T] {
 	return trieKey[T]{address: addr}
 }
