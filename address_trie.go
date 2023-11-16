@@ -1135,6 +1135,25 @@ func (trie *AssociativeTrie[T, V]) GetAddedNode(addr T) *AssociativeTrieNode[T, 
 	return toAssociativeTrieNode[T, V](trie.getAddedNode(addr))
 }
 
+// ConstructAddedNodesTree provides an associative trie in which the root and each added node are mapped to a list of their respective direct added sub-nodes.
+// This trie provides an alternative non-binary tree structure of the added nodes.
+// It is used by ToAddedNodesTreeString to produce a string showing the alternative structure.
+// The returned AddedTree instance wraps the associative trie, presenting it as a non-binary tree with the alternative tree structure,
+// the structure in which each node's child nodes are the list of direct and indirect added child nodes in the original trie.
+// If there are no non-added nodes in this trie, then the alternative tree structure provided by this method is the same as the original trie.
+func (trie *AssociativeTrie[T, V]) ConstructAddedNodesTree() AssociativeAddedTree[T, V] {
+	var t trieBase[T, tree.AddedSubnodeMapping] = trie.constructAddedNodesTree()
+	return AssociativeAddedTree[T, V]{AssociativeTrie[T, tree.AddedSubnodeMapping]{t}}
+}
+
+// For some reason Format must be here and not in addressTrieNode for nil node.
+// It panics in fmt code either way, but if in here then it is handled by a recover() call in fmt properly in the debugger.
+//
+// Format implements the [fmt.Formatter] interface.
+func (trie AssociativeTrie[T, V]) Format(state fmt.State, verb rune) {
+	trie.trieBase.trie.Format(state, verb)
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
