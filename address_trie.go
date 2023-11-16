@@ -1291,6 +1291,25 @@ func (node AssociativeAddedTreeNode[T, V]) IsAdded() bool {
 	return node.wrapped.IsAdded()
 }
 
+// GetKey returns the key of this node,
+// / which is the same as the key of the corresponding node in the originating trie.
+func (node AssociativeAddedTreeNode[T, V]) GetKey() T {
+	return node.wrapped.GetKey().address
+}
+
+// GetValue returns the value of this node,
+// which is the same as the value of the corresponding node in the originating trie.
+func (node AssociativeAddedTreeNode[T, V]) GetValue() V {
+	val := node.wrapped.GetValue()
+	if val == nil {
+		var v V
+		return v
+	}
+
+	subnodeMapping := val.(tree.SubNodesMapping[trieKey[T], V])
+	return subnodeMapping.Value
+}
+
 type printWrapper[T TrieKeyConstraint[T], V any] struct {
 	*tree.BinTrieNode[trieKey[T], tree.AddedSubnodeMapping]
 }
