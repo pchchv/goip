@@ -848,6 +848,18 @@ func (trie *AssociativeTrie[T, V]) ContainedFirstIterator(forwardSubNodeOrder bo
 	return associativeAddressTrieNodeIteratorRem[T, V]{trie.tobase().containedFirstIterator(forwardSubNodeOrder)}
 }
 
+// ContainedFirstAllNodeIterator returns an iterator that does a post-order binary trie traversal.
+// All sub-nodes will be visited before their parent nodes.
+// For an address trie this means contained addresses and subnets will be visited before their containing subnet blocks.
+func (trie *AssociativeTrie[T, V]) ContainedFirstAllNodeIterator(forwardSubNodeOrder bool) Iterator[*AssociativeTrieNode[T, V]] {
+	return associativeAddressTrieNodeIterator[T, V]{trie.tobase().containedFirstAllNodeIterator(forwardSubNodeOrder)}
+}
+
+// FirstNode returns the first (lowest-valued) node in the trie or nil if the trie is empty.
+func (trie *AssociativeTrie[T, V]) FirstNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.trieBase.trie.FirstNode())
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
