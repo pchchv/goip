@@ -973,6 +973,56 @@ func (trie *AssociativeTrie[T, V]) PutNode(addr T, value V) *AssociativeTrieNode
 	return toAssociativeTrieNode[T, V](trie.trie.PutNode(createKey(addr), value))
 }
 
+// Remap remaps node values in the trie.
+//
+// This will look up the node corresponding to the given key.
+// It will call the remapping function, regardless of whether the node is found or not.
+//
+// If the node is not found, or the node is not an "added" node, the existingValue argument will be the zero value.
+// If the node is found, the existingValue argument will be the node's value, which can also be the zero value.
+// The boolean "found" argument will be true if the node was found and it is an "added" node.
+// If the node was not found or was not an "added" node, then the boolean "found" argument will be false.
+//
+// If the remapping function returns false as the "mapIt" argument,
+// then the matched node will be removed or converted to a "non-added" node, if any.
+// If it returns true, then either the existing node will be set to an "added" node with the "mapped" value given as the first argument,
+// or if there was no matched node, it will create a new added node with the "mapped" value.
+//
+// The method will return the node involved, which is either the matched node, or the newly created node,
+// or nil if there was no matched node nor newly created node.
+//
+// If the remapping function modifies the trie during its computation,
+// and the returned values from the remapper requires changes to be made to the trie,
+// then the trie will not be changed as required by the remapper, and Remap will panic.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+func (trie *AssociativeTrie[T, V]) Remap(addr T, remapper func(existingValue V, found bool) (mapped V, mapIt bool)) *AssociativeTrieNode[T, V] {
+	addr = mustBeBlockOrAddress(addr)
+	return toAssociativeTrieNode[T, V](trie.trieBase.trie.Remap(createKey(addr), remapper))
+}
+
+// RemapIfAbsent remaps node values in the trie, but only for nodes that do not exist or are not "added".
+//
+// This will look up the node corresponding to the given key.
+// If the node is not found or not "added", then RemapIfAbsent will call the supplier function.
+// It will create a new node with the value returned from the supplier function.
+// If the node is found and "added", then RemapIfAbsent will not call the supplier function.
+//
+// The method will return the node involved, which is either the matched node, the newly created node,
+// or nil if there was no matched node nor newly created node.
+//
+// If the supplier function modifies the trie during its computation,
+// then the trie will not be changed and RemapIfAbsent will panic.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument
+// to single addresses and prefix blocks before calling this method.
+func (trie *AssociativeTrie[T, V]) RemapIfAbsent(addr T, supplier func() V) *AssociativeTrieNode[T, V] {
+	addr = mustBeBlockOrAddress(addr)
+	return toAssociativeTrieNode[T, V](trie.trieBase.trie.RemapIfAbsent(createKey(addr), supplier))
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
