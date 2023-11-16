@@ -901,6 +901,23 @@ func (trie *AssociativeTrie[T, V]) CeilingAddedNode(addr T) *AssociativeTrieNode
 	return toAssociativeTrieNode[T, V](trie.ceilingAddedNode(addr))
 }
 
+// Clone clones this trie.
+func (trie *AssociativeTrie[T, V]) Clone() *AssociativeTrie[T, V] {
+	return toAssociativeTrie[T, V](trie.tobase().clone())
+}
+
+// Equal returns whether the given argument is a trie with a set of nodes with the same keys as in this trie.
+func (trie *AssociativeTrie[T, V]) Equal(other *AssociativeTrie[T, V]) bool {
+	return trie.toTrie().Equal(other.toTrie())
+}
+
+// DeepEqual returns whether the given argument is
+// a trie with a set of nodes with the same keys and values as in this trie,
+// the values being compared with reflect.DeepEqual.
+func (trie *AssociativeTrie[T, V]) DeepEqual(other *AssociativeTrie[T, V]) bool {
+	return trie.toTrie().DeepEqual(other.toTrie())
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
