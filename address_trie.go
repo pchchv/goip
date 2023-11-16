@@ -1250,6 +1250,19 @@ type AssociativeAddedTreeNode[T TrieKeyConstraint[T], V any] struct {
 	wrapped *tree.BinTrieNode[trieKey[T], tree.AddedSubnodeMapping]
 }
 
+type printWrapper[T TrieKeyConstraint[T], V any] struct {
+	*tree.BinTrieNode[trieKey[T], tree.AddedSubnodeMapping]
+}
+
+func (p printWrapper[T, V]) GetValue() V {
+	var nodeValue tree.AddedSubnodeMapping = p.BinTrieNode.GetValue()
+	if nodeValue == nil {
+		var v V
+		return v
+	}
+	return nodeValue.(tree.SubNodesMapping[trieKey[T], V]).Value
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
