@@ -1216,6 +1216,18 @@ func (node AddedTreeNode[T]) IsAdded() bool {
 	return node.wrapped.IsAdded()
 }
 
+// GetKey returns the key of this node,
+// which is the same as the key of the corresponding node in the originating trie.
+func (node AddedTreeNode[T]) GetKey() T {
+	return node.wrapped.GetKey().address
+}
+
+// TreeString returns a visual representation of the sub-tree originating from this node,
+// with one node per line.
+func (node AddedTreeNode[T]) TreeString() string {
+	return tree.AddedNodesTreeString[trieKey[T], emptyValue](node.wrapped)
+}
+
 // AssociativeAddedTree is similar to AddedTree but originates from an AssociativeTrie.
 // The nodes of this tree have the same values as the corresponding nodes in the original trie.
 type AssociativeAddedTree[T TrieKeyConstraint[T], V any] struct {
