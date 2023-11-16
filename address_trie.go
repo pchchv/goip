@@ -1182,6 +1182,40 @@ type AddedTreeNode[T TrieKeyConstraint[T]] struct {
 	wrapped *tree.BinTrieNode[trieKey[T], tree.AddedSubnodeMapping]
 }
 
+// GetSubNodes returns the sub-nodes of this node,
+// which are not the same as the 0, 1 or 2 direct sub-nodes of the originating binary trie.
+// Instead, these are all the  direct or indirect added sub-nodes of the node in the originating trie.
+// If you can traverse from this node to another node in the originating trie,
+// using a sequence of sub-nodes, without any intervening sub-node being an added node,
+// / then that other node will appear as a sub-node here.
+func (node AddedTreeNode[T]) GetSubNodes() []AddedTreeNode[T] {
+	val := node.wrapped.GetValue()
+	if val == nil {
+		return nil
+	}
+
+	subnodeMapping := val.(tree.SubNodesMapping[trieKey[T], emptyValue])
+	var subNodes []*tree.BinTrieNode[trieKey[T], tree.AddedSubnodeMapping]
+	subNodes = subnodeMapping.SubNodes
+	if len(subNodes) == 0 {
+		return nil
+	}
+
+	res := make([]AddedTreeNode[T], len(subNodes))
+
+	for i, subNode := range subNodes {
+		res[i] = AddedTreeNode[T]{subNode}
+	}
+	return res
+}
+
+// IsAdded returns if the node was an added node in the original trie.
+// This returns true for all nodes except possibly the root,
+// since only added nodes are added to this tree, apart from the root.
+func (node AddedTreeNode[T]) IsAdded() bool {
+	return node.wrapped.IsAdded()
+}
+
 // AssociativeAddedTree is similar to AddedTree but originates from an AssociativeTrie.
 // The nodes of this tree have the same values as the corresponding nodes in the original trie.
 type AssociativeAddedTree[T TrieKeyConstraint[T], V any] struct {
