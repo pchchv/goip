@@ -860,6 +860,23 @@ func (trie *AssociativeTrie[T, V]) FirstNode() *AssociativeTrieNode[T, V] {
 	return toAssociativeTrieNode[T, V](trie.trieBase.trie.FirstNode())
 }
 
+// FirstAddedNode returns the first (lowest-valued) added node in the trie
+// or nil if there are no added entries in this trie.
+func (trie *AssociativeTrie[T, V]) FirstAddedNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.trieBase.trie.FirstAddedNode())
+}
+
+// LastNode returns the last (highest-valued) node in the trie or nil if the trie is empty.
+func (trie *AssociativeTrie[T, V]) LastNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.trieBase.trie.LastNode())
+}
+
+// LastAddedNode returns the last (highest-valued) added node in the sub-trie originating from this node,
+// or nil if there are no added entries in this trie.
+func (trie *AssociativeTrie[T, V]) LastAddedNode() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.trieBase.trie.LastAddedNode())
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
