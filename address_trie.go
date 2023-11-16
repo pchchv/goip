@@ -918,6 +918,61 @@ func (trie *AssociativeTrie[T, V]) DeepEqual(other *AssociativeTrie[T, V]) bool 
 	return trie.toTrie().DeepEqual(other.toTrie())
 }
 
+// Put associates the specified value with the specified key in this map.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert
+// the argument to single addresses and prefix blocks before calling this method.
+//
+// If this map previously contained a mapping for a key,
+// the old value is replaced by the specified value,
+// and false is returned along with the old value.
+// If this map did not previously contain a mapping for the key,
+// true is returned along with a nil value.
+// The boolean return value allows you to distinguish whether
+// the address was previously mapped to nil or not mapped at all.
+func (trie *AssociativeTrie[T, V]) Put(addr T, value V) (V, bool) {
+	addr = mustBeBlockOrAddress(addr)
+	return trie.trie.Put(createKey(addr), value)
+}
+
+// PutTrie adds nodes for the address keys and values in the trie with the root node as the passed in node.
+// To add only the keys, use AddTrie.
+//
+// For each added in the given node that does not exist in the trie,
+// a copy of each node will be made,
+// the copy including the associated value,
+// and the copy will be inserted into the trie.
+//
+// The address type/version of the keys must match.
+//
+// When adding one trie to another,
+// this method is more efficient than adding each node of the first trie individually.
+// When using this method,
+// searching for the location to add sub-nodes starts from the inserted parent node.
+//
+// Returns the node corresponding to the given sub-root node,
+// whether it was already in the trie or not.
+func (trie *AssociativeTrie[T, V]) PutTrie(added *AssociativeTrieNode[T, V]) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.trie.PutTrie(added.toBinTrieNode()))
+	//return trie.putTrie(added.toBase())
+}
+
+// PutNode associates the specified value with the specified key in this map.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert
+// the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns the node for the added address, whether it was already in the trie or not.
+//
+// If you wish to know whether the node was already there when adding, use PutNew,
+// or before adding you can use GetAddedNode.
+func (trie *AssociativeTrie[T, V]) PutNode(addr T, value V) *AssociativeTrieNode[T, V] {
+	addr = mustBeBlockOrAddress(addr)
+	return toAssociativeTrieNode[T, V](trie.trie.PutNode(createKey(addr), value))
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
