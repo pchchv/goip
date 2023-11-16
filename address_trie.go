@@ -877,6 +877,18 @@ func (trie *AssociativeTrie[T, V]) LastAddedNode() *AssociativeTrieNode[T, V] {
 	return toAssociativeTrieNode[T, V](trie.trieBase.trie.LastAddedNode())
 }
 
+// LowerAddedNode returns the added node whose address is the highest address strictly less than the given address,
+// or nil if there are no added entries in this trie.
+func (trie *AssociativeTrie[T, V]) LowerAddedNode(addr T) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.lowerAddedNode(addr))
+}
+
+// FloorAddedNode returns the added node whose address is the highest address less than or equal to the given address,
+// or nil if there are no added entries in this trie.
+func (trie *AssociativeTrie[T, V]) FloorAddedNode(addr T) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.floorAddedNode(addr))
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
