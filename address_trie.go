@@ -1228,6 +1228,13 @@ func (node AddedTreeNode[T]) TreeString() string {
 	return tree.AddedNodesTreeString[trieKey[T], emptyValue](node.wrapped)
 }
 
+// String returns a visual representation of this node including the key.
+// If this is the root, it will have an open circle if the root is not an added node.
+// Otherwise, the node will have a closed circle.
+func (node AddedTreeNode[T]) String() string {
+	return tree.NodeString[trieKey[T], emptyValue](printWrapper[T, emptyValue]{node.wrapped})
+}
+
 // AssociativeAddedTree is similar to AddedTree but originates from an AssociativeTrie.
 // The nodes of this tree have the same values as the corresponding nodes in the original trie.
 type AssociativeAddedTree[T TrieKeyConstraint[T], V any] struct {
