@@ -1023,6 +1023,39 @@ func (trie *AssociativeTrie[T, V]) RemapIfAbsent(addr T, supplier func() V) *Ass
 	return toAssociativeTrieNode[T, V](trie.trieBase.trie.RemapIfAbsent(createKey(addr), supplier))
 }
 
+// Get gets the value for the specified key in this mapped trie or sub-trie.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Returns the value for the given key.
+// Returns nil if the contains no mapping for that key or if the mapped value is nil.
+func (trie *AssociativeTrie[T, V]) Get(addr T) (V, bool) {
+	addr = mustBeBlockOrAddress(addr)
+	return trie.trie.Get(createKey(addr))
+}
+
+// GetRoot returns the root node of this trie,
+// which can be nil for an implicitly zero-valued uninitialized trie,
+// but not for any other trie.
+func (trie *AssociativeTrie[T, V]) GetRoot() *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.getRoot())
+}
+
+// AddNode adds the address key to this trie.
+// The new or existing node for the address is returned.
+func (trie *AssociativeTrie[T, V]) AddNode(addr T) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.addNode(addr))
+}
+
+// AddTrie adds nodes for the keys in the trie with the root node as the passed in node.
+// To add both keys and values, use PutTrie.
+// AddTrie returns the sub-node in the trie where the added trie begins,
+// where the first node of the added trie is located.
+func (trie *AssociativeTrie[T, V]) AddTrie(added *AssociativeTrieNode[T, V]) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.addTrie(added.toBase()))
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
