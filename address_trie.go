@@ -1170,6 +1170,11 @@ type AssociativeAddedTree[T TrieKeyConstraint[T], V any] struct {
 	wrapped AssociativeTrie[T, tree.AddedSubnodeMapping]
 }
 
+// AssociativeAddedTreeNode represents a node in an AssociativeAddedTree.
+type AssociativeAddedTreeNode[T TrieKeyConstraint[T], V any] struct {
+	wrapped *tree.BinTrieNode[trieKey[T], tree.AddedSubnodeMapping]
+}
+
 // Ensures the address is either an individual address or a prefix block subnet.
 // Returns a normalized address which has no prefix length if it is a single address,
 // or has a prefix length matching the prefix block size if it is a prefix block.
