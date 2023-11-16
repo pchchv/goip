@@ -1310,6 +1310,19 @@ func (node AssociativeAddedTreeNode[T, V]) GetValue() V {
 	return subnodeMapping.Value
 }
 
+// String returns a visual representation of this node including the key and the value.
+// If this is the root, it will have an open circle if the root is not an added node.
+// Otherwise, the node will have a closed circle.
+func (node AssociativeAddedTreeNode[T, V]) String() string {
+	return tree.NodeString[trieKey[T], V](printWrapper[T, V]{node.wrapped})
+}
+
+// TreeString returns a visual representation of the sub-tree originating from this node,
+// with one node per line.
+func (node AssociativeAddedTreeNode[T, V]) TreeString() string {
+	return tree.AddedNodesTreeString[trieKey[T], V](node.wrapped)
+}
+
 type printWrapper[T TrieKeyConstraint[T], V any] struct {
 	*tree.BinTrieNode[trieKey[T], tree.AddedSubnodeMapping]
 }
