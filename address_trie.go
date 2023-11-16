@@ -8,6 +8,17 @@ import (
 	"github.com/pchchv/goip/tree"
 )
 
+type (
+	AssociativeAddressTrie     = AssociativeTrie[*Address, any]
+	AddressTrie                = Trie[*Address]
+	IPv4AddressAssociativeTrie = AssociativeTrie[*IPv4Address, any]
+	IPv4AddressTrie            = Trie[*IPv4Address]
+	IPv6AddressAssociativeTrie = AssociativeTrie[*IPv6Address, any]
+	IPv6AddressTrie            = Trie[*IPv6Address]
+	// NodeValue is an alias for the generic node value type for AssociativeAddressTrie, IPv4AddressAssociativeTrie, and IPv6AddressAssociativeTrie
+	NodeValue = any
+)
+
 type trieBase[T TrieKeyConstraint[T], V any] struct {
 	trie tree.BinTrie[trieKey[T], V]
 }
