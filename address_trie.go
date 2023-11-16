@@ -1164,6 +1164,11 @@ type AddedTree[T TrieKeyConstraint[T]] struct {
 	wrapped AssociativeTrie[T, tree.AddedSubnodeMapping]
 }
 
+// AddedTreeNode represents a node in an AddedTree.
+type AddedTreeNode[T TrieKeyConstraint[T]] struct {
+	wrapped *tree.BinTrieNode[trieKey[T], tree.AddedSubnodeMapping]
+}
+
 // AssociativeAddedTree is similar to AddedTree but originates from an AssociativeTrie.
 // The nodes of this tree have the same values as the corresponding nodes in the original trie.
 type AssociativeAddedTree[T TrieKeyConstraint[T], V any] struct {
