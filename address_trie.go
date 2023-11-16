@@ -1170,6 +1170,17 @@ type AssociativeAddedTree[T TrieKeyConstraint[T], V any] struct {
 	wrapped AssociativeTrie[T, tree.AddedSubnodeMapping]
 }
 
+// GetRoot returns the root of this tree, which corresponds to the root of the originating trie.
+func (atree AssociativeAddedTree[T, V]) GetRoot() AssociativeAddedTreeNode[T, V] {
+	return AssociativeAddedTreeNode[T, V]{atree.wrapped.getRoot()}
+}
+
+// String returns a string representation of the tree, which is the same as the string obtained from
+// the AddedNodesTreeString method of the originating trie.
+func (atree AssociativeAddedTree[T, V]) String() string {
+	return tree.AddedNodesTreeString[trieKey[T], V](atree.wrapped.trie.GetRoot())
+}
+
 // AssociativeAddedTreeNode represents a node in an AssociativeAddedTree.
 type AssociativeAddedTreeNode[T TrieKeyConstraint[T], V any] struct {
 	wrapped *tree.BinTrieNode[trieKey[T], tree.AddedSubnodeMapping]
