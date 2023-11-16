@@ -1112,6 +1112,29 @@ func (trie *AssociativeTrie[T, V]) LongestPrefixMatchNode(addr T) *AssociativeTr
 	return toAssociativeTrieNode[T, V](trie.longestPrefixMatchNode(addr))
 }
 
+// GetNode gets the node in the trie corresponding to the given address,
+// or returns nil if not such element exists.
+//
+// It returns any node, whether added or not,
+// including any prefix block node that was not added.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+func (trie *AssociativeTrie[T, V]) GetNode(addr T) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.getNode(addr))
+}
+
+// GetAddedNode gets trie nodes representing added elements.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument to single addresses and prefix blocks before calling this method.
+//
+// Use Contains to check for the existence of a given address in the trie,
+// as well as GetNode to search for all nodes including those not added but also auto-generated nodes for subnet blocks.
+func (trie *AssociativeTrie[T, V]) GetAddedNode(addr T) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.getAddedNode(addr))
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
