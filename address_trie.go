@@ -1094,6 +1094,24 @@ func (trie *AssociativeTrie[T, V]) ElementsContainedBy(addr T) *AssociativeTrieN
 	return toAssociativeTrieNode[T, V](trie.elementsContainedBy(addr))
 }
 
+// ElementsContaining finds the trie nodes in the trie containing the given key and returns them as a linked list.
+// Only added nodes are added to the linked list.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+//
+// If the argument is not a single address nor prefix block, this method will panic.
+// The [Partition] type can be used to convert the argument
+// to single addresses and prefix blocks before calling this method.
+func (trie *AssociativeTrie[T, V]) ElementsContaining(addr T) *ContainmentValuesPath[T, V] {
+	return &ContainmentValuesPath[T, V]{*trie.elementsContaining(addr)}
+}
+
+// LongestPrefixMatchNode returns the node of the address with
+// the longest matching prefix compared to the provided address.
+func (trie *AssociativeTrie[T, V]) LongestPrefixMatchNode(addr T) *AssociativeTrieNode[T, V] {
+	return toAssociativeTrieNode[T, V](trie.longestPrefixMatchNode(addr))
+}
+
 // AddedTree is an alternative non-binary tree data structure originating from a binary trie
 // in which the nodes of this tree are the "added" nodes of the original trie,
 // with the possible exception of the root, which matches the root node of the original.
