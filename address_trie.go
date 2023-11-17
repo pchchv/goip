@@ -1418,3 +1418,19 @@ func NewAssociativeTrie[T TrieKeyConstraint[T], V any]() *AssociativeTrie[T, V] 
 func NewIPv4AddressTrie() *Trie[*IPv4Address] { // for backwards compatibility
 	return &Trie[*IPv4Address]{trieBase[*IPv4Address, emptyValue]{tree.NewBinTrie[trieKey[*IPv4Address], emptyValue](trieKey[*IPv4Address]{address: ipv4All})}}
 }
+
+// NewIPv4AddressAssociativeTrie constructs an IPv4 associative address trie with
+// the root as the 0.0.0.0/0 prefix block
+// This is here for backwards compatibility.
+// Using NewAssociativeTrie is recommended instead.
+func NewIPv4AddressAssociativeTrie() *AssociativeTrie[*IPv4Address, any] { // for backwards compatibility
+	return &AssociativeTrie[*IPv4Address, any]{trieBase[*IPv4Address, any]{tree.NewBinTrie[trieKey[*IPv4Address], any](trieKey[*IPv4Address]{address: ipv4All})}}
+}
+
+// NewIPv6AddressTrie constructs an IPv6 address trie with
+// the root as the ::/0 prefix block
+// This is here for backwards compatibility.
+// Using NewTrie is recommended instead.
+func NewIPv6AddressTrie() *Trie[*IPv6Address] { // for backwards compatibility
+	return &Trie[*IPv6Address]{trieBase[*IPv6Address, emptyValue]{tree.NewBinTrie[trieKey[*IPv6Address], emptyValue](trieKey[*IPv6Address]{address: ipv6All})}}
+}
