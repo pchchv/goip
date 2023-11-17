@@ -766,7 +766,8 @@ func (addr *MACAddress) ReverseBits(perByte bool) (*MACAddress, address_error.In
 }
 
 // ToKey creates the associated address key.
-// While addresses can be compared with the Compare or Equal methods as well as various provided instances of AddressComparator,
+// While addresses can be compared with the Compare,
+// TrieCompare or Equal methods as well as various provided instances of AddressComparator,
 // they are not comparable with Go operators.
 // However, AddressKey instances are comparable with Go operators, and thus can be used as map keys.
 func (addr *MACAddress) ToKey() MACAddressKey {
@@ -836,6 +837,21 @@ func (addr *MACAddress) toMACKey(contents *keyContents) {
 			val.upper = newLower
 		}
 	}
+}
+
+// TrieCompare compares two addresses according to address trie ordering.
+// It returns a number less than zero, zero, or a number greater than zero if the first address argument is less than, equal to, or greater than the second.
+//
+// The comparison is intended for individual addresses and CIDR prefix blocks.
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *MACAddress) TrieCompare(other *MACAddress) (int, address_error.IncompatibleAddressError) {
+	if addr.GetSegmentCount() != other.GetSegmentCount() {
+		return 0, &incompatibleAddressError{addressError{key: "ipaddress.error.mismatched.bit.size"}}
+	}
+	return addr.init().trieCompare(other.ToAddressBase()), nil
 }
 
 func fromMACKey(key MACAddressKey) *MACAddress {
