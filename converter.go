@@ -40,3 +40,29 @@ type IPAddressConverter interface {
 // Similarly, "1-2.0.0.0" cannot be converted to an IPv4-mapped IPv6 address,
 // because the two segments "1-2.0" cannot be joined into a single IPv6 segment with the same range of values, namely the two values 0x100 and 0x200.
 type DefaultAddressConverter struct{}
+
+// ToIPv4 converts IPv4-mapped IPv6 addresses to IPv4,
+// or returns the original address if IPv4 already,
+// or returns nil if the address cannot be converted.
+func (converter DefaultAddressConverter) ToIPv4(address *IPAddress) *IPv4Address {
+	if addr := address.ToIPv4(); addr != nil {
+		return addr
+	} else if addr := address.ToIPv6(); addr != nil {
+		if ipv4Addr, err := addr.GetEmbeddedIPv4Address(); err == nil {
+			return ipv4Addr
+		}
+	}
+	return nil
+}
+
+// ToIPv6 converts to an IPv4-mapped IPv6 address or returns the original address if IPv6 already.
+func (converter DefaultAddressConverter) ToIPv6(address *IPAddress) *IPv6Address {
+	if addr := address.ToIPv6(); addr != nil {
+		return addr
+	} else if addr := address.ToIPv4(); addr != nil {
+		if ipv6Addr, err := addr.GetIPv4MappedAddress(); err == nil {
+			return ipv6Addr
+		}
+	}
+	return nil
+}
