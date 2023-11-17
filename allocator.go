@@ -13,6 +13,12 @@ var (
 	_ = PrefixBlockAllocator[*IPv6Address]{}
 )
 
+type (
+	IPPrefixBlockAllocator   = PrefixBlockAllocator[*IPAddress]
+	IPv4PrefixBlockAllocator = PrefixBlockAllocator[*IPv4Address]
+	IPv6PrefixBlockAllocator = PrefixBlockAllocator[*IPv6Address]
+)
+
 // PrefixBlockConstraint is the generic type constraint used for a prefix block allocator.
 type PrefixBlockConstraint[T any] interface {
 	SequentialRangeConstraint[T]
