@@ -340,6 +340,15 @@ func (section *MACAddressSection) AssignMinPrefixForBlock() *MACAddressSection {
 	return section.assignMinPrefixForBlock().ToMAC()
 }
 
+// AssignPrefixForSingleBlock returns the equivalent prefix block that matches exactly the range of values in this address section.
+// The returned block will have an assigned prefix length indicating the prefix length for the block.
+//
+// There may be no such address section - it is required that the range of values match the range of a prefix block.
+// If there is no such address section, then nil is returned.
+func (section *MACAddressSection) AssignPrefixForSingleBlock() *MACAddressSection {
+	return section.assignPrefixForSingleBlock().ToMAC()
+}
+
 // GetSegment returns the segment at the given index.
 // The first segment is at index 0.
 // GetSegment will panic given a negative index or an index matching or larger than the segment count.
