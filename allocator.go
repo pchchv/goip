@@ -76,3 +76,26 @@ func (alloc *PrefixBlockAllocator[T]) GetTotalCount() *big.Int {
 func (alloc *PrefixBlockAllocator[T]) SetReserved(reservedCount int) {
 	alloc.reservedCount = reservedCount
 }
+
+// GetReserved returns the reserved count.
+// Use SetReserved to change the reserved count.
+func (alloc *PrefixBlockAllocator[T]) GetReserved() (reservedCount int) {
+	return alloc.reservedCount
+}
+
+func (alloc *PrefixBlockAllocator[T]) insertBlocks(blocks []T) {
+	for _, block := range blocks {
+		prefLen := block.GetPrefixLen().bitCount()
+		alloc.blocks[prefLen] = append(alloc.blocks[prefLen], block)
+		alloc.totalBlockCount++
+	}
+}
+
+// GetAvailable returns a list of all
+// the blocks available for allocating in the allocator.
+func (alloc *PrefixBlockAllocator[T]) GetAvailable() (blocks []T) {
+	for _, block := range alloc.blocks {
+		blocks = append(blocks, block...)
+	}
+	return
+}
