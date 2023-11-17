@@ -1,6 +1,11 @@
 package goip
 
-import "math/big"
+import (
+	"fmt"
+	"math"
+	"math/big"
+	"strings"
+)
 
 var (
 	_ = PrefixBlockAllocator[*IPAddress]{}
@@ -169,4 +174,67 @@ func (alloc *PrefixBlockAllocator[T]) AllocateBitLen(bitLength BitCount) T {
 	alloc.insertBlocks(newSequRangeUnchecked(blockIterator.Next().GetLower(), block.GetUpper(), true).SpanWithPrefixBlocks())
 
 	return result
+}
+
+// AllocateSize returns a block of sufficient size,
+// the size indicating the number of distinct addresses required in the block.
+// AllocateSize returns nil if no such block is available in the allocator,
+// or if the size required is zero.
+// The returned block will be able
+// to accommodate sizeRequired hosts as well as the reserved count, if any.
+func (alloc *PrefixBlockAllocator[T]) AllocateSize(sizeRequired uint64) T {
+	var bitsRequired HostBitCount
+	if alloc.reservedCount < 0 {
+		adjustment := uint64(-alloc.reservedCount)
+		if adjustment >= sizeRequired {
+			var t T
+			return t
+		}
+		sizeRequired -= adjustment
+		bitsRequired = *BitsForCount(sizeRequired)
+	} else if math.MaxUint64-uint64(alloc.reservedCount) < sizeRequired {
+		// 64 bits holds MaxUint64 + 1 addresses
+		sizeRequired += uint64(alloc.reservedCount) // overflow
+		bitsRequired = *BitsForCount(sizeRequired) + 64
+	} else {
+		sizeRequired += uint64(alloc.reservedCount)
+		bRequired := BitsForCount(sizeRequired)
+		if bRequired == nil {
+			var t T
+			return t
+		}
+		bitsRequired = *bRequired
+	}
+	return alloc.AllocateBitLen(BitCount(bitsRequired))
+}
+
+// String returns a string showing
+// the counts of available blocks for each prefix size in the allocator.
+func (alloc PrefixBlockAllocator[T]) String() string {
+	var builder strings.Builder
+	version := alloc.version
+	hasBlocks := false
+	builder.WriteString("available blocks:\n")
+	for i := len(alloc.blocks) - 1; i >= 0; i-- {
+		if blockCount := len(alloc.blocks[i]); blockCount != 0 {
+			hostBitCount := HostBitCount(version.GetBitCount() - i)
+			size := hostBitCount.BlockSize()
+			builder.WriteString(fmt.Sprint(blockCount))
+			if blockCount == 1 {
+				builder.WriteString(" block")
+			} else {
+				builder.WriteString(" blocks")
+			}
+			builder.WriteString(" with prefix length ")
+			builder.WriteString(fmt.Sprint(i))
+			builder.WriteString(" size ")
+			builder.WriteString(fmt.Sprint(size))
+			builder.WriteString("\n")
+			hasBlocks = true
+		}
+	}
+	if !hasBlocks {
+		builder.WriteString("none\n")
+	}
+	return builder.String()
 }
