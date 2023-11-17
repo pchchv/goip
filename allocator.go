@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"sort"
 	"strings"
 )
 
@@ -243,6 +244,61 @@ func (alloc PrefixBlockAllocator[T]) String() string {
 		builder.WriteString("none\n")
 	}
 	return builder.String()
+}
+
+// AllocateSizes returns multiple blocks of sufficient size for the given size required,
+// or nil if there is insufficient space in the allocator.
+// The reserved count, if any, will be added to the required sizes.
+func (alloc *PrefixBlockAllocator[T]) AllocateSizes(blockSizes ...uint64) []AllocatedBlock[T] {
+	sizes := append(make([]uint64, 0, len(blockSizes)), blockSizes...)
+	// sort required subnets by size, largest first
+	sort.Slice(sizes, func(i, j int) bool {
+		return sizes[i] > sizes[j]
+	})
+	result := make([]AllocatedBlock[T], 0, len(sizes))
+	for _, blockSize := range sizes {
+		if alloc.reservedCount < 0 && uint64(-alloc.reservedCount) >= blockSize {
+			// size zero
+			continue
+		}
+		allocated := alloc.AllocateSize(blockSize)
+		if allocated.IsMultiple() || bigIsOne(allocated.GetCount()) { // count is non-zero
+			result = append(result, AllocatedBlock[T]{
+				blockSize:     new(big.Int).SetUint64(blockSize),
+				reservedCount: alloc.reservedCount,
+				block:         allocated,
+			})
+		} else {
+			return nil
+		}
+	}
+	return result
+}
+
+// AllocateMultiBitLens returns multiple blocks of the given bit-lengths,
+// or nil if there is insufficient space in the allocator.
+// The reserved count is ignored when allocating by bit-length.
+func (alloc *PrefixBlockAllocator[T]) AllocateMultiBitLens(bitLengths ...BitCount) []AllocatedBlock[T] {
+	lengths := append(make([]BitCount, 0, len(bitLengths)), bitLengths...)
+
+	// sort required subnets by size, largest first
+	sort.Slice(lengths, func(i, j int) bool {
+		return lengths[i] > lengths[j]
+	})
+	result := make([]AllocatedBlock[T], 0, len(lengths))
+	for _, bitLength := range lengths {
+		allocated := alloc.AllocateBitLen(bitLength)
+		if allocated.IsMultiple() || bigIsOne(allocated.GetCount()) {
+			hostBitCount := HostBitCount(bitLength)
+			result = append(result, AllocatedBlock[T]{
+				blockSize: hostBitCount.BlockSize(),
+				block:     allocated,
+			})
+		} else {
+			return nil
+		}
+	}
+	return result
 }
 
 // AllocatedBlock represents a block
