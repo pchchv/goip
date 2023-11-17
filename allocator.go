@@ -99,3 +99,74 @@ func (alloc *PrefixBlockAllocator[T]) GetAvailable() (blocks []T) {
 	}
 	return
 }
+
+// AddAvailable provides the given blocks to
+// the allocator for allocating.
+func (alloc *PrefixBlockAllocator[T]) AddAvailable(blocks ...T) {
+	if len(blocks) == 0 {
+		return
+	}
+
+	version := alloc.version
+	for _, block := range blocks {
+		if version.IsIndeterminate() {
+			version = block.GetIPVersion()
+			alloc.version = version
+		} else if !version.Equal(block.GetIPVersion()) {
+			panic(lookupStr("ipaddress.error.ipVersionMismatch"))
+		}
+	}
+
+	if alloc.blocks == nil {
+		size := alloc.version.GetBitCount() + 1
+		alloc.blocks = make([][]T, size)
+	} else if alloc.totalBlockCount > 0 {
+		for i, existingBlocks := range alloc.blocks {
+			blocks = append(blocks, existingBlocks...)
+			alloc.blocks[i] = nil
+		}
+	}
+
+	blocks = blocks[0].MergeToPrefixBlocks(blocks...)
+
+	alloc.insertBlocks(blocks)
+}
+
+// AllocateBitLen allocates a block with the given bit-length,
+// the bit-length being the number of bits extending beyond the prefix length,
+// or nil if no such block is available in the allocator.
+// The reserved count is ignored when allocating by bit-length.
+func (alloc *PrefixBlockAllocator[T]) AllocateBitLen(bitLength BitCount) T {
+	if alloc.totalBlockCount == 0 {
+		var t T
+		return t // nil
+	}
+
+	var block T
+	newPrefixBitCount := alloc.version.GetBitCount() - bitLength
+	i := newPrefixBitCount
+	for ; i >= 0; i-- {
+		blockRow := alloc.blocks[i]
+		if len(blockRow) > 0 {
+			block = blockRow[0]
+			var t T
+			blockRow[0] = t // just for GC
+			alloc.blocks[i] = blockRow[1:]
+			alloc.totalBlockCount--
+			break
+		}
+	}
+
+	if !block.IsMultiple() || i == newPrefixBitCount {
+		return block
+	}
+	// block is larger than needed, adjust it
+	adjustedBlock := block.SetPrefixLen(newPrefixBitCount)
+	blockIterator := adjustedBlock.PrefixBlockIterator()
+	result := blockIterator.Next()
+
+	// now we add the remaining from the block iterator back into the list
+	alloc.insertBlocks(newSequRangeUnchecked(blockIterator.Next().GetLower(), block.GetUpper(), true).SpanWithPrefixBlocks())
+
+	return result
+}
