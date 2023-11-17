@@ -17,3 +17,13 @@ func cloneToExtra[T any, U any](sect T, orig []T, conv func(T) U) []U {
 	}
 	return result
 }
+
+func copyTo[T any, U any](dest []U, orig []T, conv func(T) U) {
+	for i := range orig {
+		if i == len(dest) {
+			break
+		}
+		dest[i] = conv(orig[i])
+	}
+	return
+}
