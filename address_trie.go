@@ -1397,3 +1397,24 @@ func AssociativeTreesString[T TrieKeyConstraint[T], V any](withNonAddedKeys bool
 func toAssociativeBinTrie[T TrieKeyConstraint[T], V any](trie *AssociativeTrie[T, V]) *tree.BinTrie[trieKey[T], V] {
 	return (*tree.BinTrie[trieKey[T], V])(unsafe.Pointer(trie))
 }
+
+// NewTrie constructs an address trie for the given type, without a root.
+// For the generic type T, you can choose *Address,
+// *IPAddress, *IPv4Address, *IPv6Address, or *MACAddress.
+func NewTrie[T TrieKeyConstraint[T]]() *Trie[T] {
+	return &Trie[T]{}
+}
+
+// NewAssociativeTrie constructs an associative address trie for the given types,
+// without a root.
+func NewAssociativeTrie[T TrieKeyConstraint[T], V any]() *AssociativeTrie[T, V] {
+	return &AssociativeTrie[T, V]{}
+}
+
+// NewIPv4AddressTrie constructs an IPv4 address trie with
+// the root as the 0.0.0.0/0 prefix block
+// This is here for backwards compatibility.
+// Using NewTrie is recommended instead.
+func NewIPv4AddressTrie() *Trie[*IPv4Address] { // for backwards compatibility
+	return &Trie[*IPv4Address]{trieBase[*IPv4Address, emptyValue]{tree.NewBinTrie[trieKey[*IPv4Address], emptyValue](trieKey[*IPv4Address]{address: ipv4All})}}
+}
