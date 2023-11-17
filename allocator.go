@@ -1,5 +1,7 @@
 package goip
 
+import "math/big"
+
 var (
 	_ = PrefixBlockAllocator[*IPAddress]{}
 	_ = PrefixBlockAllocator[*IPv4Address]{}
@@ -40,4 +42,37 @@ func (alloc *PrefixBlockAllocator[T]) GetBlockCount() int {
 // which is determined by the version of the first block made available to the allocator.
 func (alloc *PrefixBlockAllocator[T]) GetVersion() IPVersion {
 	return alloc.version
+}
+
+// GetTotalCount returns the total of the count of
+// all individual addresses available in this allocator,
+// which is the total number of individual addresses in all the blocks.
+func (alloc *PrefixBlockAllocator[T]) GetTotalCount() *big.Int {
+	if alloc.GetBlockCount() == 0 {
+		return bigZero()
+	}
+
+	result := bigZero()
+	version := alloc.version
+	for i := len(alloc.blocks) - 1; i >= 0; i-- {
+		if blockCount := len(alloc.blocks[i]); blockCount != 0 {
+			hostBitCount := HostBitCount(version.GetBitCount() - i)
+			size := hostBitCount.BlockSize()
+			size.Mul(size, big.NewInt(int64(blockCount)))
+			result.Add(result, size)
+		}
+	}
+	return result
+}
+
+// SetReserved sets the additional number of addresses to be included in any size allocation.
+// Any request for a block of a given size will adjust that size by the given number.
+// This can be useful when the size requests do
+// not include the count of additional addresses that must be included in every block.
+// For IPv4, it is common to reserve two addresses, the network and broadcast addresses.
+// If the reservedCount is negative,
+// then every request will be shrunk by that number, useful for cases where
+// insufficient space requires that all subnets be reduced in size by an equal number.
+func (alloc *PrefixBlockAllocator[T]) SetReserved(reservedCount int) {
+	alloc.reservedCount = reservedCount
 }
