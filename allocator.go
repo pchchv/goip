@@ -323,3 +323,17 @@ func (alloc AllocatedBlock[T]) GetSize() *big.Int {
 func (alloc AllocatedBlock[T]) GetCount() *big.Int {
 	return alloc.block.GetCount()
 }
+
+// GetReservedCount returns the number of reserved addresses with the block.
+func (alloc AllocatedBlock[T]) GetReservedCount() int {
+	return alloc.reservedCount
+}
+
+// String returns a string representation of the allocated block.
+func (alloc AllocatedBlock[T]) String() string {
+	if alloc.reservedCount > 0 {
+		return fmt.Sprint(alloc.block, " for ", alloc.blockSize, " hosts and ",
+			alloc.reservedCount, " reserved addresses")
+	}
+	return fmt.Sprint(alloc.block, " for ", alloc.blockSize, " hosts")
+}
