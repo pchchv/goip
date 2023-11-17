@@ -30,3 +30,14 @@ type PrefixBlockAllocator[T PrefixBlockConstraint[T]] struct {
 	reservedCount   int
 	totalBlockCount int
 }
+
+// GetBlockCount returns the count of available blocks in this allocator.
+func (alloc *PrefixBlockAllocator[T]) GetBlockCount() int {
+	return alloc.totalBlockCount
+}
+
+// GetVersion returns the IP version of the available blocks in the allocator,
+// which is determined by the version of the first block made available to the allocator.
+func (alloc *PrefixBlockAllocator[T]) GetVersion() IPVersion {
+	return alloc.version
+}
