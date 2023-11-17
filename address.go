@@ -732,6 +732,90 @@ func (addr *addressInternal) getTrieCache() *tree.TrieKeyData {
 	return &tree.TrieKeyData{}
 }
 
+func (addr *addressInternal) trieCompare(other *Address) int {
+	if addr.toAddress() == other {
+		return 0
+	}
+	segmentCount := addr.getDivisionCount()
+	bitsPerSegment := addr.GetBitsPerSegment()
+	o1Pref := addr.GetPrefixLen()
+	o2Pref := other.GetPrefixLen()
+	bitsMatchedSoFar := 0
+	i := 0
+	for {
+		segment1 := addr.getSegment(i)
+		segment2 := other.getSegment(i)
+		pref1 := getSegmentPrefLen(addr.toAddress(), o1Pref, bitsPerSegment, bitsMatchedSoFar, segment1)
+		pref2 := getSegmentPrefLen(other, o2Pref, bitsPerSegment, bitsMatchedSoFar, segment2)
+		if pref1 != nil {
+			segmentPref1 := pref1.Len()
+			segmentPref2 := pref2.Len()
+			if pref2 != nil && segmentPref2 <= segmentPref1 {
+				matchingBits := getMatchingBits(segment1, segment2, segmentPref2, bitsPerSegment)
+				if matchingBits >= segmentPref2 {
+					if segmentPref2 == segmentPref1 {
+						// same prefix block
+						return 0
+					}
+					// segmentPref2 is shorter prefix, prefix bits match, so depends on bit at index segmentPref2
+					if segment1.IsOneBit(segmentPref2) {
+						return 1
+					}
+					return -1
+				}
+				return compareSegInt(segment1.GetSegmentValue(), segment2.GetSegmentValue())
+			} else {
+				matchingBits := getMatchingBits(segment1, segment2, segmentPref1, bitsPerSegment)
+				if matchingBits >= segmentPref1 {
+					if segmentPref1 < bitsPerSegment {
+						if segment2.IsOneBit(segmentPref1) {
+							return -1
+						}
+						return 1
+					} else {
+						i++
+						if i == segmentCount {
+							return 1 // o1 with prefix length matching bit count is the bigger
+						} // else must check the next segment
+					}
+				} else {
+					return compareSegInt(segment1.GetSegmentValue(), segment2.GetSegmentValue())
+				}
+			}
+		} else if pref2 != nil {
+			segmentPref2 := pref2.Len()
+			matchingBits := getMatchingBits(segment1, segment2, segmentPref2, bitsPerSegment)
+			if matchingBits >= segmentPref2 {
+				if segmentPref2 < bitsPerSegment {
+					if segment1.IsOneBit(segmentPref2) {
+						return 1
+					}
+					return -1
+				} else {
+					i++
+					if i == segmentCount {
+						return -1 // o2 with prefix length matching bit count is the bigger
+					} // else must check the next segment
+				}
+			} else {
+				return compareSegInt(segment1.GetSegmentValue(), segment2.GetSegmentValue())
+			}
+		} else {
+			matchingBits := getMatchingBits(segment1, segment2, bitsPerSegment, bitsPerSegment)
+			if matchingBits < bitsPerSegment { // no match - the current subnet/address is not here
+				return compareSegInt(segment1.GetSegmentValue(), segment2.GetSegmentValue())
+			} else {
+				i++
+				if i == segmentCount {
+					// same address
+					return 0
+				} // else must check the next segment
+			}
+		}
+		bitsMatchedSoFar += bitsPerSegment
+	}
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
