@@ -1434,3 +1434,29 @@ func NewIPv4AddressAssociativeTrie() *AssociativeTrie[*IPv4Address, any] { // fo
 func NewIPv6AddressTrie() *Trie[*IPv6Address] { // for backwards compatibility
 	return &Trie[*IPv6Address]{trieBase[*IPv6Address, emptyValue]{tree.NewBinTrie[trieKey[*IPv6Address], emptyValue](trieKey[*IPv6Address]{address: ipv6All})}}
 }
+
+// NewIPv6AddressAssociativeTrie constructs
+// an IPv6 associative address trie with the root as
+// the ::/0 prefix block
+// This is here for backwards compatibility.
+// Using NewAssociativeTrie is recommended instead.
+func NewIPv6AddressAssociativeTrie() *AssociativeTrie[*IPv6Address, any] { // for backwards compatibility
+	return &AssociativeTrie[*IPv6Address, any]{trieBase[*IPv6Address, any]{tree.NewBinTrie[trieKey[*IPv6Address], any](trieKey[*IPv6Address]{address: ipv6All})}}
+}
+
+// NewMACAddressTrie constructs a MAC address trie with the root as the zero-prefix block
+// If extended is true, the trie will consist of 64-bit EUI addresses,
+// otherwise the addresses will be 48-bit.
+// If you wish to construct a trie in which the address size is determined by the first added address,
+// use the zero-value MACAddressTrie{}
+// This is here for backwards compatibility.
+// Using NewTrie is recommended instead.
+func NewMACAddressTrie(extended bool) *Trie[*MACAddress] {
+	var rootAddr *MACAddress
+	if extended {
+		rootAddr = macAllExtended
+	} else {
+		rootAddr = macAll
+	}
+	return &Trie[*MACAddress]{trieBase[*MACAddress, emptyValue]{tree.NewBinTrie[trieKey[*MACAddress], emptyValue](trieKey[*MACAddress]{address: rootAddr})}}
+}
