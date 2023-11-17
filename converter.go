@@ -18,3 +18,15 @@ type IPv4AddressConverter interface {
 	// Otherwise, returns nil.
 	ToIPv4(address *IPAddress) *IPv4Address
 }
+
+// IPAddressConverter converts IP addresses to either IPv4 or IPv6.
+type IPAddressConverter interface {
+	IPv4AddressConverter
+	IPv6AddressConverter
+	// IsIPv4Convertible returns whether the address is IPv4 or can be converted to IPv4.
+	// If true, ToIPv4 returns non-nil.
+	IsIPv4Convertible(address *IPAddress) bool
+	// IsIPv6Convertible returns whether the address is IPv6 or can be converted to IPv6.
+	// If true, ToIPv6 returns non-nil.
+	IsIPv6Convertible(address *IPAddress) bool
+}
