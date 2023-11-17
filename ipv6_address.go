@@ -1383,6 +1383,18 @@ func (addr *IPv6Address) fromKey(_ addressScheme, key *keyContents) *IPv6Address
 	return fromIPv6IPKey(key)
 }
 
+// TrieCompare compares two addresses according to address trie ordering.
+// It returns a number less than zero, zero, or a number greater than zero if the first address argument is less than, equal to, or greater than the second.
+//
+// The comparison is intended for individual addresses and CIDR prefix blocks.
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *IPv6Address) TrieCompare(other *IPv6Address) int {
+	return addr.init().trieCompare(other.ToAddressBase())
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
