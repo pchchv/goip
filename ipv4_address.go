@@ -1128,7 +1128,7 @@ func (addr *IPv4Address) ReverseBits(perByte bool) (*IPv4Address, address_error.
 
 // ToKey creates the associated address key.
 // While addresses can be compared with the Compare,
-// Equal method as well as various provided instances of AddressComparator,
+// TrieCompare or Equal methods as well as various provided instances of AddressComparator,
 // they are not comparable with Go operators.
 // However, AddressKey instances are comparable with Go operators, and thus can be used as map keys.
 func (addr *IPv4Address) ToKey() IPv4AddressKey {
@@ -1188,6 +1188,18 @@ func (addr *IPv4Address) toIPv4Key(contents *keyContents) {
 			val.upper = val.lower
 		}
 	}
+}
+
+// TrieCompare compares two addresses according to address trie ordering.
+// It returns a number less than zero, zero, or a number greater than zero if the first address argument is less than, equal to, or greater than the second.
+//
+// The comparison is intended for individual addresses and CIDR prefix blocks.
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *IPv4Address) TrieCompare(other *IPv4Address) int {
+	return addr.init().trieCompare(other.ToAddressBase())
 }
 
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
