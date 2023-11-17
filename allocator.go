@@ -308,3 +308,18 @@ type AllocatedBlock[T AddressType] struct {
 	blockSize     *big.Int
 	reservedCount int
 }
+
+// GetAddress returns the block.
+func (alloc AllocatedBlock[T]) GetAddress() T {
+	return alloc.block
+}
+
+// GetSize returns the number of hosts for which this block was allocated.
+func (alloc AllocatedBlock[T]) GetSize() *big.Int {
+	return alloc.blockSize
+}
+
+// GetCount returns the total number of addresses within the block.
+func (alloc AllocatedBlock[T]) GetCount() *big.Int {
+	return alloc.block.GetCount()
+}
