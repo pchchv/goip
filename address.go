@@ -1454,3 +1454,17 @@ func AddrsMatchOrdered[T, U AddressType](addrs1 []T, addrs2 []U) (result bool) {
 	}
 	return true
 }
+
+func trieIncrement[T TrieKeyConstraint[T]](addr T) (t T, ok bool) {
+	if res, ok := tree.TrieIncrement(createKey(addr)); ok {
+		return res.address, true
+	}
+	return
+}
+
+func trieDecrement[T TrieKeyConstraint[T]](addr T) (t T, ok bool) {
+	if res, ok := tree.TrieDecrement(createKey(addr)); ok {
+		return res.address, true
+	}
+	return
+}
