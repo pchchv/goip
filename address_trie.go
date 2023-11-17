@@ -1460,3 +1460,17 @@ func NewMACAddressTrie(extended bool) *Trie[*MACAddress] {
 	}
 	return &Trie[*MACAddress]{trieBase[*MACAddress, emptyValue]{tree.NewBinTrie[trieKey[*MACAddress], emptyValue](trieKey[*MACAddress]{address: rootAddr})}}
 }
+
+// NewMACAddressAssociativeTrie constructs
+// a MAC associative address trie with the root as the zero-prefix prefix block
+// This is here for backwards compatibility.
+// Using NewAssociativeTrie is recommended instead.
+func NewMACAddressAssociativeTrie(extended bool) *AssociativeTrie[*MACAddress, any] {
+	var rootAddr *MACAddress
+	if extended {
+		rootAddr = macAllExtended
+	} else {
+		rootAddr = macAll
+	}
+	return &AssociativeTrie[*MACAddress, any]{trieBase[*MACAddress, any]{tree.NewBinTrie[trieKey[*MACAddress], any](trieKey[*MACAddress]{address: rootAddr})}}
+}
