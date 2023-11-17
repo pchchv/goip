@@ -244,3 +244,11 @@ func (alloc PrefixBlockAllocator[T]) String() string {
 	}
 	return builder.String()
 }
+
+// AllocatedBlock represents a block
+// of addresses allocated for assignment to hosts.
+type AllocatedBlock[T AddressType] struct {
+	block         T
+	blockSize     *big.Int
+	reservedCount int
+}
