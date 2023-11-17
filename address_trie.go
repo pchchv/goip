@@ -1384,3 +1384,16 @@ func toBinTrie[T TrieKeyConstraint[T]](trie *Trie[T]) *tree.BinTrie[trieKey[T], 
 func toAssociativeTrie[T TrieKeyConstraint[T], V any](trie *tree.BinTrie[trieKey[T], V]) *AssociativeTrie[T, V] {
 	return (*AssociativeTrie[T, V])(unsafe.Pointer(trie))
 }
+
+// AssociativeTreesString merges the trie strings (as shown by the TreeString method) of multiple associative tries into a single merged trie string.
+func AssociativeTreesString[T TrieKeyConstraint[T], V any](withNonAddedKeys bool, tries ...*AssociativeTrie[T, V]) string {
+	binTries := make([]*tree.BinTrie[trieKey[T], V], 0, len(tries))
+	for _, trie := range tries {
+		binTries = append(binTries, toAssociativeBinTrie[T, V](trie))
+	}
+	return tree.TreesString(withNonAddedKeys, binTries...)
+}
+
+func toAssociativeBinTrie[T TrieKeyConstraint[T], V any](trie *AssociativeTrie[T, V]) *tree.BinTrie[trieKey[T], V] {
+	return (*tree.BinTrie[trieKey[T], V])(unsafe.Pointer(trie))
+}
