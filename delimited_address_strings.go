@@ -56,6 +56,11 @@ func (it *stringIterator) Next() (res string) {
 	return
 }
 
+type singleStringIterator struct {
+	str  string
+	done bool
+}
+
 func isDelimitedBoundary(c byte) bool {
 	return c == IPv4SegmentSeparator ||
 		c == IPv6SegmentSeparator ||
