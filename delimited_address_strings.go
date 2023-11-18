@@ -39,6 +39,10 @@ type delimitedStringsIterator struct {
 	nextSet    []string
 }
 
+type stringIterator struct {
+	strs []string
+}
+
 func isDelimitedBoundary(c byte) bool {
 	return c == IPv4SegmentSeparator ||
 		c == IPv6SegmentSeparator ||
