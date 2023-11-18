@@ -61,6 +61,18 @@ type singleStringIterator struct {
 	done bool
 }
 
+func (it *singleStringIterator) HasNext() bool {
+	return !it.done
+}
+
+func (it *singleStringIterator) Next() (res string) {
+	if it.HasNext() {
+		it.done = true
+		res = it.str
+	}
+	return
+}
+
 func isDelimitedBoundary(c byte) bool {
 	return c == IPv4SegmentSeparator ||
 		c == IPv6SegmentSeparator ||
