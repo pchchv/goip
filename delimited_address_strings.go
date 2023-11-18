@@ -1,5 +1,7 @@
 package goip
 
+import "strings"
+
 const SegmentValueDelimiter = ','
 
 type DelimitedAddressString string
@@ -57,6 +59,34 @@ func (it *delimitedStringsIterator) updateVariations(start int) {
 
 func (it *delimitedStringsIterator) HasNext() bool {
 	return !it.done
+}
+
+func (it *delimitedStringsIterator) Next() (res string) {
+	if !it.done {
+		result := strings.Builder{}
+		nextSet := it.nextSet
+		nextSetLen := len(nextSet)
+		for i := 0; i < nextSetLen; i++ {
+			result.WriteString(nextSet[i])
+		}
+		it.increment()
+		res = result.String()
+	}
+	return
+}
+
+func (it *delimitedStringsIterator) increment() {
+	variations := it.variations
+	variationsLen := len(variations)
+	nextSet := it.nextSet
+	for j := variationsLen - 1; j >= 0; j-- {
+		if variations[j].HasNext() {
+			nextSet[j] = variations[j].Next()
+			it.updateVariations(j + 1)
+			return
+		}
+	}
+	it.done = true
 }
 
 type stringIterator struct {
