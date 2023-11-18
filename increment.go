@@ -153,3 +153,46 @@ func increment(section *AddressSection, increment int64, creator addressSegmentC
 
 	return addBig(upperProducer(), new(big.Int).SetUint64(uIncrement-countMinus1), creator, prefixLength)
 }
+
+// fastIncrement handles the cases in which we can use longs rather than BigInteger.
+// Used by IPv6.
+func fastIncrement(section *AddressSection, inc int64, creator addressSegmentCreator, lowerProducer, upperProducer func() *AddressSection, prefixLength PrefixLen) *AddressSection {
+	if inc >= 0 {
+		var maxUint64 big.Int
+		uincrement := uint64(inc)
+		count := section.GetCount()
+		maxUint64.SetUint64(math.MaxUint64)
+		countMinus1 := count.Sub(count, bigOneConst())
+		if countMinus1.CmpAbs(&maxUint64) <= 0 {
+			longCount := count.Uint64()
+			if longCount > uincrement {
+				if longCount == uincrement+1 {
+					return upperProducer()
+				}
+				return incrementRange(section, inc, lowerProducer, prefixLength)
+			}
+			upperValue := section.GetUpperValue()
+			if upperValue.CmpAbs(&maxUint64) <= 0 {
+				value := section.GetValue()
+				return increment(
+					section,
+					inc,
+					creator,
+					countMinus1.Uint64(),
+					value.Uint64(),
+					upperValue.Uint64(),
+					lowerProducer,
+					upperProducer,
+					prefixLength)
+			}
+		}
+	} else {
+		var maxUint64 big.Int
+		maxUint64.SetUint64(math.MaxUint64)
+		value := section.GetValue()
+		if value.CmpAbs(&maxUint64) <= 0 {
+			return add(lowerProducer(), value.Uint64(), inc, creator, prefixLength)
+		}
+	}
+	return nil
+}
