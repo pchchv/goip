@@ -196,3 +196,29 @@ func fastIncrement(section *AddressSection, inc int64, creator addressSegmentCre
 	}
 	return nil
 }
+
+// incrementBig does not handle overflow,
+// overflow should be checked before calling this.
+// Used by MAC and IPv6
+func incrementBig(section *AddressSection, increment int64, bigIncrement *big.Int, creator addressSegmentCreator, lowerProducer, upperProducer func() *AddressSection, prefixLength PrefixLen) *AddressSection {
+	if !section.isMultiple() {
+		return addBig(section, bigIncrement, creator, prefixLength)
+	}
+
+	isDecrement := increment <= 0
+	if isDecrement {
+		return addBig(lowerProducer(), bigIncrement, creator, prefixLength)
+	}
+
+	count := section.GetCount()
+	incrementPlus1 := bigIncrement.Add(bigIncrement, bigOneConst())
+	countCompare := count.CmpAbs(incrementPlus1)
+	if countCompare <= 0 {
+		if countCompare == 0 {
+			return upperProducer()
+		}
+		return addBig(upperProducer(), incrementPlus1.Sub(incrementPlus1, count), creator, prefixLength)
+	}
+
+	return incrementRange(section, increment, lowerProducer, prefixLength)
+}
