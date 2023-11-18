@@ -21,3 +21,9 @@ func (it *filteredAddrIterator) Next() (res *Address) {
 func (it *filteredAddrIterator) HasNext() bool {
 	return it.next != nil
 }
+
+type filteredIPAddrIterator struct {
+	skip func(*IPAddress) bool
+	iter Iterator[*IPAddress]
+	next *IPAddress
+}
