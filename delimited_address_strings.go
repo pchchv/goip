@@ -32,6 +32,13 @@ func (str DelimitedAddressString) CountDelimitedAddresses() int {
 	return result
 }
 
+type delimitedStringsIterator struct {
+	parts      [][]string
+	done       bool
+	variations []Iterator[string]
+	nextSet    []string
+}
+
 func isDelimitedBoundary(c byte) bool {
 	return c == IPv4SegmentSeparator ||
 		c == IPv6SegmentSeparator ||
