@@ -43,6 +43,19 @@ type stringIterator struct {
 	strs []string
 }
 
+func (it *stringIterator) HasNext() bool {
+	return len(it.strs) > 0
+}
+
+func (it *stringIterator) Next() (res string) {
+	if it.HasNext() {
+		strs := it.strs
+		res = strs[0]
+		it.strs = strs[1:]
+	}
+	return
+}
+
 func isDelimitedBoundary(c byte) bool {
 	return c == IPv4SegmentSeparator ||
 		c == IPv6SegmentSeparator ||
