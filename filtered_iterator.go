@@ -27,3 +27,19 @@ type filteredIPAddrIterator struct {
 	iter Iterator[*IPAddress]
 	next *IPAddress
 }
+
+func (it *filteredIPAddrIterator) Next() (res *IPAddress) {
+	res = it.next
+	for {
+		next := it.iter.Next()
+		if next == nil || !it.skip(next) {
+			it.next = next
+			break
+		}
+	}
+	return res
+}
+
+func (it *filteredIPAddrIterator) HasNext() bool {
+	return it.next != nil
+}
