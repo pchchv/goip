@@ -1,5 +1,7 @@
 package goip
 
+var _ IPAddressConverter = DefaultAddressConverter{}
+
 // IPv6AddressConverter converts IP addresses to IPv6.
 type IPv6AddressConverter interface {
 	// ToIPv6 converts to IPv6.
@@ -65,4 +67,27 @@ func (converter DefaultAddressConverter) ToIPv6(address *IPAddress) *IPv6Address
 		}
 	}
 	return nil
+}
+
+// IsIPv4Convertible returns true if ToIPv4 returns non-nil.
+func (converter DefaultAddressConverter) IsIPv4Convertible(address *IPAddress) bool {
+	if addr := address.ToIPv6(); addr != nil {
+		if addr.IsIPv4Mapped() {
+			if _, _, _, _, err := addr.GetSegment(IPv6SegmentCount - 1).splitSegValues(); err != nil {
+				return false
+			} else if _, _, _, _, err := addr.GetSegment(IPv6SegmentCount - 2).splitSegValues(); err != nil {
+				return false
+			}
+			return true
+		}
+	}
+	return address.IsIPv4()
+}
+
+// IsIPv6Convertible returns true if ToIPv6 returns non-nil.
+func (converter DefaultAddressConverter) IsIPv6Convertible(address *IPAddress) bool {
+	if addr := address.ToIPv4(); addr != nil {
+		return addr.GetSegment(0).isJoinableTo(addr.GetSegment(1)) && addr.GetSegment(2).isJoinableTo(addr.GetSegment(3))
+	}
+	return address.IsIPv6()
 }
