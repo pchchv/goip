@@ -90,3 +90,11 @@ func addParts(str string, parts [][]string, lastSegmentStartIndex, lastPartIndex
 	parts = append(parts, delimitedList)
 	return parts, delimitedList
 }
+
+func newStrSliceIterator(strs []string) Iterator[string] {
+	return &stringIterator{strs: strs}
+}
+
+func newSingleStrIterator(str string) Iterator[string] {
+	return &singleStringIterator{str: str}
+}
