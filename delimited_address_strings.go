@@ -45,3 +45,14 @@ func isDelimitedBoundary(c byte) bool {
 		c == RangeSeparator ||
 		c == MacDashedSegmentRangeSeparator
 }
+
+func addParts(str string, parts [][]string, lastSegmentStartIndex, lastPartIndex,
+	lastDelimiterIndex int, delimitedList []string, i int) (newParts [][]string, newDelimitedList []string) {
+	sub := str[lastDelimiterIndex:i]
+	delimitedList = append(delimitedList, sub)
+	if lastPartIndex != lastSegmentStartIndex {
+		parts = append(parts, []string{str[lastPartIndex:lastSegmentStartIndex]})
+	}
+	parts = append(parts, delimitedList)
+	return parts, delimitedList
+}
