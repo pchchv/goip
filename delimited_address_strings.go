@@ -34,6 +34,61 @@ func (str DelimitedAddressString) CountDelimitedAddresses() int {
 	return result
 }
 
+// ParseDelimitedSegments will provide an iterator to iterate through the possible combinations,
+// given a string with comma delimiters to denote segment elements,
+//
+// For example, given "1,2.3.4,5.6" this will iterate through "1.3.4.6", "1.3.5.6", "2.3.4.6" and "2.3.5.6"
+//
+// Another example: "1-2,3.4.5.6" will iterate through "1-2.4.5.6" and "1-3.4.5.6".
+//
+// This method will not validate strings.
+// Each string produced can be validated using an instance of [IPAddressString].
+// Use CountDelimitedAddresses for the count of elements in the iterator.
+func (str DelimitedAddressString) ParseDelimitedSegments() Iterator[string] {
+	var parts [][]string
+	var delimitedList []string
+	var lastSegmentStartIndex, lastPartIndex, lastDelimiterIndex int
+	anyDelimited := false
+	strlen := len(str)
+	s := string(str)
+	for i := 0; i < strlen; i++ {
+		c := str[i]
+		if isDelimitedBoundary(c) { // end of segment or range boundary
+			if len(delimitedList) > 0 {
+				if parts == nil {
+					parts = make([][]string, 0, IPv6SegmentCount)
+				}
+				parts, _ = addParts(s, parts, lastSegmentStartIndex, lastPartIndex, lastDelimiterIndex, delimitedList, i)
+				lastPartIndex = i
+				delimitedList = delimitedList[:0]
+			}
+			lastDelimiterIndex = i + 1
+			lastSegmentStartIndex = lastDelimiterIndex
+		} else if c == SegmentValueDelimiter {
+			anyDelimited = true
+			if delimitedList == nil {
+				delimitedList = make([]string, 0, 4)
+			}
+			sub := str[lastDelimiterIndex:i]
+			delimitedList = append(delimitedList, string(sub))
+			lastDelimiterIndex = i + 1
+		}
+	}
+
+	if anyDelimited {
+		if len(delimitedList) > 0 {
+			if parts == nil {
+				parts = make([][]string, 0, IPv6SegmentCount)
+			}
+			parts, _ = addParts(s, parts, lastSegmentStartIndex, lastPartIndex, lastDelimiterIndex, delimitedList, len(str))
+		} else {
+			parts = append(parts, []string{s[lastPartIndex:]})
+		}
+		return newDelimitedStringsIterator(parts)
+	}
+	return newSingleStrIterator(s)
+}
+
 type delimitedStringsIterator struct {
 	parts      [][]string
 	done       bool
