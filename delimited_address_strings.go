@@ -152,3 +152,14 @@ func newStrSliceIterator(strs []string) Iterator[string] {
 func newSingleStrIterator(str string) Iterator[string] {
 	return &singleStringIterator{str: str}
 }
+
+func newDelimitedStringsIterator(parts [][]string) Iterator[string] {
+	partCount := len(parts)
+	it := &delimitedStringsIterator{
+		parts:      parts,
+		variations: make([]Iterator[string], partCount),
+		nextSet:    make([]string, partCount),
+	}
+	it.updateVariations(0)
+	return it
+}
