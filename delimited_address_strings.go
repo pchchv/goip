@@ -39,6 +39,26 @@ type delimitedStringsIterator struct {
 	nextSet    []string
 }
 
+func (it *delimitedStringsIterator) updateVariations(start int) {
+	variationLen := len(it.variations)
+	variations := it.variations
+	parts := it.parts
+	nextSet := it.nextSet
+	for i := start; i < variationLen; i++ {
+		strSlice := parts[i]
+		if len(strSlice) > 1 {
+			variations[i] = newStrSliceIterator(strSlice)
+		} else {
+			variations[i] = newSingleStrIterator(strSlice[0])
+		}
+		nextSet[i] = variations[i].Next()
+	}
+}
+
+func (it *delimitedStringsIterator) HasNext() bool {
+	return !it.done
+}
+
 type stringIterator struct {
 	strs []string
 }
