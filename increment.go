@@ -1,6 +1,9 @@
 package goip
 
-import "math/big"
+import (
+	"math"
+	"math/big"
+)
 
 // checkOverflow returns true for overflow.
 // Used by IPv4 and MAC.
@@ -95,4 +98,58 @@ func add(section *AddressSection, fullValue uint64, increment int64, creator add
 		creator,
 		prefixLength)
 	return createSection(newSegs, prefixLength, section.getAddrType())
+}
+
+// addBig does not handle overflow, overflow should be checked before calling this.
+func addBig(section *AddressSection, increment *big.Int, creator addressSegmentCreator, prefixLength PrefixLen) *AddressSection {
+	segCount := section.GetSegmentCount()
+	fullValue := section.GetValue()
+	fullValue.Add(fullValue, increment)
+	expectedByteCount := section.GetByteCount()
+	bytes := fullValue.Bytes() // could use FillBytes but that only came with 1.15
+	segments, _ := toSegments(
+		bytes,
+		segCount,
+		section.GetBytesPerSegment(),
+		section.GetBitsPerSegment(),
+		//expectedByteCount,
+		creator,
+		prefixLength)
+	res := createSection(segments, prefixLength, section.getAddrType())
+	if expectedByteCount == len(bytes) && res.cache != nil {
+		res.cache.bytesCache = &bytesCache{
+			lowerBytes: bytes,
+			upperBytes: bytes,
+		}
+	}
+	return res
+}
+
+// increment does not handle overflow,
+// overflow should be checked before calling this.
+// Used by IPv4 and MAC.
+func increment(section *AddressSection, increment int64, creator addressSegmentCreator, countMinus1 uint64, lowerValue, upperValue uint64, lowerProducer, upperProducer func() *AddressSection, prefixLength PrefixLen) *AddressSection {
+	if !section.isMultiple() {
+		return add(section, lowerValue, increment, creator, prefixLength)
+	}
+
+	isDecrement := increment <= 0
+	if isDecrement {
+		//we know lowerValue + increment >= 0 because we already did an overflow check
+		return add(lowerProducer(), lowerValue, increment, creator, prefixLength)
+	}
+
+	uIncrement := uint64(increment)
+	if countMinus1 >= uIncrement {
+		if countMinus1 == uIncrement {
+			return upperProducer()
+		}
+		return incrementRange(section, increment, lowerProducer, prefixLength)
+	}
+
+	if uIncrement <= math.MaxUint64-upperValue {
+		return add(upperProducer(), upperValue, int64(uIncrement-countMinus1), creator, prefixLength)
+	}
+
+	return addBig(upperProducer(), new(big.Int).SetUint64(uIncrement-countMinus1), creator, prefixLength)
 }
