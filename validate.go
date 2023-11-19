@@ -1408,3 +1408,38 @@ func switchSingleWildcard8(currentValueHex uint64, s string, start, end, numSing
 		parseData, parsedSegIndex, lower, upper, keySingleWildcard|radix, radix)
 	return
 }
+
+func parseSingleSegmentSingleWildcard16(currentValueHex uint64, s string, start, end, numSingleWildcards int, parseData *addressParseData, parsedSegIndex, leadingZeroStartIndex int, options address_string_param.AddressStringFormatParams) (err address_error.AddressStringError) {
+	digitsEnd := end - numSingleWildcards
+	err = checkSingleWildcard(s, start, end, digitsEnd, options)
+	if err != nil {
+		return
+	}
+
+	var upper, lower, extendedLower, extendedUpper uint64
+	if numSingleWildcards < longHexDigits {
+		midIndex := end - longHexDigits
+		lower = parseLong16(s, midIndex, digitsEnd)
+		shift := numSingleWildcards << 2
+		lower <<= uint(shift)
+		upper = lower | ^(^uint64(0) << uint(shift))
+		extendedLower = parseLong16(s, start, midIndex)
+		extendedUpper = extendedLower
+	} else if numSingleWildcards == longHexDigits {
+		lower = 0
+		upper = 0xffffffffffffffff
+		extendedUpper = currentValueHex
+		extendedLower = currentValueHex
+	} else {
+		lower = 0
+		upper = 0xffffffffffffffff
+		extendedLower = currentValueHex
+		shift := (numSingleWildcards - longHexDigits) << 2
+		extendedLower <<= uint(shift)
+		extendedUpper = extendedLower | ^(^uint64(0) << uint(shift))
+	}
+
+	assign6Attributes4Values1Flags(start, end, leadingZeroStartIndex, start, end, leadingZeroStartIndex,
+		parseData, parsedSegIndex, lower, extendedLower, upper, extendedUpper, keySingleWildcard)
+	return
+}
