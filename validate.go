@@ -414,3 +414,21 @@ func checkSingleWildcard(str string, start, end, digitsEnd int, options address_
 	}
 	return nil
 }
+
+func getInvalidProvider(validationOptions address_string_param.IPAddressStringParams) ipAddressProvider {
+	if validationOptions == defaultIPAddrParameters {
+		return invalidProvider
+	}
+	return &nullProvider{isInvalidVal: true, ipType: invalidType, params: validationOptions}
+}
+
+func inferVersion(params address_string_param.IPAddressStringParams) IPVersion {
+	if params.AllowsIPv6() {
+		if !params.AllowsIPv4() {
+			return IPv6
+		}
+	} else if params.AllowsIPv4() {
+		return IPv4
+	}
+	return IndeterminateIPVersion
+}
