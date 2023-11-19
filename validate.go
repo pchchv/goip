@@ -1,6 +1,8 @@
 package goip
 
 import (
+	"math/big"
+
 	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/address_string_param"
 )
@@ -24,7 +26,10 @@ const (
 	ipv4SingleSegmentOctalDigitCount   = 11
 )
 
-var chars, extendedChars = createChars()
+var (
+	chars, extendedChars = createChars()
+	base85Powers         = createBase85Powers()
+)
 
 type strValidator struct{}
 
@@ -100,4 +105,41 @@ func isSingleSegmentIPv4(str string, nonZeroDigits, totalDigits int, isRange boo
 	}
 	isSingle = backIsIpv4
 	return
+}
+
+func createBase85Powers() []big.Int {
+	res := make([]big.Int, 10)
+	eightyFive := big.NewInt(85)
+	res[0].SetUint64(1)
+	for i := 1; i < len(res); i++ {
+		res[i].Mul(&res[i-1], eightyFive)
+	}
+	return res
+}
+
+func parse85(s string, start, end int) *big.Int {
+	var last bool
+	var result big.Int
+	charArray := extendedChars
+	for {
+		var partialEnd, power int
+		left := end - start
+		if last = left <= 9; last {
+			partialEnd = end
+			power = left
+		} else {
+			partialEnd = start + 9
+			power = 9
+		}
+		var partialResult = uint64(charArray[s[start]])
+		for start++; start < partialEnd; start++ {
+			next := charArray[s[start]]
+			partialResult = (partialResult * 85) + uint64(next)
+		}
+		result.Mul(&result, &base85Powers[power]).Add(&result, new(big.Int).SetUint64(partialResult))
+		if last {
+			break
+		}
+	}
+	return &result
 }
