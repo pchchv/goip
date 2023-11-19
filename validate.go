@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"math"
 	"math/big"
 	"sync/atomic"
 	"unsafe"
@@ -1269,5 +1270,141 @@ func switchValue10(currentHexValue uint64, s string, digitCount int) (result uin
 			}
 		}
 	}
+	return
+}
+
+func switchSingleWildcard10(currentValueHex uint64, s string, start, end, numSingleWildcards int, parseData *addressParseData, parsedSegIndex, leadingZeroStartIndex int, options address_string_param.AddressStringFormatParams) (err address_error.AddressStringError) {
+	digitsEnd := end - numSingleWildcards
+	err = checkSingleWildcard(s, start, end, digitsEnd, options)
+	if err != nil {
+		return
+	}
+
+	var lower uint64
+	if start < digitsEnd {
+		lower, err = switchValue10(currentValueHex, s, digitsEnd-start)
+		if err != nil {
+			return
+		}
+	}
+
+	var upper uint64
+	switch numSingleWildcards {
+	case 1:
+		lower *= 10
+		upper = lower + 9
+	case 2:
+		lower *= 100
+		upper = lower + 99
+	case 3:
+		lower *= 1000
+		upper = lower + 999
+	default:
+		power := uint64(math.Pow10(numSingleWildcards))
+		lower *= power
+		upper = lower + power - 1
+	}
+
+	var radix uint32 = 10
+	assign6Attributes2Values2Flags(start, end, leadingZeroStartIndex, start, end, leadingZeroStartIndex,
+		parseData, parsedSegIndex, lower, upper, keySingleWildcard|radix, radix)
+	return
+}
+
+func switchSingleWildcard2(currentValueHex uint64, s string, start, end, numSingleWildcards int, parseData *addressParseData, parsedSegIndex, leadingZeroStartIndex int, options address_string_param.AddressStringFormatParams) (err address_error.AddressStringError) {
+	digitsEnd := end - numSingleWildcards
+	err = checkSingleWildcard(s, start, end, digitsEnd, options)
+	if err != nil {
+		return
+	}
+
+	var lower, upper uint64
+	if start < digitsEnd {
+		lower, err = switchValue2(currentValueHex, s, digitsEnd-start)
+		if err != nil {
+			return
+		}
+	} else {
+		lower = 0
+	}
+
+	lower <<= uint(numSingleWildcards)
+	switch numSingleWildcards {
+	case 1:
+		upper = lower | 0x1
+	case 2:
+		upper = lower | 0x3
+	case 3:
+		upper = lower | 0x7
+	case 4:
+		upper = lower | 0xf
+	case 5:
+		upper = lower | 0x1f
+	case 6:
+		upper = lower | 0x3f
+	case 7:
+		upper = lower | 0x7f
+	case 8:
+		upper = lower | 0xff
+	case 9:
+		upper = lower | 0x1ff
+	case 10:
+		upper = lower | 0x3ff
+	case 11:
+		upper = lower | 0x7ff
+	case 12:
+		upper = lower | 0xfff
+	case 13:
+		upper = lower | 0x1fff
+	case 14:
+		upper = lower | 0x3fff
+	case 15:
+		upper = lower | 0x7fff
+	case 16:
+		upper = lower | 0xffff
+	default:
+		upper = lower | ^(^uint64(0) << uint(numSingleWildcards))
+	}
+
+	var radix uint32 = 2
+	assign6Attributes2Values2Flags(start, end, leadingZeroStartIndex, start, end, leadingZeroStartIndex,
+		parseData, parsedSegIndex, lower, upper, keySingleWildcard|radix, radix)
+	return
+}
+
+func switchSingleWildcard8(currentValueHex uint64, s string, start, end, numSingleWildcards int, parseData *addressParseData, parsedSegIndex, leadingZeroStartIndex int, options address_string_param.AddressStringFormatParams) (err address_error.AddressStringError) {
+	digitsEnd := end - numSingleWildcards
+	err = checkSingleWildcard(s, start, end, digitsEnd, options)
+	if err != nil {
+		return
+	}
+
+	var lower, upper uint64
+	if start < digitsEnd {
+		lower, err = switchValue8(currentValueHex, s, digitsEnd-start)
+		if err != nil {
+			return
+		}
+	}
+
+	switch numSingleWildcards {
+	case 1:
+		lower <<= 3
+		upper = lower | 07
+	case 2:
+		lower <<= 6
+		upper = lower | 077
+	case 3:
+		lower <<= 9
+		upper = lower | 0777
+	default:
+		shift := numSingleWildcards * 3
+		lower <<= uint(shift)
+		upper = lower | ^(^uint64(0) << uint(shift))
+	}
+
+	var radix uint32 = 8
+	assign6Attributes2Values2Flags(start, end, leadingZeroStartIndex, start, end, leadingZeroStartIndex,
+		parseData, parsedSegIndex, lower, upper, keySingleWildcard|radix, radix)
 	return
 }
