@@ -1111,3 +1111,44 @@ func parseBase85(
 	}
 	return false, nil
 }
+
+func parseLong2(s string, start, end int) uint64 {
+	charArray := chars
+	result := uint64(charArray[s[start]])
+	for start++; start < end; start++ {
+		c := s[start]
+		if c == '1' {
+			result = (result << 1) | 1
+		} else {
+			result <<= 1
+		}
+	}
+	return result
+}
+
+func parseLong8(s string, start, end int) uint64 {
+	charArray := chars
+	result := uint64(charArray[s[start]])
+	for start++; start < end; start++ {
+		result = (result << 3) | uint64(charArray[s[start]])
+	}
+	return result
+}
+
+func parseLong10(s string, start, end int) uint64 {
+	charArray := chars
+	result := uint64(charArray[s[start]])
+	for start++; start < end; start++ {
+		result = (result * 10) + uint64(charArray[s[start]])
+	}
+	return result
+}
+
+func parseLong16(s string, start, end int) uint64 {
+	charArray := chars
+	result := uint64(charArray[s[start]])
+	for start++; start < end; start++ {
+		result = (result << 4) | uint64(charArray[s[start]])
+	}
+	return result
+}
