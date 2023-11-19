@@ -29,6 +29,16 @@ const (
 var (
 	chars, extendedChars = createChars()
 	base85Powers         = createBase85Powers()
+	maxValues            = [5]uint64{0, IPv4MaxValuePerSegment, 0xffff, 0xffffff, 0xffffffff}
+	maxIPv4StringLen     = [9][]int{ //indices are [radix / 2][additionalSegments], and we handle radices 8, 10, 16
+		{3, 6, 8, 11},   //no radix supplied we treat as octal, the longest
+		{8, 16, 24, 32}, // binary
+		{}, {},
+		{3, 6, 8, 11},                   //octal: 0377, 0177777, 077777777, 037777777777
+		{IPv4SegmentMaxChars, 5, 8, 10}, //decimal: 255, 65535, 16777215, 4294967295
+		{}, {},
+		{2, 4, 6, 8}, //hex: 0xff, 0xffff, 0xffffff, 0xffffffff
+	}
 )
 
 type strValidator struct{}
@@ -265,4 +275,19 @@ func assign4Attributes(start, end int, parseData *addressParseData, parsedSegInd
 		keyUpperStrDigitsIndex, uleadingZeroStart,
 		keyUpperStrStartIndex, ustart,
 		keyUpperStrEndIndex, uend)
+}
+
+func getMaxIPv4Value(segmentCount int) uint64 {
+	return maxValues[segmentCount]
+}
+
+func getMaxIPv4StringLength(additionalSegmentsCovered int, radix uint32) int {
+	radixHalved := radix >> 1
+	if radixHalved < uint32(len(maxIPv4StringLen)) {
+		sl := maxIPv4StringLen[radixHalved]
+		if additionalSegmentsCovered >= 0 && additionalSegmentsCovered < len(sl) {
+			return sl[additionalSegmentsCovered]
+		}
+	}
+	return 0
 }
