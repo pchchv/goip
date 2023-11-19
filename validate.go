@@ -782,3 +782,132 @@ func isBinaryDelimiter(str string, index int) bool {
 func isHexDelimiter(c byte) bool {
 	return c == 'x' || c == 'X'
 }
+
+/**
+ * Some options are not supported in masks (prefix, wildcards, etc)
+ * So we eliminate those options while preserving the others from the address options.
+ * @param validationOptions
+ * @param ipVersion
+ * @return
+ */
+func toMaskOptions(validationOptions address_string_param.IPAddressStringParams, ipVersion IPVersion) (res address_string_param.IPAddressStringParams) {
+	// must provide options that do not allow a mask with wildcards or ranges
+	var builder *address_string_param.IPAddressStringParamsBuilder
+	if ipVersion.IsIndeterminate() || ipVersion.IsIPv6() {
+		ipv6Options := validationOptions.GetIPv6Params()
+		if !isNoRange(ipv6Options.GetRangeParams()) {
+			builder = new(address_string_param.IPAddressStringParamsBuilder).Set(validationOptions)
+			builder.GetIPv6AddressParamsBuilder().SetRangeParams(address_string_param.NoRange)
+		}
+		if ipv6Options.AllowsMixed() && !isNoRange(ipv6Options.GetMixedParams().GetIPv4Params().GetRangeParams()) {
+			if builder == nil {
+				builder = new(address_string_param.IPAddressStringParamsBuilder).Set(validationOptions)
+			}
+			builder.GetIPv6AddressParamsBuilder().SetRangeParams(address_string_param.NoRange)
+		}
+	}
+
+	if ipVersion.IsIndeterminate() || ipVersion.IsIPv4() {
+		ipv4Options := validationOptions.GetIPv4Params()
+		if !isNoRange(ipv4Options.GetRangeParams()) {
+			if builder == nil {
+				builder = new(address_string_param.IPAddressStringParamsBuilder).Set(validationOptions)
+			}
+			builder.GetIPv4AddressParamsBuilder().SetRangeParams(address_string_param.NoRange)
+		}
+	}
+
+	if validationOptions.AllowsAll() {
+		if builder == nil {
+			builder = new(address_string_param.IPAddressStringParamsBuilder).Set(validationOptions)
+		}
+		builder.AllowAll(false)
+	}
+
+	if builder == nil {
+		res = validationOptions
+	} else {
+		res = builder.ToParams()
+	}
+	return
+}
+
+func parsePrefix(
+	fullAddr string,
+	zone *Zone,
+	validationOptions address_string_param.IPAddressStringParams,
+	hostValidationOptions address_string_param.HostNameParams,
+	res *parsedHostIdentifierStringQualifier,
+	addressIsEmpty bool,
+	index,
+	endIndex int,
+	ipVersion IPVersion) (err address_error.AddressStringError) {
+	if validationOptions.AllowsPrefix() {
+		var isPrefix bool
+		isPrefix, err = validatePrefix(fullAddr, zone, validationOptions, hostValidationOptions,
+			res, index, endIndex, ipVersion)
+		if err != nil || isPrefix {
+			return
+		}
+	}
+
+	if addressIsEmpty {
+		err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.mask.address.empty"}}
+	} else if validationOptions.AllowsMask() {
+		// check for a mask
+		// check if we need a new validation options for the mask
+		maskOptions := toMaskOptions(validationOptions, ipVersion)
+		pa := &parsedIPAddress{
+			ipAddressParseData: ipAddressParseData{addressParseData: addressParseData{str: fullAddr}},
+			options:            maskOptions,
+		}
+		err = validateIPAddress(maskOptions, fullAddr, index, endIndex, pa.getIPAddressParseData(), false)
+		if err != nil {
+			err = &addressStringNestedError{
+				addressStringError: addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalidCIDRPrefixOrMask"}},
+				nested:             err,
+			}
+			return
+		}
+		maskParseData := pa.getAddressParseData()
+		if maskParseData.isProvidingEmpty() {
+			err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.mask.empty"}}
+			return
+		} else if maskParseData.isAll() {
+			err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.mask.wildcard"}}
+			return
+		}
+		err = checkSegments(fullAddr, maskOptions, pa.getIPAddressParseData())
+		if err != nil {
+			err = &addressStringNestedError{
+				addressStringError: addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalidCIDRPrefixOrMask"}},
+				nested:             err,
+			}
+			return
+		}
+		maskEndIndex := maskParseData.getAddressEndIndex()
+		if maskEndIndex != endIndex { // 1.2.3.4/ or 1.2.3.4// or 1.2.3.4/%
+			err = &addressStringIndexError{
+				addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.mask.extra.chars"}},
+				maskEndIndex + 1}
+			return
+		}
+		maskVersion := pa.getProviderIPVersion()
+		if maskVersion.IsIPv4() && maskParseData.getSegmentCount() == 1 && !maskParseData.hasWildcard() &&
+			!validationOptions.GetIPv4Params().AllowsInetAtonSingleSegmentMask() { //1.2.3.4/33 where 33 is an aton_inet single segment address and not a prefix length
+			err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.mask.single.segment"}}
+			return
+		} else if !ipVersion.IsIndeterminate() && (maskVersion.IsIPv4() != ipVersion.IsIPv4() || maskVersion.IsIPv6() != ipVersion.IsIPv6()) {
+			// note that this also covers the cases of non-standard addresses in the mask, ie mask neither ipv4 or ipv6
+			err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.ipMismatch"}}
+			return
+		}
+		res.mask = pa
+		res.setZone(zone)
+	} else if validationOptions.AllowsPrefix() {
+		err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalidCIDRPrefixOrMask"}}
+	} else {
+		err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.CIDRNotAllowed"}}
+	}
+	return
+}
