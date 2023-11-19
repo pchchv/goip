@@ -210,3 +210,32 @@ func assign6Attributes4Values1Flags(frontStart, frontEnd, frontLeadingZeroStartI
 		keyUpper, value,
 		keyExtendedUpper, extendedValue)
 }
+
+func assign6Attributes2Values1Flags(frontStart, frontEnd, frontLeadingZeroStartIndex, start, end, leadingZeroStartIndex int,
+	parseData *addressParseData, parsedSegIndex int, frontValue, value uint64, flags uint32) {
+	parseData.set7Index2ValuesFlags(parsedSegIndex,
+		flagsIndex, flags,
+		keyLowerStrDigitsIndex, uint32(frontLeadingZeroStartIndex),
+		keyLowerStrStartIndex, uint32(frontStart),
+		keyLowerStrEndIndex, uint32(frontEnd),
+		keyUpperStrDigitsIndex, uint32(leadingZeroStartIndex),
+		keyUpperStrStartIndex, uint32(start),
+		keyUpperStrEndIndex, uint32(end),
+		keyLower, frontValue,
+		keyUpper, value)
+}
+
+func assign6Attributes2Values2Flags(frontStart, frontEnd, frontLeadingZeroStartIndex, start, end, leadingZeroStartIndex int,
+	parseData *addressParseData, parsedSegIndex int, frontValue, value uint64, flags /* includes lower radix */ uint32, upperRadix uint32) {
+	parseData.set8Index2ValuesFlags(parsedSegIndex,
+		flagsIndex, flags,
+		keyLowerStrDigitsIndex, uint32(frontLeadingZeroStartIndex),
+		keyLowerStrStartIndex, uint32(frontStart),
+		keyLowerStrEndIndex, uint32(frontEnd),
+		keyUpperRadixIndex, uint32(upperRadix),
+		keyUpperStrDigitsIndex, uint32(leadingZeroStartIndex),
+		keyUpperStrStartIndex, uint32(start),
+		keyUpperStrEndIndex, uint32(end),
+		keyLower, frontValue,
+		keyUpper, value)
+}
