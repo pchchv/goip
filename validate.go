@@ -29,12 +29,14 @@ const (
 )
 
 var (
-	chars, extendedChars = createChars()
-	base85Powers         = createBase85Powers()
-	maskCache            = [3][IPv6BitCount + 1]*maskCreator{}
-	loopbackCache        = newEmptyAddrCreator(defaultIPAddrParameters, NoZone)
-	maxValues            = [5]uint64{0, IPv4MaxValuePerSegment, 0xffff, 0xffffff, 0xffffffff}
-	maxIPv4StringLen     = [9][]int{ //indices are [radix / 2][additionalSegments], and we handle radices 8, 10, 16
+	lowBitsVal           uint64 = 0xffffffffffffffff
+	lowBitsMask                 = new(big.Int).SetUint64(lowBitsVal)
+	chars, extendedChars        = createChars()
+	base85Powers                = createBase85Powers()
+	maskCache                   = [3][IPv6BitCount + 1]*maskCreator{}
+	loopbackCache               = newEmptyAddrCreator(defaultIPAddrParameters, NoZone)
+	maxValues                   = [5]uint64{0, IPv4MaxValuePerSegment, 0xffff, 0xffffff, 0xffffffff}
+	maxIPv4StringLen            = [9][]int{ //indices are [radix / 2][additionalSegments], and we handle radices 8, 10, 16
 		{3, 6, 8, 11},   //no radix supplied we treat as octal, the longest
 		{8, 16, 24, 32}, // binary
 		{}, {},
@@ -968,4 +970,144 @@ func parseAddressQualifier(
 		return parseZone(fullAddr, validationOptions, res, addressIsEmpty, qualifierIndex, endIndex, ipVersion)
 	}
 	return
+}
+
+func parseBase85(
+	validationOptions address_string_param.IPAddressStringParams,
+	str string,
+	strStartIndex,
+	strEndIndex int,
+	ipAddressParseData *ipAddressParseData,
+	extendedRangeWildcardIndex,
+	totalCharacterCount,
+	index int) (bool, address_error.AddressStringError) {
+
+	parseData := ipAddressParseData.getAddressParseData()
+	if extendedRangeWildcardIndex < 0 {
+		if totalCharacterCount == ipv6Base85SingleSegmentDigitCount {
+			if !validationOptions.AllowsIPv6() {
+				return false, &addressStringError{addressError{str: str, key: "ipaddress.error.ipv6"}}
+			}
+			ipAddressParseData.setVersion(IPv6)
+			val := parse85(str, strStartIndex, strEndIndex)
+			var lowBits, highBits big.Int
+			lowBits.And(val, lowBitsMask)
+			val.Rsh(val, 64)
+			highBits.And(val, lowBitsMask)
+			val.Rsh(val, 64)
+			// note that even with the correct number of base-85 digits, we can have a value too large
+			if !bigIsZero(val) {
+				return false, &addressStringError{addressError{str: str, key: "ipaddress.error.address.too.large"}}
+			}
+			value, extendedValue := lowBits.Uint64(), highBits.Uint64()
+			parseData.initSegmentData(1)
+			parseData.incrementSegmentCount()
+			assign3Attributes2Values1Flags(strStartIndex, strEndIndex, strStartIndex, parseData, 0, value, extendedValue, 85)
+			ipAddressParseData.setBase85(true)
+			return true, nil
+		}
+	} else {
+		if totalCharacterCount == (ipv6Base85SingleSegmentDigitCount<<1)+len(IPv6AlternativeRangeSeparatorStr) /* two base 85 addresses */ ||
+			(totalCharacterCount == ipv6Base85SingleSegmentDigitCount+len(IPv6AlternativeRangeSeparatorStr) &&
+				(extendedRangeWildcardIndex == 0 || extendedRangeWildcardIndex+len(IPv6AlternativeRangeSeparatorStr) == strEndIndex)) { /* note that we already check that extendedRangeWildcardIndex is at index 20 */
+			if !validationOptions.AllowsIPv6() {
+				return false, &addressStringError{addressError{str: str, key: "ipaddress.error.ipv6"}}
+			}
+			ipv6SpecificOptions := validationOptions.GetIPv6Params()
+			if !ipv6SpecificOptions.GetRangeParams().AllowsRangeSeparator() {
+				return false, &addressStringError{addressError{str: str, key: "ipaddress.error.no.range"}}
+			}
+			ipAddressParseData.setVersion(IPv6)
+			frontEndIndex, flags := extendedRangeWildcardIndex, uint32(0)
+			var value, value2, extendedValue, extendedValue2 uint64
+			var lowerStart, lowerEnd, upperStart, upperEnd int
+			//
+			if frontEndIndex == strStartIndex+ipv6Base85SingleSegmentDigitCount {
+				val := parse85(str, strStartIndex, frontEndIndex)
+				var lowBits, highBits big.Int
+				lowBits.And(val, lowBitsMask)
+				val.Rsh(val, 64)
+				highBits.And(val, lowBitsMask)
+				value, extendedValue = lowBits.Uint64(), highBits.Uint64()
+				if frontEndIndex+len(IPv6AlternativeRangeSeparatorStr) < strEndIndex {
+					val2 := parse85(str, frontEndIndex+len(IPv6AlternativeRangeSeparatorStr), strEndIndex)
+					var lowBits, highBits big.Int
+					lowBits.And(val2, lowBitsMask)
+					val2.Rsh(val2, 64)
+					highBits.And(val2, lowBitsMask)
+					value2, extendedValue2 = lowBits.Uint64(), highBits.Uint64()
+					if val.Cmp(val2) > 0 {
+						if !ipv6SpecificOptions.GetRangeParams().AllowsReverseRange() {
+							return false, &addressStringError{addressError{str: str, key: "ipaddress.error.invalidRange"}}
+						}
+						//note that even with the correct number of base-85 digits, we can have a value too large
+						val.Rsh(val, 64)
+						if !bigIsZero(val) {
+							return false, &addressStringError{addressError{str: str, key: "ipaddress.error.address.too.large"}}
+						}
+						lowerStart = frontEndIndex + len(IPv6AlternativeRangeSeparatorStr)
+						lowerEnd = strEndIndex
+						upperStart = strStartIndex
+						upperEnd = frontEndIndex
+					} else {
+						//note that even with the correct number of base-85 digits, we can have a value too large
+						val2.Rsh(val2, 64)
+						if !bigIsZero(val2) {
+							return false, &addressStringError{addressError{str: str, key: "ipaddress.error.address.too.large"}}
+						}
+						lowerStart = strStartIndex
+						lowerEnd = frontEndIndex
+						upperStart = frontEndIndex + len(IPv6AlternativeRangeSeparatorStr)
+						upperEnd = strEndIndex
+					}
+				} else {
+					if !ipv6SpecificOptions.GetRangeParams().AllowsInferredBoundary() {
+						return false, &addressStringIndexError{
+							addressStringError{addressError{str: str, key: "ipaddress.error.empty.segment.at.index"}},
+							extendedRangeWildcardIndex}
+					}
+					lowerStart = strStartIndex
+					lowerEnd = frontEndIndex
+					upperStart = strEndIndex
+					upperEnd = strEndIndex
+					value2 = lowBitsVal
+					extendedValue2 = lowBitsVal
+					flags = keyInferredUpperBoundary
+				}
+			} else if frontEndIndex == 0 {
+				if !ipv6SpecificOptions.GetRangeParams().AllowsInferredBoundary() {
+					return false, &addressStringIndexError{
+						addressStringError{addressError{str: str, key: "ipaddress.error.empty.segment.at.index"}},
+						index}
+				}
+				flags = keyInferredLowerBoundary
+				val2 := parse85(str, frontEndIndex+len(IPv6AlternativeRangeSeparatorStr), strEndIndex)
+				var lowBits, highBits big.Int
+				lowBits.And(val2, lowBitsMask)
+				val2.Rsh(val2, 64)
+				highBits.And(val2, lowBitsMask)
+				val2.Rsh(val2, 64)
+				//note that even with the correct number of base-85 digits, we can have a value too large
+				if !bigIsZero(val2) {
+					return false, &addressStringError{addressError{str: str, key: "ipaddress.error.address.too.large"}}
+				}
+				value2, extendedValue2 = lowBits.Uint64(), highBits.Uint64()
+				upperStart = len(IPv6AlternativeRangeSeparatorStr)
+				upperEnd = strEndIndex
+			} else {
+				return false, &addressStringIndexError{
+					addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+					extendedRangeWildcardIndex}
+			}
+			parseData.incrementSegmentCount()
+			parseData.initSegmentData(1)
+			//parseData.setHasRange();
+			assign7Attributes4Values1Flags(lowerStart, lowerEnd, lowerStart, upperStart, upperEnd, upperStart,
+				parseData, 0, value, extendedValue, value2, extendedValue2,
+				keyRangeWildcard|85|flags, 85)
+			ipAddressParseData.setBase85(true)
+			return true, nil
+		}
+	}
+	return false, nil
 }
