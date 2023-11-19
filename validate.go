@@ -667,3 +667,104 @@ func parsePortOrService(fullAddr string, zone *Zone, validationOptions address_s
 	res.service = fullAddr[index:endIndex]
 	return
 }
+
+func parseValidatedPrefix(
+	result BitCount,
+	fullAddr string,
+	zone *Zone,
+	validationOptions address_string_param.IPAddressStringParams,
+	res *parsedHostIdentifierStringQualifier,
+	digitCount,
+	leadingZeros int,
+	ipVersion IPVersion) (err address_error.AddressStringError) {
+	if digitCount == 0 {
+		//we know leadingZeroCount is > 0 since we have checked already if there were no characters at all
+		leadingZeros--
+		// digitCount++ digitCount is unused after this, no need for it to be accurate
+	}
+	asIPv4 := ipVersion.IsIPv4()
+	if asIPv4 {
+		if leadingZeros > 0 && !validationOptions.GetIPv4Params().AllowsPrefixLenLeadingZeros() {
+			err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.ipv4.prefix.leading.zeros"}}
+			return
+		}
+		if result > IPv4BitCount {
+			allowPrefixesBeyondAddressSize := validationOptions.GetIPv4Params().AllowsPrefixesBeyondAddressSize()
+			if !allowPrefixesBeyondAddressSize {
+				err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.prefixSize"}}
+				return
+			}
+			result = IPv4BitCount
+		}
+	} else {
+		if leadingZeros > 0 && !validationOptions.GetIPv6Params().AllowsPrefixLenLeadingZeros() {
+			err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.ipv6.prefix.leading.zeros"}}
+			return
+		}
+		if result > IPv6BitCount {
+			allowPrefixesBeyondAddressSize := validationOptions.GetIPv6Params().AllowsPrefixesBeyondAddressSize()
+			if !allowPrefixesBeyondAddressSize {
+				err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.prefixSize"}}
+				return
+			}
+			result = IPv6BitCount
+		}
+	}
+	res.networkPrefixLength = cacheBitCount(result)
+	res.setZone(zone)
+	return
+}
+
+func validatePrefix(
+	fullAddr string,
+	zone *Zone,
+	validationOptions address_string_param.IPAddressStringParams,
+	hostValidationOptions address_string_param.HostNameParams,
+	res *parsedHostIdentifierStringQualifier,
+	index,
+	endIndex int,
+	ipVersion IPVersion) (isPrefix bool, err address_error.AddressStringError) {
+	if index == len(fullAddr) {
+		return
+	}
+	isPrefix = true
+	prefixEndIndex := endIndex
+	hasDigits := false
+	var result BitCount
+	var leadingZeros int
+	charArray := chars
+	for i := index; i < endIndex; i++ {
+		c := fullAddr[i]
+		if c >= '1' && c <= '9' {
+			hasDigits = true
+			result = result*10 + BitCount(charArray[c])
+		} else if c == '0' {
+			if hasDigits {
+				result *= 10
+			} else {
+				leadingZeros++
+			}
+		} else if c == PortSeparator && hostValidationOptions != nil &&
+			(hostValidationOptions.AllowsPort() || hostValidationOptions.AllowsService()) && i > index {
+			// check if we have a port or service.  If not, possibly an IPv6 mask.
+			// Also, parsing for port first (rather than prefix) allows us to call
+			// parseValidatedPrefix with the knowledge that whatever is supplied can only be a prefix.
+			portErr := parsePortOrService(fullAddr, zone, hostValidationOptions, res, i+1, endIndex)
+			// portQualifier, err = parsePortOrService(fullAddr, zone, hostValidationOptions, res, i+1, endIndex)
+			if portErr != nil {
+				return
+			}
+			prefixEndIndex = i
+			break
+		} else {
+			isPrefix = false
+			break
+		}
+	}
+	// treat as a prefix if all the characters were digits, even if there were too many, unless the mask options allow for inetAton single segment
+	if isPrefix {
+		err = parseValidatedPrefix(result, fullAddr,
+			zone, validationOptions, res, prefixEndIndex-index /* digitCount */, leadingZeros, ipVersion)
+	}
+	return
+}
