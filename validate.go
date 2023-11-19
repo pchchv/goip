@@ -239,3 +239,30 @@ func assign6Attributes2Values2Flags(frontStart, frontEnd, frontLeadingZeroStartI
 		keyLower, frontValue,
 		keyUpper, value)
 }
+
+func assign3Attributes(start, end int, parseData *addressParseData, parsedSegIndex, leadingZeroStartIndex int) {
+	ustart := uint32(start)
+	uend := uint32(end)
+	uleadingZeroStart := uint32(leadingZeroStartIndex)
+	parseData.setIndex(parsedSegIndex,
+		keyLowerStrDigitsIndex, uleadingZeroStart,
+		keyLowerStrStartIndex, ustart,
+		keyLowerStrEndIndex, uend,
+		keyUpperStrDigitsIndex, uleadingZeroStart,
+		keyUpperStrStartIndex, ustart,
+		keyUpperStrEndIndex, uend)
+}
+
+func assign4Attributes(start, end int, parseData *addressParseData, parsedSegIndex, radix, leadingZeroStartIndex int) {
+	ustart := uint32(start)
+	uend := uint32(end)
+	uleadingZeroStart := uint32(leadingZeroStartIndex)
+	parseData.set7IndexFlags(parsedSegIndex,
+		keyLowerRadixIndex, uint32(radix),
+		keyLowerStrDigitsIndex, uleadingZeroStart,
+		keyLowerStrStartIndex, ustart,
+		keyLowerStrEndIndex, uend,
+		keyUpperStrDigitsIndex, uleadingZeroStart,
+		keyUpperStrStartIndex, ustart,
+		keyUpperStrEndIndex, uend)
+}
