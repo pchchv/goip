@@ -638,3 +638,20 @@ func newEmptyAddrCreator(options address_string_param.IPAddressStringParams, zon
 		zone: zone,
 	}
 }
+
+func newAllCreator(qualifier *parsedHostIdentifierStringQualifier, adjustedVersion IPVersion, originator HostIdentifierString, options address_string_param.IPAddressStringParams) ipAddressProvider {
+	result := &allCreator{
+		adjustedAddressCreator: adjustedAddressCreator{
+			networkPrefixLength: qualifier.getEquivalentPrefixLen(),
+			versionedAddressCreator: versionedAddressCreator{
+				adjustedVersion: adjustedVersion,
+				parameters:      options,
+			},
+		},
+		originator: originator,
+		qualifier:  *qualifier,
+	}
+	result.addressCreator = result.createAddrs
+	result.versionedAddressCreatorFunc = result.versionedCreate
+	return result
+}
