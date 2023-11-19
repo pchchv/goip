@@ -768,3 +768,17 @@ func validatePrefix(
 	}
 	return
 }
+
+// isNoRange checks if wildcards or range characters are not allowed.
+func isNoRange(rp address_string_param.RangeParams) bool {
+	return !rp.AllowsWildcard() && !rp.AllowsRangeSeparator() && !rp.AllowsSingleWildcard()
+}
+
+func isBinaryDelimiter(str string, index int) bool {
+	c := str[index]
+	return c == 'b' || c == 'B'
+}
+
+func isHexDelimiter(c byte) bool {
+	return c == 'x' || c == 'X'
+}
