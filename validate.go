@@ -1209,3 +1209,65 @@ func switchValue2(currentHexValue uint64, s string, digitCount int) (result uint
 	}
 	return
 }
+
+/**
+ * The digits were stored as a hex value, this switches them to an octal value.
+ *
+ * @param currentHexValue
+ * @param digitCount
+ * @return
+ */
+func switchValue8(currentHexValue uint64, s string, digitCount int) (result uint64, err address_error.AddressStringError) {
+	result = 0xf & currentHexValue
+	if result >= 8 {
+		err = &addressStringError{addressError{str: s, key: "ipaddress.error.ipv4.invalid.octal.digit"}}
+		return
+	}
+
+	shift := 0
+	for digitCount--; digitCount > 0; digitCount-- {
+		shift += 3
+		currentHexValue >>= 4
+		next := 0xf & currentHexValue
+		if next >= 8 {
+			err = &addressStringError{addressError{str: s, key: "ipaddress.error.ipv4.invalid.octal.digit"}}
+			return
+		}
+		result |= next << uint(shift)
+	}
+	return
+}
+
+func switchValue10(currentHexValue uint64, s string, digitCount int) (result uint64, err address_error.AddressStringError) {
+	result = 0xf & currentHexValue
+	if result >= 10 {
+		err = &addressStringError{addressError{str: s, key: "ipaddress.error.ipv4.invalid.decimal.digit"}}
+		return
+	}
+
+	digitCount--
+	if digitCount > 0 {
+		factor := uint64(10)
+		for {
+			currentHexValue >>= 4
+			next := 0xf & currentHexValue
+			if next >= 10 {
+				err = &addressStringError{addressError{str: s, key: "ipaddress.error.ipv4.invalid.decimal.digit"}}
+				return
+			}
+			result += next * factor
+			digitCount--
+			if digitCount == 0 {
+				break
+			}
+			if factor == 10 {
+				factor = 100
+			} else if factor == 100 {
+				factor = 1000
+			} else {
+				factor *= 10
+			}
+		}
+	}
+	return
+}
