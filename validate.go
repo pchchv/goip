@@ -143,3 +143,37 @@ func parse85(s string, start, end int) *big.Int {
 	}
 	return &result
 }
+
+func assign3Attributes2Values1Flags(start, end, leadingZeroStart int, parseData *addressParseData, parsedSegIndex int, value, extendedValue uint64, flags uint32) {
+	ustart := uint32(start)
+	uend := uint32(end)
+	uleadingZeroStart := uint32(leadingZeroStart)
+	parseData.set7Index4ValuesFlags(parsedSegIndex,
+		flagsIndex, flags,
+		keyLowerStrDigitsIndex, uleadingZeroStart,
+		keyLowerStrStartIndex, ustart,
+		keyLowerStrEndIndex, uend,
+		keyUpperStrDigitsIndex, uleadingZeroStart,
+		keyUpperStrStartIndex, ustart,
+		keyUpperStrEndIndex, uend,
+		keyLower, value,
+		keyExtendedLower, extendedValue,
+		keyUpper, value,
+		keyExtendedUpper, extendedValue)
+}
+
+func assign3Attributes1Values1Flags(start, end, leadingZeroStart int, parseData *addressParseData, parsedSegIndex int, value uint64, flags uint32) {
+	ustart := uint32(start)
+	uend := uint32(end)
+	uleadingZeroStart := uint32(leadingZeroStart)
+	parseData.set7Index2ValuesFlags(parsedSegIndex,
+		flagsIndex, flags,
+		keyUpperStrDigitsIndex, uleadingZeroStart,
+		keyLowerStrDigitsIndex, uleadingZeroStart,
+		keyUpperStrStartIndex, ustart,
+		keyLowerStrStartIndex, ustart,
+		keyUpperStrEndIndex, uend,
+		keyLowerStrEndIndex, uend,
+		keyLower, value,
+		keyUpper, value)
+}
