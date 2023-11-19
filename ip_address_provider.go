@@ -462,6 +462,34 @@ func (all *allCreator) versionedCreate(version IPVersion) (addr *IPAddress, addr
 	return
 }
 
+func (all *allCreator) createAll() (rng *SequentialRange[*IPAddress], addr *IPAddress, hostAddr *IPAddress, address_Error, hostErr address_error.IncompatibleAddressError) {
+	addrs := (*addressResult)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&all.addresses))))
+	if addrs == nil {
+		var lower, upper *IPAddress
+		addr, hostAddr, lower, upper, address_Error = createAllAddress(
+			all.adjustedVersion,
+			&all.qualifier,
+			all.originator)
+		rng = lower.SpanWithRange(upper)
+		addresses := &addressResult{
+			address:       addr,
+			hostAddress:   hostAddr,
+			address_Error: address_Error,
+			rng:           rng,
+		}
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&all.addresses))
+		atomicStorePointer(dataLoc, unsafe.Pointer(addresses))
+	} else {
+		rng, addr, hostAddr, address_Error, hostErr = addrs.rng, addrs.address, addrs.hostAddress, addrs.address_Error, addrs.hostErr
+	}
+	return
+}
+
+func (all *allCreator) createAddrs() (addr *IPAddress, hostAddr *IPAddress, address_Error, hostErr address_error.IncompatibleAddressError) {
+	_, addr, hostAddr, address_Error, hostErr = all.createAll()
+	return
+}
+
 func newMaskCreator(options address_string_param.IPAddressStringParams, adjustedVersion IPVersion, networkPrefixLength PrefixLen) *maskCreator {
 	if adjustedVersion == IndeterminateIPVersion {
 		adjustedVersion = IPVersion(options.GetPreferredVersion())
