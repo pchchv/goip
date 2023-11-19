@@ -277,6 +277,21 @@ func assign4Attributes(start, end int, parseData *addressParseData, parsedSegInd
 		keyUpperStrEndIndex, uend)
 }
 
+func assignSingleWildcard16(lower uint64, s string, start, end, numSingleWildcards int, parseData *addressParseData, parsedSegIndex, leadingZeroStartIndex int, options address_string_param.AddressStringFormatParams) (err address_error.AddressStringError) {
+	digitsEnd := end - numSingleWildcards
+	err = checkSingleWildcard(s, start, end, digitsEnd, options)
+	if err != nil {
+		return
+	}
+
+	shift := numSingleWildcards << 2
+	lower <<= uint(shift)
+	upper := lower | ^(^uint64(0) << uint(shift))
+	assign6Attributes2Values1Flags(start, end, leadingZeroStartIndex, start, end, leadingZeroStartIndex,
+		parseData, parsedSegIndex, lower, upper, keySingleWildcard)
+	return
+}
+
 func getMaxIPv4Value(segmentCount int) uint64 {
 	return maxValues[segmentCount]
 }
@@ -382,6 +397,19 @@ func checkSegments(fullAddr string, validationOptions address_string_param.IPAdd
 		hasWildcardSeparator := addressParseData.hasWildcard() && validationOptions.GetIPv6Params().AllowsWildcardedSeparator()
 		if !hasWildcardSeparator && totalSegmentCount != 1 && totalSegmentCount < IPv6SegmentCount && !parseData.isCompressed() {
 			return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.too.few.segments"}}
+		}
+	}
+	return nil
+}
+
+func checkSingleWildcard(str string, start, end, digitsEnd int, options address_string_param.AddressStringFormatParams) address_error.AddressStringError {
+	_ = start
+	if !options.GetRangeParams().AllowsSingleWildcard() {
+		return &addressStringError{addressError{str: str, key: "ipaddress.error.no.single.wildcard"}}
+	}
+	for k := digitsEnd; k < end; k++ {
+		if str[k] != SegmentSqlSingleWildcard {
+			return &addressStringError{addressError{str: str, key: "ipaddress.error.single.wildcard.order"}}
 		}
 	}
 	return nil
