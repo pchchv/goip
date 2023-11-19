@@ -911,3 +911,62 @@ func parsePrefix(
 	}
 	return
 }
+
+func parseZone(fullAddr string, validationOptions address_string_param.IPAddressStringParams, res *parsedHostIdentifierStringQualifier,
+	addressIsEmpty bool, index, endIndex int, ipVersion IPVersion) (err address_error.AddressStringError) {
+	if index == endIndex && !validationOptions.GetIPv6Params().AllowsEmptyZone() {
+		err = &addressStringIndexError{addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.zone"}}, index}
+		return
+	}
+
+	for i := index; i < endIndex; i++ {
+		c := fullAddr[i]
+		if c == PrefixLenSeparator {
+			if i == index && !validationOptions.GetIPv6Params().AllowsEmptyZone() {
+				err = &addressStringIndexError{addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.zone"}}, index}
+				return
+			}
+			zone := Zone(fullAddr[index:i])
+			return parsePrefix(fullAddr, &zone, validationOptions, nil, res, addressIsEmpty, i+1, endIndex, ipVersion)
+		} else if c == IPv6SegmentSeparator {
+			err = &addressStringIndexError{
+				addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.zone"}},
+				i}
+			return
+		}
+	}
+
+	z := Zone(fullAddr[index:endIndex])
+	res.setZone(&z)
+	return
+}
+
+func parseAddressQualifier(
+	fullAddr string,
+	validationOptions address_string_param.IPAddressStringParams,
+	hostValidationOptions address_string_param.HostNameParams,
+	ipAddressParseData *ipAddressParseData,
+	endIndex int) (err address_error.AddressStringError) {
+	qualifierIndex := ipAddressParseData.getQualifierIndex()
+	addressIsEmpty := ipAddressParseData.getAddressParseData().isProvidingEmpty()
+	ipVersion := ipAddressParseData.getProviderIPVersion()
+	res := ipAddressParseData.getQualifier()
+	if ipAddressParseData.hasPrefixSeparator() {
+		return parsePrefix(fullAddr, nil, validationOptions, hostValidationOptions,
+			res, addressIsEmpty, qualifierIndex, endIndex, ipVersion)
+	} else if ipAddressParseData.isZoned() {
+		if ipAddressParseData.isBase85Zoned() && !ipAddressParseData.isProvidingBase85IPv6() {
+			err = &addressStringIndexError{
+				addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.character.at.index"}},
+				qualifierIndex - 1}
+			return
+		}
+		if addressIsEmpty {
+			err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.only.zone"}}
+			return
+		}
+		return parseZone(fullAddr, validationOptions, res, addressIsEmpty, qualifierIndex, endIndex, ipVersion)
+	}
+	return
+}
+
