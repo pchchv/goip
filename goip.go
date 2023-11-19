@@ -951,6 +951,13 @@ func (addr *IPAddress) ToMaxHostLen(prefixLength BitCount) (*IPAddress, address_
 	return addr.init().toMaxHostLen(prefixLength)
 }
 
+// SpanWithRange returns an IPAddressSeqRange instance that spans this subnet to the given subnet.
+// If the other address is a different version than this,
+// then the other is ignored, and the result is equivalent to calling ToSequentialRange.
+func (addr *IPAddress) SpanWithRange(other *IPAddress) *SequentialRange[*IPAddress] {
+	return NewSequentialRange(addr.init(), other)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
