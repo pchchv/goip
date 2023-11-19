@@ -548,3 +548,122 @@ func chooseIPAddressProvider(
 	}
 	return
 }
+
+func validateIPAddress(
+	validationOptions address_string_param.IPAddressStringParams,
+	str string,
+	strStartIndex, strEndIndex int,
+	parseData *ipAddressParseData,
+	isEmbeddedIPv4 bool) address_error.AddressStringError {
+	return validateAddress(validationOptions, nil, str, strStartIndex, strEndIndex, parseData, nil, isEmbeddedIPv4)
+}
+
+func parsePortOrService(fullAddr string, zone *Zone, validationOptions address_string_param.HostNameParams, res *parsedHostIdentifierStringQualifier, index, endIndex int) (err address_error.AddressStringError) {
+	var hasLetter, hasDigits, isAll bool
+	var charCount, digitCount int
+	var port int
+	isPort := true
+	lastHyphen := -1
+	charArray := chars
+	for i := index; i < endIndex; i++ {
+		c := fullAddr[i]
+		if c >= '1' && c <= '9' {
+			if isPort {
+				digitCount++
+				if digitCount > 5 { // 65535 is max
+					isPort = false
+				} else {
+					hasDigits = true
+					port = port*10 + int(charArray[c])
+				}
+			}
+			charCount++
+		} else if c == '0' {
+			if isPort && hasDigits {
+				digitCount++
+				if digitCount > 5 { // 65535 is max
+					isPort = false
+				} else {
+					port *= 10
+				}
+			}
+			charCount++
+		} else {
+			//http://www.iana.org/assignments/port-numbers
+			//valid service name chars:
+			//https://tools.ietf.org/html/rfc6335#section-5.1
+			//https://tools.ietf.org/html/rfc6335#section-10.1
+			isPort = false
+			isHyphen := c == '-'
+			isAll = c == SegmentWildcard
+			if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || isHyphen || isAll {
+				if isHyphen {
+					if i == index {
+						err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.host.error.invalid.service.hyphen.start"}}
+						return
+					} else if i-1 == lastHyphen {
+						err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.host.error.invalid.service.hyphen.consecutive"}}
+						return
+					} else if i == endIndex-1 {
+						err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.host.error.invalid.service.hyphen.end"}}
+						return
+					}
+					lastHyphen = i
+				} else if isAll {
+					if i > index {
+						err = &addressStringIndexError{
+							addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.character.combination.at.index"}},
+							i}
+						return
+					} else if i+1 < endIndex {
+						err = &addressStringIndexError{
+							addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.character.combination.at.index"}},
+							i + 1}
+						return
+					}
+					hasLetter = true
+					charCount++
+					break
+				} else {
+					hasLetter = true
+				}
+				charCount++
+			} else {
+				err = &addressStringIndexError{
+					addressStringError{addressError{str: fullAddr, key: "ipaddress.host.error.invalid.port.service"}},
+					i}
+				return
+			}
+		}
+	}
+	if isPort {
+		if !validationOptions.AllowsPort() {
+			err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.host.error.port"}}
+			return
+		} else if port == 0 {
+			err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.host.error.invalidPort.no.digits"}}
+			return
+		} else if port > 65535 {
+			err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.host.error.invalidPort.too.large"}}
+			return
+		}
+		res.setZone(zone)
+		res.port = cachePorts(PortInt(port))
+		return
+	} else if !validationOptions.AllowsService() {
+		err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.host.error.service"}}
+		return
+	} else if charCount == 0 {
+		err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.host.error.invalidService.no.chars"}}
+		return
+	} else if charCount > 15 {
+		err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.host.error.invalidService.too.long"}}
+		return
+	} else if !hasLetter {
+		err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.host.error.invalidService.no.letter"}}
+		return
+	}
+	res.setZone(zone)
+	res.service = fullAddr[index:endIndex]
+	return
+}
