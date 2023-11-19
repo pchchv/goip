@@ -1152,3 +1152,60 @@ func parseLong16(s string, start, end int) uint64 {
 	}
 	return result
 }
+
+func parseSingleSegmentSingleWildcard2(s string, start, end, numSingleWildcards int, parseData *addressParseData, parsedSegIndex, leadingZeroStartIndex int, options address_string_param.AddressStringFormatParams) (err address_error.AddressStringError) {
+	digitsEnd := end - numSingleWildcards
+	err = checkSingleWildcard(s, start, end, digitsEnd, options)
+	if err != nil {
+		return
+	}
+
+	var upper, lower, extendedLower, extendedUpper uint64
+	midIndex := end - longBinaryDigits
+	if numSingleWildcards < longBinaryDigits {
+		lower = parseLong2(s, midIndex, digitsEnd)
+		shift := numSingleWildcards
+		lower <<= uint(shift)
+		upper = lower | ^(^uint64(0) << uint(shift))
+		extendedLower = parseLong2(s, start, midIndex)
+		extendedUpper = extendedLower
+	} else if numSingleWildcards == longBinaryDigits {
+		upper = 0xffffffffffffffff
+		extendedLower = parseLong2(s, start, midIndex)
+		extendedUpper = extendedLower
+	} else {
+		upper = 0xffffffffffffffff
+		shift := numSingleWildcards - longBinaryDigits
+		extendedLower = parseLong2(s, start, midIndex-shift)
+		extendedLower <<= uint(shift)
+		extendedUpper = extendedLower | ^(^uint64(0) << uint(shift))
+	}
+
+	assign6Attributes4Values1Flags(start, end, leadingZeroStartIndex, start, end, leadingZeroStartIndex,
+		parseData, parsedSegIndex, lower, extendedLower, upper, extendedUpper, keySingleWildcard)
+	return
+}
+
+func switchValue2(currentHexValue uint64, s string, digitCount int) (result uint64, err address_error.AddressStringError) {
+	result = 0xf & currentHexValue
+	if result > 1 {
+		err = &addressStringError{addressError{str: s, key: "ipaddress.error.ipv4.invalid.binary.digit"}}
+		return
+	}
+	shift := 0
+
+	for digitCount--; digitCount > 0; digitCount-- {
+		shift++
+		currentHexValue >>= 4
+		next := 0xf & currentHexValue
+		if next >= 1 {
+			if next == 1 {
+				result |= 1 << uint(shift)
+			} else {
+				err = &addressStringError{addressError{str: s, key: "ipaddress.error.ipv4.invalid.binary.digit"}}
+				return
+			}
+		}
+	}
+	return
+}
