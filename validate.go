@@ -36,6 +36,8 @@ var (
 	base85Powers                = createBase85Powers()
 	maskCache                   = [3][IPv6BitCount + 1]*maskCreator{}
 	loopbackCache               = newEmptyAddrCreator(defaultIPAddrParameters, NoZone)
+	macMaxTriple         uint64 = (MACMaxValuePerSegment << uint64(MACBitsPerSegment*2)) | (MACMaxValuePerSegment << uint64(MACBitsPerSegment)) | MACMaxValuePerSegment
+	macMaxQuintuple             = (macMaxTriple << uint64(MACBitsPerSegment*2)) | uint64(macMaxTriple>>uint64(MACBitsPerSegment))
 	maxValues                   = [5]uint64{0, IPv4MaxValuePerSegment, 0xffff, 0xffffff, 0xffffffff}
 	maxIPv4StringLen            = [9][]int{ //indices are [radix / 2][additionalSegments], and we handle radices 8, 10, 16
 		{3, 6, 8, 11},   //no radix supplied we treat as octal, the longest
@@ -1442,4 +1444,1626 @@ func parseSingleSegmentSingleWildcard16(currentValueHex uint64, s string, start,
 	assign6Attributes4Values1Flags(start, end, leadingZeroStartIndex, start, end, leadingZeroStartIndex,
 		parseData, parsedSegIndex, lower, extendedLower, upper, extendedUpper, keySingleWildcard)
 	return
+}
+
+/**
+* This method is the mega-parser.
+* It is designed to go through the characters one-by-one as a big if/else.
+* You have basically several cases: digits, segment separators (. : -), end characters like zone or prefix length,
+* range characters denoting a range a-b, wildcard char *, and the 'x' character used to denote hex like 0xf.
+*
+* Most of the processing occurs in the segment characters, where each segment is analyzed based on what chars came before.
+*
+* We can parse all possible imaginable variations of mac, ipv4, and ipv6.
+*
+* This is not the clearest way to write such a parser, because the code for each possible variation is interspersed amongst the various cases,
+* so you cannot easily see the code for a given variation clearly, but written this way it may be the fastest parser since we basically account
+* for all possibilities simultaneously as we move through the characters just once.
+*
+ */
+func validateAddress(
+	validationOptions address_string_param.IPAddressStringParams,
+	macOptions address_string_param.MACAddressStringParams,
+	str string,
+	strStartIndex, strEndIndex int,
+	ipParseData *ipAddressParseData,
+	macParseData *macAddressParseData,
+	isEmbeddedIPv4 bool) address_error.AddressStringError {
+
+	isMac := macParseData != nil
+
+	var parseData *addressParseData
+	var stringFormatParams address_string_param.AddressStringFormatParams
+	var ipv6SpecificOptions address_string_param.IPv6AddressStringParams
+	var ipv4SpecificOptions address_string_param.IPv4AddressStringParams
+	var macSpecificOptions address_string_param.MACAddressStringFormatParams
+	var baseOptions address_string_param.AddressStringParams
+	var macFormat macFormat
+	canBeBase85 := false
+	if isMac {
+		baseOptions = macOptions
+		macSpecificOptions = macOptions.GetFormatParams()
+		stringFormatParams = macSpecificOptions
+		macParseData.init(str)
+		parseData = macParseData.getAddressParseData()
+	} else {
+		baseOptions = validationOptions
+		// we set stringFormatParams when we know what ip version we have
+		ipParseData.init(str)
+		parseData = ipParseData.getAddressParseData()
+		ipv6SpecificOptions = validationOptions.GetIPv6Params()
+		canBeBase85 = ipv6SpecificOptions.AllowsBase85()
+		ipv4SpecificOptions = validationOptions.GetIPv4Params()
+	}
+
+	index := strStartIndex
+
+	// per segment variables
+	var frontDigitCount, frontLeadingZeroCount, frontSingleWildcardCount, leadingZeroCount,
+		singleWildcardCount, wildcardCount, frontWildcardCount int
+
+	var extendedCharacterIndex, extendedRangeWildcardIndex, rangeWildcardIndex,
+		hexDelimiterIndex, frontHexDelimiterIndex, segmentStartIndex,
+		segmentValueStartIndex = -1, -1, -1, -1, -1, index, index
+
+	var isSegmented, leadingWithZero, hasDigits, frontIsStandardRangeChar, atEnd,
+		firstSegmentDashedRange, frontUppercase, uppercase,
+		isSingleIPv6, isSingleSegment, isDoubleSegment bool
+
+	var err address_error.AddressStringError
+
+	checkCharCounts := true
+
+	var version IPVersion
+	var currentValueHex, currentFrontValueHex, extendedValue uint64
+
+	charArray := chars
+
+	var currentChar byte
+	for {
+		if index >= strEndIndex {
+			// for ipv6 or ipv4 we set current char to be the right separator to parse the last segment,
+			// so that is why we have the check here for index == strEndIndex and not index >= strEndIndex
+			atEnd = index == strEndIndex
+			if atEnd {
+				parseData.setAddressEndIndex(index)
+				if isSegmented {
+					if isMac {
+						currentChar = byte(*macFormat)
+						isDoubleSegment = parseData.getSegmentCount() == 1 && currentChar == RangeSeparator
+						macParseData.setDoubleSegment(isDoubleSegment)
+						if isDoubleSegment {
+							totalDigits := index - segmentValueStartIndex
+							macParseData.setExtended(totalDigits == macExtendedDoubleSegmentDigitCount)
+						}
+					} else {
+						// we are not base 85, so error if necessary
+						if extendedCharacterIndex >= 0 {
+							return &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+								extendedCharacterIndex}
+						}
+						//current char is either . or : to handle last segment, unless we have double :: in which case we already handled last segment
+						if version.IsIPv4() {
+							currentChar = IPv4SegmentSeparator
+						} else { //ipv6
+							if index == segmentStartIndex {
+								if index == parseData.getConsecutiveSeparatorIndex()+2 {
+									//ends with ::, we've already parsed the last segment
+									break
+								}
+								return &addressStringError{addressError{str: str, key: "ipaddress.error.cannot.end.with.single.separator"}}
+							} else if ipParseData.isProvidingMixedIPv6() {
+								//no need to parse the last segment, since it is mixed we already have
+								break
+							} else {
+								currentChar = IPv6SegmentSeparator
+							}
+						}
+					}
+				} else {
+					// no segment separator so far and segmentCount is 0
+					// it could be all addresses like "*", empty "", prefix-only ip address like /64, single segment like 12345, or single segment range like 12345-67890
+					totalCharacterCount := index - strStartIndex
+					if totalCharacterCount == 0 {
+						//it is ""
+						if !isMac && ipParseData.hasPrefixSeparator() {
+							//if !validationOptions.AllowsPrefixOnly() {
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.prefix.only"}}
+							//}
+						} else if !baseOptions.AllowsEmpty() {
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.empty"}}
+						}
+						parseData.setEmpty(true)
+						break
+					} else if wildcardCount == totalCharacterCount && wildcardCount <= maxWildcards { //20 wildcards are base 85!
+						if !baseOptions.AllowsAll() {
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.all"}}
+						}
+						parseData.setHasWildcard()
+						parseData.setAll()
+						break
+					}
+					// At this point it is single segment like 12345 or single segment range like 12345-67890
+					totalDigits := index - segmentValueStartIndex
+					frontTotalDigits := frontLeadingZeroCount + frontDigitCount
+					if isMac {
+						// we handle the double segment format abcdef-abcdef here
+						isDoubleSeg := (totalDigits == macDoubleSegmentDigitCount || totalDigits == macExtendedDoubleSegmentDigitCount) &&
+							(frontTotalDigits == macDoubleSegmentDigitCount || frontWildcardCount > 0)
+						isDoubleSeg = isDoubleSeg || (frontTotalDigits == macDoubleSegmentDigitCount && wildcardCount > 0)
+						isDoubleSeg = isDoubleSeg || (frontWildcardCount > 0 && wildcardCount > 0)
+						if isDoubleSeg && !firstSegmentDashedRange { //checks for *-abcdef and abcdef-* and abcdef-abcdef and *-* two segment addresses
+							// firstSegmentDashedRange means that the range character is '|'
+							addressSize := macOptions.GetPreferredLen()
+							if addressSize == address_string_param.EUI64Len && totalDigits == macDoubleSegmentDigitCount {
+								return &addressStringError{addressError{str: str, key: "ipaddress.error.too.few.segments"}}
+							} else if addressSize == address_string_param.MAC48Len && totalDigits == macExtendedDoubleSegmentDigitCount {
+								return &addressStringError{addressError{str: str, key: "ipaddress.error.too.many.segments"}}
+							}
+							// we have aaaaaa-bbbbbb
+							if !macOptions.AllowsSingleDashed() {
+								return &addressStringError{addressError{str: str, key: "ipaddress.mac.error.format"}}
+							}
+							isDoubleSegment = true
+							macParseData.setDoubleSegment(true)
+							macParseData.setExtended(totalDigits == macExtendedDoubleSegmentDigitCount) //we have aaaaaa-bbbbbbbbbb
+							currentChar = MACDashSegmentSeparator
+							checkCharCounts = false //counted chars already
+						} else if frontWildcardCount > 0 || wildcardCount > 0 {
+							// either x-* or *-x, we treat these as if they can be expanded to x-*-*-*-*-* or *-*-*-*-*-x
+							if !macOptions.AllowsSingleDashed() {
+								return &addressStringError{addressError{str: str, key: "ipaddress.mac.error.format"}}
+							}
+							currentChar = MACDashSegmentSeparator
+						} else {
+							// a string of digits with no segment separator
+							// here we handle abcdefabcdef or abcdefabcdef|abcdefabcdef or abcdefabcdef-abcdefabcdef
+							if !baseOptions.AllowsSingleSegment() {
+								return &addressStringError{addressError{str: str, key: "ipaddress.error.single.segment"}}
+							}
+							is12Digits := totalDigits == macSingleSegmentDigitCount
+							is16Digits := totalDigits == macExtendedSingleSegmentDigitCount
+							isNoDigits := totalDigits == 0
+							if is12Digits || is16Digits || isNoDigits {
+								var frontIs12Digits, frontIs16Digits, frontIsNoDigits bool
+								if rangeWildcardIndex >= 0 {
+									frontIs12Digits = frontTotalDigits == macSingleSegmentDigitCount
+									frontIs16Digits = frontTotalDigits == macExtendedSingleSegmentDigitCount
+									frontIsNoDigits = frontTotalDigits == 0
+									if is12Digits {
+										if !frontIs12Digits && !frontIsNoDigits {
+											return &addressStringError{addressError{str: str, key: "ipaddress.error.front.digit.count"}}
+										}
+									} else if is16Digits {
+										if !frontIs16Digits && !frontIsNoDigits {
+											return &addressStringError{addressError{str: str, key: "ipaddress.error.front.digit.count"}}
+										}
+									} else if isNoDigits {
+										if !frontIs12Digits && !frontIs16Digits {
+											return &addressStringError{addressError{str: str, key: "ipaddress.error.front.digit.count"}}
+										}
+									}
+								} else if isNoDigits {
+									return &addressStringError{addressError{str: str, key: "ipaddress.error.too.few.segments.digit.count"}}
+								}
+								isSingleSegment = true
+								parseData.setSingleSegment()
+								macParseData.setExtended(is16Digits || frontIs16Digits)
+								currentChar = MACColonSegmentSeparator
+								checkCharCounts = false //counted chars already
+							} else {
+								return &addressStringError{addressError{str: str, key: "ipaddress.error.too.few.segments.digit.count"}}
+							}
+						}
+					} else {
+						// a string of digits with no segment separator
+						if !baseOptions.AllowsSingleSegment() {
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.single.segment"}}
+						}
+
+						isRange := rangeWildcardIndex >= 0
+						isSingleSeg, serr := isSingleSegmentIPv6(str, totalDigits, isRange, frontTotalDigits, ipv6SpecificOptions)
+						if serr != nil {
+							return serr
+						} else if isSingleSeg {
+							// we are not base 85, so error if necessary
+							if extendedCharacterIndex >= 0 {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+									extendedCharacterIndex,
+								}
+							}
+							isSingleIPv6 = true
+							currentChar = IPv6SegmentSeparator
+						} else {
+							if canBeBase85 {
+								if canBeBase85, serr = parseBase85(
+									validationOptions, str, strStartIndex, strEndIndex, ipParseData,
+									extendedRangeWildcardIndex, totalCharacterCount, index); canBeBase85 {
+									break
+								}
+								if serr != nil {
+									return serr
+								}
+							}
+							leadingZeros := leadingZeroCount
+							if leadingWithZero {
+								leadingZeros++
+							}
+							isSingleSeg, serr = isSingleSegmentIPv4(
+								str,
+								totalDigits-leadingZeros,
+								totalDigits,
+								isRange,
+								frontDigitCount,
+								frontTotalDigits,
+								ipv4SpecificOptions)
+							if serr != nil {
+								return serr
+							} else if isSingleSeg {
+								// we are not base 85, so error if necessary
+								if extendedCharacterIndex >= 0 {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+										extendedCharacterIndex,
+									}
+								}
+								currentChar = IPv4SegmentSeparator
+							} else {
+								return &addressStringError{addressError{str: str, key: "ipaddress.error.too.few.segments.digit.count"}}
+							}
+						}
+						isSingleSegment = true
+						parseData.setSingleSegment()
+						checkCharCounts = false // counted chars already
+					}
+				}
+			} else {
+				break
+			}
+		} else {
+			currentChar = str[index]
+		}
+
+		// evaluate the character
+		if currentChar <= '9' && currentChar >= '0' {
+			if hasDigits {
+				currentValueHex = currentValueHex<<4 | uint64(charArray[currentChar])
+			} else {
+				if currentChar == '0' {
+					if leadingWithZero {
+						leadingZeroCount++
+					} else {
+						leadingWithZero = true
+					}
+				} else {
+					hasDigits = true
+					currentValueHex = currentValueHex<<4 | uint64(charArray[currentChar])
+				}
+			}
+			index++
+		} else if currentChar >= 'a' && currentChar <= 'f' {
+			currentValueHex = currentValueHex<<4 | uint64(charArray[currentChar])
+			hasDigits = true
+			index++
+		} else if currentChar == IPv4SegmentSeparator {
+			segCount := parseData.getSegmentCount()
+			// could be mac or ipv4, we handle either one
+			if isMac {
+				if segCount == 0 {
+					if !macOptions.AllowsDotted() {
+						return &addressStringError{addressError{str: str, key: "ipaddress.mac.error.format"}}
+					}
+					macFormat = dotted
+					macParseData.setFormat(macFormat)
+					parseData.initSegmentData(MediaAccessControlDotted64SegmentCount)
+					isSegmented = true
+				} else {
+					if macFormat != dotted {
+						return &addressStringIndexError{
+							addressStringError{addressError{str: str, key: "ipaddress.mac.error.mix.format.characters.at.index"}},
+							index}
+					}
+					var limit int
+					if macOptions.GetPreferredLen() == address_string_param.MAC48Len {
+						limit = MediaAccessControlDottedSegmentCount
+					} else {
+						limit = MediaAccessControlDotted64SegmentCount
+					}
+					if segCount >= limit {
+						return &addressStringError{addressError{str: str, key: "ipaddress.error.too.many.segments"}}
+					}
+				}
+			} else {
+				//end of an ipv4 segment
+				if segCount == 0 {
+					if !validationOptions.AllowsIPv4() {
+						return &addressStringError{addressError{str: str, key: "ipaddress.error.ipv4"}}
+					}
+					version = IPv4
+					ipParseData.setVersion(version)
+					stringFormatParams = ipv4SpecificOptions
+					canBeBase85 = false
+					parseData.initSegmentData(IPv4SegmentCount)
+					isSegmented = true
+				} else if ipParseData.getProviderIPVersion().IsIPv6() {
+					//mixed IPv6 address like 1:2:3:4:5:6:1.2.3.4
+					if !ipv6SpecificOptions.AllowsMixed() {
+						return &addressStringError{addressError{str: str, key: "ipaddress.error.no.mixed"}}
+					}
+					totalSegmentCount := segCount + IPv6MixedReplacedSegmentCount
+					if totalSegmentCount > IPv6SegmentCount {
+						return &addressStringError{addressError{str: str, key: "ipaddress.error.too.many.segments"}}
+					}
+					if wildcardCount > 0 {
+						if parseData.getConsecutiveSeparatorIndex() < 0 &&
+							totalSegmentCount < IPv6SegmentCount &&
+							ipv6SpecificOptions.AllowsWildcardedSeparator() {
+							// the '*' is covering an additional ipv6 segment (eg 1:2:3:4:5:*.2.3.4, the * covers both an ipv4 and ipv6 segment)
+							// we flag this IPv6 segment with keyMergedMixed
+							parseData.setHasWildcard()
+							assign6Attributes2Values1Flags(segmentStartIndex, index, segmentStartIndex, segmentStartIndex, index, segmentStartIndex,
+								parseData, segCount, 0, IPv6MaxValuePerSegment, keyWildcard|keyMergedMixed)
+							parseData.incrementSegmentCount()
+						}
+					}
+					mixedOptions := ipv6SpecificOptions.GetMixedParams()
+					pa := &parsedIPAddress{
+						ipAddressParseData: ipAddressParseData{addressParseData: addressParseData{str: str}},
+						options:            mixedOptions,
+					}
+					err = validateIPAddress(mixedOptions, str, segmentStartIndex, strEndIndex, &pa.ipAddressParseData, true)
+					if err != nil {
+						return err
+					}
+					pa.clearQualifier()
+					err = checkSegments(str, mixedOptions, pa.getIPAddressParseData())
+					if err != nil {
+						return err
+					}
+					ipParseData.setMixedParsedAddress(pa)
+					index = pa.getAddressParseData().getAddressEndIndex()
+					continue
+				} else if segCount >= IPv4SegmentCount {
+					return &addressStringError{addressError{str: str, key: "ipaddress.error.ipv4.too.many.segments"}}
+				}
+			}
+
+			if wildcardCount > 0 {
+				if !stringFormatParams.GetRangeParams().AllowsWildcard() {
+					return &addressStringError{addressError{str: str, key: "ipaddress.error.no.wildcard"}}
+				}
+				// wildcards must appear alone
+				totalDigits := index - segmentStartIndex
+				if wildcardCount != totalDigits || hexDelimiterIndex >= 0 {
+					return &addressStringIndexError{
+						addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+						index}
+				}
+				parseData.setHasWildcard()
+				startIndex := index - wildcardCount
+				var max uint64
+				if isMac {
+					max = MACMaxValuePerDottedSegment
+				} else {
+					max = IPv4MaxValuePerSegment
+				}
+				assign6Attributes2Values1Flags(startIndex, index, startIndex, startIndex, index, startIndex,
+					parseData, segCount, 0, max, keyWildcard)
+				wildcardCount = 0
+			} else {
+				var flags, rangeFlags, radix uint32
+				var value uint64
+				digitStartIndex := segmentValueStartIndex + leadingZeroCount
+				digitCount := index - digitStartIndex
+				if leadingWithZero {
+					if digitCount == 1 {
+						if leadingZeroCount == 0 && rangeWildcardIndex < 0 && hexDelimiterIndex < 0 {
+							// handles 0, but not 1-0 or 0x0
+							assign4Attributes(digitStartIndex, index, parseData, segCount, 10, segmentValueStartIndex)
+							parseData.incrementSegmentCount()
+							index++
+							segmentStartIndex = index
+							segmentValueStartIndex = index
+							leadingWithZero = false
+							continue
+						}
+					} else {
+						leadingZeroCount++
+						digitStartIndex++
+						digitCount--
+					}
+					leadingWithZero = false // reset this flag now that we've used it
+				}
+				noValuesToSet := false
+				if digitCount == 0 {
+					// we allow an empty range boundary to denote the max value
+					if rangeWildcardIndex < 0 || hexDelimiterIndex >= 0 || !stringFormatParams.GetRangeParams().AllowsInferredBoundary() {
+						// starts with '.', or has two consecutive '.'
+						return &addressStringIndexError{
+							addressStringError{addressError{str: str, key: "ipaddress.error.empty.segment.at.index"}},
+							index}
+					} else if isMac {
+						value = MACMaxValuePerDottedSegment
+						radix = MACDefaultTextualRadix
+					} else {
+						value = IPv4MaxValuePerSegment // for inet-aton multi-segment, this will be adjusted later
+						radix = IPv4DefaultTextualRadix
+					}
+					rangeFlags = keyInferredUpperBoundary
+				} else { // digitCount > 0
+					// Note: we cannot do max value check on ipv4 until after all segments have been read due to inetAton joined segments,
+					// although we can do a preliminary check here that is in fact needed to prevent overflow when calculating values later
+					isBinary := false
+					hasLeadingZeros := leadingZeroCount > 0
+					isSingleWildcard := singleWildcardCount > 0
+					if isMac || hexDelimiterIndex >= 0 {
+						if isMac { // mac dotted segments aabb.ccdd.eeff
+							maxMacChars := 4
+							if digitCount > maxMacChars { //
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+									segmentValueStartIndex}
+							}
+							totalDigits := digitCount + leadingZeroCount
+							if hexDelimiterIndex >= 0 {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+									hexDelimiterIndex}
+							} else if leadingZeroCount > 0 && !stringFormatParams.AllowsLeadingZeros() {
+								return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+							} else if !stringFormatParams.AllowsUnlimitedLeadingZeros() && totalDigits > maxMacChars {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+									segmentValueStartIndex}
+							} else if !macSpecificOptions.AllowsShortSegments() && totalDigits < maxMacChars {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.short.at.index"}},
+									segmentValueStartIndex}
+							}
+						} else if !stringFormatParams.AllowsLeadingZeros() {
+							// the '0' preceding the 'x' is not allowed
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+						} else if !ipv4SpecificOptions.AllowsInetAtonHex() {
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.ipv4.segment.hex"}}
+						} else if hasLeadingZeros && !ipv4SpecificOptions.AllowsInetAtonLeadingZeros() {
+							// the '0' following the 'x' is not allowed
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+						} else {
+							if digitCount > 8 { // 0xffffffff
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+									segmentValueStartIndex}
+							}
+							ipParseData.setHasInetAtonValue(true)
+						}
+						radix = 16
+						if isSingleWildcard {
+							if rangeWildcardIndex >= 0 {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+									index}
+							}
+							err = assignSingleWildcard16(currentValueHex, str, digitStartIndex, index, singleWildcardCount, parseData, segCount, segmentValueStartIndex, stringFormatParams)
+							if err != nil {
+								return err
+							}
+							value = 0
+							noValuesToSet = true
+							singleWildcardCount = 0
+						} else {
+							value = currentValueHex
+						}
+						hexDelimiterIndex = -1
+					} else {
+						isBinaryOrOctal := hasLeadingZeros
+						if isBinaryOrOctal {
+							isBinary = ipv4SpecificOptions.AllowsBinary() && isBinaryDelimiter(str, digitStartIndex)
+							isBinaryOrOctal = isBinary || ipv4SpecificOptions.AllowsInetAtonOctal()
+						}
+						if isBinaryOrOctal {
+							if !stringFormatParams.AllowsLeadingZeros() {
+								return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+							}
+							if isBinary {
+								if digitCount > 33 {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+										segmentValueStartIndex}
+								}
+								digitStartIndex++ // exclude the 'b' in 0b1100
+								digitCount--      // exclude the 'b'
+								radix = 2
+								ipParseData.setHasBinaryDigits(true)
+								if isSingleWildcard {
+									if rangeWildcardIndex >= 0 {
+										return &addressStringIndexError{
+											addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+											index}
+									}
+									if digitCount > 16 {
+										if parseErr := parseSingleSegmentSingleWildcard2(str, digitStartIndex, index, singleWildcardCount, parseData, segCount, segmentValueStartIndex, stringFormatParams); parseErr != nil {
+											return parseErr
+										}
+									} else {
+										if parseErr := switchSingleWildcard2(currentValueHex, str, digitStartIndex, index, singleWildcardCount, parseData, segCount, segmentValueStartIndex, stringFormatParams); parseErr != nil {
+											return parseErr
+										}
+									}
+									value = 0
+									noValuesToSet = true
+									singleWildcardCount = 0
+								} else {
+									if digitCount > 16 {
+										value = parseLong2(str, digitStartIndex, index)
+									} else {
+										value, err = switchValue2(currentValueHex, str, digitCount)
+										if err != nil {
+											return err
+										}
+									}
+								}
+							} else {
+								if leadingZeroCount > 1 && !ipv4SpecificOptions.AllowsInetAtonLeadingZeros() {
+									return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+								} else if digitCount > 11 { //octal 037777777777
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+										segmentValueStartIndex}
+								}
+								ipParseData.setHasInetAtonValue(true)
+								radix = 8
+								if isSingleWildcard {
+									if rangeWildcardIndex >= 0 {
+										return &addressStringIndexError{
+											addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+											index}
+									}
+									if parseErr := switchSingleWildcard8(currentValueHex, str, digitStartIndex, index, singleWildcardCount, parseData, segCount, segmentValueStartIndex, stringFormatParams); parseErr != nil {
+										return parseErr
+									}
+									value = 0
+									noValuesToSet = true
+									singleWildcardCount = 0
+								} else {
+									value, err = switchValue8(currentValueHex, str, digitCount)
+									if err != nil {
+										return err
+									}
+								}
+							}
+						} else {
+							if hasLeadingZeros {
+								if !stringFormatParams.AllowsLeadingZeros() {
+									return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+								}
+								ipParseData.setHasIPv4LeadingZeros(true)
+							}
+							if digitCount > 10 { // 4294967295
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+									segmentValueStartIndex}
+							}
+							radix = 10
+							if isSingleWildcard {
+								if rangeWildcardIndex >= 0 {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+										index}
+								}
+								if parseErr := switchSingleWildcard10(currentValueHex, str, digitStartIndex, index, singleWildcardCount, parseData, segCount, segmentValueStartIndex, ipv4SpecificOptions); parseErr != nil {
+									return parseErr
+								}
+								value = 0
+								noValuesToSet = true
+								singleWildcardCount = 0
+							} else {
+								value, err = switchValue10(currentValueHex, str, digitCount)
+								if err != nil {
+									return err
+								}
+								flags = keyStandardStr
+							}
+						}
+					}
+					hasDigits = false
+					currentValueHex = 0
+				}
+
+				if rangeWildcardIndex >= 0 {
+					var frontRadix uint32
+					var front uint64
+					frontStartIndex := rangeWildcardIndex - frontDigitCount
+					frontEndIndex := rangeWildcardIndex
+					frontLeadingZeroStartIndex := frontStartIndex - frontLeadingZeroCount
+					if !stringFormatParams.GetRangeParams().AllowsRangeSeparator() {
+						return &addressStringError{addressError{str: str, key: "ipaddress.error.no.range"}}
+					} else if frontSingleWildcardCount > 0 || frontWildcardCount > 0 { //no wildcards in ranges
+						return &addressStringIndexError{
+							addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+							rangeWildcardIndex}
+					}
+					frontEmpty := frontStartIndex == frontEndIndex
+					isReversed := false
+					hasFrontLeadingZeros := frontLeadingZeroCount > 0
+					if isMac || frontHexDelimiterIndex >= 0 {
+						if isMac {
+							totalFrontDigits := frontDigitCount + frontLeadingZeroCount
+							maxMacChars := 4
+							if frontHexDelimiterIndex >= 0 {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+									frontHexDelimiterIndex}
+							} else if hasFrontLeadingZeros && !stringFormatParams.AllowsLeadingZeros() {
+								return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+							} else if !stringFormatParams.AllowsUnlimitedLeadingZeros() && totalFrontDigits > maxMacChars {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+									frontLeadingZeroStartIndex}
+							} else if !macSpecificOptions.AllowsShortSegments() && totalFrontDigits < maxMacChars {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.short.at.index"}},
+									frontLeadingZeroStartIndex}
+							} else if frontEmpty { //we allow the front of a range to be empty in which case it is 0
+								if !stringFormatParams.GetRangeParams().AllowsInferredBoundary() {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.empty.segment.at.index"}},
+										index}
+								}
+								rangeFlags |= keyInferredLowerBoundary
+								front = 0
+							} else if frontDigitCount > maxMacChars { // mac dotted segments aaa.bbb.ccc.ddd
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+									frontLeadingZeroStartIndex}
+							} else {
+								front = currentFrontValueHex
+								isReversed = front > value && digitCount != 0
+							}
+						} else if !stringFormatParams.AllowsLeadingZeros() {
+							// the '0' preceding the 'x' is not allowed
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+						} else if !ipv4SpecificOptions.AllowsInetAtonHex() {
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.ipv4.segment.hex"}}
+						} else if hasFrontLeadingZeros && !ipv4SpecificOptions.AllowsInetAtonLeadingZeros() {
+							// the '0' following the 'x' is not allowed
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+						} else if frontEmpty {
+							return &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.empty.segment.at.index"}},
+								index}
+						} else if frontDigitCount > 8 { // 0xffffffff
+							return &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+								frontLeadingZeroStartIndex}
+						} else {
+							ipParseData.setHasInetAtonValue(true)
+							front = currentFrontValueHex
+							isReversed = front > value && digitCount != 0
+						}
+						frontRadix = 16
+					} else {
+						if hasFrontLeadingZeros {
+							if !stringFormatParams.AllowsLeadingZeros() {
+								return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+							}
+							if ipv4SpecificOptions.AllowsBinary() && isBinaryDelimiter(str, frontStartIndex) {
+								if frontDigitCount > 33 {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+										frontLeadingZeroStartIndex}
+								}
+								ipParseData.setHasBinaryDigits(true)
+								frontStartIndex++
+								frontDigitCount--
+								if frontDigitCount > 16 {
+									front = parseLong2(str, frontStartIndex, frontEndIndex)
+								} else {
+									front, err = switchValue2(currentFrontValueHex, str, frontDigitCount)
+									if err != nil {
+										return err
+									}
+								}
+								frontRadix = 2
+								isReversed = digitCount != 0 && front > value
+							} else if ipv4SpecificOptions.AllowsInetAtonOctal() {
+								if frontLeadingZeroCount > 1 && !ipv4SpecificOptions.AllowsInetAtonLeadingZeros() {
+									return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+								} else if frontDigitCount > 11 { // 037777777777
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+										frontLeadingZeroStartIndex}
+								}
+								ipParseData.setHasInetAtonValue(true)
+								front, err = switchValue8(currentFrontValueHex, str, frontDigitCount)
+								if err != nil {
+									return err
+								}
+								frontRadix = 8
+								isReversed = digitCount != 0 && front > value
+							}
+						}
+						if frontRadix == 0 {
+							frontRadix = 10
+							if frontEmpty { //we allow the front of a range to be empty in which case it is 0
+								if !stringFormatParams.GetRangeParams().AllowsInferredBoundary() {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.empty.segment.at.index"}},
+										index}
+								}
+								rangeFlags |= keyInferredLowerBoundary
+							} else if frontDigitCount > 10 { // 4294967295
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+									frontLeadingZeroStartIndex}
+							} else {
+								front, err = switchValue10(currentFrontValueHex, str, frontDigitCount)
+								if err != nil {
+									return err
+								}
+								if hasFrontLeadingZeros {
+									if !stringFormatParams.AllowsLeadingZeros() {
+										return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+									}
+									ipParseData.setHasIPv4LeadingZeros(true)
+								}
+								isReversed = digitCount != 0 && front > value
+								if !isReversed {
+									if leadingZeroCount == 0 && (flags&keyStandardStr) != 0 {
+										rangeFlags |= keyStandardRangeStr | keyStandardStr
+									} else {
+										rangeFlags |= keyStandardStr
+									}
+								}
+							}
+						}
+					}
+
+					backEndIndex := index
+					if isReversed {
+						if !stringFormatParams.GetRangeParams().AllowsReverseRange() {
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.invalidRange"}}
+						}
+						// switcheroo
+						frontStartIndex, digitStartIndex = digitStartIndex, frontStartIndex
+						frontEndIndex, backEndIndex = backEndIndex, frontEndIndex
+						frontLeadingZeroStartIndex, segmentValueStartIndex = segmentValueStartIndex, frontLeadingZeroStartIndex
+						frontRadix, radix = radix, frontRadix
+						front, value = value, front
+					}
+					assign6Attributes2Values2Flags(frontStartIndex, frontEndIndex, frontLeadingZeroStartIndex, digitStartIndex, backEndIndex, segmentValueStartIndex,
+						parseData, segCount, front, value, rangeFlags|keyRangeWildcard|frontRadix, radix)
+					rangeWildcardIndex = -1
+				} else if !noValuesToSet {
+					assign3Attributes1Values1Flags(digitStartIndex, index, segmentValueStartIndex, parseData, segCount, value, flags|radix)
+				}
+				leadingZeroCount = 0
+			}
+			parseData.incrementSegmentCount()
+			index++
+			segmentValueStartIndex = index
+			segmentStartIndex = index
+			// end of IPv4 segments and mac segments with '.' separators
+		} else {
+			// checking for all IPv6 and MAC48Len segments, as well as the front range of all segments IPv4, IPv6, and MAC48Len
+			// the range character '-' is the same as one of the separators '-' for MAC48Len,
+			// so further work is required to distinguish between the front of IPv6/IPv4/MAC48Len range and MAC48Len segment
+			// we also handle IPv6 segment and MAC48Len segment in the same place to avoid code duplication
+			var isSpace, isDashedRangeChar, isRangeChar bool
+			if currentChar == IPv6SegmentSeparator {
+				isRangeChar = false
+				isSpace = false
+			} else {
+				isRangeChar = currentChar == RangeSeparator
+				if isRangeChar || (isMac && (currentChar == MacDashedSegmentRangeSeparator)) {
+					isSpace = false
+					isDashedRangeChar = !isRangeChar
+
+					/*
+					 There are 3 cases here, A, B and C.
+					 A - we have two MAC48Len segments a-b-
+					 B - we have the front of a range segment, either a-b which is MAC48Len or ipv6AddrType,  or a|b or a<space>b which is MAC48Len
+					 C - we have a single segment, either a MAC48Len segment a- or an IPv6 or MAC48Len segment a:
+					*/
+
+					/*
+					 Here we have either a '-' or '|' character or a space ' '
+
+					 If we have a '-' character:
+					 For MAC48Len address, the cases are:
+					 1. we did not previously set macFormat and we did not previously encounter '|'
+					 		-if rangeWildcardIndex >= 0 we have dashed a-b- we treat as two segments, case A (we cannot have a|b because that would have set macFormat previously)
+					 		-if rangeWildcardIndex < 0, we treat as front of range, case B, later we will know for sure if really front of range
+					 2. we previously set macFormat or we previously encountered '|'
+					 		if set to dashed we treat as one segment, may or may not be range segment, case C
+					 		if we previously encountered '|' we treat as dashed range segment, case C
+					 		if not we treat as front of range, case B
+
+					 For IPv6, this is always front of range, case B
+
+					 If we have a '|' character, we have front of range MAC48Len, case B
+					*/
+					// we know either isRangeChar or isDashedRangeChar is true at this point
+					endOfHexSegment := false
+					if isMac {
+						if macFormat == nil {
+							if rangeWildcardIndex >= 0 && !firstSegmentDashedRange {
+
+								//case A, we have two segments a-b- or a-b|
+
+								//we handle the first segment here, we handle the second segment in the usual place below
+								if frontHexDelimiterIndex >= 0 {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+										frontHexDelimiterIndex}
+								} else if hexDelimiterIndex >= 0 {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+										hexDelimiterIndex}
+								} else if !macOptions.AllowsDashed() {
+									return &addressStringError{addressError{str: str, key: "ipaddress.mac.error.format"}}
+								}
+								macFormat = dashed
+								macParseData.setFormat(macFormat)
+								checkCharCounts = false //counting chars later
+								parseData.initSegmentData(ExtendedUniqueIdentifier64SegmentCount)
+								isSegmented = true
+								if frontWildcardCount > 0 {
+									if !stringFormatParams.GetRangeParams().AllowsWildcard() {
+										return &addressStringError{addressError{str: str, key: "ipaddress.error.no.wildcard"}}
+									} else if frontSingleWildcardCount > 0 || frontLeadingZeroCount > 0 || frontDigitCount > 0 || frontHexDelimiterIndex >= 0 { //wildcards must appear alone
+										return &addressStringIndexError{
+											addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+											rangeWildcardIndex}
+									}
+									parseData.setHasWildcard()
+									backDigits := index - segmentValueStartIndex
+									var upperValue uint64
+									if isDoubleSegment || backDigits == macDoubleSegmentDigitCount {
+										//even when not already identified as a double segment address, which is something we can see
+										//only when we reach the end of the address, we may have a-b| where a is * and b is a 6 digit value.
+										//Here we are considering the max value of a.
+										//If b is 6 digits, we need to consider the max value of * as if we know already it will be double segment.
+										//We can do this because the max values will be checked after the address has been parsed,
+										//so even if a-b| ends up being a full address a-b|c-d-e-f-a and not a-b|c,
+										//the fact that we have 6 digits here will invalidate the first address,
+										//so we can safely assume that this address must be a double segment a-b|c even before we have seen that.
+										upperValue = macMaxTriple
+									} else {
+										upperValue = MACMaxValuePerSegment
+									}
+									startIndex := rangeWildcardIndex - frontWildcardCount
+									assign6Attributes2Values1Flags(startIndex, rangeWildcardIndex, startIndex, startIndex, rangeWildcardIndex, startIndex,
+										parseData, 0, 0, upperValue, keyWildcard)
+								} else {
+									if !stringFormatParams.AllowsLeadingZeros() && frontLeadingZeroCount > 0 {
+										return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+									}
+									startIndex := rangeWildcardIndex - frontDigitCount
+									leadingZeroStartIndex := startIndex - frontLeadingZeroCount
+									if frontSingleWildcardCount > 0 {
+										if parseErr := assignSingleWildcard16(currentFrontValueHex, str, startIndex, rangeWildcardIndex, singleWildcardCount, parseData, 0, leadingZeroStartIndex, stringFormatParams); parseErr != nil {
+											return parseErr
+										}
+									} else {
+										var flags uint32
+										if !frontUppercase {
+											if frontDigitCount == 0 {
+												return &addressStringIndexError{
+													addressStringError{addressError{str: str, key: "ipaddress.error.empty.segment.at.index"}},
+													startIndex}
+											}
+											flags = keyStandardStr
+										}
+										assign3Attributes1Values1Flags(startIndex, rangeWildcardIndex, leadingZeroStartIndex, parseData, 0, currentFrontValueHex, flags)
+									}
+								}
+								segmentValueStartIndex = rangeWildcardIndex + 1
+								segmentStartIndex = segmentValueStartIndex
+								rangeWildcardIndex = -1
+								parseData.incrementSegmentCount()
+								//end of handling the first segment a- in a-b-
+								//below we handle b- by setting endOfSegment here
+								endOfHexSegment = isRangeChar
+							} else { //we will treat this as the front of a range
+								if isDashedRangeChar {
+									firstSegmentDashedRange = true
+								} else {
+									endOfHexSegment = firstSegmentDashedRange
+								}
+							}
+						} else {
+							if macFormat == dashed {
+								endOfHexSegment = isRangeChar
+							} else if isDashedRangeChar {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+									index}
+							}
+						}
+					}
+
+					if !endOfHexSegment {
+						if extendedCharacterIndex < 0 {
+							//case B
+							if rangeWildcardIndex >= 0 {
+								if canBeBase85 {
+									index++
+									extendedCharacterIndex = index
+								} else {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+										index}
+								}
+							} else {
+								// here is where we handle the front 'a' of a range like 'a-b'
+								rangeWildcardIndex = index
+
+								frontIsStandardRangeChar = isRangeChar
+								frontDigitCount = ((index - segmentValueStartIndex) - leadingZeroCount) - wildcardCount
+								frontLeadingZeroCount = leadingZeroCount
+								if leadingWithZero {
+									if frontDigitCount != 1 {
+										frontLeadingZeroCount++
+										frontDigitCount--
+									}
+								}
+								frontUppercase = uppercase
+								frontHexDelimiterIndex = hexDelimiterIndex
+								frontWildcardCount = wildcardCount
+								frontSingleWildcardCount = singleWildcardCount
+								currentFrontValueHex = currentValueHex
+
+								index++
+								segmentValueStartIndex = index
+								hasDigits = false
+								uppercase = false
+								leadingWithZero = false
+								hexDelimiterIndex = -1
+								leadingZeroCount = 0
+								wildcardCount = 0
+								singleWildcardCount = 0
+								currentValueHex = 0
+							}
+						} else {
+							index++
+						}
+						continue
+					}
+				} else if isMac && currentChar == space {
+					isSpace = true
+				} else {
+					// other characters handled here
+					isZoneChar := false
+					if currentChar == PrefixLenSeparator {
+						if isMac {
+							return &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+								index}
+						}
+						strEndIndex = index
+						ipParseData.setHasPrefixSeparator(true)
+						ipParseData.setQualifierIndex(index + 1)
+					} else if currentChar >= 'A' && currentChar <= 'F' { // this is not paired with 'a' to 'f' because these are not canonical and hence not part of the fast path
+						index++
+						currentValueHex = (currentValueHex << 4) | uint64(charArray[currentChar])
+						hasDigits = true
+						uppercase = true
+					} else {
+						isSegWildcard := currentChar == SegmentWildcard
+						if !isSegWildcard {
+							isZoneChar = currentChar == SegmentSqlWildcard
+							isSegWildcard = isZoneChar
+						}
+						if isSegWildcard {
+							// the character * is always treated as wildcard (but later can be determined to be a base 85 character)
+
+							// the character % denotes a zone and is also a character for the SQL wildcard,
+							// and it is also a base 85 character,
+							// so we treat it as zone only if the options allow it and it is in the zone position.
+							// Either we have seen an ipv6 segment separator, or we are at the end of the correct number of digits for ipv6 single segment (which rules out base 85 or ipv4 single segment),
+							// or we are the '*' all wildcard so far which can represent everything including ipv6
+							//
+							// In all other cases, the character is treated as wildcard,
+							// but as is the case of other characters we may later discover we are base 85 ipv6
+							// For base 85, we decided that having the same character mean two different thing depending on position in the string, that is not reasonable.
+							// In fact, if the zone character were allowed, can you tell if there is a zone here or not: %%%%%%%%%%%%%%%%%%%%%%
+
+							canBeZone := isZoneChar &&
+								!isMac &&
+								ipv6SpecificOptions.AllowsZone()
+							if canBeZone {
+								isIPv6 := parseData.getSegmentCount() > 0 && (isEmbeddedIPv4 || ipParseData.getProviderIPVersion() == IPv6) /* at end of IPv6 regular or mixed */
+								if !isIPv6 {
+									isIPv6, _ = isSingleSegmentIPv6(str, index-segmentValueStartIndex, rangeWildcardIndex >= 0, frontLeadingZeroCount+frontDigitCount, ipv6SpecificOptions)
+									if !isIPv6 {
+										isIPv6 = wildcardCount == index && wildcardCount <= maxWildcards /* all wildcards so far */
+									}
+								}
+								canBeZone = isIPv6
+							}
+							if canBeZone {
+								// not base 85
+								canBeBase85 = false
+								strEndIndex = index
+								ipParseData.setZoned(true)
+								ipParseData.setQualifierIndex(index + 1)
+							} else {
+								wildcardCount++
+								index++
+							}
+						} else if currentChar == SegmentSqlSingleWildcard {
+							hasDigits = true
+							index++
+							singleWildcardCount++
+						} else if isHexDelimiter(currentChar) {
+							if hasDigits || !leadingWithZero || leadingZeroCount > 0 || hexDelimiterIndex >= 0 || singleWildcardCount > 0 {
+								if canBeBase85 {
+									if extendedCharacterIndex < 0 {
+										extendedCharacterIndex = index
+									}
+									index++
+								} else {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+										index}
+								}
+							} else {
+								if isMac {
+									if parseData.getSegmentCount() > 0 {
+										return &addressStringIndexError{
+											addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+											index}
+									}
+								} else if version.IsIPv6() {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+										index}
+								}
+								hexDelimiterIndex = index
+								leadingWithZero = false
+								index++
+								segmentValueStartIndex = index
+							}
+							// the remaining possibilities are base85 only
+						} else if currentChar == AlternativeRangeSeparatorStr[0] {
+							if index+1 == strEndIndex {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+									index}
+							}
+							currentChar = str[index+1]
+							if currentChar == AlternativeRangeSeparatorStr[1] {
+								if canBeBase85 {
+									if extendedCharacterIndex < 0 {
+										extendedCharacterIndex = index
+									} else if extendedRangeWildcardIndex >= 0 {
+										return &addressStringIndexError{
+											addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+											index}
+									}
+									extendedRangeWildcardIndex = index
+								} else {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+										index}
+								}
+								index += 2
+							} else if currentChar == IPv6AlternativeZoneSeparatorStr[1] {
+								if canBeBase85 && !isMac && ipv6SpecificOptions.AllowsZone() {
+									strEndIndex = index
+									ipParseData.setZoned(true)
+									ipParseData.setBase85Zoned(true)
+									ipParseData.setQualifierIndex(index + 2)
+								} else {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+										index}
+								}
+							} else {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+									index - 1}
+							}
+						} else {
+							if canBeBase85 {
+								if currentChar < 0 || int(currentChar) >= len(extendedChars) {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+										index}
+								}
+								val := extendedChars[currentChar]
+								if val == 0 { //note that we already check for the currentChar '0' character at another else/if block, so any other character mapped to the value 0 is an invalid character
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+										index}
+								} else if extendedCharacterIndex < 0 {
+									extendedCharacterIndex = index
+								}
+							} else {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+									index}
+							}
+							index++
+						}
+					}
+					continue
+				}
+			}
+
+			// ipv6 and mac segments handled here
+			segCount := parseData.getSegmentCount()
+			var hexMaxChars int
+			if isMac {
+				if segCount == 0 {
+					if isSingleSegment {
+						parseData.initSegmentData(1)
+					} else {
+						if hexDelimiterIndex >= 0 {
+							return &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+								hexDelimiterIndex}
+						} else {
+							var isNoExc bool
+							if isRangeChar {
+								isNoExc = macOptions.AllowsDashed()
+							} else if isSpace {
+								isNoExc = macOptions.AllowsSpaceDelimited()
+							} else {
+								isNoExc = macOptions.AllowsColonDelimited()
+							}
+							if !isNoExc {
+								return &addressStringError{addressError{str: str, key: "ipaddress.mac.error.format"}}
+							} else if isRangeChar {
+								macFormat = dashed
+								macParseData.setFormat(macFormat)
+								checkCharCounts = false //counting chars later
+							} else {
+								if isSpace {
+									macFormat = spaceDelimited
+								} else {
+									macFormat = colonDelimited
+								}
+								macParseData.setFormat(macFormat)
+							}
+						}
+						parseData.initSegmentData(ExtendedUniqueIdentifier64SegmentCount)
+						isSegmented = true
+					}
+				} else {
+					isExc := false
+					if isRangeChar {
+						isExc = macFormat != dashed
+					} else if isSpace {
+						isExc = macFormat != spaceDelimited
+					} else {
+						isExc = macFormat != colonDelimited
+					}
+					if isExc {
+						return &addressStringIndexError{
+							addressStringError{addressError{str: str, key: "ipaddress.mac.error.mix.format.characters.at.index"}},
+							index}
+					}
+					var segLimit int
+					if macOptions.GetPreferredLen() == address_string_param.MAC48Len {
+						segLimit = MediaAccessControlSegmentCount
+					} else {
+						segLimit = ExtendedUniqueIdentifier64SegmentCount
+					}
+					if segCount >= segLimit {
+						return &addressStringError{addressError{str: str, key: "ipaddress.error.too.many.segments"}}
+					}
+				}
+				hexMaxChars = MACSegmentMaxChars //will be ignored for single or double segments due to checkCharCounts booleans
+			} else {
+				if segCount == 0 {
+					if !validationOptions.AllowsIPv6() {
+						return &addressStringError{addressError{str: str, key: "ipaddress.error.ipv6"}}
+					}
+					canBeBase85 = false
+					version = IPv6
+					ipParseData.setVersion(version)
+					stringFormatParams = ipv6SpecificOptions
+					isSegmented = true
+
+					if index == strStartIndex {
+						firstIndex := index
+						index++
+						if index == strEndIndex {
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.too.few.segments"}}
+						} else if str[index] != IPv6SegmentSeparator {
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.ipv6.cannot.start.with.single.separator"}}
+						}
+						parseData.initSegmentData(IPv6SegmentCount)
+						parseData.setConsecutiveSeparatorSegmentIndex(0)
+						parseData.setConsecutiveSeparatorIndex(firstIndex)
+						assign3Attributes(index, index, parseData, 0, index)
+						parseData.incrementSegmentCount()
+						index++
+						segmentValueStartIndex = index
+						segmentStartIndex = segmentValueStartIndex
+						continue
+					} else {
+						if isSingleSegment {
+							parseData.initSegmentData(1)
+						} else {
+							if hexDelimiterIndex >= 0 {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+									hexDelimiterIndex}
+							}
+							parseData.initSegmentData(IPv6SegmentCount)
+						}
+					}
+				} else if ipParseData.getProviderIPVersion().IsIPv4() {
+					return &addressStringError{addressError{str: str, key: "ipaddress.error.ipv6.separator"}}
+				} else if segCount >= IPv6SegmentCount {
+					return &addressStringError{addressError{str: str, key: "ipaddress.error.too.many.segments"}}
+				}
+				hexMaxChars = IPv6SegmentMaxChars // will be ignored for single segment due to checkCharCounts boolean
+			}
+
+			if index == segmentStartIndex { // empty segment
+				if isMac {
+					return &addressStringIndexError{
+						addressStringError{addressError{str: str, key: "ipaddress.error.empty.segment.at.index"}},
+						index}
+				} else if parseData.getConsecutiveSeparatorIndex() >= 0 {
+					return &addressStringError{addressError{str: str, key: "ipaddress.error.ipv6.ambiguous"}}
+				}
+				parseData.setConsecutiveSeparatorSegmentIndex(segCount)
+				parseData.setConsecutiveSeparatorIndex(index - 1)
+				assign3Attributes(index, index, parseData, segCount, index)
+				parseData.incrementSegmentCount()
+			} else if wildcardCount > 0 && !isSingleIPv6 {
+				if !stringFormatParams.GetRangeParams().AllowsWildcard() {
+					return &addressStringError{addressError{str: str, key: "ipaddress.error.no.wildcard"}}
+				}
+				totalDigits := index - segmentStartIndex
+				if wildcardCount != totalDigits || hexDelimiterIndex >= 0 {
+					return &addressStringIndexError{
+						addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+						index}
+				}
+				parseData.setHasWildcard()
+				startIndex := index - wildcardCount
+				var maxVal uint64
+				if isMac {
+					if isDoubleSegment {
+						maxVal = macMaxTriple
+					} else {
+						maxVal = MACMaxValuePerSegment
+					}
+				} else {
+					maxVal = IPv6MaxValuePerSegment
+				}
+				assign6Attributes2Values1Flags(startIndex, index, startIndex, startIndex, index, startIndex,
+					parseData, segCount, 0, maxVal, keyWildcard)
+				parseData.incrementSegmentCount()
+				wildcardCount = 0
+			} else {
+				startIndex := segmentValueStartIndex
+				digitCount := index - startIndex
+				noValuesToSet := false
+				var value uint64
+				var flags, rangeFlags uint32
+				if leadingWithZero {
+					if digitCount == 1 {
+						// can only be a single 0
+						if leadingZeroCount == 0 && rangeWildcardIndex < 0 {
+							// handles 0 but not 1-0
+							assign3Attributes(startIndex, index, parseData, segCount, segmentValueStartIndex)
+							parseData.incrementSegmentCount()
+							index++
+							segmentValueStartIndex = index
+							segmentStartIndex = segmentValueStartIndex
+							leadingWithZero = false
+							continue
+						}
+					} else {
+						if hasDigits {
+							leadingZeroCount++
+						}
+						startIndex += leadingZeroCount
+						digitCount -= leadingZeroCount
+					}
+					leadingWithZero = false
+				}
+				if leadingZeroCount == 0 {
+					if digitCount == 0 {
+						// since we have already checked for an empty segment, this can only happen with a range, ie rangeWildcardIndex >= 0
+						// we allow an empty range boundary to denote the max value
+						if !stringFormatParams.GetRangeParams().AllowsInferredBoundary() {
+							// starts with '.', or has two consecutive '.'
+							return &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.empty.segment.at.index"}},
+								index}
+						} else if isMac {
+							if isSingleSegment {
+								if macParseData.isExtended() {
+									value = 0xffffffffffffffff
+								} else {
+									value = 0xffffffffffff
+								}
+							} else {
+								value = MACMaxValuePerSegment
+							}
+						} else {
+							if isSingleIPv6 {
+								value = 0xffffffffffffffff
+								extendedValue = value
+							} else {
+								value = IPv6MaxValuePerSegment
+							}
+						}
+						rangeFlags = keyInferredUpperBoundary
+					} else {
+						if digitCount > hexMaxChars && checkCharCounts {
+							return &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+								segmentValueStartIndex}
+						}
+						if singleWildcardCount > 0 {
+							noValuesToSet = true
+							if rangeWildcardIndex >= 0 {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+									index}
+							} else if isSingleIPv6 { //We need this special call here because single ipv6 hex is 128 bits and cannot fit into a long
+								if parseErr := parseSingleSegmentSingleWildcard16(currentValueHex, str, startIndex, index, singleWildcardCount, parseData, segCount, segmentValueStartIndex, stringFormatParams); parseErr != nil {
+									return parseErr
+								}
+							} else {
+								if parseErr := assignSingleWildcard16(currentValueHex, str, startIndex, index, singleWildcardCount, parseData, segCount, segmentValueStartIndex, stringFormatParams); parseErr != nil {
+									return parseErr
+								}
+							}
+							uppercase = false
+							singleWildcardCount = 0
+						} else {
+							if isSingleIPv6 { //We need this special branch here because single ipv6 hex is 128 bits and cannot fit into a long
+								midIndex := index - 16
+								if startIndex < midIndex {
+									extendedValue = parseLong16(str, startIndex, midIndex)
+									value = parseLong16(str, midIndex, index)
+								} else {
+									value = currentValueHex
+								}
+							} else {
+								value = currentValueHex
+								if uppercase {
+									uppercase = false
+								} else {
+									flags = keyStandardStr
+								}
+							}
+						}
+						hasDigits = false
+						currentValueHex = 0
+					}
+				} else {
+					if leadingZeroCount == 1 && (digitCount == 17 || digitCount == 129) &&
+						ipv6SpecificOptions.AllowsBinary() && isBinaryDelimiter(str, startIndex) {
+						// IPv6 binary - to avoid ambiguity, all binary digits must be present, and preceded by 0b.
+						// So for a single segment IPv6 segment:
+						// 0b11 is a hex segment, 0b111 is hex, 0b1111 is invalid (too short for binary, too long for hex), 0b1100110011001100 is a binary segment
+						if !stringFormatParams.AllowsLeadingZeros() {
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+						}
+						startIndex++ // exclude the 'b' in 0b1100
+						digitCount-- // exclude the 'b'
+						if singleWildcardCount > 0 {
+							if rangeWildcardIndex >= 0 {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+									index}
+							} else if isSingleIPv6 {
+								if parseErr := parseSingleSegmentSingleWildcard2(str, startIndex, index, singleWildcardCount, parseData, segCount, segmentValueStartIndex, stringFormatParams); parseErr != nil {
+									return parseErr
+								}
+							} else {
+								if parseErr := switchSingleWildcard2(currentValueHex, str, startIndex, index, singleWildcardCount, parseData, segCount, segmentValueStartIndex, stringFormatParams); parseErr != nil {
+									return parseErr
+								}
+							}
+							noValuesToSet = true
+							singleWildcardCount = 0
+						} else {
+							if isSingleIPv6 { //We need this special branch here because single ipv6 hex is 128 bits and cannot fit into a long
+								midIndex := index - 64
+								extendedValue = parseLong2(str, startIndex, midIndex)
+								value = parseLong2(str, midIndex, index)
+							} else {
+								value, err = switchValue2(currentValueHex, str, digitCount)
+								if err != nil {
+									return err
+								}
+							}
+							flags = 2 // radix
+						}
+						ipParseData.setHasBinaryDigits(true)
+						hasDigits = false
+						currentValueHex = 0
+					} else {
+						if digitCount > hexMaxChars && checkCharCounts {
+							return &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+								segmentValueStartIndex}
+						} else if !stringFormatParams.AllowsLeadingZeros() {
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+						} else if !stringFormatParams.AllowsUnlimitedLeadingZeros() && checkCharCounts && (digitCount+leadingZeroCount) > hexMaxChars {
+							return &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+								segmentValueStartIndex}
+						}
+						if singleWildcardCount > 0 {
+							noValuesToSet = true
+							if rangeWildcardIndex >= 0 {
+								return &addressStringIndexError{
+									addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+									index}
+							} else if isSingleIPv6 { //We need this special call here because single ipv6 hex is 128 bits and cannot fit into a long
+								if parseErr := parseSingleSegmentSingleWildcard16(currentValueHex, str, startIndex, index, singleWildcardCount, parseData, segCount, segmentValueStartIndex, stringFormatParams); parseErr != nil {
+									return parseErr
+								}
+							} else {
+								if parseErr := assignSingleWildcard16(currentValueHex, str, startIndex, index, singleWildcardCount, parseData, segCount, segmentValueStartIndex, stringFormatParams); parseErr != nil {
+									return parseErr
+								}
+							}
+							uppercase = false
+							singleWildcardCount = 0
+						} else {
+							if isSingleIPv6 { //We need this special branch here because single ipv6 hex is 128 bits and cannot fit into a long
+								midIndex := index - 16
+								if startIndex < midIndex {
+									extendedValue = parseLong16(str, startIndex, midIndex)
+									value = parseLong16(str, midIndex, index)
+								} else {
+									value = currentValueHex
+								}
+							} else {
+								value = currentValueHex
+								if uppercase {
+									uppercase = false
+								} else {
+									flags = keyStandardStr
+								}
+							}
+						}
+						hasDigits = false
+						currentValueHex = 0
+					}
+				}
+				if rangeWildcardIndex >= 0 {
+					frontStartIndex := rangeWildcardIndex - frontDigitCount
+					frontEndIndex := rangeWildcardIndex
+					frontLeadingZeroStartIndex := frontStartIndex - frontLeadingZeroCount
+					frontTotalDigitCount := frontDigitCount + frontLeadingZeroCount //the stuff that uses frontLeadingZeroCount needs to be sectioned off when singleIPv6
+					if !stringFormatParams.GetRangeParams().AllowsRangeSeparator() {
+						return &addressStringError{addressError{str: str, key: "ipaddress.error.no.range"}}
+					} else if frontHexDelimiterIndex >= 0 && !isSingleSegment {
+						return &addressStringIndexError{
+							addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+							frontHexDelimiterIndex}
+					} else if frontSingleWildcardCount > 0 || frontWildcardCount > 0 { // no wildcards in ranges
+						return &addressStringIndexError{
+							addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.combination.at.index"}},
+							rangeWildcardIndex}
+					} else if isMac && !macSpecificOptions.AllowsShortSegments() && frontTotalDigitCount < 2 {
+						return &addressStringIndexError{
+							addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.short.at.index"}},
+							frontLeadingZeroStartIndex}
+					}
+					var upperRadix uint32
+					frontIsBinary := false
+					var front, extendedFront uint64
+					frontEmpty := frontStartIndex == frontEndIndex
+					isReversed := false
+					if frontEmpty {
+						if !stringFormatParams.GetRangeParams().AllowsInferredBoundary() {
+							return &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.empty.segment.at.index"}},
+								index}
+						}
+						rangeFlags |= keyInferredLowerBoundary
+					} else {
+						if frontLeadingZeroCount == 1 && frontDigitCount == 17 && ipv6SpecificOptions.AllowsBinary() && isBinaryDelimiter(str, frontStartIndex) {
+							// IPv6 binary - to avoid ambiguity, all binary digits must be present, and preceded by 0b.
+							frontStartIndex++ // exclude the 'b' in 0b1100
+							frontDigitCount-- // exclude the 'b'
+							front, err = switchValue2(currentFrontValueHex, str, frontDigitCount)
+							if err != nil {
+								return err
+							}
+							upperRadix = 2          // radix
+							rangeFlags = upperRadix // radix
+							ipParseData.setHasBinaryDigits(true)
+							isReversed = front > value
+							frontIsBinary = true
+						} else if isSingleIPv6 { //We need this special block here because single ipv6 hex is 128 bits and cannot fit into a long
+							if frontDigitCount == 129 { // binary
+								frontStartIndex++ // exclude the 'b' in 0b1100
+								frontDigitCount-- // exclude the 'b'
+								upperRadix = 2    // radix
+								rangeFlags = 2    // radix
+								ipParseData.setHasBinaryDigits(true)
+								frontMidIndex := frontEndIndex - 64
+								extendedFront = parseLong2(str, frontStartIndex, frontMidIndex)
+								front = parseLong2(str, frontMidIndex, frontEndIndex)
+							} else {
+								frontMidIndex := frontEndIndex - 16
+								if frontStartIndex < frontMidIndex {
+									extendedFront = parseLong16(str, frontStartIndex, frontMidIndex)
+									front = parseLong16(str, frontMidIndex, frontEndIndex)
+								} else {
+									front = currentFrontValueHex
+								}
+							}
+							isReversed = (extendedFront > extendedValue) || (extendedFront == extendedValue && front > value)
+						} else {
+							if !stringFormatParams.AllowsLeadingZeros() && frontLeadingZeroCount > 0 {
+								return &addressStringError{addressError{str: str, key: "ipaddress.error.segment.leading.zeros"}}
+							} else if checkCharCounts {
+								if frontDigitCount > hexMaxChars {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+										frontLeadingZeroStartIndex}
+								} else if !stringFormatParams.AllowsUnlimitedLeadingZeros() && frontTotalDigitCount > hexMaxChars {
+									return &addressStringIndexError{
+										addressStringError{addressError{str: str, key: "ipaddress.error.segment.too.long.at.index"}},
+										frontLeadingZeroStartIndex}
+								}
+							}
+							front = currentFrontValueHex
+							isReversed = front > value
+							extendedFront = 0
+						}
+					}
+					backEndIndex := index
+					if isReversed {
+						if !stringFormatParams.GetRangeParams().AllowsReverseRange() {
+							return &addressStringError{addressError{str: str, key: "ipaddress.error.invalidRange"}}
+						}
+						// switcheroo
+						frontStartIndex, startIndex = startIndex, frontStartIndex
+						frontEndIndex, backEndIndex = backEndIndex, frontEndIndex
+						frontLeadingZeroStartIndex, segmentValueStartIndex = segmentValueStartIndex, frontLeadingZeroStartIndex
+						front, value = value, front
+						extendedFront, extendedValue = extendedValue, extendedFront
+					}
+					if isSingleIPv6 {
+						assign7Attributes4Values1Flags(frontStartIndex, frontEndIndex, frontLeadingZeroStartIndex, startIndex, backEndIndex, segmentValueStartIndex,
+							parseData, segCount, front, extendedFront, value, extendedValue, rangeFlags|keyRangeWildcard, upperRadix)
+					} else {
+						if !frontUppercase && !frontEmpty && !isReversed && !frontIsBinary {
+							if leadingZeroCount == 0 && (flags&keyStandardStr) != 0 && frontIsStandardRangeChar {
+								rangeFlags |= keyStandardRangeStr | keyStandardStr
+							} else {
+								rangeFlags |= keyStandardStr
+							}
+						}
+						assign6Attributes2Values2Flags(frontStartIndex, frontEndIndex, frontLeadingZeroStartIndex, startIndex, backEndIndex, segmentValueStartIndex,
+							parseData, segCount, front, value, rangeFlags|keyRangeWildcard, upperRadix)
+					}
+					rangeWildcardIndex = -1
+				} else if !noValuesToSet {
+					if isSingleIPv6 {
+						assign3Attributes2Values1Flags(startIndex, index, segmentValueStartIndex, parseData, segCount, value, extendedValue, flags)
+					} else {
+						assign3Attributes1Values1Flags(startIndex, index, segmentValueStartIndex, parseData, segCount, value, flags)
+					}
+				}
+				parseData.incrementSegmentCount()
+				leadingZeroCount = 0
+			}
+			index++
+			segmentValueStartIndex = index
+			segmentStartIndex = segmentValueStartIndex
+			// end of IPv6 and MAC48Len segments
+		} // end of all cases
+	} // end of character loop
+	return nil
 }
