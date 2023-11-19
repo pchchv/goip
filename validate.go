@@ -291,3 +291,98 @@ func getMaxIPv4StringLength(additionalSegmentsCovered int, radix uint32) int {
 	}
 	return 0
 }
+
+func getStringPrefixCharCount(radix uint32) int {
+	switch radix {
+	case 10:
+		return 0
+	case 16:
+	case 2:
+		return 2
+	default:
+	}
+	return 1
+}
+
+func checkSegments(fullAddr string, validationOptions address_string_param.IPAddressStringParams, parseData *ipAddressParseData) address_error.AddressStringError {
+	addressParseData := parseData.getAddressParseData()
+	segCount := addressParseData.getSegmentCount()
+	version := parseData.getProviderIPVersion()
+	if version.IsIPv4() {
+		missingCount := IPv4SegmentCount - segCount
+		ipv4Options := validationOptions.GetIPv4Params()
+		hasWildcardSeparator := addressParseData.hasWildcard() && ipv4Options.AllowsWildcardedSeparator()
+
+		// single segments are handled in the parsing code with the allowSingleSegment setting
+		if missingCount > 0 && segCount > 1 {
+			if ipv4Options.AllowsInetAtonJoinedSegments() {
+				parseData.setInetAtonJoined(true)
+			} else if !hasWildcardSeparator {
+				return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.ipv4.too.few.segments"}}
+			}
+		}
+
+		// check whether values are too large
+		notUnlimitedLength := !ipv4Options.AllowsUnlimitedLeadingZeros()
+		hasMissingSegs := missingCount > 0 && ipv4Options.AllowsInetAtonJoinedSegments()
+		for i := 0; i < segCount; i++ {
+			var max uint64
+			if hasMissingSegs && i == segCount-1 {
+				max = getMaxIPv4Value(missingCount + 1)
+				if addressParseData.isInferredUpperBoundary(i) {
+					parseData.setValue(i, keyUpper, max)
+					continue
+				}
+			} else {
+				max = IPv4MaxValuePerSegment
+			}
+			if parseData.getFlag(i, keySingleWildcard) {
+				value := parseData.getValue(i, keyLower)
+				if value > max {
+					return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.ipv4.segment.too.large"}}
+				}
+				if parseData.getValue(i, keyUpper) > max {
+					parseData.setValue(i, keyUpper, max)
+				}
+				if notUnlimitedLength {
+					lowerRadix := addressParseData.getRadix(i, keyLowerRadixIndex)
+					maxDigitCount := getMaxIPv4StringLength(missingCount, lowerRadix)
+					if parseData.getIndex(i, keyLowerStrEndIndex)-parseData.getIndex(i, keyLowerStrDigitsIndex)-getStringPrefixCharCount(lowerRadix) > maxDigitCount {
+						return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.segment.too.long"}}
+					}
+				}
+			} else {
+				value := parseData.getValue(i, keyUpper)
+				if value > max {
+					return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.ipv4.segment.too.large"}}
+				}
+				if notUnlimitedLength {
+					lowerRadix := addressParseData.getRadix(i, keyLowerRadixIndex)
+					maxDigitCount := getMaxIPv4StringLength(missingCount, lowerRadix)
+					lowerEndIndex := parseData.getIndex(i, keyLowerStrEndIndex)
+					upperEndIndex := parseData.getIndex(i, keyUpperStrEndIndex)
+					if lowerEndIndex-parseData.getIndex(i, keyLowerStrDigitsIndex)-getStringPrefixCharCount(lowerRadix) > maxDigitCount {
+						return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.segment.too.long"}}
+					}
+					if lowerEndIndex != upperEndIndex {
+						upperRadix := parseData.getRadix(i, keyUpperRadixIndex)
+						maxUpperDigitCount := getMaxIPv4StringLength(missingCount, upperRadix)
+						if upperEndIndex-parseData.getIndex(i, keyUpperStrDigitsIndex)-getStringPrefixCharCount(upperRadix) > maxUpperDigitCount {
+							return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.segment.too.long"}}
+						}
+					}
+				}
+			}
+		}
+	} else {
+		totalSegmentCount := segCount
+		if parseData.isProvidingMixedIPv6() {
+			totalSegmentCount += IPv6MixedReplacedSegmentCount
+		}
+		hasWildcardSeparator := addressParseData.hasWildcard() && validationOptions.GetIPv6Params().AllowsWildcardedSeparator()
+		if !hasWildcardSeparator && totalSegmentCount != 1 && totalSegmentCount < IPv6SegmentCount && !parseData.isCompressed() {
+			return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.too.few.segments"}}
+		}
+	}
+	return nil
+}
