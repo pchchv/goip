@@ -2,6 +2,13 @@ package goip
 
 import "github.com/pchchv/goip/address_error"
 
+const (
+	PortSeparator    = ':'
+	LabelSeparator   = '.'
+	IPv6StartBracket = '['
+	IPv6EndBracket   = ']'
+)
+
 type resolveData struct {
 	resolvedAddrs []*IPAddress
 	err           error
