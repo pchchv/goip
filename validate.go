@@ -2,6 +2,8 @@ package goip
 
 import (
 	"math/big"
+	"sync/atomic"
+	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/address_string_param"
@@ -29,6 +31,8 @@ const (
 var (
 	chars, extendedChars = createChars()
 	base85Powers         = createBase85Powers()
+	maskCache            = [3][IPv6BitCount + 1]*maskCreator{}
+	loopbackCache        = newEmptyAddrCreator(defaultIPAddrParameters, NoZone)
 	maxValues            = [5]uint64{0, IPv4MaxValuePerSegment, 0xffff, 0xffffff, 0xffffffff}
 	maxIPv4StringLen     = [9][]int{ //indices are [radix / 2][additionalSegments], and we handle radices 8, 10, 16
 		{3, 6, 8, 11},   //no radix supplied we treat as octal, the longest
@@ -431,4 +435,116 @@ func inferVersion(params address_string_param.IPAddressStringParams) IPVersion {
 		return IPv4
 	}
 	return IndeterminateIPVersion
+}
+
+func getLoopbackCreator(validationOptions address_string_param.IPAddressStringParams, qualifier *parsedHostIdentifierStringQualifier) (res *emptyAddrCreator) {
+	zone := qualifier.getZone()
+	defaultParams := defaultIPAddrParameters
+	if validationOptions == defaultParams && zone == NoZone {
+		res = loopbackCache
+		if res == nil {
+			res = newEmptyAddrCreator(defaultIPAddrParameters, NoZone)
+		}
+		return
+	}
+	res = newEmptyAddrCreator(validationOptions, zone)
+	return
+}
+
+func chooseIPAddressProvider(
+	originator HostIdentifierString,
+	fullAddr string,
+	validationOptions address_string_param.IPAddressStringParams,
+	parseData *parsedIPAddress) (res ipAddressProvider, err address_error.AddressStringError) {
+	qualifier := parseData.getQualifier()
+	version := parseData.getProviderIPVersion()
+	if version.IsIndeterminate() {
+		version = qualifier.inferVersion(validationOptions) // checks whether a mask, prefix length, or zone makes the version clear
+		optionsVersion := inferVersion(validationOptions)   // checks whether IPv4 or IPv6 is disallowed
+		if version.IsIndeterminate() {
+			version = optionsVersion
+			parseData.setVersion(version)
+		} else if !optionsVersion.IsIndeterminate() && version != optionsVersion {
+			var key string
+			if version.IsIPv6() {
+				key = "ipaddress.error.ipv6"
+			} else {
+				key = "ipaddress.error.ipv4"
+			}
+			err = &addressStringError{addressError{str: fullAddr, key: key}}
+			return
+		}
+		addressParseData := parseData.getAddressParseData()
+		if addressParseData.isProvidingEmpty() {
+			networkPrefixLength := qualifier.getNetworkPrefixLen()
+			if networkPrefixLength != nil {
+				if version.IsIndeterminate() {
+					version = IPVersion(validationOptions.GetPreferredVersion())
+				}
+				prefLen := networkPrefixLength.bitCount()
+				if validationOptions == defaultIPAddrParameters && prefLen <= IPv6BitCount {
+					index := 0
+					if version.IsIPv4() {
+						index = 1
+					} else if version.IsIPv6() {
+						index = 2
+					}
+					creator := (*maskCreator)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&maskCache[index][prefLen]))))
+					if creator == nil {
+						creator = newMaskCreator(defaultIPAddrParameters, version, networkPrefixLength)
+						dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&maskCache[index][prefLen]))
+						atomic.StorePointer(dataLoc, unsafe.Pointer(creator))
+					}
+					res = creator
+					return
+				}
+				res = newMaskCreator(validationOptions, version, networkPrefixLength)
+				return
+			} else {
+				emptyOpt := validationOptions.EmptyStrParsedAs()
+				if emptyOpt == address_string_param.LoopbackOption || emptyOpt == address_string_param.ZeroAddressOption {
+					result := getLoopbackCreator(validationOptions, qualifier)
+					if result != nil {
+						res = result
+					}
+					return
+				}
+
+				if validationOptions == defaultIPAddrParameters {
+					res = emptyProvider
+				} else {
+					res = &nullProvider{isEmpty: true, ipType: emptyType, params: validationOptions}
+				}
+				return
+			}
+		} else { //isAll
+			// Before reaching here, we already checked whether we allow "all", "allowAll".
+			if version.IsIndeterminate() && // version not inferred, nor is a particular version disallowed
+				validationOptions.AllStrParsedAs() == address_string_param.AllPreferredIPVersion {
+				preferredVersion := IPVersion(validationOptions.GetPreferredVersion())
+				if !preferredVersion.IsIndeterminate() {
+					var formatParams address_string_param.IPAddressStringFormatParams
+					if preferredVersion.IsIPv6() {
+						formatParams = validationOptions.GetIPv6Params()
+					} else {
+						formatParams = validationOptions.GetIPv4Params()
+					}
+					if formatParams.AllowsWildcardedSeparator() {
+						version = preferredVersion
+					}
+				}
+			}
+			res = newAllCreator(qualifier, version, originator, validationOptions)
+			return
+		}
+	} else {
+		if parseData.isZoned() && version.IsIPv4() {
+			err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.only.ipv6.has.zone"}}
+			return
+		}
+		if err = checkSegments(fullAddr, validationOptions, parseData.getIPAddressParseData()); err == nil {
+			res = parseData
+		}
+	}
+	return
 }
