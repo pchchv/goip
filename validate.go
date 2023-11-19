@@ -177,3 +177,36 @@ func assign3Attributes1Values1Flags(start, end, leadingZeroStart int, parseData 
 		keyLower, value,
 		keyUpper, value)
 }
+
+func assign7Attributes4Values1Flags(frontStart, frontEnd, frontLeadingZeroStartIndex, start, end, leadingZeroStartIndex int,
+	parseData *addressParseData, parsedSegIndex int, frontValue, frontExtendedValue, value, extendedValue uint64, flags uint32, upperRadix uint32) {
+	parseData.set8Index4ValuesFlags(parsedSegIndex,
+		flagsIndex, flags,
+		keyLowerStrDigitsIndex, uint32(frontLeadingZeroStartIndex),
+		keyLowerStrStartIndex, uint32(frontStart),
+		keyLowerStrEndIndex, uint32(frontEnd),
+		keyUpperRadixIndex, uint32(upperRadix),
+		keyUpperStrDigitsIndex, uint32(leadingZeroStartIndex),
+		keyUpperStrStartIndex, uint32(start),
+		keyUpperStrEndIndex, uint32(end),
+		keyLower, frontValue,
+		keyExtendedLower, frontExtendedValue,
+		keyUpper, value,
+		keyExtendedUpper, extendedValue)
+}
+
+func assign6Attributes4Values1Flags(frontStart, frontEnd, frontLeadingZeroStartIndex, start, end, leadingZeroStartIndex int,
+	parseData *addressParseData, parsedSegIndex int, frontValue, frontExtendedValue, value, extendedValue uint64, flags uint32) {
+	parseData.set7Index4ValuesFlags(parsedSegIndex,
+		flagsIndex, flags,
+		keyLowerStrDigitsIndex, uint32(frontLeadingZeroStartIndex),
+		keyLowerStrStartIndex, uint32(frontStart),
+		keyLowerStrEndIndex, uint32(frontEnd),
+		keyUpperStrDigitsIndex, uint32(leadingZeroStartIndex),
+		keyUpperStrStartIndex, uint32(start),
+		keyUpperStrEndIndex, uint32(end),
+		keyLower, frontValue,
+		keyExtendedLower, frontExtendedValue,
+		keyUpper, value,
+		keyExtendedUpper, extendedValue)
+}
