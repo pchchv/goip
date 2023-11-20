@@ -164,3 +164,12 @@ func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 		addressProvider: addr.getProvider(),
 	}
 }
+
+func parseIPAddressString(str string, params address_string_param.IPAddressStringParams) *IPAddressString {
+	str = strings.TrimSpace(str)
+	res := &IPAddressString{
+		str: str,
+	}
+	res.validate(params)
+	return res
+}
