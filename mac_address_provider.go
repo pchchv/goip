@@ -8,9 +8,10 @@ import (
 )
 
 var (
-	invalidMACProvider             = macAddressEmptyProvider{macAddressNullProvider{defaultMACAddrParameters}}
-	macAddressDefaultAllProvider   = &macAddressAllProvider{validationOptions: defaultMACAddrParameters, creationLock: &sync.Mutex{}}
-	defaultMACAddressEmptyProvider = macAddressEmptyProvider{macAddressNullProvider{defaultMACAddrParameters}}
+	_, _, _                        macAddressProvider = macAddressEmptyProvider{}, &macAddressAllProvider{}, &wrappedMACAddressProvider{}
+	invalidMACProvider                                = macAddressEmptyProvider{macAddressNullProvider{defaultMACAddrParameters}}
+	macAddressDefaultAllProvider                      = &macAddressAllProvider{validationOptions: defaultMACAddrParameters, creationLock: &sync.Mutex{}}
+	defaultMACAddressEmptyProvider                    = macAddressEmptyProvider{macAddressNullProvider{defaultMACAddrParameters}}
 )
 
 type macAddressProvider interface {
@@ -74,4 +75,12 @@ type macAddressEmptyProvider struct {
 
 type wrappedMACAddressProvider struct {
 	address *MACAddress
+}
+
+func (provider wrappedMACAddressProvider) getParameters() address_string_param.MACAddressStringParams {
+	return nil
+}
+
+func (provider wrappedMACAddressProvider) getAddress() (*MACAddress, address_error.IncompatibleAddressError) {
+	return provider.address, nil
 }
