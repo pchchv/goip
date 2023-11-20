@@ -3121,3 +3121,84 @@ func checkSegmentMaxValues(
 	}
 	return nil
 }
+
+func checkMACSegments(
+	fullAddr string,
+	validationOptions address_string_param.MACAddressStringParams,
+	parseData *parsedMACAddress) address_error.AddressStringError {
+	var err address_error.AddressStringError
+	format := parseData.getFormat()
+	if format != unknownFormat {
+		addressParseData := parseData.getAddressParseData()
+		hasWildcardSeparator := addressParseData.hasWildcard() && validationOptions.GetFormatParams().AllowsWildcardedSeparator()
+		// note that too many segments is checked inside the general parsing method
+		segCount := addressParseData.getSegmentCount()
+		if format == dotted {
+			if segCount <= MediaAccessControlDottedSegmentCount && validationOptions.GetPreferredLen() != address_string_param.EUI64Len {
+				if !hasWildcardSeparator && segCount != MediaAccessControlDottedSegmentCount {
+					return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.too.few.segments"}}
+				}
+			} else if !hasWildcardSeparator && segCount < MediaAccessControlDotted64SegmentCount {
+				return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.too.few.segments"}}
+			} else {
+				parseData.setExtended(true)
+			}
+		} else if segCount > 2 {
+			if segCount <= MediaAccessControlSegmentCount && validationOptions.GetPreferredLen() != address_string_param.EUI64Len {
+				if !hasWildcardSeparator && segCount != MediaAccessControlSegmentCount {
+					return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.too.few.segments"}}
+				}
+			} else if !hasWildcardSeparator && segCount < ExtendedUniqueIdentifier64SegmentCount {
+				return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.too.few.segments"}}
+			} else {
+				parseData.setExtended(true)
+			}
+			// we do not check char counts in the main parsing code for dashed, because we allow both
+			// aabbcc-ddeeff and aa-bb-cc-dd-ee-ff, so we defer to the check until here
+			if parseData.getFormat() == dashed {
+				for i := 0; i < segCount; i++ {
+					err = checkSegmentMaxValues(
+						fullAddr,
+						addressParseData,
+						i,
+						validationOptions.GetFormatParams(),
+						MACMaxValuePerSegment,
+						MACSegmentMaxChars,
+						MACSegmentMaxChars)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		} else {
+			if parseData.getFormat() == dashed {
+				// for single segment, we have already counted the exact number of hex digits
+				// for double segment, we have already counted the exact number of hex digits in some cases and not others.
+				// Basically, for address like a-b we have already counted the exact number of hex digits,
+				// for addresses starting with a|b- or a-b| we have not,
+				// but rather than figure out which are checked and which are not it's just as quick to check them all here
+				if parseData.isDoubleSegment() {
+					params := validationOptions.GetFormatParams()
+					err = checkSegmentMaxValues(fullAddr, addressParseData, 0, params, macMaxTriple, macDoubleSegmentDigitCount, macDoubleSegmentDigitCount)
+					if err != nil {
+						return err
+					}
+					if parseData.isExtended() {
+						err = checkSegmentMaxValues(fullAddr, addressParseData, 1, params, macMaxQuintuple, macExtendedDoubleSegmentDigitCount, macExtendedDoubleSegmentDigitCount)
+					} else {
+						err = checkSegmentMaxValues(fullAddr, addressParseData, 1, params, macMaxTriple, macDoubleSegmentDigitCount, macDoubleSegmentDigitCount)
+					}
+					if err != nil {
+						return err
+					}
+				}
+			} else if !hasWildcardSeparator {
+				return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.too.few.segments"}}
+			}
+			if validationOptions.GetPreferredLen() == address_string_param.EUI64Len {
+				parseData.setExtended(true)
+			}
+		}
+	} // else single segment
+	return nil
+}
