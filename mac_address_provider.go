@@ -18,6 +18,14 @@ type macAddressNullProvider struct {
 	validationOptions address_string_param.MACAddressStringParams
 }
 
+func (provider macAddressNullProvider) getParameters() address_string_param.MACAddressStringParams {
+	return provider.validationOptions
+}
+
+func (provider macAddressNullProvider) getAddress() (*MACAddress, address_error.IncompatibleAddressError) {
+	return nil, nil
+}
+
 type macAddressAllProvider struct {
 	validationOptions address_string_param.MACAddressStringParams
 	address           *MACAddress
