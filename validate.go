@@ -3386,3 +3386,50 @@ func parseEncodedZone(
 	res.setZone(&z)
 	return
 }
+
+func parseHostAddressQualifier(
+	fullAddr string,
+	validationOptions address_string_param.IPAddressStringParams,
+	hostValidationOptions address_string_param.HostNameParams,
+	isPrefixed,
+	hasPort bool,
+	ipAddressParseData *ipAddressParseData,
+	qualifierIndex,
+	endIndex int) (err address_error.AddressStringError) {
+	res := ipAddressParseData.getQualifier()
+	addressIsEmpty := ipAddressParseData.getAddressParseData().isProvidingEmpty()
+	ipVersion := ipAddressParseData.getProviderIPVersion()
+	if isPrefixed {
+		return parsePrefix(fullAddr, nil, validationOptions, hostValidationOptions,
+			res, addressIsEmpty, qualifierIndex, endIndex, ipVersion)
+	} else if ipAddressParseData.isZoned() {
+		if addressIsEmpty {
+			err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.only.zone"}}
+			return
+		}
+		return parseEncodedZone(fullAddr, validationOptions, res, addressIsEmpty, qualifierIndex, endIndex, ipVersion)
+	} else if hasPort { //isPort is always false when validating an address
+		return parsePortOrService(fullAddr, nil, hostValidationOptions, res, qualifierIndex, endIndex)
+	}
+	return
+}
+
+func parseHostNameQualifier(
+	fullAddr string,
+	validationOptions address_string_param.IPAddressStringParams,
+	hostValidationOptions address_string_param.HostNameParams,
+	res *parsedHostIdentifierStringQualifier,
+	isPrefixed,
+	isPort, // always false for address
+	addressIsEmpty bool,
+	index,
+	endIndex int,
+	ipVersion IPVersion) (err address_error.AddressStringError) {
+	if isPrefixed {
+		return parsePrefix(fullAddr, nil, validationOptions, hostValidationOptions,
+			res, addressIsEmpty, index, endIndex, ipVersion)
+	} else if isPort { // isPort is always false when validating an address
+		return parsePortOrService(fullAddr, nil, hostValidationOptions, res, index, endIndex)
+	}
+	return
+}
