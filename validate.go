@@ -3433,3 +3433,135 @@ func parseHostNameQualifier(
 	}
 	return
 }
+
+// 123.2.3.4 is 4.3.2.123.in-addr.arpa.
+func convertReverseDNSIPv4(str string, suffixStartIndex int) (string, address_error.AddressStringError) {
+	var builder strings.Builder
+	builder.Grow(suffixStartIndex)
+	segCount := 0
+	j := suffixStartIndex
+	for i := suffixStartIndex - 1; i > 0; i-- {
+		c1 := str[i]
+		if c1 == IPv4SegmentSeparator {
+			if j-i <= 1 {
+				return "", &addressStringIndexError{
+					addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+					i}
+			}
+			for k := i + 1; k < j; k++ {
+				builder.WriteByte(str[k])
+			}
+			builder.WriteByte(c1)
+			j = i
+			segCount++
+		}
+	}
+
+	for k := 0; k < j; k++ {
+		builder.WriteByte(str[k])
+	}
+
+	if segCount+1 != IPv4SegmentCount {
+		return "", &addressStringIndexError{
+			addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+			0}
+	}
+	return builder.String(), nil
+}
+
+//4321:0:1:2:3:4:567:89ab would be b.a.9.8.7.6.5.0.4.0.0.0.3.0.0.0.2.0.0.0.1.0.0.0.0.0.0.0.1.2.3.4.IP6.ARPA
+func convertReverseDNSIPv6(str string, suffixStartIndex int) (string, address_error.AddressStringError) {
+	var builder strings.Builder
+	builder.Grow(suffixStartIndex)
+	segCount := 0
+	for i := suffixStartIndex - 1; i >= 0; {
+		var low, high strings.Builder
+		isRange := false
+		for j := 0; j < 4; j++ {
+			c1 := str[i]
+			i--
+			if i >= 0 {
+				c2 := str[i]
+				i--
+				if c2 == IPv4SegmentSeparator {
+					if c1 == SegmentWildcard {
+						isRange = true
+						low.WriteByte('0')
+						high.WriteByte('f')
+					} else {
+						if isRange {
+							return "", &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+								i + 1}
+						}
+						low.WriteByte(c1)
+						high.WriteByte(c1)
+					}
+				} else if c2 == RangeSeparator {
+					high.WriteByte(c1)
+					if i >= 1 {
+						c2 = str[i]
+						i--
+						low.WriteByte(c2)
+						isFullRange := (c2 == '0' && c1 == 'f')
+						if isRange && !isFullRange {
+							return "", &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+								i + 1}
+						}
+						c2 = str[i]
+						i--
+						if c2 != IPv4SegmentSeparator {
+							return "", &addressStringIndexError{
+								addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+								i + 1}
+						}
+					} else {
+						return "", &addressStringIndexError{
+							addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+							i}
+					}
+					isRange = true
+				} else {
+					return "", &addressStringIndexError{
+						addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+						i + 1}
+				}
+			} else if j < 3 {
+				return "", &addressStringIndexError{
+					addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+					i + 1}
+			} else {
+				if c1 == SegmentWildcard {
+					isRange = true
+					low.WriteByte('0')
+					high.WriteByte('f')
+				} else {
+					if isRange {
+						return "", &addressStringIndexError{
+							addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+							0}
+					}
+					low.WriteByte(c1)
+					high.WriteByte(c1)
+				}
+			}
+		}
+		segCount++
+		if builder.Len() > 0 {
+			builder.WriteByte(IPv6SegmentSeparator)
+		}
+		builder.WriteString(low.String())
+		if isRange {
+			builder.WriteByte(RangeSeparator)
+			builder.WriteString(high.String())
+		}
+	}
+
+	if segCount != IPv6SegmentCount {
+		return "", &addressStringIndexError{
+			addressStringError{addressError{str: str, key: "ipaddress.error.invalid.character.at.index"}},
+			0}
+	}
+	return builder.String(), nil
+}
