@@ -3,6 +3,7 @@ package goip
 import (
 	"math"
 	"math/big"
+	"sync"
 	"sync/atomic"
 	"unsafe"
 
@@ -3065,5 +3066,58 @@ func validateAddress(
 			// end of IPv6 and MAC48Len segments
 		} // end of all cases
 	} // end of character loop
+	return nil
+}
+
+func validateMACAddress(
+	validationOptions address_string_param.MACAddressStringParams,
+	str string,
+	strStartIndex, strEndIndex int,
+	parseData *macAddressParseData) address_error.AddressStringError {
+	return validateAddress(nil, validationOptions, str, strStartIndex, strEndIndex, nil, parseData, false)
+}
+
+func checkSegmentMaxValues(
+	fullAddr string,
+	parseData *addressParseData,
+	segmentIndex int,
+	params address_string_param.AddressStringFormatParams,
+	maxValue uint64,
+	maxDigitCount,
+	maxUpperDigitCount int) address_error.AddressStringError {
+	if parseData.getFlag(segmentIndex, keySingleWildcard) {
+		value := parseData.getValue(segmentIndex, keyLower)
+		if value > maxValue {
+			return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.ipv4.segment.too.large"}}
+		}
+		if parseData.getValue(segmentIndex, keyUpper) > maxValue {
+			parseData.setValue(segmentIndex, keyUpper, maxValue)
+		}
+		if !params.AllowsUnlimitedLeadingZeros() {
+			lowerRadix := parseData.getRadix(segmentIndex, keyLowerRadixIndex)
+			if parseData.getIndex(segmentIndex, keyLowerStrEndIndex)-parseData.getIndex(segmentIndex, keyLowerStrDigitsIndex)-getStringPrefixCharCount(lowerRadix) > maxDigitCount {
+				return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.segment.too.long"}}
+			}
+		}
+	} else {
+		value := parseData.getValue(segmentIndex, keyUpper)
+		if value > maxValue {
+			return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.ipv4.segment.too.large"}}
+		}
+		if !params.AllowsUnlimitedLeadingZeros() {
+			lowerRadix := parseData.getRadix(segmentIndex, keyLowerRadixIndex)
+			lowerEndIndex := parseData.getIndex(segmentIndex, keyLowerStrEndIndex)
+			upperEndIndex := parseData.getIndex(segmentIndex, keyUpperStrEndIndex)
+			if lowerEndIndex-parseData.getIndex(segmentIndex, keyLowerStrDigitsIndex)-getStringPrefixCharCount(lowerRadix) > maxDigitCount {
+				return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.segment.too.long"}}
+			}
+			if lowerEndIndex != upperEndIndex {
+				upperRadix := parseData.getRadix(segmentIndex, keyUpperRadixIndex)
+				if upperEndIndex-parseData.getIndex(segmentIndex, keyUpperStrDigitsIndex)-getStringPrefixCharCount(upperRadix) > maxUpperDigitCount {
+					return &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.segment.too.long"}}
+				}
+			}
+		}
+	}
 	return nil
 }
