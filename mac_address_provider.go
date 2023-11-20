@@ -7,7 +7,11 @@ import (
 	"github.com/pchchv/goip/address_string_param"
 )
 
-var macAddressDefaultAllProvider = &macAddressAllProvider{validationOptions: defaultMACAddrParameters, creationLock: &sync.Mutex{}}
+var (
+	invalidMACProvider             = macAddressEmptyProvider{macAddressNullProvider{defaultMACAddrParameters}}
+	macAddressDefaultAllProvider   = &macAddressAllProvider{validationOptions: defaultMACAddrParameters, creationLock: &sync.Mutex{}}
+	defaultMACAddressEmptyProvider = macAddressEmptyProvider{macAddressNullProvider{defaultMACAddrParameters}}
+)
 
 type macAddressProvider interface {
 	getAddress() (*MACAddress, address_error.IncompatibleAddressError)
@@ -62,4 +66,8 @@ func (provider *macAddressAllProvider) getAddress() (*MACAddress, address_error.
 		provider.creationLock.Unlock()
 	}
 	return addr, nil
+}
+
+type macAddressEmptyProvider struct {
+	macAddressNullProvider
 }
