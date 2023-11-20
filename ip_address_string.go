@@ -189,3 +189,12 @@ func NewIPAddressStringParams(str string, params address_string_param.IPAddressS
 func NewIPAddressString(str string) *IPAddressString {
 	return parseIPAddressString(str, defaultIPAddrParameters)
 }
+
+// ValidatePrefixLenStr validates that the string represents a valid prefix length, such as "24".
+// The string should not include a beginning '/' character.
+// If invalid, it returns an error with an appropriate message.
+// You can specify the IP version or IndeterminateIPVersion if unknown.
+// An error is returned if the format is invalid.
+func ValidatePrefixLenStr(str string, version IPVersion) (prefixLen PrefixLen, err address_error.AddressStringError) {
+	return validator.validatePrefixLenStr(str, version)
+}
