@@ -3225,3 +3225,22 @@ func chooseMACAddressProvider(fromString *MACAddressString,
 	}
 	return
 }
+
+func isReserved(c byte) bool {
+	isUnreserved :=
+		(c >= '0' && c <= '9') ||
+			(c >= 'A' && c <= 'Z') ||
+			(c >= 'a' && c <= 'z') ||
+			c == RangeSeparator ||
+			c == LabelSeparator ||
+			c == '_' ||
+			c == '~'
+	return !isUnreserved
+}
+
+func getInvalidMACProvider(validationOptions address_string_param.MACAddressStringParams) macAddressProvider {
+	if validationOptions == defaultMACAddrParameters {
+		return invalidMACProvider
+	}
+	return macAddressNullProvider{validationOptions}
+}
