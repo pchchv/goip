@@ -71,3 +71,7 @@ func (provider *macAddressAllProvider) getAddress() (*MACAddress, address_error.
 type macAddressEmptyProvider struct {
 	macAddressNullProvider
 }
+
+type wrappedMACAddressProvider struct {
+	address *MACAddress
+}
