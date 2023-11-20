@@ -173,3 +173,19 @@ func parseIPAddressString(str string, params address_string_param.IPAddressStrin
 	res.validate(params)
 	return res
 }
+
+// NewIPAddressStringParams constructs an IPAddressString that will parse the given string according to the given parameters.
+func NewIPAddressStringParams(str string, params address_string_param.IPAddressStringParams) *IPAddressString {
+	var p address_string_param.IPAddressStringParams
+	if params == nil {
+		p = defaultIPAddrParameters
+	} else {
+		p = address_string_param.CopyIPAddressStringParams(params)
+	}
+	return parseIPAddressString(str, p)
+}
+
+// NewIPAddressString constructs an IPAddressString.
+func NewIPAddressString(str string) *IPAddressString {
+	return parseIPAddressString(str, defaultIPAddrParameters)
+}
