@@ -95,6 +95,33 @@ func (strValidator) validateIPAddressStr(fromString *IPAddressString, validation
 	return
 }
 
+func (strValidator) validatePrefixLenStr(fullAddr string, version IPVersion) (prefixLen PrefixLen, err address_error.AddressStringError) {
+	var qualifier parsedHostIdentifierStringQualifier
+	isPrefix, err := validatePrefix(fullAddr, nil, defaultIPAddrParameters, nil, &qualifier, 0, len(fullAddr), version)
+	if !isPrefix {
+		err = &addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalidCIDRPrefix"}}
+	} else {
+		prefixLen = qualifier.getNetworkPrefixLen()
+	}
+	return
+}
+
+// ValidateZoneStr returns an error if the given zone is invalid
+func ValidateZoneStr(zoneStr string) (zone Zone, err address_error.AddressStringError) {
+	for i := 0; i < len(zoneStr); i++ {
+		c := zone[i]
+		if c == PrefixLenSeparator {
+			err = &addressStringIndexError{addressStringError{addressError{str: zoneStr, key: "ipaddress.error.invalid.zone"}}, i}
+			return
+		}
+		if c == IPv6SegmentSeparator {
+			err = &addressStringIndexError{addressStringError{addressError{str: zoneStr, key: "ipaddress.error.invalid.zone"}}, i}
+			return
+		}
+	}
+	return Zone(zoneStr), nil
+}
+
 func createChars() (chars [int('z') + 1]byte, extendedChars [int('~') + 1]byte) {
 	i := byte(1)
 	for c := '1'; i < 10; i, c = i+1, c+1 {
