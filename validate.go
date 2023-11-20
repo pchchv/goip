@@ -3565,3 +3565,110 @@ func convertReverseDNSIPv6(str string, suffixStartIndex int) (string, address_er
 	}
 	return builder.String(), nil
 }
+
+func checkSpecialHosts(str string, addrLen int, hostQualifier *parsedHostIdentifierStringQualifier) (emb embeddedAddress) {
+	suffix := IPv6UncSuffix
+	// note that by using addrLen we are omitting any terminating prefix
+	if addrLen > len(suffix) {
+		suffixStartIndex := addrLen - len(suffix)
+		// get the address for the UNC IPv6 host
+		if strings.EqualFold(str[suffixStartIndex:suffixStartIndex+len(suffix)], suffix) {
+			var builder strings.Builder
+			beginStr := str[:suffixStartIndex]
+			foundZone := false
+			for i := 0; i < len(beginStr); i++ {
+				c := beginStr[i]
+				if c == IPv6UncSegmentSeparator {
+					c = IPv6SegmentSeparator
+				} else if c == IPv6UncRangeSeparatorStr[0] {
+					if i+1 < len(beginStr) {
+						c = beginStr[i+1]
+						if c == IPv6UncRangeSeparatorStr[1] {
+							c = RangeSeparator
+							i++
+						}
+					}
+				} else if c == IPv6UncZoneSeparator && !foundZone {
+					foundZone = true
+					c = IPv6ZoneSeparator
+				}
+				builder.WriteByte(c)
+			}
+			emb = embeddedAddress{
+				isUNCIPv6Literal: true,
+			}
+			pa := parsedIPAddress{
+				options:            defaultUncOpts,
+				ipAddressParseData: ipAddressParseData{addressParseData: addressParseData{str: str}},
+			}
+			var err address_error.AddressStringError
+			addrStr := builder.String()
+			addrStrLen := len(addrStr)
+			if err = validateIPAddress(defaultUncOpts, addrStr, 0, addrStrLen, pa.getIPAddressParseData(), false); err == nil {
+				if err = parseAddressQualifier(addrStr, defaultUncOpts, nil, pa.getIPAddressParseData(), addrStrLen); err == nil {
+					//if err = parseAddressQualifier(str, defaultUncOpts, nil, pa.getIPAddressParseData(), addrStrLen); err == nil {
+					if *pa.getQualifier() == *noQualifier {
+						*pa.getQualifier() = *hostQualifier
+					} else if *hostQualifier != *noQualifier {
+						_ = pa.getQualifier().merge(hostQualifier)
+					}
+					emb.addressProvider, err = chooseIPAddressProvider(nil, str, defaultUncOpts, &pa)
+				}
+			}
+			emb.addressStringError = err
+			return
+		}
+	}
+
+	// Note: could support bitstring labels and support subnets in them, however they appear to be generally unused in the real world
+	// RFC 2673
+	// https://www.ibm.com/support/knowledgecenter/SSLTBW_1.13.0/com.ibm.zos.r13.halz002/f1a1b3b1220.htm
+	// Also, support partial dns lookups and map then to the associated subnet with prefix length, which I think we may
+	// already do for ipv4 but not for ipv6, ipv4 uses the prefix notation d.c.b.a/x but ipv6 uses fewer nibbles
+	// on the ipv6 side, would just need to add the proper number of zeros and the prefix length
+	suffix3 := IPv6ReverseDnsSuffixDeprecated
+	if addrLen > len(suffix3) {
+		suffix = IPv4ReverseDnsSuffix
+		suffix2 := IPv6ReverseDnsSuffix
+		var isIpv4, isMatch bool
+		suffixStartIndex := addrLen - len(suffix)
+		if isMatch = suffixStartIndex > 0 && strings.EqualFold(str[suffixStartIndex:suffixStartIndex+len(suffix)], suffix); !isMatch {
+			suffixStartIndex = addrLen - len(suffix2)
+			if isMatch = suffixStartIndex > 0 && strings.EqualFold(str[suffixStartIndex:suffixStartIndex+len(suffix2)], suffix2); !isMatch {
+				suffixStartIndex = addrLen - len(suffix3)
+				isMatch = suffixStartIndex > 0 && strings.EqualFold(str[suffixStartIndex:suffixStartIndex+len(suffix3)], suffix3)
+			}
+		} else {
+			isIpv4 = true
+		}
+		if isMatch {
+			emb = embeddedAddress{
+				isReverseDNS: true,
+			}
+			var err address_error.AddressStringError
+			var sequence string
+			var params address_string_param.IPAddressStringParams
+			if isIpv4 {
+				sequence, err = convertReverseDNSIPv4(str, suffixStartIndex)
+				params = reverseDNSIPv4Opts
+			} else {
+				sequence, err = convertReverseDNSIPv6(str, suffixStartIndex)
+				params = reverseDNSIPv6Opts
+			}
+			if err == nil {
+				pa := parsedIPAddress{
+					options:            params,
+					ipAddressParseData: ipAddressParseData{addressParseData: addressParseData{str: sequence}},
+				}
+				if err = validateIPAddress(params, sequence, 0, len(sequence), pa.getIPAddressParseData(), false); err == nil {
+					if err = parseAddressQualifier(str, params, nil, pa.getIPAddressParseData(), len(str)); err == nil {
+						pa.qualifier = *hostQualifier
+						emb.addressProvider, err = chooseIPAddressProvider(nil, sequence, params, &pa)
+					}
+				}
+			}
+			emb.addressStringError = err
+		}
+	}
+	return
+}
