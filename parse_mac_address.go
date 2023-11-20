@@ -2,6 +2,7 @@ package goip
 
 import (
 	"sync"
+	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/address_string_param"
@@ -215,6 +216,34 @@ func (parseData *parsedMACAddress) createSection() (*MACAddressSection, address_
 		normalizedSegmentIndex++
 	}
 	return creator.createSectionInternal(segments, isMultiple).ToMAC(), nil
+}
+
+func (parseData *parsedMACAddress) createAddress() (*MACAddress, address_error.IncompatibleAddressError) {
+	creator := macType.getNetwork().getAddressCreator()
+	sect, err := parseData.createSection()
+	if err != nil {
+		return nil, err
+	}
+	return creator.createAddressInternal(sect.ToSectionBase(), parseData.originator).ToMAC(), nil
+}
+
+func (parseData *parsedMACAddress) getAddress() (*MACAddress, address_error.IncompatibleAddressError) {
+	var err address_error.IncompatibleAddressError
+	addr := (*MACAddress)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&parseData.address))))
+	if addr == nil {
+		parseData.creationLock.Lock()
+		addr = parseData.address
+		if addr == nil {
+			addr, err = parseData.createAddress()
+			if err == nil {
+				parseData.segmentData = nil // no longer needed
+				dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&parseData.address))
+				atomicStorePointer(dataLoc, unsafe.Pointer(addr))
+			}
+		}
+		parseData.creationLock.Unlock()
+	}
+	return addr, err
 }
 
 func createRangeSegment(addressString string, lower, upper SegInt, useFlags bool, parseData *addressParseData, parsedSegIndex int, creator parsedAddressCreator) *AddressDivision {
