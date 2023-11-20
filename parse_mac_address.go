@@ -13,3 +13,11 @@ type parsedMACAddress struct {
 	params       address_string_param.MACAddressStringParams
 	creationLock *sync.Mutex
 }
+
+func (provider *parsedMACAddress) getParameters() address_string_param.MACAddressStringParams {
+	return provider.params
+}
+
+func (parseData *parsedMACAddress) getMACAddressParseData() *macAddressParseData {
+	return &parseData.macAddressParseData
+}
