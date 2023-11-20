@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"unicode"
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
@@ -50,6 +51,40 @@ var (
 		{}, {},
 		{2, 4, 6, 8}, //hex: 0xff, 0xffff, 0xffffff, 0xffffffff
 	}
+	// according to rfc 1035 or 952, a label must start with a letter, must end with a letter or digit, and must have in the middle a letter or digit or -
+	// rfc 1123 relaxed that to allow labels to start with a digit, section 2.1 has a discussion on this.  It states that the highest level component name must be alphabetic - referring to .com or .net or whatever.
+	// furthermore, the underscore has become generally acceptable, as indicated in rfc 2181
+	// there is actually a distinction between host names and domain names.  a host name is a specific type of domain name identifying hosts.
+	// hosts are not supposed to have the underscore.
+	//
+	// en.wikipedia.org/wiki/Domain_Name_System#Domain_name_syntax
+	// en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names
+	//
+	// max length is 63, cannot start or end with hyphen
+	// strictly speaking, the underscore is not allowed anywhere, but it seems that rule is sometimes broken
+	// also, underscores seem to be a part of dns names that are not part of host names, so we allow it here to be safe
+	//
+	// networkadminkb.com/KB/a156/windows-2003-dns-and-the-underscore.aspx
+	//
+	// It's a little confusing.  rfc 2181 https://www.ietf.org/rfc/rfc2181.txt in section 11 on name syntax says that any chars are allowed in dns.
+	// However, it also says internet host names might have restrictions of their own, and this was defined in rfc 1035.
+	// rfc 1035 defines the restrictions on internet host names, in section 2.3.1 http://www.ietf.org/rfc/rfc1035.txt
+	//
+	// So we will follow rfc 1035 and in addition allow the underscore.
+	ipvFutureUppercase = byte(unicode.ToUpper(rune(IPvFuture)))
+	defaultEmptyHost   = &parsedHost{}
+	defaultUncOpts     = new(address_string_param.IPAddressStringParamsBuilder).
+				AllowIPv4(false).AllowEmpty(false).AllowMask(false).AllowPrefix(false).ToParams()
+	reverseDNSIPv4Opts = new(address_string_param.IPAddressStringParamsBuilder).
+				AllowIPv6(false).AllowEmpty(false).AllowMask(false).AllowPrefix(false).
+				GetIPv4AddressParamsBuilder().AllowInetAton(false).GetParentBuilder().ToParams()
+	reverseDNSIPv6Opts = new(address_string_param.IPAddressStringParamsBuilder).
+				AllowIPv4(false).AllowEmpty(false).AllowMask(false).AllowPrefix(false).
+				GetIPv6AddressParamsBuilder().AllowMixed(false).AllowZone(false).GetParentBuilder().ToParams()
+	//
+	// we need to initialize parsing package variables first before using them, so we put these at the bottom of this file
+	zeroIPAddressString = NewIPAddressString("")
+	ipv4MappedPrefix    = NewIPAddressString("::ffff:0:0/96")
 )
 
 type strValidator struct{}
@@ -107,7 +142,7 @@ func (strValidator) validatePrefixLenStr(fullAddr string, version IPVersion) (pr
 	return
 }
 
-// ValidateZoneStr returns an error if the given zone is invalid
+// ValidateZoneStr returns an error if the given zone is invalid.
 func ValidateZoneStr(zoneStr string) (zone Zone, err address_error.AddressStringError) {
 	for i := 0; i < len(zoneStr); i++ {
 		c := zone[i]
@@ -121,6 +156,654 @@ func ValidateZoneStr(zoneStr string) (zone Zone, err address_error.AddressString
 		}
 	}
 	return Zone(zoneStr), nil
+}
+
+func (strValidator) validateHostName(fromHost *HostName, validationOptions address_string_param.HostNameParams) (psdHost *parsedHost, err address_error.HostNameError) {
+	str := fromHost.str
+	addrLen := len(str)
+	if addrLen > maxHostLength {
+		if addrLen > maxHostLength+1 || str[maxHostLength] != LabelSeparator {
+			err = &hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid.length"}}
+			return
+		}
+	}
+
+	var separatorIndices []int
+	var normalizedFlags []bool
+	var segmentUppercase, isNotNormalized, squareBracketed, tryIPv6, tryIPv4, isPrefixed, hasPortOrService, hostIsEmpty bool
+	isAllDigits, isPossiblyIPv6, isPossiblyIPv4 := true, true, true
+	isSpecialOnlyIndex, qualifierIndex, index, lastSeparatorIndex := -1, -1, -1, -1
+	labelCount := 0
+	maxLocalLabels := 6 // should be at least 4 to avoid the array for ipv4 addresses
+
+	sep0, sep1, sep2, sep3, sep4, sep5 := -1, -1, -1, -1, -1, -1
+	var isUpper0, isUpper1, isUpper2, isUpper3, isUpper4, isUpper5 bool
+
+	var currentChar byte
+	for index++; index <= addrLen; index++ {
+		// grab the character to evaluate
+		if index == addrLen {
+			if index == 0 {
+				hostIsEmpty = true
+				break
+			}
+			segmentCountMatchesIPv4 :=
+				isPossiblyIPv4 &&
+					(labelCount+1 == IPv4SegmentCount) ||
+					(labelCount+1 < IPv4SegmentCount && isSpecialOnlyIndex >= 0) ||
+					(labelCount+1 < IPv4SegmentCount && validationOptions.GetIPAddressParams().GetIPv4Params().AllowsInetAtonJoinedSegments()) ||
+					labelCount == 0 && validationOptions.GetIPAddressParams().AllowsSingleSegment()
+			if isAllDigits {
+				if isPossiblyIPv4 && segmentCountMatchesIPv4 {
+					tryIPv4 = true
+					break
+				}
+				isPossiblyIPv4 = false
+				if hasPortOrService && isPossiblyIPv6 { // isPossiblyIPv6 is already false if labelCount > 0
+					// since it is all digits, it cannot be host, so we set tryIPv6 rather than just isPossiblyIPv6
+					tryIPv6 = true
+					break
+				}
+				err = &hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid"}}
+				return
+			}
+			isPossiblyIPv4 = isPossiblyIPv4 && segmentCountMatchesIPv4
+			currentChar = LabelSeparator
+		} else {
+			currentChar = str[index]
+		}
+
+		// check that character
+		// break out of the loop if we hit '[', '*', '%' (as zone or wildcard), or ':' that is not interpreted as port (and this is ipv6)
+		// exit the loop prematurely if we hit '/' or ':' interpreted as port
+		if currentChar >= 'a' && currentChar <= 'z' {
+			if currentChar > 'f' {
+				isPossiblyIPv6 = false
+				isPossiblyIPv4 = isPossiblyIPv4 && (currentChar == 'x' && validationOptions.GetIPAddressParams().GetIPv4Params().AllowsInetAtonHex())
+			} else if currentChar == 'b' {
+				isPossiblyIPv4 = isPossiblyIPv4 && validationOptions.GetIPAddressParams().GetIPv4Params().AllowsBinary()
+			}
+			isAllDigits = false
+		} else if currentChar >= '0' && currentChar <= '9' {
+			//nothing to do
+			continue
+		} else if currentChar >= 'A' && currentChar <= 'Z' {
+			if currentChar > 'F' {
+				isPossiblyIPv6 = false
+				isPossiblyIPv4 = isPossiblyIPv4 && (currentChar == 'X' && validationOptions.GetIPAddressParams().GetIPv4Params().AllowsInetAtonHex())
+			} else if currentChar == 'B' {
+				isPossiblyIPv4 = isPossiblyIPv4 && validationOptions.GetIPAddressParams().GetIPv4Params().AllowsBinary()
+			}
+			segmentUppercase = true
+			isAllDigits = false
+		} else if currentChar == LabelSeparator {
+			length := index - lastSeparatorIndex - 1
+			if length > maxLabelLength {
+				err = &hostNameError{addressError{str: str, key: "ipaddress.error.segment.too.long"}}
+				return
+			} else if length == 0 {
+				if index < addrLen {
+					err = &hostNameError{addressError{str: str, key: "ipaddress.host.error.segment.too.short"}}
+					return
+				}
+				isPossiblyIPv4 = false
+				isNotNormalized = true
+			} else {
+				if labelCount < maxLocalLabels {
+					if labelCount < 3 {
+						if labelCount == 0 {
+							sep0 = index
+							isUpper0 = segmentUppercase
+						} else if labelCount == 1 {
+							sep1 = index
+							isUpper1 = segmentUppercase
+						} else {
+							sep2 = index
+							isUpper2 = segmentUppercase
+						}
+					} else {
+						if labelCount == 3 {
+							sep3 = index
+							isUpper3 = segmentUppercase
+						} else if labelCount == 4 {
+							sep4 = index
+							isUpper4 = segmentUppercase
+						} else {
+							sep5 = index
+							isUpper5 = segmentUppercase
+						}
+					}
+					labelCount++
+				} else if labelCount == maxLocalLabels {
+					separatorIndices = make([]int, maxHostSegments+1)
+					separatorIndices[labelCount] = index
+					if validationOptions.NormalizesToLowercase() {
+						normalizedFlags = make([]bool, maxHostSegments+1)
+						normalizedFlags[labelCount] = !segmentUppercase
+						isNotNormalized = isNotNormalized || segmentUppercase
+					}
+					labelCount++
+				} else {
+					separatorIndices[labelCount] = index
+					if normalizedFlags != nil {
+						normalizedFlags[labelCount] = !segmentUppercase
+						isNotNormalized = isNotNormalized || segmentUppercase
+					}
+					labelCount++
+					if labelCount > maxHostSegments {
+						err = &hostNameError{addressError{str: str, key: "ipaddress.host.error.too.many.segments"}}
+						return
+					}
+				}
+				segmentUppercase = false // this is per segment so reset it
+			}
+			lastSeparatorIndex = index
+			isPossiblyIPv6 = isPossiblyIPv6 && (index == addrLen) // A '.' means not ipv6 (if we see ':' we jump out of loop so mixed address not possible), but for single segment we end up here even without a '.' character in the string
+		} else if currentChar == '_' { // this is not supported in host names but is supported in domain names, see discussion in HostName
+			isAllDigits = false
+		} else if currentChar == '-' {
+			// host name segments cannot end with '-'
+			if index == lastSeparatorIndex+1 || index == addrLen-1 || str[index+1] == LabelSeparator {
+				err = &hostNameIndexError{hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid.character.at.index"}}, index}
+				return
+			}
+			isAllDigits = false
+		} else if currentChar == IPv6StartBracket {
+			if index == 0 && labelCount == 0 && addrLen > 2 {
+				squareBracketed = true
+				break
+			}
+			err = &hostNameIndexError{hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid.character.at.index"}}, index}
+			return
+		} else if currentChar == PrefixLenSeparator {
+			isPrefixed = true
+			qualifierIndex = index + 1
+			addrLen = index
+			isNotNormalized = true
+			index--
+		} else {
+			a := currentChar == SegmentWildcard
+			if a || currentChar == SegmentSqlSingleWildcard {
+				b := !a
+				addressOptions := validationOptions.GetIPAddressParams()
+				if b && addressOptions.GetIPv6Params().AllowsZone() { // if we allow zones, we treat '%' as a zone and not as a wildcard
+					if isPossiblyIPv6 && labelCount < IPv6SegmentCount {
+						tryIPv6 = true
+						isPossiblyIPv4 = false
+						break
+					}
+					err = &hostNameIndexError{hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid.character.at.index"}}, index}
+					return
+				} else {
+					if isPossiblyIPv4 {
+						if addressOptions.GetIPv4Params().GetRangeParams().AllowsWildcard() {
+							if isSpecialOnlyIndex < 0 {
+								isSpecialOnlyIndex = index
+							}
+						} else {
+							isPossiblyIPv4 = false
+						}
+					}
+					if isPossiblyIPv6 && addressOptions.GetIPv6Params().GetRangeParams().AllowsWildcard() {
+						if isSpecialOnlyIndex < 0 {
+							isSpecialOnlyIndex = index
+						}
+					} else {
+						if !isPossiblyIPv4 {
+							// needs to be either ipv4 or ipv6
+							err = &hostNameIndexError{hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid.character.at.index"}}, index}
+							return
+						}
+						isPossiblyIPv6 = false
+					}
+				}
+				isAllDigits = false
+			} else if currentChar == IPv6SegmentSeparator { //also might denote a port
+				if validationOptions.AllowsPort() || validationOptions.AllowsService() {
+					hasPortOrService = true
+					qualifierIndex = index + 1
+					addrLen = index // causes loop to terminate, but only after handling the last segment
+					isNotNormalized = true
+					index--
+				} else {
+					isPossiblyIPv4 = false
+					if isPossiblyIPv6 {
+						tryIPv6 = true
+						break
+					}
+					err = &hostNameIndexError{hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid.character.at.index"}}, index}
+					return
+				}
+			} else if currentChar == AlternativeRangeSeparatorStr[0] {
+				if index+1 == addrLen {
+					err = &hostNameIndexError{hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid.character.at.index"}}, index}
+					return
+				}
+				currentChar = str[index+1]
+				if currentChar == AlternativeRangeSeparatorStr[1] {
+					isAllDigits = false
+					isPossiblyIPv4 = false
+					isPossiblyIPv6 = false
+					if isSpecialOnlyIndex < 0 {
+						isSpecialOnlyIndex = index
+					}
+					index++
+				} else {
+					err = &hostNameIndexError{hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid.character.at.index"}}, index}
+					return
+				}
+			} else {
+				err = &hostNameIndexError{hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid.character.at.index"}}, index}
+				return
+			}
+		}
+	}
+
+	/*
+		1. squareBracketed: [ addr ]
+		2. tryIPv4 || tryIPv6: this is a string with characters that invalidate it as a host but it still may in fact be an address
+			This includes ipv6 strings, ipv4/ipv6 strings with '*', or all dot/digit strings like 1.2.3.4 that are 4 segments
+		3. isPossiblyIPv4: this is a string with digits, - and _ characters and the number of separators matches ipv4.  Such strings can also be valid hosts.
+		  The range options flag (controlling whether we allow '-' or '_' in addresses) for ipv4 can control whether it is treated as host or address.
+		  It also includes "" empty addresses.
+		  isPossiblyIPv6: something like f:: or f:1, the former IPv6 and the latter a host "f" with port 1.  Such strings can be valid addresses or hosts.
+		  If it parses as an address, we do not treat as host.
+	*/
+	psdHost = &parsedHost{originalStr: str, params: validationOptions}
+	addressOptions := validationOptions.GetIPAddressParams()
+	isIPAddress := squareBracketed || tryIPv4 || tryIPv6
+	if !validationOptions.AllowsIPAddress() {
+		if isIPAddress {
+			err = &hostNameError{addressError{str: str, key: "ipaddress.host.error.ipaddress"}}
+			return
+		}
+	} else if isIPAddress || isPossiblyIPv4 || isPossiblyIPv6 {
+		provider, address_Error, hostErr := func() (provider ipAddressProvider, address_Error address_error.AddressError, hostErr address_error.HostNameError) {
+			pa := parsedIPAddress{
+				ipAddressParseData: ipAddressParseData{addressParseData: addressParseData{str: str}},
+				options:            addressOptions,
+				originator:         fromHost,
+			}
+			hostQualifier := psdHost.getQualifier()
+			if squareBracketed {
+				// Note:
+				// Firstly, we need to find the address end which is denoted by the end bracket
+				// Secondly, while zones appear inside bracket, prefix or port appears outside, according to rfc 4038
+				// So keep track of the boolean endsWithPrefix to differentiate.
+				endIndex := addrLen - 1
+				endsWithQualifier := str[endIndex] != IPv6EndBracket
+				if endsWithQualifier {
+					for endIndex--; str[endIndex] != IPv6EndBracket; endIndex-- {
+						if endIndex == 1 {
+							err = &hostNameError{addressError{str: str, key: "ipaddress.host.error.bracketed.missing.end"}}
+							return
+						}
+					}
+				}
+				startIndex := 1
+				if strings.HasPrefix(str[1:], SmtpIPv6Identifier) {
+					// SMTP rfc 2821 allows [IPv6:ipv6address]
+					startIndex = 6
+				} else {
+					/*
+						RFC 3986 section 3.2.2
+							host = IP-literal / IPv4address / reg-name
+							IP-literal = "[" ( IPv6address / IPvFuture  ) "]"
+							IPvFuture  = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
+						If a URI containing an IP-literal that starts with "v" (case-insensitive),
+						indicating that the version flag is present, is dereferenced by an application that does not know the meaning of that version flag,
+						then the application should return an appropriate error for "address mechanism not supported".
+					*/
+					firstChar := str[1]
+					if firstChar == IPvFuture || firstChar == ipvFutureUppercase {
+						err = &hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid.mechanism"}}
+						return
+					}
+				}
+				address_Error = validateIPAddress(addressOptions, str, startIndex, endIndex, pa.getIPAddressParseData(), false)
+				if address_Error != nil {
+					return
+				}
+				if endsWithQualifier {
+					// here check what is in the qualifier that follows the bracket: prefix/mask or port?
+					// if prefix/mask, we supply the qualifier to the address, otherwise we supply it to the host
+					prefixIndex := endIndex + 1
+					prefixChar := str[prefixIndex]
+					if prefixChar == PrefixLenSeparator {
+						isPrefixed = true
+					} else if prefixChar == PortSeparator {
+						hasPortOrService = true
+					} else {
+						hostErr = &hostNameIndexError{hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid.character.at.index"}}, prefixIndex}
+						return
+					}
+					qualifierIndex = prefixIndex + 1 //skip the ']/'
+					endIndex = len(str)
+					addressParseData := pa.getAddressParseData()
+					address_Error = parseHostNameQualifier(
+						str,
+						addressOptions,
+						validationOptions,
+						hostQualifier,
+						isPrefixed,
+						hasPortOrService,
+						addressParseData.isProvidingEmpty(),
+						qualifierIndex,
+						endIndex,
+						pa.getProviderIPVersion())
+					if address_Error != nil {
+						return
+					}
+					insideBracketsQualifierIndex := pa.getQualifierIndex()
+					if pa.isZoned() && str[insideBracketsQualifierIndex] == '2' &&
+						str[insideBracketsQualifierIndex+1] == '5' {
+						//handle %25 from rfc 6874
+						insideBracketsQualifierIndex += 2
+					}
+					address_Error = parseHostAddressQualifier(
+						str,
+						addressOptions,
+						nil,
+						pa.hasPrefixSeparator(),
+						false,
+						pa.getIPAddressParseData(),
+						insideBracketsQualifierIndex,
+						prefixIndex-1)
+					if address_Error != nil {
+						return
+					}
+					if isPrefixed {
+						// since we have an address, we apply the prefix to the address rather than to the host
+						// rather than use the prefix as a host qualifier, we treat it as an address qualifier and leave the host qualifier as noQualifier
+						// also, keep in mind you can combine prefix with zone like fe80::%2/64, see https://tools.ietf.org/html/rfc4007#section-11.7
+
+						// if there are two prefix lengths, we choose the smaller (larger network)
+						// if two masks, we combine them (if both network masks, this is the same as choosing smaller prefix)
+						addrQualifier := pa.getIPAddressParseData().getQualifier()
+						address_Error = addrQualifier.merge(hostQualifier)
+						if address_Error != nil {
+							return
+						}
+						hostQualifier.clearPrefixOrMask()
+						// note it makes no sense to indicate a port or service with a prefix
+					}
+				} else {
+					qualifierIndex = pa.getQualifierIndex()
+					isPrefixed = pa.hasPrefixSeparator()
+					hasPortOrService = false
+					if pa.isZoned() && str[qualifierIndex] == '2' &&
+						str[qualifierIndex+1] == '5' {
+						//handle %25 from rfc 6874
+						qualifierIndex += 2
+					}
+					address_Error = parseHostAddressQualifier(str, addressOptions, validationOptions, isPrefixed, hasPortOrService, pa.getIPAddressParseData(), qualifierIndex, endIndex)
+					if address_Error != nil {
+						return
+					}
+				}
+				//SMTP rfc 2821 allows [ipv4address]
+				version := pa.getProviderIPVersion()
+				if !version.IsIPv6() && !validationOptions.AllowsBracketedIPv4() {
+					err = &hostNameError{addressError{str: str, key: "ipaddress.host.error.bracketed.not.ipv6"}}
+					return
+				}
+			} else { //not square-bracketed
+				/*
+					there are cases where it can be ipv4 or ipv6, but not many
+					any address with a '.' in it cannot be ipv6 at this point (if we hit a ':' first we would have jumped out of the loop)
+					any address with a ':' has gone through tests to see if up until that point it could match an ipv4 address or an ipv6 address
+					it can only be ipv4 if it has right number of segments, and only decimal digits.
+					it can only be ipv6 if it has only hex digits.
+					so when can it be both?  if it looks like *: at the start, so that it has the right number of segments for ipv4 but does not have a '.' invalidating ipv6
+					so in that case we might have either something like *:1 for it to be ipv4 (ambiguous is treated as ipv4) or *:f:: to be ipv6
+					So we validate the potential port (or ipv6 segment) to determine which one and then go from there
+					Also, if it is single segment address that is all decimal digits.
+				*/
+
+				// We start by checking if there is potentially a port or service
+				// if IPv6, we may need to try a :x as a port or service and as a trailing segment
+				firstTrySucceeded := false
+				hasAddressPortOrService := false
+				addressQualifierIndex := -1
+				isPotentiallyIPv6 := isPossiblyIPv6 || tryIPv6
+				if isPotentiallyIPv6 {
+					// find the last port separator, currently we point to the first one with qualifierIndex
+					// note that the service we find here could be the ipv4 part of either an ipv6 address or ipv6 mask like this 1:2:3:4:5:6:1.2.3.4 or 1:2:3:4:5:6:1.2.3.4/1:2:3:4:5:6:1.2.3.4
+					if !isPrefixed && (validationOptions.AllowsPort() || validationOptions.AllowsService()) {
+						for j := len(str) - 1; j >= 0; j-- {
+							c := str[j]
+							if c == IPv6SegmentSeparator {
+								hasAddressPortOrService = true
+								addressQualifierIndex = j + 1
+							} else if (c >= '0' && c <= '9') ||
+								(c >= 'A' && c <= 'Z') ||
+								(c >= 'a' && c <= 'z') ||
+								(c == '-') ||
+								(c == SegmentWildcard) {
+								// see validateHostNamePort for more details on valid ports and service names
+								continue
+							}
+							break
+						}
+					}
+				} else {
+					hasAddressPortOrService = hasPortOrService
+					addressQualifierIndex = qualifierIndex
+				}
+				var endIndex int
+				if hasAddressPortOrService {
+					// validate the potential port
+					address_Error = parsePortOrService(str, nil, validationOptions, hostQualifier, addressQualifierIndex, len(str))
+					if address_Error != nil {
+						// certainly not IPv4 since it doesn't qualify as port (see comment above)
+						if !isPotentiallyIPv6 {
+							// not IPv6 either, so we're done with checking for address
+							return
+						}
+						// no need to call hostQualifier.clear() since parsePortOrService does not populate qualifier on error
+						endIndex = len(str)
+					} else if isPotentiallyIPv6 {
+						// here it can be either a port or part of an IPv6 address, like this: fe80::6a05:caff:fe3:123
+						expectPort := validationOptions.ExpectsPort()
+						if expectPort {
+							// try with port first, then try as IPv6 no port
+							endIndex = addressQualifierIndex - 1
+						} else {
+							// try as IPv6 with no port first, try with port second
+							endIndex = len(str)
+						}
+						// first try
+						address_Error = validateIPAddress(addressOptions, str, 0, endIndex, pa.getIPAddressParseData(), false)
+						if address_Error == nil {
+							// Since no square brackets, we parse as an address (this can affect how zones are parsed).
+							// Also, an address cannot end with a single ':' like a port, so we cannot take a shortcut here and parse for port, we must strip it off first (hence no host parameters passed)
+							address_Error = parseAddressQualifier(str, addressOptions, nil, pa.getIPAddressParseData(), endIndex)
+						}
+						if firstTrySucceeded = address_Error == nil; !firstTrySucceeded {
+							pa = parsedIPAddress{
+								ipAddressParseData: ipAddressParseData{addressParseData: addressParseData{str: str}},
+								options:            addressOptions,
+								originator:         fromHost,
+							}
+							if expectPort {
+								// we tried with port first, now we try as IPv6 no port
+								hostQualifier.clearPortOrService()
+								endIndex = len(str)
+							} else {
+								// we tried as IPv6 with no port first, now we try with port second
+								endIndex = addressQualifierIndex - 1
+							}
+						} else if !expectPort {
+							// it is an address
+							// we tried with no port and succeeded, so clear the port, it was not a port
+							hostQualifier.clearPortOrService()
+						}
+					} else {
+						endIndex = addressQualifierIndex - 1
+					}
+				} else {
+					endIndex = len(str)
+				}
+				if !firstTrySucceeded {
+					if address_Error = validateIPAddress(addressOptions, str, 0, endIndex, pa.getIPAddressParseData(), false); address_Error == nil {
+						// since no square brackets, we parse as an address (this can affect how zones are parsed)
+						// Also, an address cannot end with a single ':' like a port, so we cannot take a shortcut here and parse for port, we must strip it off first (hence no host parameters passed)
+						address_Error = parseAddressQualifier(str, addressOptions, nil, pa.getIPAddressParseData(), endIndex)
+					}
+					if address_Error != nil {
+						return
+					}
+				}
+			}
+			// we successfully parsed an IP address
+			provider, address_Error = chooseIPAddressProvider(fromHost, str, addressOptions, &pa)
+			return
+		}()
+		if hostErr != nil {
+			err = hostErr
+			return
+		}
+		if address_Error != nil {
+			if isIPAddress {
+				err = &hostAddressNestedError{nested: address_Error}
+				return
+			}
+			psdHost.labelsQualifier.clearPortOrService()
+			//fall though and evaluate as a host
+		} else {
+			psdHost.embeddedAddress.addressProvider = provider
+			return
+		}
+	}
+
+	hostQualifier := psdHost.getQualifier()
+	address_Error := parseHostNameQualifier(
+		str,
+		addressOptions,
+		validationOptions,
+		hostQualifier,
+		isPrefixed,
+		hasPortOrService,
+		hostIsEmpty,
+		qualifierIndex,
+		len(str),
+		IndeterminateIPVersion)
+	if address_Error != nil {
+		err = &hostAddressNestedError{nested: address_Error}
+		return
+	}
+	if hostIsEmpty {
+		if !validationOptions.AllowsEmpty() {
+			err = &hostNameError{addressError{str: str, key: "ipaddress.host.error.empty"}}
+			return
+		}
+		if *hostQualifier == defaultEmptyHost.labelsQualifier {
+			psdHost = defaultEmptyHost
+		}
+	} else {
+		if labelCount <= maxLocalLabels {
+			maxLocalLabels = labelCount
+			separatorIndices = make([]int, maxLocalLabels)
+			if validationOptions.NormalizesToLowercase() {
+				normalizedFlags = make([]bool, maxLocalLabels)
+			}
+		} else if labelCount != len(separatorIndices) {
+			trimmedSeparatorIndices := make([]int, labelCount)
+			copy(trimmedSeparatorIndices[maxLocalLabels:], separatorIndices[maxLocalLabels:labelCount])
+			separatorIndices = trimmedSeparatorIndices
+			if normalizedFlags != nil {
+				trimmedNormalizedFlags := make([]bool, labelCount)
+				copy(trimmedNormalizedFlags[maxLocalLabels:], normalizedFlags[maxLocalLabels:labelCount])
+				normalizedFlags = trimmedNormalizedFlags
+			}
+		}
+		for i := 0; i < maxLocalLabels; i++ {
+			var nextSep int
+			var isUpper bool
+			if i < 2 {
+				if i == 0 {
+					nextSep = sep0
+					isUpper = isUpper0
+				} else {
+					nextSep = sep1
+					isUpper = isUpper1
+				}
+			} else if i < 4 {
+				if i == 2 {
+					nextSep = sep2
+					isUpper = isUpper2
+				} else {
+					nextSep = sep3
+					isUpper = isUpper3
+				}
+			} else if i == 4 {
+				nextSep = sep4
+				isUpper = isUpper4
+			} else {
+				nextSep = sep5
+				isUpper = isUpper5
+			}
+			separatorIndices[i] = nextSep
+			if normalizedFlags != nil {
+				normalizedFlags[i] = !isUpper
+				isNotNormalized = isNotNormalized || isUpper
+			}
+		}
+		// We support a.b.com/24:80 (prefix and port combo)
+		// or just port, or a service where-ever a port can appear
+		// A prefix with port can mean a subnet of addresses using the same port everywhere (the subnet being the prefix block of the resolved address),
+		// or just denote the prefix length of the resolved address along with a port
+		//
+		// here we check what is in the qualifier that follows the bracket: prefix/mask or port?
+		// if prefix/mask, we supply the qualifier to the address, otherwise we supply it to the host
+		// also, it is possible the address has a zone
+		var addrQualifier *parsedHostIdentifierStringQualifier
+		if isPrefixed {
+			addrQualifier = hostQualifier
+		} else {
+			addrQualifier = noQualifier
+		}
+		embeddedAddr := checkSpecialHosts(str, addrLen, addrQualifier)
+		hasEmbeddedAddr := embeddedAddr.addressProvider != nil
+		if isSpecialOnlyIndex >= 0 && (!hasEmbeddedAddr || embeddedAddr.addressStringError != nil) {
+			if embeddedAddr.addressStringError != nil {
+				err = &hostAddressNestedError{
+					hostNameIndexError: hostNameIndexError{
+						hostNameError: hostNameError{
+							addressError{str: str, key: "ipaddress.host.error.invalid.character.at.index"},
+						},
+						index: isSpecialOnlyIndex,
+					},
+					nested: embeddedAddr.addressStringError,
+				}
+				return
+			}
+			err = &hostNameIndexError{hostNameError{addressError{str: str, key: "ipaddress.host.error.invalid.character.at.index"}}, isSpecialOnlyIndex}
+			return
+		}
+		psdHost.separatorIndices = separatorIndices
+		psdHost.normalizedFlags = normalizedFlags
+		if !hasEmbeddedAddr {
+			if !isNotNormalized {
+				normalizedLabels := make([]string, len(separatorIndices))
+				for i, lastSep := 0, -1; i < len(normalizedLabels); i++ {
+					index := separatorIndices[i]
+					normalizedLabels[i] = str[lastSep+1 : index]
+					lastSep = index
+				}
+				psdHost.parsedHostCache = &parsedHostCache{
+					host:             str,
+					normalizedLabels: normalizedLabels,
+				}
+			}
+		} else {
+			if isPrefixed {
+				psdHost.labelsQualifier.clearPrefixOrMask()
+			}
+			psdHost.embeddedAddress = embeddedAddr
+		}
+	}
+	return
 }
 
 func createChars() (chars [int('z') + 1]byte, extendedChars [int('~') + 1]byte) {
