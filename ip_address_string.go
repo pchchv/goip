@@ -2,11 +2,13 @@ package goip
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/address_string_param"
 )
 
+var validator hostIdentifierStringValidator = strValidator{}
 var defaultIPAddrParameters = new(address_string_param.IPAddressStringParamsBuilder).ToParams()
 
 // IPAddressString parses the string representation of an IP address.
@@ -138,6 +140,22 @@ func (addrStr *IPAddressString) String() string {
 func (addrStr IPAddressString) Format(state fmt.State, verb rune) {
 	s := flagsFromState(state, verb)
 	_, _ = state.Write([]byte(fmt.Sprintf(s, addrStr.str)))
+}
+
+func (addrStr *IPAddressString) init() *IPAddressString {
+	if addrStr.addressProvider == nil && addrStr.validateError == nil {
+		return zeroIPAddressString
+	}
+	return addrStr
+}
+
+func (addrStr *IPAddressString) validate(validationOptions address_string_param.IPAddressStringParams) {
+	addrStr.addressProvider, addrStr.validateError = validator.validateIPAddressStr(addrStr, validationOptions)
+}
+
+// Validate validates that this string is a valid IP address, returning nil, and if not, returns an error with a descriptive message indicating why it is not.
+func (addrStr *IPAddressString) Validate() address_error.AddressStringError {
+	return addrStr.init().validateError
 }
 
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
