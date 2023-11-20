@@ -3202,3 +3202,26 @@ func checkMACSegments(
 	} // else single segment
 	return nil
 }
+
+func chooseMACAddressProvider(fromString *MACAddressString,
+	validationOptions address_string_param.MACAddressStringParams, pa *parsedMACAddress,
+	addressParseData *addressParseData) (res macAddressProvider, err address_error.AddressStringError) {
+	if addressParseData.isProvidingEmpty() {
+		if validationOptions == defaultMACAddrParameters {
+			res = defaultMACAddressEmptyProvider
+		} else {
+			res = macAddressEmptyProvider{macAddressNullProvider{validationOptions}}
+		}
+	} else if addressParseData.isAll() {
+		if validationOptions == defaultMACAddrParameters {
+			res = macAddressDefaultAllProvider
+		} else {
+			res = &macAddressAllProvider{validationOptions: validationOptions, creationLock: &sync.Mutex{}}
+		}
+	} else {
+		if err = checkMACSegments(fromString.str, validationOptions, pa); err == nil {
+			res = pa
+		}
+	}
+	return
+}
