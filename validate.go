@@ -53,6 +53,48 @@ var (
 
 type strValidator struct{}
 
+func (strValidator) validateMACAddressStr(fromString *MACAddressString, validationOptions address_string_param.MACAddressStringParams) (prov macAddressProvider, err address_error.AddressStringError) {
+	str := fromString.str
+	pa := parsedMACAddress{
+		originator:          fromString,
+		macAddressParseData: macAddressParseData{addressParseData: addressParseData{str: str}},
+		params:              validationOptions,
+		creationLock:        &sync.Mutex{},
+	}
+
+	if err = validateMACAddress(validationOptions, str, 0, len(str), pa.getMACAddressParseData()); err == nil {
+		addressParseData := pa.getAddressParseData()
+		prov, err = chooseMACAddressProvider(fromString, validationOptions, &pa, addressParseData)
+	} else {
+		prov = getInvalidMACProvider(validationOptions)
+	}
+
+	if err != nil && prov == nil {
+		prov = getInvalidMACProvider(validationOptions)
+	}
+	return
+}
+
+func (strValidator) validateIPAddressStr(fromString *IPAddressString, validationOptions address_string_param.IPAddressStringParams) (prov ipAddressProvider, err address_error.AddressStringError) {
+	str := fromString.str
+	pa := parsedIPAddress{
+		originator:         fromString,
+		options:            validationOptions,
+		ipAddressParseData: ipAddressParseData{addressParseData: addressParseData{str: str}},
+	}
+
+	if err = validateIPAddress(validationOptions, str, 0, len(str), pa.getIPAddressParseData(), false); err == nil {
+		if err = parseAddressQualifier(str, validationOptions, nil, pa.getIPAddressParseData(), len(str)); err == nil {
+			prov, err = chooseIPAddressProvider(fromString, str, validationOptions, &pa)
+		} else {
+			prov = getInvalidProvider(validationOptions)
+		}
+	} else {
+		prov = getInvalidProvider(validationOptions)
+	}
+	return
+}
+
 func createChars() (chars [int('z') + 1]byte, extendedChars [int('~') + 1]byte) {
 	i := byte(1)
 	for c := '1'; i < 10; i, c = i+1, c+1 {
