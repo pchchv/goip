@@ -3,6 +3,7 @@ package goip
 import (
 	"math"
 	"math/big"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"unsafe"
@@ -3312,4 +3313,76 @@ func getInvalidMACProvider(validationOptions address_string_param.MACAddressStri
 		return invalidMACProvider
 	}
 	return macAddressNullProvider{validationOptions}
+}
+
+func parseEncodedZone(
+	fullAddr string,
+	validationOptions address_string_param.IPAddressStringParams,
+	res *parsedHostIdentifierStringQualifier,
+	addressIsEmpty bool,
+	index,
+	endIndex int,
+	ipVersion IPVersion) (err address_error.AddressStringError) {
+	if index == endIndex && !validationOptions.GetIPv6Params().AllowsEmptyZone() {
+		err = &addressStringIndexError{addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.zone"}}, index}
+		return
+	}
+	var result strings.Builder
+	var zone string
+	for i := index; i < endIndex; i++ {
+		c := fullAddr[i]
+		// we are in here when we have a square bracketed host like [::1]
+		// not if we have a HostName with no brackets
+		//
+		// https://tools.ietf.org/html/rfc6874
+		// https://tools.ietf.org/html/rfc4007#section-11.7
+		if c == IPv6ZoneSeparator {
+			if i+2 >= endIndex {
+				err = &addressStringIndexError{
+					addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.zone.encoding"}},
+					i}
+				return
+			}
+			// percent encoded
+			if result.Cap() == 0 {
+				result.Grow(endIndex - index)
+				result.WriteString(fullAddr[index:i])
+			}
+			charArray := chars
+			i++
+			c = charArray[fullAddr[i]] << 4
+			i++
+			c |= charArray[fullAddr[i]]
+		} else if c == PrefixLenSeparator {
+			if i == index && !validationOptions.GetIPv6Params().AllowsEmptyZone() {
+				err = &addressStringIndexError{addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.zone"}}, index}
+				return
+			}
+			if result.Cap() > 0 {
+				zone = result.String()
+			} else {
+				zone = fullAddr[index:i]
+			}
+			z := Zone(zone)
+			return parsePrefix(fullAddr, &z, validationOptions, nil, res, addressIsEmpty, i+1, endIndex, ipVersion)
+		} else if isReserved(c) {
+			err = &addressStringIndexError{
+				addressStringError{addressError{str: fullAddr, key: "ipaddress.error.invalid.zone"}},
+				i}
+			return
+		}
+		if result.Cap() > 0 {
+			result.WriteByte(c)
+		}
+	}
+
+	if result.Len() == 0 {
+		zone = fullAddr[index:endIndex]
+	} else {
+		zone = result.String()
+	}
+
+	z := Zone(zone)
+	res.setZone(&z)
+	return
 }
