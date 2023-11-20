@@ -153,9 +153,27 @@ func (addrStr *IPAddressString) validate(validationOptions address_string_param.
 	addrStr.addressProvider, addrStr.validateError = validator.validateIPAddressStr(addrStr, validationOptions)
 }
 
-// Validate validates that this string is a valid IP address, returning nil, and if not, returns an error with a descriptive message indicating why it is not.
+// Validate validates that this string is a valid IP address, returning nil, and if not,
+// returns an error with a descriptive message indicating why it is not.
 func (addrStr *IPAddressString) Validate() address_error.AddressStringError {
 	return addrStr.init().validateError
+}
+
+func (addrStr *IPAddressString) getAddressProvider() (ipAddressProvider, address_error.AddressStringError) {
+	addrStr = addrStr.init()
+	err := addrStr.Validate()
+	return addrStr.addressProvider, err
+}
+
+// GetValidationOptions returns the validation options supplied when constructing this address string,
+// or the default options if no options were supplied.
+// It returns nil if no options were used to construct.
+func (addrStr *IPAddressString) GetValidationOptions() address_string_param.IPAddressStringParams {
+	provider, _ := addrStr.getAddressProvider()
+	if provider != nil {
+		return provider.getParameters()
+	}
+	return nil
 }
 
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
