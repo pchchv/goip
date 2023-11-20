@@ -14,6 +14,10 @@ type macAddressProvider interface {
 	getParameters() address_string_param.MACAddressStringParams // parameters of the address created by parsing
 }
 
+type macAddressNullProvider struct {
+	validationOptions address_string_param.MACAddressStringParams
+}
+
 type macAddressAllProvider struct {
 	validationOptions address_string_param.MACAddressStringParams
 	address           *MACAddress
