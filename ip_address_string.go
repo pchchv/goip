@@ -238,6 +238,18 @@ func (addrStr *IPAddressString) IsEmpty() bool {
 	return addrStr.IsValid() && addrStr.addressProvider.isProvidingEmpty()
 }
 
+// IsIPv4 returns true if the address is IPv4.
+func (addrStr *IPAddressString) IsIPv4() bool {
+	addrStr = addrStr.init()
+	return addrStr.IsValid() && addrStr.addressProvider.isProvidingIPv4()
+}
+
+// IsIPv6 returns true if the address is IPv6.
+func (addrStr *IPAddressString) IsIPv6() bool {
+	addrStr = addrStr.init()
+	return addrStr.IsValid() && addrStr.addressProvider.isProvidingIPv6()
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
