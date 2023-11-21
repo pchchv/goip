@@ -306,3 +306,19 @@ func splitIntoSequentialBlocks(lower, upper ExtendedIPSegmentSeries) (blocks []E
 		}
 	}
 }
+
+func spanWithPrefixBlocks(orig ExtendedIPSegmentSeries) (list []ExtendedIPSegmentSeries) {
+	iterator := orig.SequentialBlockIterator()
+	for iterator.HasNext() {
+		list = append(list, iterator.Next().SpanWithPrefixBlocks()...)
+	}
+	return list
+}
+
+func spanWithSequentialBlocks(orig ExtendedIPSegmentSeries) (list []ExtendedIPSegmentSeries) {
+	iterator := orig.SequentialBlockIterator()
+	for iterator.HasNext() {
+		list = append(list, iterator.Next())
+	}
+	return list
+}
