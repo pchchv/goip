@@ -28,3 +28,13 @@ func coverWithPrefixBlock(lower, upper ExtendedIPSegmentSeries) ExtendedIPSegmen
 	// all bits match, it's just a single address
 	return lower.ToPrefixBlockLen(lower.GetBitCount())
 }
+
+func getCoveringPrefixBlock(
+	first,
+	other ExtendedIPSegmentSeries) ExtendedIPSegmentSeries {
+	result := checkPrefixBlockContainment(first, other)
+	if result != nil {
+		return result
+	}
+	return applyOperatorToLowerUpper(first, other, false, coverWithPrefixBlockWrapped)[0]
+}
