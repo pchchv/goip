@@ -168,3 +168,20 @@ func splitIntoPrefixBlocks(lower, upper ExtendedIPSegmentSeries) (blocks []Exten
 		}
 	}
 }
+
+func wrapNonNilInSlice(result ExtendedIPSegmentSeries) []ExtendedIPSegmentSeries {
+	if result != nil {
+		return []ExtendedIPSegmentSeries{result}
+	}
+	return nil
+}
+
+// getSpanningPrefixBlocks returns the smallest set of prefix blocks
+// that spans both this and the supplied address or subnet.
+func getSpanningPrefixBlocks(first, other ExtendedIPSegmentSeries) []ExtendedIPSegmentSeries {
+	result := checkPrefixBlockContainment(first, other)
+	if result != nil {
+		return wrapNonNilInSlice(result)
+	}
+	return applyOperatorToLowerUpper(first, other, true, splitIntoPrefixBlocks)
+}
