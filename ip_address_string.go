@@ -296,6 +296,20 @@ func (addrStr *IPAddressString) GetAddress() *IPAddress {
 	return addr
 }
 
+// GetIPVersion returns the IP address version if this represents a valid IP address, otherwise it returns nil.
+func (addrStr *IPAddressString) GetIPVersion() IPVersion {
+	if addrStr.IsValid() {
+		return addrStr.addressProvider.getProviderIPVersion()
+	}
+	return IndeterminateIPVersion
+}
+
+// IsLoopback returns whether this address string represents a loopback address,  such as "::1" or "127.0.0.1".
+func (addrStr *IPAddressString) IsLoopback() bool {
+	val := addrStr.GetAddress()
+	return val != nil && val.IsLoopback()
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
