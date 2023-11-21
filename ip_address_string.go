@@ -250,6 +250,19 @@ func (addrStr *IPAddressString) IsIPv6() bool {
 	return addrStr.IsValid() && addrStr.addressProvider.isProvidingIPv6()
 }
 
+// IsMixedIPv6 returns whether the lower 4 bytes of the address string are represented as IPv4,
+// if this address string represents an IPv6 address.
+func (addrStr *IPAddressString) IsMixedIPv6() bool {
+	addrStr = addrStr.init()
+	return addrStr.IsIPv6() && addrStr.addressProvider.isProvidingMixedIPv6()
+}
+
+// IsBase85IPv6 returns whether this address string represents an IPv6 address,
+// returns whether the string was base 85.
+func (addrStr *IPAddressString) IsBase85IPv6() bool {
+	return addrStr.IsIPv6() && addrStr.addressProvider.isProvidingBase85IPv6()
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
