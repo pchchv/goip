@@ -310,6 +310,38 @@ func (addrStr *IPAddressString) IsLoopback() bool {
 	return val != nil && val.IsLoopback()
 }
 
+// IsZero returns whether this string represents an IP address whose value is exactly zero.
+func (addrStr *IPAddressString) IsZero() bool {
+	value := addrStr.GetAddress()
+	return value != nil && value.IsZero()
+}
+
+// ToVersionedAddress Produces the IPAddress of the specified address version corresponding to this IPAddressString.
+//
+// In most cases the string indicates the address version and calling ToAddress() is sufficient, with a few exceptions.
+//
+// When this object represents only a network prefix length,
+// specifying the address version allows the conversion to take place to the associated mask for that prefix length.
+//
+// When this object represents all addresses, specifying the address version allows the conversion to take place
+// to the associated representation of all IPv4 or all IPv6 addresses.
+//
+// When this object represents the empty string and that string is interpreted as a loopback or zero address, then it returns
+// the corresponding address for the given version.
+//
+// When this object represents an ipv4 or ipv6 address,
+// it returns that address if and only if that address matches the provided version.
+//
+// If the string used to construct this object is an invalid format,
+// or a format that does not match the provided version, then an error is returned.
+func (addrStr *IPAddressString) ToVersionedAddress(version IPVersion) (*IPAddress, address_error.AddressError) {
+	provider, err := addrStr.getAddressProvider()
+	if err != nil {
+		return nil, err
+	}
+	return provider.getVersionedAddress(version)
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
