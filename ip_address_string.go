@@ -263,6 +263,39 @@ func (addrStr *IPAddressString) IsBase85IPv6() bool {
 	return addrStr.IsIPv6() && addrStr.addressProvider.isProvidingBase85IPv6()
 }
 
+// ToAddress produces the IPAddress corresponding to this IPAddressString.
+//
+// If this object does not represent a specific IPAddress or a subnet, nil is returned.
+//
+// If the string used to construct this object is not a known format
+// (empty string, address, or range of addresses)
+// then this method returns an error.
+//
+// An equivalent method that does not return the error is GetAddress.
+//
+// If you have a prefixed address and you wish to get only
+// the host rather than the address with the prefix, use ToHostAddress.
+//
+// The error can be address_error.AddressStringError or address_error.IncompatibleAddressError
+func (addrStr *IPAddressString) ToAddress() (*IPAddress, address_error.AddressError) {
+	provider, err := addrStr.getAddressProvider()
+	if err != nil {
+		return nil, err
+	}
+	return provider.getProviderAddress()
+}
+
+// GetAddress returns the IP address if this IPAddressString is a valid string representing an IP address or subnet.
+// Otherwise, it returns nil.
+//
+// Use ToAddress for an equivalent method that returns an error when the format is invalid.
+//
+// If you have a prefixed address and you wish to get only the host without the prefix, use GetHostAddress.
+func (addrStr *IPAddressString) GetAddress() *IPAddress {
+	addr, _ := addrStr.ToAddress()
+	return addr
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
