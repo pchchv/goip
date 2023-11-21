@@ -205,6 +205,26 @@ func (addrStr *IPAddressString) IsPrefixed() bool {
 	return addrStr.getNetworkPrefixLen() != nil
 }
 
+// GetNetworkPrefixLen returns the associated network prefix length.
+//
+// If this address is a valid address with an associated network prefix length then
+// this returns that prefix length, otherwise returns nil.
+// The prefix length may be expressed explicitly with the notation "/xx" where xx is a decimal value,
+// or it may be expressed implicitly as a network mask such as "/255.255.0.0".
+func (addrStr *IPAddressString) GetNetworkPrefixLen() PrefixLen {
+	return addrStr.getNetworkPrefixLen().copy()
+}
+
+// GetMask returns the mask, if any,
+// that was provided with this address string.
+func (addrStr *IPAddressString) GetMask() *IPAddress {
+	addrStr = addrStr.init()
+	if addrStr.IsValid() {
+		return addrStr.addressProvider.getProviderMask()
+	}
+	return nil
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
