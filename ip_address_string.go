@@ -385,6 +385,46 @@ func (addrStr *IPAddressString) ToSequentialRange() (*IPAddressSeqRange, address
 	return provider.getProviderSeqRange(), nil
 }
 
+// GetSequentialRange returns the range of sequential addresses from the lowest address specified in this address string to the highest.
+//
+// Since not all IPAddressString instances describe a sequential series of addresses,
+// this does not necessarily match the exact set of addresses specified by the string.
+// For example, "1-2.3.4.1-2" produces the sequential range "1.3.4.1" to "2.3.4.2" that includes the address "1.255.255.2" not specified by the string.
+//
+// This method can also produce a range for a string for which no IPAddress instance can be created,
+// those cases where IsValid returns true but ToAddress returns address_error.IncompatibleAddressError and GetAddress returns nil.
+// The range cannot be produced for the other cases where GetAddress returns nil
+//
+// This is similar to ToSequentialRange except that ToSequentialRange provides a descriptive error when nil is returned.
+func (addrStr *IPAddressString) GetSequentialRange() (res *IPAddressSeqRange) {
+	res, _ = addrStr.ToSequentialRange()
+	return
+}
+
+// ValidateVersion validates that this string is a valid IP address of the given version.
+// If it is, it returns nil, otherwise it returns an error with a descriptive message indicating why it is not.
+func (addrStr *IPAddressString) ValidateVersion(version IPVersion) address_error.AddressStringError {
+	addrStr = addrStr.init()
+	err := addrStr.Validate()
+	if err != nil {
+		return err
+	} else if version.IsIndeterminate() {
+		return &addressStringError{addressError{str: addrStr.str, key: "ipaddress.error.ipVersionIndeterminate"}}
+	} else {
+		addrVersion := addrStr.addressProvider.getProviderIPVersion()
+		if version.IsIPv4() {
+			if addrVersion.IsIPv6() {
+				return &addressStringError{addressError{str: addrStr.str, key: "ipaddress.error.address.is.ipv6"}}
+			}
+		} else if version.IsIPv6() {
+			if addrVersion.IsIPv4() {
+				return &addressStringError{addressError{str: addrStr.str, key: "ipaddress.error.address.is.ipv4"}}
+			}
+		}
+	}
+	return nil
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
