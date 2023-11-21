@@ -1438,6 +1438,39 @@ func (addr *Address) fromKey(scheme addressScheme, key *keyContents) *Address {
 	return zeroAddr.init()
 }
 
+// TrieCompare compares two addresses according to address trie ordering.
+// It returns a number less than zero, zero,
+// or a number greater than zero if the first address argument is less than,
+// equal to, or greater than the second.
+//
+// The comparison is intended for individual addresses and CIDR prefix blocks.
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *Address) TrieCompare(other *Address) (int, address_error.IncompatibleAddressError) {
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		if oth := other.ToIPv4(); oth != nil {
+			return thisAddr.TrieCompare(oth), nil
+		}
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		if oth := other.ToIPv6(); oth != nil {
+			return thisAddr.TrieCompare(oth), nil
+		}
+	} else if thisAddr := addr.ToMAC(); thisAddr != nil {
+		if oth := other.ToMAC(); oth != nil {
+			return thisAddr.TrieCompare(oth)
+		}
+	}
+
+	if segmentCount, otherSegmentCount := addr.getDivisionCount(), other.getDivisionCount(); segmentCount == otherSegmentCount {
+		if bitsPerSegment, otherBitsPerSegment := addr.GetBitsPerSegment(), other.GetBitsPerSegment(); bitsPerSegment == otherBitsPerSegment {
+			return addr.trieCompare(other), nil
+		}
+	}
+	return 0, &incompatibleAddressError{addressError{key: "ipaddress.error.mismatched.bit.size"}}
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
