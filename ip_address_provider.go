@@ -490,6 +490,20 @@ func (all *allCreator) createAddrs() (addr *IPAddress, hostAddr *IPAddress, addr
 	return
 }
 
+func (all *allCreator) createRange() (rng *SequentialRange[*IPAddress]) {
+	rng, _, _, _, _ = all.createAll()
+	return
+}
+
+func (all *allCreator) getProviderHostAddress() (res *IPAddress, err address_error.IncompatibleAddressError) {
+	if !all.isProvidingIPAddress() {
+		return nil, nil
+	}
+
+	_, res, _, err = all.createAddrs()
+	return
+}
+
 func newMaskCreator(options address_string_param.IPAddressStringParams, adjustedVersion IPVersion, networkPrefixLength PrefixLen) *maskCreator {
 	if adjustedVersion == IndeterminateIPVersion {
 		adjustedVersion = IPVersion(options.GetPreferredVersion())
