@@ -182,6 +182,13 @@ type ipAddressStringIterator struct {
 	Iterator[string]
 }
 
+func (iter ipAddressStringIterator) Next() *IPAddressString {
+	if !iter.HasNext() {
+		return nil
+	}
+	return NewIPAddressString(iter.Iterator.Next())
+}
+
 func isDelimitedBoundary(c byte) bool {
 	return c == IPv4SegmentSeparator ||
 		c == IPv6SegmentSeparator ||
