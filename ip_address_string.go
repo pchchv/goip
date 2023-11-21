@@ -363,6 +363,28 @@ func (addrStr *IPAddressString) ToHostAddress() (*IPAddress, address_error.Addre
 	return provider.getProviderHostAddress()
 }
 
+// GetHostAddress parses the address while ignoring the prefix length or mask.
+// GetHostAddress returns nil for an invalid string.
+// If you wish to receive an error instead, use ToHostAddress.
+func (addrStr *IPAddressString) GetHostAddress() *IPAddress {
+	addr, _ := addrStr.ToHostAddress()
+	return addr
+}
+
+// ToSequentialRange returns the range of sequential addresses from
+// the lowest address specified in this address string to the highest.
+//
+// This is similar to GetSequentialRange except that
+// this method provides a descriptive error when nil is returned.
+// See GetSequentialRange for more details.
+func (addrStr *IPAddressString) ToSequentialRange() (*IPAddressSeqRange, address_error.AddressStringError) {
+	provider, err := addrStr.getAddressProvider()
+	if err != nil {
+		return nil, err
+	}
+	return provider.getProviderSeqRange(), nil
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
