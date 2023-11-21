@@ -477,6 +477,60 @@ func (addrStr *IPAddressString) Compare(other *IPAddressString) int {
 	return strings.Compare(addrStr.String(), other.String())
 }
 
+// Equal compares two IP address strings for equality.
+// Two IPAddressString objects are equal if they represent the same set of addresses.
+// Whether one or the other has an associated network prefix length is not considered.
+//
+// If an IPAddressString is invalid,
+// it is equal to another address only if the other address was constructed from the same string.
+func (addrStr *IPAddressString) Equal(other *IPAddressString) bool {
+	if addrStr == nil {
+		return other == nil
+	} else if other == nil {
+		return false
+	}
+
+	addrStr = addrStr.init()
+	other = other.init()
+	if other == addrStr {
+		return true
+	}
+	// if they have the same string, they must be the same,
+	// but the converse is not true, if they have different strings, they can
+	// still be the same because IPv6 addresses have many representations
+	// and additional things like leading zeros can have an effect for IPv4
+	//
+	// Also note that we do not call equals() on the validation options, this is intended as an optimization,
+	// and probably better to avoid going through all the validation objects here
+	stringsMatch := addrStr.String() == other.String()
+	if stringsMatch && addrStr.GetValidationOptions() == other.GetValidationOptions() {
+		return true
+	}
+
+	if addrStr.IsValid() {
+		if other.IsValid() {
+			directResult := addrStr.addressProvider.parsedEquals(other.addressProvider)
+			if directResult.isSet {
+				return directResult.val
+			}
+			// When a value provider produces no value, equality and comparison are based on the enum ipType
+			var err address_error.AddressError
+			addrProvider, err := addrStr.getAddressProvider()
+			if err != nil {
+				return stringsMatch
+			}
+			equals, err := addrProvider.providerEquals(other.addressProvider)
+			if err != nil {
+				return stringsMatch
+			}
+			return equals
+		}
+	} else if !other.IsValid() {
+		return stringsMatch // Two invalid addresses are not equal unless strings match, regardless of validation options
+	}
+	return false
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
