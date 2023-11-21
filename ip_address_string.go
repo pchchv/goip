@@ -425,6 +425,18 @@ func (addrStr *IPAddressString) ValidateVersion(version IPVersion) address_error
 	return nil
 }
 
+// ValidateIPv4 validates that this string is a valid IPv4 address, returning nil,
+// and if not, returns an error with a descriptive message indicating why it is not.
+func (addrStr *IPAddressString) ValidateIPv4() address_error.AddressStringError {
+	return addrStr.ValidateVersion(IPv4)
+}
+
+// ValidateIPv6 validates that this string is a valid IPv6 address, returning nil,
+// and if not, returns an error with a descriptive message indicating why it is not.
+func (addrStr *IPAddressString) ValidateIPv6() address_error.AddressStringError {
+	return addrStr.ValidateVersion(IPv6)
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
