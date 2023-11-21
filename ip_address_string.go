@@ -176,6 +176,35 @@ func (addrStr *IPAddressString) GetValidationOptions() address_string_param.IPAd
 	return nil
 }
 
+// IsValid returns whether this is a valid IP address string format.
+// The accepted IP address formats are:
+// an IPv4 address or subnet, an IPv6 address or subnet,
+// the address representing all addresses of both versions, or an empty string.
+// If this method returns false,
+// and you want more details,
+// call Validate and examine the error.
+func (addrStr *IPAddressString) IsValid() bool {
+	return addrStr.Validate() == nil
+}
+
+// If this address is a valid address with an associated network prefix length then
+// this returns that prefix length, otherwise returns nil.
+// The prefix length may be expressed explicitly with the notation "/xx" where xx is a decimal value,
+// or it may be expressed implicitly as a network mask such as "/255.255.0.0".
+func (addrStr *IPAddressString) getNetworkPrefixLen() PrefixLen {
+	addrStr = addrStr.init()
+	if addrStr.IsValid() {
+		return addrStr.addressProvider.getProviderNetworkPrefixLen()
+	}
+	return nil
+}
+
+// IsPrefixed returns whether this address string has an associated prefix length.
+// If so, the prefix length is given by GetNetworkPrefixLen.
+func (addrStr *IPAddressString) IsPrefixed() bool {
+	return addrStr.getNetworkPrefixLen() != nil
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
