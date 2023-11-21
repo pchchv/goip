@@ -185,3 +185,27 @@ func getSpanningPrefixBlocks(first, other ExtendedIPSegmentSeries) []ExtendedIPS
 	}
 	return applyOperatorToLowerUpper(first, other, true, splitIntoPrefixBlocks)
 }
+
+func checkSequentialBlockFormat(container, contained ExtendedIPSegmentSeries, checkEqual bool) (result ExtendedIPSegmentSeries) {
+	if !container.IsPrefixed() {
+		if container.IsSequential() {
+			result = container
+		}
+	} else if checkEqual && !contained.IsPrefixed() && container.CompareSize(contained) == 0 {
+		if contained.IsSequential() {
+			result = contained
+		}
+	} else if container.IsSequential() {
+		result = container.WithoutPrefixLen()
+	}
+	return
+}
+
+func checkSequentialBlockContainment(first, other ExtendedIPSegmentSeries) ExtendedIPSegmentSeries {
+	if first.Contains(other) {
+		return checkSequentialBlockFormat(first, other, true)
+	} else if other.Contains(first) {
+		return checkSequentialBlockFormat(other, first, false)
+	}
+	return nil
+}
