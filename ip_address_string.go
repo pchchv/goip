@@ -437,6 +437,46 @@ func (addrStr *IPAddressString) ValidateIPv6() address_error.AddressStringError 
 	return addrStr.ValidateVersion(IPv6)
 }
 
+// Compare compares this address string with another,
+// returning a negative number,
+// zero, or a positive number if this address string is less than,
+// equal to, or greater than the other.
+//
+// All address strings are comparable.
+// If two address strings are invalid, their strings are compared.
+// Otherwise, address strings are compared according to which type or version of string,
+// and then within each type or version
+// they are compared using the comparison rules for addresses.
+func (addrStr *IPAddressString) Compare(other *IPAddressString) int {
+	if addrStr == other {
+		return 0
+	} else if addrStr == nil {
+		return -1
+	} else if other == nil {
+		return 1
+	}
+
+	addrStr = addrStr.init()
+	other = other.init()
+	if addrStr == other {
+		return 0
+	}
+
+	if addrStr.IsValid() {
+		if other.IsValid() {
+			if res, err := addrStr.addressProvider.providerCompare(other.addressProvider); err == nil {
+				return res
+			}
+			// one or the other is nil, either empty or IncompatibleAddressException
+			return strings.Compare(addrStr.String(), other.String())
+		}
+		return 1
+	} else if other.IsValid() {
+		return -1
+	}
+	return strings.Compare(addrStr.String(), other.String())
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
