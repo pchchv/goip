@@ -342,6 +342,27 @@ func (addrStr *IPAddressString) ToVersionedAddress(version IPVersion) (*IPAddres
 	return provider.getVersionedAddress(version)
 }
 
+// GetVersionedAddress is similar to ToVersionedAddress,
+// but returns nil rather than an error when
+// the address is invalid or does not match the supplied version.
+func (addrStr *IPAddressString) GetVersionedAddress(version IPVersion) *IPAddress {
+	addr, _ := addrStr.ToVersionedAddress(version)
+	return addr
+}
+
+// ToHostAddress parses the address while ignoring the prefix length or mask.
+// The error can be address_error.AddressStringError for
+// invalid strings or address_error.IncompatibleAddressError.
+// GetHostAddress is similar but does not return errors.
+// Standard address formats do not result in errors.
+func (addrStr *IPAddressString) ToHostAddress() (*IPAddress, address_error.AddressError) {
+	provider, err := addrStr.getAddressProvider()
+	if err != nil {
+		return nil, err
+	}
+	return provider.getProviderHostAddress()
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
