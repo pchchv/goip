@@ -89,6 +89,12 @@ func (str DelimitedAddressString) ParseDelimitedSegments() Iterator[string] {
 	return newSingleStrIterator(s)
 }
 
+// ParseDelimitedIPAddrSegments will provide an iterator to iterate through the possible combinations,
+// given a string with comma delimiters to denote segment elements.
+func (str DelimitedAddressString) ParseDelimitedIPAddrSegments() Iterator[*IPAddressString] {
+	return ipAddressStringIterator{str.ParseDelimitedSegments()}
+}
+
 type delimitedStringsIterator struct {
 	parts      [][]string
 	done       bool
