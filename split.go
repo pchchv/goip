@@ -1,5 +1,11 @@
 package goip
 
+type seriesStack struct {
+	seriesPairs []ExtendedIPSegmentSeries
+	indexes     []int
+	bits        []BitCount
+}
+
 func checkPrefixBlockFormat(container, contained ExtendedIPSegmentSeries, checkEqual bool) (result ExtendedIPSegmentSeries) {
 	if container.IsPrefixed() && container.IsSinglePrefixBlock() {
 		result = container
