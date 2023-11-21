@@ -322,3 +322,11 @@ func spanWithSequentialBlocks(orig ExtendedIPSegmentSeries) (list []ExtendedIPSe
 	}
 	return list
 }
+
+func getSpanningSequentialBlocks(first, other ExtendedIPSegmentSeries) []ExtendedIPSegmentSeries {
+	result := checkSequentialBlockContainment(first, other)
+	if result != nil {
+		return wrapNonNilInSlice(result)
+	}
+	return applyOperatorToLowerUpper(first, other, true, splitIntoSequentialBlocks)
+}
