@@ -504,6 +504,22 @@ func (all *allCreator) getProviderHostAddress() (res *IPAddress, err address_err
 	return
 }
 
+func (all *allCreator) getProviderAddress() (res *IPAddress, err address_error.IncompatibleAddressError) {
+	if !all.isProvidingIPAddress() {
+		return
+	}
+
+	res, _, err, _ = all.createAddrs()
+	return
+}
+
+func (all *allCreator) getProviderSeqRange() *SequentialRange[*IPAddress] {
+	if all.isProvidingAllAddresses() {
+		return nil
+	}
+	return all.createRange()
+}
+
 func newMaskCreator(options address_string_param.IPAddressStringParams, adjustedVersion IPVersion, networkPrefixLength PrefixLen) *maskCreator {
 	if adjustedVersion == IndeterminateIPVersion {
 		adjustedVersion = IPVersion(options.GetPreferredVersion())
