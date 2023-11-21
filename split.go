@@ -1,6 +1,9 @@
 package goip
 
-import "math/bits"
+import (
+	"container/list"
+	"math/bits"
+)
 
 type seriesStack struct {
 	seriesPairs []ExtendedIPSegmentSeries
@@ -208,4 +211,98 @@ func checkSequentialBlockContainment(first, other ExtendedIPSegmentSeries) Exten
 		return checkSequentialBlockFormat(other, first, false)
 	}
 	return nil
+}
+
+func splitIntoSequentialBlocks(lower, upper ExtendedIPSegmentSeries) (blocks []ExtendedIPSegmentSeries) {
+	segCount := lower.GetDivisionCount()
+	if segCount == 0 {
+		return []ExtendedIPSegmentSeries{lower}
+	}
+
+	var popped bool
+	var segSegment int
+	var toAdd list.List
+	var stack seriesStack
+	var currentSegment int
+	var previousSegmentBits BitCount
+	var lowerValue, upperValue SegInt
+	bitsPerSegment := lower.GetBitsPerSegment()
+	blocks = make([]ExtendedIPSegmentSeries, 0, IPv6SegmentCount)
+	toAdd.Init()
+	for {
+		for {
+			segSegment = currentSegment
+			lowerSeg := lower.GetGenericSegment(currentSegment)
+			upperSeg := upper.GetGenericSegment(currentSegment)
+			currentSegment++
+			lowerValue = lowerSeg.GetSegmentValue() // these are single addresses, so lower or upper value no different here
+			upperValue = upperSeg.GetSegmentValue()
+			previousSegmentBits += bitsPerSegment
+			if lowerValue != upperValue || currentSegment >= segCount {
+				break
+			}
+		}
+
+		if lowerValue == upperValue {
+			blocks = append(blocks, lower)
+		} else {
+			lowerIsLowest := lower.IncludesZeroHostLen(previousSegmentBits)
+			higherIsHighest := upper.IncludesMaxHostLen(previousSegmentBits)
+			if lowerIsLowest {
+				if higherIsHighest {
+					// full range
+					series := lower.ToBlock(segSegment, lowerValue, upperValue)
+					blocks = append(blocks, series)
+				} else {
+					topLower, _ := upper.ToZeroHostLen(previousSegmentBits)
+					middleUpper := topLower.Increment(-1)
+					series := lower.ToBlock(segSegment, lowerValue, middleUpper.GetGenericSegment(segSegment).GetSegmentValue())
+					blocks = append(blocks, series)
+					lower = topLower
+					continue
+				}
+			} else if higherIsHighest {
+				bottomUpper, _ := lower.ToMaxHostLen(previousSegmentBits)
+				topLower := bottomUpper.Increment(1)
+				series := topLower.ToBlock(segSegment, topLower.GetGenericSegment(segSegment).GetSegmentValue(), upperValue)
+				toAdd.PushFront(series)
+				upper = bottomUpper
+				continue
+			} else {
+				// from top to bottom we have: top - topLower - middleUpper - middleLower - bottomUpper - lower
+				topLower, _ := upper.ToZeroHostLen(previousSegmentBits)
+				middleUpper := topLower.Increment(-1)
+				bottomUpper, _ := lower.ToMaxHostLen(previousSegmentBits)
+				middleLower := bottomUpper.Increment(1)
+				if LowValueComparator.CompareSeries(middleLower, middleUpper) <= 0 {
+					series := middleLower.ToBlock(
+						segSegment,
+						middleLower.GetGenericSegment(segSegment).GetSegmentValue(),
+						middleUpper.GetGenericSegment(segSegment).GetSegmentValue())
+					toAdd.PushFront(series)
+				}
+
+				stack.init(IPv6SegmentCount)
+
+				stack.push(topLower, upper, previousSegmentBits, currentSegment) // do this one later
+				upper = bottomUpper
+				continue
+			}
+		}
+
+		if toAdd.Len() != 0 {
+			for {
+				saved := toAdd.Front()
+				if saved == nil {
+					break
+				}
+				toAdd.Remove(saved)
+				blocks = append(blocks, saved.Value.(ExtendedIPSegmentSeries))
+			}
+		}
+
+		if popped, lower, upper, previousSegmentBits, currentSegment = stack.pop(); !popped {
+			return blocks
+		}
+	}
 }
