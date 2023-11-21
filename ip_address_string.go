@@ -225,6 +225,19 @@ func (addrStr *IPAddressString) GetMask() *IPAddress {
 	return nil
 }
 
+// IsAllAddresses returns true if the string represents all IP addresses, such as the string "*".
+// You can denote all IPv4 addresses with *.*, or all IPv6 addresses with *:*.
+func (addrStr *IPAddressString) IsAllAddresses() bool {
+	addrStr = addrStr.init()
+	return addrStr.IsValid() && addrStr.addressProvider.isProvidingAllAddresses()
+}
+
+// IsEmpty returns true if the address string is empty (zero-length).
+func (addrStr *IPAddressString) IsEmpty() bool {
+	addrStr = addrStr.init()
+	return addrStr.IsValid() && addrStr.addressProvider.isProvidingEmpty()
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
