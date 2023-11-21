@@ -1,5 +1,7 @@
 package goip
 
+import "math/bits"
+
 type seriesStack struct {
 	seriesPairs []ExtendedIPSegmentSeries
 	indexes     []int
@@ -100,4 +102,69 @@ func applyOperatorToLowerUpper(first, other ExtendedIPSegmentSeries, removePrefi
 		}
 	}
 	return operatorFunctor(lower, upper)
+}
+
+func splitIntoPrefixBlocks(lower, upper ExtendedIPSegmentSeries) (blocks []ExtendedIPSegmentSeries) {
+	var popped bool
+	var stack seriesStack
+	var currentSegment int
+	var previousSegmentBits BitCount
+	blocks = make([]ExtendedIPSegmentSeries, 0, IPv6BitCount)
+	segCount := lower.GetDivisionCount()
+	bitsPerSegment := lower.GetBitsPerSegment()
+
+	for {
+		// Find first non-matching bit.
+		var differing SegInt
+		for ; currentSegment < segCount; currentSegment++ {
+			lowerSeg := lower.GetGenericSegment(currentSegment)
+			upperSeg := upper.GetGenericSegment(currentSegment)
+			lowerValue := lowerSeg.GetSegmentValue() // these are single addresses, so lower or upper value no different here
+			upperValue := upperSeg.GetSegmentValue()
+			differing = lowerValue ^ upperValue
+			if differing != 0 {
+				break
+			}
+			previousSegmentBits += bitsPerSegment
+		}
+
+		if differing == 0 {
+			// all bits match, it's just a single address
+			blocks = append(blocks, lower.ToPrefixBlockLen(lower.GetBitCount()))
+		} else {
+			differingIsLowestBit := differing == 1
+			if differingIsLowestBit && currentSegment+1 == segCount {
+				// only the very last bit differs, so we have a prefix block right there
+				blocks = append(blocks, lower.ToPrefixBlockLen(lower.GetBitCount()-1))
+			} else {
+				highestDifferingBitInRange := BitCount(bits.LeadingZeros32(uint32(differing))) - (32 - bitsPerSegment)
+				differingBitPrefixLen := highestDifferingBitInRange + previousSegmentBits
+				if lower.IncludesZeroHostLen(differingBitPrefixLen) && upper.IncludesMaxHostLen(differingBitPrefixLen) {
+					// full range at the differing bit, we have a single prefix block
+					blocks = append(blocks, lower.ToPrefixBlockLen(differingBitPrefixLen))
+				} else {
+					// neither a prefix block nor a single address
+					// we split into two new ranges to continue
+					// starting from the differing bit,
+					// lower top becomes 1000000...
+					// upper bottom becomes 01111111...
+					// so in each new range, the differing bit is at least one further to the right (or more)
+					lowerTop, _ := upper.ToZeroHostLen(differingBitPrefixLen + 1)
+					upperBottom := lowerTop.Increment(-1)
+					if differingIsLowestBit {
+						previousSegmentBits += bitsPerSegment
+						currentSegment++
+					}
+					stack.init(int(IPv6BitCount))
+					stack.push(lowerTop, upper, previousSegmentBits, currentSegment) // do upper one later
+					upper = upperBottom                                              // do lower one now
+					continue
+				}
+			}
+		}
+
+		if popped, lower, upper, previousSegmentBits, currentSegment = stack.pop(); !popped {
+			return blocks
+		}
+	}
 }
