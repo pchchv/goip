@@ -225,6 +225,25 @@ func (host *HostName) GetMask() *IPAddress {
 	return nil
 }
 
+// IsLocalHost returns whether this host is "localhost".
+func (host *HostName) IsLocalHost() bool {
+	return host.IsValid() && strings.EqualFold(host.str, "localhost")
+}
+
+// IsLoopback returns whether this host has the loopback address,
+// such as "::1" or "127.0.0.1".
+//
+// Also see IsSelf.
+func (host *HostName) IsLoopback() bool {
+	return host.IsAddress() && host.AsAddress().IsLoopback()
+}
+
+// IsSelf returns whether this represents a host or address representing the same host.
+// Also see IsLocalHost and IsLoopback.
+func (host *HostName) IsSelf() bool {
+	return host.IsLocalHost() || host.IsLoopback()
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
