@@ -125,6 +125,32 @@ func (host *HostName) IsAddress() bool {
 	return false
 }
 
+// AsAddress returns the address if this host name represents an ip address.
+// Otherwise, this returns nil.
+// Note that the translation includes prefix lengths and IPv6 zones.
+//
+// This does not resolve addresses or return resolved addresses.
+// Call ToAddress or GetAddress to get the resolved address.
+//
+// In cases such as IPv6 literals and reverse-DNS hosts,
+// you can check the relevant methods isIpv6Literal or isReverseDNS,
+// in which case this method should return the associated address.
+func (host *HostName) AsAddress() *IPAddress {
+	if host.IsAddress() {
+		addr, _ := host.parsedHost.asAddress()
+		return addr
+	}
+	return nil
+}
+
+// IsAllAddresses returns whether this is
+// an IP address that represents the set all all valid IP addresses
+// (as opposed to an empty string, a specific address, or an invalid format).
+func (host *HostName) IsAllAddresses() bool {
+	host = host.init()
+	return host.IsValid() && host.parsedHost.getAddressProvider().isProvidingAllAddresses()
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
