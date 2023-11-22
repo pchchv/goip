@@ -151,6 +151,45 @@ func (host *HostName) IsAllAddresses() bool {
 	return host.IsValid() && host.parsedHost.getAddressProvider().isProvidingAllAddresses()
 }
 
+// GetPort returns the port if a port was supplied, otherwise it returns nil.
+func (host *HostName) GetPort() Port {
+	host = host.init()
+	if host.IsValid() {
+		return host.parsedHost.getPort().copy()
+	}
+	return nil
+}
+
+// GetNormalizedLabels returns an array of normalized strings for this host name instance.
+//
+// If this represents an IP address, the address segments are separated into the returned array.
+// If this represents a host name string, the domain name segments are separated into the returned array,
+// with the top-level domain name (right-most segment) as the last array element.
+//
+// The individual segment strings are normalized in the same way as ToNormalizedString.
+//
+// Ports, service name strings, prefix lengths, and masks are all omitted from the returned array.
+func (host *HostName) GetNormalizedLabels() []string {
+	host = host.init()
+	if host.IsValid() {
+		return host.parsedHost.getNormalizedLabels()
+	} else {
+		str := host.str
+		if len(str) == 0 {
+			return []string{}
+		}
+		return []string{str}
+	}
+}
+
+// IsEmpty returns true if the host name is empty (zero-length).
+func (host *HostName) IsEmpty() bool {
+	host = host.init()
+	return host.IsValid() &&
+		((host.IsAddressString() &&
+			host.parsedHost.getAddressProvider().isProvidingEmpty()) || len(host.GetNormalizedLabels()) == 0)
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
