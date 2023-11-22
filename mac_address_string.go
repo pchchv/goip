@@ -162,6 +162,19 @@ func (addrStr *MACAddressString) GetPrefixLen() PrefixLen {
 	return addrStr.getPrefixLen().copy()
 }
 
+// IsFullRange returns whether the address represents the
+// set of all valid MAC addresses for its address length
+func (addrStr *MACAddressString) IsFullRange() bool {
+	addr := addrStr.GetAddress()
+	return addr != nil && addr.IsFullRange()
+}
+
+// IsEmpty returns true if the address is empty (zero-length).
+func (addrStr *MACAddressString) IsEmpty() bool {
+	addr, err := addrStr.ToAddress()
+	return err == nil && addr == nil
+}
+
 func parseMACAddressString(str string, params address_string_param.MACAddressStringParams) *MACAddressString {
 	str = strings.TrimSpace(str)
 	res := &MACAddressString{str: str}
