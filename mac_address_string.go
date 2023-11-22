@@ -128,6 +128,24 @@ func (addrStr *MACAddressString) ToAddress() (*MACAddress, address_error.Address
 	return provider.getAddress()
 }
 
+// GetAddress returns the MAC address if this MACAddressString is
+// a valid string representing a MAC address or address collection.
+// Otherwise, it returns nil.
+//
+// Use ToAddress for an equivalent method that returns an error when the format is invalid.
+func (addrStr *MACAddressString) GetAddress() *MACAddress {
+	addr, _ := addrStr.ToAddress()
+	return addr
+}
+
+func (addrStr *MACAddressString) getPrefixLen() PrefixLen {
+	addr := addrStr.GetAddress()
+	if addr != nil {
+		return addr.getPrefixLen()
+	}
+	return nil
+}
+
 func parseMACAddressString(str string, params address_string_param.MACAddressStringParams) *MACAddressString {
 	str = strings.TrimSpace(str)
 	res := &MACAddressString{str: str}
