@@ -208,6 +208,23 @@ func (host *HostName) IsUncIPv6Literal() bool {
 	return host.IsValid() && host.parsedHost.isUNCIPv6Literal()
 }
 
+// IsReverseDNS returns whether this host name is a reverse-DNS string host name.
+func (host *HostName) IsReverseDNS() bool {
+	host = host.init()
+	return host.IsValid() && host.parsedHost.isReverseDNS()
+}
+
+// GetMask returns the resulting mask value if a mask was provided with this host name.
+func (host *HostName) GetMask() *IPAddress {
+	if host.IsValid() {
+		if host.parsedHost.isAddressString() {
+			return host.parsedHost.getAddressProvider().getProviderMask()
+		}
+		return host.parsedHost.getMask()
+	}
+	return nil
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
