@@ -146,6 +146,22 @@ func (addrStr *MACAddressString) getPrefixLen() PrefixLen {
 	return nil
 }
 
+// IsPrefixed returns whether this address has an associated prefix length,
+// which for MAC means that the string represents the set of all addresses with the same prefix.
+func (addrStr *MACAddressString) IsPrefixed() bool {
+	return addrStr.getPrefixLen() != nil
+}
+
+// GetPrefixLen returns the prefix length if this address is a prefixed address, otherwise it returns nil.
+//
+// For MAC addresses, the prefix is initially inferred from the range,
+// so "1:2:3:*:*:*" has a prefix length of 24.
+// Addresses derived from the original may retain
+// the original prefix length regardless of their range.
+func (addrStr *MACAddressString) GetPrefixLen() PrefixLen {
+	return addrStr.getPrefixLen().copy()
+}
+
 func parseMACAddressString(str string, params address_string_param.MACAddressStringParams) *MACAddressString {
 	str = strings.TrimSpace(str)
 	res := &MACAddressString{str: str}
