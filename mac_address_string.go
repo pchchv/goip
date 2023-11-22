@@ -55,6 +55,13 @@ type MACAddressString struct {
 	validateError   address_error.AddressStringError
 }
 
+func (addrStr *MACAddressString) init() *MACAddressString {
+	if addrStr.addressProvider == nil && addrStr.validateError == nil {
+		return zeroMACAddressString
+	}
+	return addrStr
+}
+
 // String implements the [fmt.Stringer] interface,
 // returning the original string used to create this MACAddressString
 // (altered by strings.TrimSpace),
@@ -68,6 +75,12 @@ func (addrStr *MACAddressString) String() string {
 
 func (addrStr *MACAddressString) validate(validationOptions address_string_param.MACAddressStringParams) {
 	addrStr.addressProvider, addrStr.validateError = validator.validateMACAddressStr(addrStr, validationOptions)
+}
+
+// Validate validates that this string is a valid address, and if not,
+// throws an exception with a descriptive message indicating why it is not.
+func (addrStr *MACAddressString) Validate() address_error.AddressStringError {
+	return addrStr.init().validateError
 }
 
 func parseMACAddressString(str string, params address_string_param.MACAddressStringParams) *MACAddressString {
