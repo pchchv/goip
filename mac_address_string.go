@@ -7,7 +7,10 @@ import (
 	"github.com/pchchv/goip/address_string_param"
 )
 
-var defaultMACAddrParameters = new(address_string_param.MACAddressStringParamsBuilder).ToParams()
+var (
+	zeroMACAddressString     = NewMACAddressString("")
+	defaultMACAddrParameters = new(address_string_param.MACAddressStringParamsBuilder).ToParams()
+)
 
 // MACAddressString parses the string representation of a MAC address.  Such a string can represent just a single address or a collection of addresses like "1:*:1-3:1-4:5:6".
 //
@@ -74,7 +77,26 @@ func parseMACAddressString(str string, params address_string_param.MACAddressStr
 	return res
 }
 
-// NewMACAddressString constructs a MACAddressString that will parse the given string according to the default parameters.
+// NewMACAddressString constructs a MACAddressString that will parse
+// the given string according to the default parameters.
 func NewMACAddressString(str string) *MACAddressString {
 	return parseMACAddressString(str, defaultMACAddrParameters)
+}
+
+func newMACAddressStringFromAddr(str string, addr *MACAddress) *MACAddressString {
+	return &MACAddressString{
+		str:             str,
+		addressProvider: wrappedMACAddressProvider{addr},
+	}
+}
+
+// NewMACAddressStringParams constructs a MACAddressString that will parse the given string according to the given parameters.
+func NewMACAddressStringParams(str string, params address_string_param.MACAddressStringParams) *MACAddressString {
+	var p address_string_param.MACAddressStringParams
+	if params == nil {
+		p = defaultMACAddrParameters
+	} else {
+		p = address_string_param.CopyMACAddressStringParams(params)
+	}
+	return parseMACAddressString(str, p)
 }
