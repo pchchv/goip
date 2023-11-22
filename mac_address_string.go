@@ -49,3 +49,18 @@ type MACAddressString struct {
 	addressProvider macAddressProvider
 	validateError   address_error.AddressStringError
 }
+
+// String implements the [fmt.Stringer] interface,
+// returning the original string used to create this MACAddressString
+// (altered by strings.TrimSpace),
+// or "<nil>" if the receiver is a nil pointer.
+func (addrStr *MACAddressString) String() string {
+	if addrStr == nil {
+		return nilString()
+	}
+	return addrStr.str
+}
+
+func (addrStr *MACAddressString) validate(validationOptions address_string_param.MACAddressStringParams) {
+	addrStr.addressProvider, addrStr.validateError = validator.validateMACAddressStr(addrStr, validationOptions)
+}
