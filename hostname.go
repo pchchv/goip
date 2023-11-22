@@ -54,12 +54,25 @@ type HostName struct {
 	*hostCache
 }
 
+func (host *HostName) init() *HostName {
+	if host.parsedHost == nil && host.validateError == nil { // the only way params can be nil is when str == "" as well
+		return zeroHost
+	}
+	return host
+}
+
 func (host *HostName) validate(validationOptions address_string_param.HostNameParams) {
 	parsed, validateError := validator.validateHostName(host, validationOptions)
 	if validateError != nil && parsed == nil {
 		parsed = &parsedHost{originalStr: host.str, params: validationOptions}
 	}
 	host.parsedHost, host.validateError = parsed, validateError
+}
+
+// Validate validates that this string is a valid address, and if not,
+// returns an error with a descriptive message indicating why it is not.
+func (host *HostName) Validate() address_error.HostNameError {
+	return host.init().validateError
 }
 
 // String implements the [fmt.Stringer] interface,
