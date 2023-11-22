@@ -210,3 +210,31 @@ top:
 	}
 	return list
 }
+
+func organizeSequentialMerge(sections []ExtendedIPSegmentSeries) (singleElement bool, list []ExtendedIPSegmentSeries) {
+	for i := 0; i < len(sections); i++ {
+		section := sections[i]
+		if section == nil {
+			continue
+		}
+
+		if section.IsSequential() {
+			list = append(list, section)
+		} else {
+			iterator := section.SequentialBlockIterator()
+			for iterator.HasNext() {
+				list = append(list, iterator.Next())
+			}
+		}
+	}
+
+	if len(list) == 1 {
+		singleElement = true
+		return
+	}
+
+	sort.Slice(list, func(i, j int) bool {
+		return LowValueComparator.CompareSeries(list[i], list[j]) < 0
+	})
+	return
+}
