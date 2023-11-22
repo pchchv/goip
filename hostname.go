@@ -190,6 +190,24 @@ func (host *HostName) IsEmpty() bool {
 			host.parsedHost.getAddressProvider().isProvidingEmpty()) || len(host.GetNormalizedLabels()) == 0)
 }
 
+// GetService returns the service name if a service name was supplied
+// (which is typically mapped to a port),
+// otherwise it returns an empty string.
+func (host *HostName) GetService() string {
+	host = host.init()
+	if host.IsValid() {
+		return host.parsedHost.getService()
+	}
+	return ""
+}
+
+// IsUncIPv6Literal returns whether this host name is
+// an Uniform Naming Convention IPv6 literal host name.
+func (host *HostName) IsUncIPv6Literal() bool {
+	host = host.init()
+	return host.IsValid() && host.parsedHost.isUNCIPv6Literal()
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
