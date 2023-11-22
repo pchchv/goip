@@ -760,6 +760,38 @@ func (section *IPv4AddressSection) AssignPrefixForSingleBlock() *IPv4AddressSect
 	return section.assignPrefixForSingleBlock().ToIPv4()
 }
 
+// Increment returns the item that is the given increment upwards into the range,
+// with the increment of 0 returning the first in the range.
+//
+// If the increment i matches or exceeds the range count c, then i - c + 1
+// is added to the upper item of the range.
+// An increment matching the count gives you the item just above the highest in the range.
+//
+// If the increment is negative, it is added to the lowest of the range.
+// To get the item just below the lowest of the range, use the increment -1.
+//
+// If this represents just a single value, the item is simply incremented by the given increment, positive or negative.
+//
+// If this item represents multiple values, a positive increment i is equivalent i + 1 values from the iterator and beyond.
+// For instance, a increment of 0 is the first value from the iterator, an increment of 1 is the second value from the iterator, and so on.
+// An increment of a negative value added to the count is equivalent to the same number of iterator values preceding the last value of the iterator.
+// For instance, an increment of count - 1 is the last value from the iterator, an increment of count - 2 is the second last value, and so on.
+//
+// On overflow or underflow, Increment returns nil.
+func (section *IPv4AddressSection) Increment(inc int64) *IPv4AddressSection {
+	if inc == 0 && !section.isMultiple() {
+		return section
+	}
+
+	count := section.GetIPv4Count()
+	lowerValue := uint64(section.Uint32Value())
+	upperValue := uint64(section.UpperUint32Value())
+	if checkOverflow(inc, lowerValue, upperValue, count-1, getIPv4MaxValueLong(section.GetSegmentCount())) {
+		return nil
+	}
+	return increment(section.ToSectionBase(), inc, ipv4Network.getIPAddressCreator(), count-1, lowerValue, upperValue, section.getLower, section.getUpper, section.getPrefixLen()).ToIPv4()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
