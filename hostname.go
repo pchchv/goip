@@ -1,6 +1,8 @@
 package goip
 
 import (
+	"strings"
+
 	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/address_string_param"
 )
@@ -10,6 +12,11 @@ const (
 	LabelSeparator   = '.'
 	IPv6StartBracket = '['
 	IPv6EndBracket   = ']'
+)
+
+var (
+	zeroHost              = NewHostName("")
+	defaultHostParameters = new(address_string_param.HostNameParamsBuilder).ToParams()
 )
 
 type resolveData struct {
@@ -64,4 +71,20 @@ func (host *HostName) String() string {
 		return nilString()
 	}
 	return host.str
+}
+
+func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
+	str = strings.TrimSpace(str)
+	res := &HostName{
+		str:       str,
+		hostCache: &hostCache{},
+	}
+	res.validate(params)
+	return res
+}
+
+// NewHostName constructs a HostName that will parse
+// the given string according to the default parameters.
+func NewHostName(str string) *HostName {
+	return parseHostName(str, defaultHostParameters)
 }
