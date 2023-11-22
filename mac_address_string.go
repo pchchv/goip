@@ -1,6 +1,8 @@
 package goip
 
 import (
+	"strings"
+
 	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/address_string_param"
 )
@@ -63,4 +65,16 @@ func (addrStr *MACAddressString) String() string {
 
 func (addrStr *MACAddressString) validate(validationOptions address_string_param.MACAddressStringParams) {
 	addrStr.addressProvider, addrStr.validateError = validator.validateMACAddressStr(addrStr, validationOptions)
+}
+
+func parseMACAddressString(str string, params address_string_param.MACAddressStringParams) *MACAddressString {
+	str = strings.TrimSpace(str)
+	res := &MACAddressString{str: str}
+	res.validate(params)
+	return res
+}
+
+// NewMACAddressString constructs a MACAddressString that will parse the given string according to the default parameters.
+func NewMACAddressString(str string) *MACAddressString {
+	return parseMACAddressString(str, defaultMACAddrParameters)
 }
