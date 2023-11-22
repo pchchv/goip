@@ -958,6 +958,47 @@ func (addr *IPAddress) SpanWithRange(other *IPAddress) *SequentialRange[*IPAddre
 	return NewSequentialRange(addr.init(), other)
 }
 
+// TrieCompare compares two addresses according to address trie ordering.
+// It returns a number less than zero, zero,
+// or a number greater than zero if the first address argument is less than,
+// equal to, or greater than the second.
+//
+// The comparison is intended for individual addresses and CIDR prefix blocks.
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *IPAddress) TrieCompare(other *IPAddress) (int, address_error.IncompatibleAddressError) {
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		if oth := other.ToIPv4(); oth != nil {
+			return thisAddr.TrieCompare(oth), nil
+		}
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		if oth := other.ToIPv6(); oth != nil {
+			return thisAddr.TrieCompare(oth), nil
+		}
+	}
+	return 0, &incompatibleAddressError{addressError{key: "ipaddress.error.mismatched.bit.size"}}
+}
+
+// ToKey creates the associated address key.
+// While addresses can be compared with the Compare,
+// TrieCompare or Equal methods as well as various provided instances of AddressComparator,
+// they are not comparable with Go operators.
+// However, AddressKey instances are comparable with Go operators,
+// and thus can be used as map keys.
+func (addr *IPAddress) ToKey() Key[*IPAddress] {
+	key := Key[*IPAddress]{}
+	contents := &key.keyContents
+	if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		key.scheme = ipv4Scheme
+		thisAddr.toIPv4Key(contents)
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		key.scheme = ipv6Scheme
+		thisAddr.toIPv6Key(contents)
+	} // else key.scheme == anySchemeX
+	return key
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
