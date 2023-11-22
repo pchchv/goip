@@ -103,6 +103,28 @@ func (addrStr HostName) Format(state fmt.State, verb rune) {
 	_, _ = state.Write([]byte(fmt.Sprintf(s, addrStr.str)))
 }
 
+// IsValid returns whether this represents a valid host name or IP address format.
+func (host *HostName) IsValid() bool {
+	return host.init().Validate() == nil
+}
+
+// IsAddressString returns whether this host name is
+// a string representing an IP address or subnet.
+func (host *HostName) IsAddressString() bool {
+	host = host.init()
+	return host.IsValid() && host.parsedHost.isAddressString()
+}
+
+// IsAddress returns whether this host name is
+// a string representing a valid specific IP address or subnet.
+func (host *HostName) IsAddress() bool {
+	if host.IsAddressString() {
+		addr, _ := host.init().parsedHost.asAddress()
+		return addr != nil
+	}
+	return false
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
