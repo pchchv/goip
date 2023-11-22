@@ -101,3 +101,19 @@ func parseHostName(str string, params address_string_param.HostNameParams) *Host
 func NewHostName(str string) *HostName {
 	return parseHostName(str, defaultHostParameters)
 }
+
+// NewHostNameParams constructs a HostName that will parse the given string according to the given parameters.
+func NewHostNameParams(str string, params address_string_param.HostNameParams) *HostName {
+	var prms address_string_param.HostNameParams
+	if params == nil {
+		prms = defaultHostParameters
+	} else {
+		prms = address_string_param.CopyHostNameParams(params)
+	}
+	return parseHostName(str, prms)
+}
+
+func toNormalizedPortString(port PortInt, builder *strings.Builder) {
+	builder.WriteByte(PortSeparator)
+	toUnsignedString(uint64(port), 10, builder)
+}
