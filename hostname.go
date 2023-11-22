@@ -1,6 +1,9 @@
 package goip
 
-import "github.com/pchchv/goip/address_error"
+import (
+	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string_param"
+)
 
 const (
 	PortSeparator    = ':'
@@ -42,4 +45,23 @@ type HostName struct {
 	parsedHost    *parsedHost
 	validateError address_error.HostNameError
 	*hostCache
+}
+
+func (host *HostName) validate(validationOptions address_string_param.HostNameParams) {
+	parsed, validateError := validator.validateHostName(host, validationOptions)
+	if validateError != nil && parsed == nil {
+		parsed = &parsedHost{originalStr: host.str, params: validationOptions}
+	}
+	host.parsedHost, host.validateError = parsed, validateError
+}
+
+// String implements the [fmt.Stringer] interface,
+// returning the original string used to create this HostName
+// (altered by strings.TrimSpace if a host name and not an address),
+// or "<nil>" if the receiver is a nil pointer.
+func (host *HostName) String() string {
+	if host == nil {
+		return nilString()
+	}
+	return host.str
 }
