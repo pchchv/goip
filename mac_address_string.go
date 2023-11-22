@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/pchchv/goip/address_error"
@@ -98,6 +99,33 @@ func (addrStr *MACAddressString) GetValidationOptions() address_string_param.MAC
 		return provider.getParameters()
 	}
 	return nil
+}
+
+// Format implements the [fmt.Formatter] interface.
+// It accepts the verbs hat are applicable to strings,
+// namely the verbs %s, %q, %x and %X.
+func (addrStr MACAddressString) Format(state fmt.State, verb rune) {
+	s := flagsFromState(state, verb)
+	_, _ = state.Write([]byte(fmt.Sprintf(s, addrStr.str)))
+}
+
+// ToAddress produces the MACAddress corresponding to this MACAddressString.
+//
+// If this object does not represent a specific MACAddress or address collection, nil is returned.
+//
+// If the string used to construct this object is not a known format
+// (empty string, address, or range of addresses) then this method returns an error.
+//
+// An equivalent method that does not return the error is GetAddress.
+//
+// The error can be address_error.AddressStringError for an invalid string,
+// or address_error.IncompatibleAddressError for non-standard strings that cannot be converted to MACAddress.
+func (addrStr *MACAddressString) ToAddress() (*MACAddress, address_error.AddressError) {
+	provider, err := addrStr.getAddressProvider()
+	if err != nil {
+		return nil, err
+	}
+	return provider.getAddress()
 }
 
 func parseMACAddressString(str string, params address_string_param.MACAddressStringParams) *MACAddressString {
