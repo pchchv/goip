@@ -999,6 +999,24 @@ func (addr *IPAddress) ToKey() Key[*IPAddress] {
 	return key
 }
 
+// ToGenericKey produces a generic Key[*IPAddress] that can be used with generic code working with
+// [Address], [IPAddress], [IPv4Address], [IPv6Address] and [MACAddress].
+func (addr *IPAddress) ToGenericKey() Key[*IPAddress] {
+	return addr.ToKey()
+}
+
+func (addr *IPAddress) fromKey(scheme addressScheme, key *keyContents) *IPAddress {
+	if scheme == ipv4Scheme {
+		ipv4Addr := fromIPv4IPKey(key)
+		return ipv4Addr.ToIP()
+	} else if scheme == ipv6Scheme {
+		ipv6Addr := fromIPv6IPKey(key)
+		return ipv6Addr.ToIP()
+	}
+	zeroAddr := IPAddress{}
+	return zeroAddr.init()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
