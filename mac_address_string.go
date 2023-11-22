@@ -175,6 +175,22 @@ func (addrStr *MACAddressString) IsEmpty() bool {
 	return err == nil && addr == nil
 }
 
+// IsZero returns whether this string represents a MAC address whose value is exactly zero.
+func (addrStr *MACAddressString) IsZero() bool {
+	addr := addrStr.GetAddress()
+	return addr != nil && addr.IsZero()
+}
+
+// IsValid returns whether this is a valid MAC address string format.
+// The accepted MAC address formats are:
+// a MAC address or address collection,
+// the address representing all MAC addresses, or an empty string.
+// If this method returns false, and you want more details,
+// call Validate and examine the error.
+func (addrStr *MACAddressString) IsValid() bool {
+	return addrStr.Validate() == nil
+}
+
 func parseMACAddressString(str string, params address_string_param.MACAddressStringParams) *MACAddressString {
 	str = strings.TrimSpace(str)
 	res := &MACAddressString{str: str}
