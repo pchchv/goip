@@ -117,3 +117,37 @@ func toNormalizedPortString(port PortInt, builder *strings.Builder) {
 	builder.WriteByte(PortSeparator)
 	toUnsignedString(uint64(port), 10, builder)
 }
+
+func newHostNameFromAddr(hostStr string, addr *IPAddress) *HostName {
+	parsedHost := parsedHost{
+		originalStr:     hostStr,
+		embeddedAddress: embeddedAddress{addressProvider: addr.getProvider()},
+	}
+	return &HostName{
+		str:        hostStr,
+		hostCache:  &hostCache{normalizedString: &hostStr},
+		parsedHost: &parsedHost,
+	}
+}
+
+func translateReserved(addr *IPv6Address, str string, builder *strings.Builder) {
+	// This is particularly targeted towards the zone
+	if !addr.HasZone() {
+		builder.WriteString(str)
+		return
+	}
+
+	var translated = builder
+	index := strings.IndexByte(str, IPv6ZoneSeparator)
+	translated.WriteString(str[0:index])
+	translated.WriteString("%25")
+	for i := index + 1; i < len(str); i++ {
+		c := str[i]
+		if isReserved(c) {
+			translated.WriteByte('%')
+			toUnsignedString(uint64(c), 16, translated)
+		} else {
+			translated.WriteByte(c)
+		}
+	}
+}
