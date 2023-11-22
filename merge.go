@@ -238,3 +238,163 @@ func organizeSequentialMerge(sections []ExtendedIPSegmentSeries) (singleElement 
 	})
 	return
 }
+
+func getMergedSequentialBlocks(sections []ExtendedIPSegmentSeries) []ExtendedIPSegmentSeries {
+	singleElement, list := organizeSequentialMerge(sections)
+	if singleElement {
+		list[0] = list[0].WithoutPrefixLen()
+		return list
+	}
+
+	removedCount := 0
+	j := len(list) - 1
+	i := j - 1
+	ithRangeSegmentIndex, jthRangeSegmentIndex := -1, -1
+top:
+	for j > 0 {
+		item := list[i]
+		otherItem := list[j]
+		compare := ReverseHighValueComparator.Compare(item, otherItem)
+		// check for strict containment, case 1:
+		// w   z
+		//  x y
+		if compare > 0 {
+			removedCount++
+			k := j + 1
+			for k < len(list) && list[k] == nil {
+				k++
+			}
+			if k < len(list) {
+				list[j] = list[k]
+				list[k] = nil
+				jthRangeSegmentIndex = -1
+			} else {
+				list[j] = nil
+				j = i
+				i--
+				jthRangeSegmentIndex = ithRangeSegmentIndex
+				ithRangeSegmentIndex = -1
+			}
+			continue
+		}
+		// non-strict containment, case 2:
+		// w   z
+		// w   z
+		//
+		// reverse containment, case 3:
+		// w  y
+		// w   z
+		rcompare := ReverseLowValueComparator.Compare(item, otherItem)
+		if rcompare >= 0 {
+			removedCount++
+			list[i] = otherItem
+			list[j] = nil
+			j = i
+			i--
+			jthRangeSegmentIndex = ithRangeSegmentIndex
+			ithRangeSegmentIndex = -1
+			continue
+		}
+
+		//check for overlap
+
+		if ithRangeSegmentIndex < 0 {
+			ithRangeSegmentIndex = item.GetSequentialBlockIndex()
+		}
+
+		if jthRangeSegmentIndex < 0 {
+			jthRangeSegmentIndex = otherItem.GetSequentialBlockIndex()
+		}
+
+		// check for overlap in the non-full range segment,
+		// which must be the same segment in both, otherwise it cannot be overlap,
+		// it can only be containment.
+		// The one with the earlier range segment can only contain the other, there cannot be overlap.
+		// eg 1.a-b.*.* and 1.2.3.* overlap in range segment 2 must have a <= 2 <= b and that means 1.a-b.*.* contains 1.2.3.*
+		if ithRangeSegmentIndex != jthRangeSegmentIndex {
+			j = i
+			i--
+			jthRangeSegmentIndex = ithRangeSegmentIndex
+			ithRangeSegmentIndex = -1
+			continue
+		}
+
+		rangeSegment := item.GetGenericSegment(ithRangeSegmentIndex)
+		otherRangeSegment := otherItem.GetGenericSegment(ithRangeSegmentIndex)
+		otherRangeItemValue := otherRangeSegment.GetSegmentValue()
+		rangeItemUpperValue := rangeSegment.GetUpperSegmentValue()
+
+		//check for overlapping range in the range segment
+		if rangeItemUpperValue < otherRangeItemValue && rangeItemUpperValue+1 != otherRangeItemValue {
+			j = i
+			i--
+			ithRangeSegmentIndex = -1
+			continue
+		}
+
+		// now check all previous segments match
+		for k := ithRangeSegmentIndex - 1; k >= 0; k-- {
+			itemSegment := item.GetGenericSegment(k)
+			otherItemSegment := otherItem.GetGenericSegment(k)
+			val := itemSegment.GetSegmentValue()
+			otherVal := otherItemSegment.GetSegmentValue()
+			if val != otherVal {
+				j = i
+				i--
+				ithRangeSegmentIndex = -1
+				continue top
+			}
+		}
+
+		upper := rangeItemUpperValue
+		otherUpper := otherRangeSegment.GetUpperSegmentValue()
+		if otherUpper > upper {
+			upper = otherUpper
+		}
+
+		joinedItem := item.ToBlock(ithRangeSegmentIndex, rangeSegment.GetSegmentValue(), upper)
+		list[i] = joinedItem
+		if joinedItem.GetGenericSegment(ithRangeSegmentIndex).IsFullRange() {
+			if ithRangeSegmentIndex == 0 {
+				list = list[:1]
+				list[i] = joinedItem
+				return list
+			}
+			ithRangeSegmentIndex--
+		}
+
+		removedCount++
+		k := j + 1
+		for k < len(list) && list[k] == nil {
+			k++
+		}
+
+		if k < len(list) {
+			list[j] = list[k]
+			list[k] = nil
+			jthRangeSegmentIndex = -1
+		} else {
+			list[j] = nil
+			j = i
+			i--
+			jthRangeSegmentIndex = ithRangeSegmentIndex
+			ithRangeSegmentIndex = -1
+		}
+	}
+
+	if removedCount > 0 {
+		newSize := len(list) - removedCount
+		for k, l := 0, 0; k < newSize; k, l = k+1, l+1 {
+			for list[l] == nil {
+				l++
+			}
+			list[k] = list[l].WithoutPrefixLen()
+		}
+		list = list[:newSize]
+	} else {
+		for n := 0; n < len(list); n++ {
+			list[n] = list[n].WithoutPrefixLen()
+		}
+	}
+	return list
+}
