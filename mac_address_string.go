@@ -83,6 +83,23 @@ func (addrStr *MACAddressString) Validate() address_error.AddressStringError {
 	return addrStr.init().validateError
 }
 
+func (addrStr *MACAddressString) getAddressProvider() (macAddressProvider, address_error.AddressStringError) {
+	addrStr = addrStr.init()
+	err := addrStr.Validate()
+	return addrStr.addressProvider, err
+}
+
+// GetValidationOptions returns the validation options supplied when constructing this address string,
+// or the default options if no options were supplied.
+// It returns nil if no parameters were used to construct the address.
+func (addrStr *MACAddressString) GetValidationOptions() address_string_param.MACAddressStringParams {
+	provider, _ := addrStr.getAddressProvider()
+	if provider != nil {
+		return provider.getParameters()
+	}
+	return nil
+}
+
 func parseMACAddressString(str string, params address_string_param.MACAddressStringParams) *MACAddressString {
 	str = strings.TrimSpace(str)
 	res := &MACAddressString{str: str}
