@@ -524,6 +524,50 @@ func (section *MACAddressSection) ReverseBits(perByte bool) (*MACAddressSection,
 	return res.ToMAC(), err
 }
 
+// Increment returns the item that is the given increment upwards into the range,
+// with the increment of 0 returning the first in the range.
+//
+// If the increment i matches or exceeds the range count c, then i - c + 1
+// is added to the upper item of the range.
+// An increment matching the count gives you the item just above the highest in the range.
+//
+// If the increment is negative, it is added to the lowest of the range.
+// To get the item just below the lowest of the range, use the increment -1.
+//
+// If this represents just a single value, the item is simply incremented by the given increment, positive or negative.
+//
+// If this item represents multiple values, a positive increment i is equivalent i + 1 values from the iterator and beyond.
+// For instance, a increment of 0 is the first value from the iterator, an increment of 1 is the second value from the iterator, and so on.
+// An increment of a negative value added to the count is equivalent to the same number of iterator values preceding the last value of the iterator.
+// For instance, an increment of count - 1 is the last value from the iterator, an increment of count - 2 is the second last value, and so on.
+//
+// On overflow or underflow, Increment returns nil.
+func (section *MACAddressSection) Increment(incrementVal int64) *MACAddressSection {
+	if incrementVal == 0 && !section.isMultiple() {
+		return section
+	}
+
+	count := section.GetCount()
+	lowerValue := section.Uint64Value()
+	segCount := section.GetSegmentCount()
+	upperValue := section.UpperUint64Value()
+	countMinus1 := count.Sub(count, bigOneConst()).Uint64()
+	if checkOverflow(incrementVal, lowerValue, upperValue, countMinus1, getMacMaxValueLong(segCount)) {
+		return nil
+	}
+
+	return increment(
+		section.ToSectionBase(),
+		incrementVal,
+		macNetwork.getAddressCreator(),
+		countMinus1,
+		section.Uint64Value(),
+		section.UpperUint64Value(),
+		section.addressSectionInternal.getLower,
+		section.addressSectionInternal.getUpper,
+		section.getPrefixLen()).ToMAC()
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
