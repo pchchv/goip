@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/pchchv/goip/address_error"
@@ -84,6 +85,22 @@ func (host *HostName) String() string {
 		return nilString()
 	}
 	return host.str
+}
+
+// GetValidationOptions returns the validation options supplied
+// when constructing the HostName,
+// or the default validation options if none were supplied.
+// It returns nil if no options were used to construct.
+func (host *HostName) GetValidationOptions() address_string_param.HostNameParams {
+	return host.init().parsedHost.params
+}
+
+// Format implements the [fmt.Formatter] interface.
+// It accepts the verbs hat are applicable to strings,
+// namely the verbs %s, %q, %x and %X.
+func (addrStr HostName) Format(state fmt.State, verb rune) {
+	s := flagsFromState(state, verb)
+	_, _ = state.Write([]byte(fmt.Sprintf(s, addrStr.str)))
 }
 
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
