@@ -1050,6 +1050,48 @@ func (section *IPv6AddressSection) AssignPrefixForSingleBlock() *IPv6AddressSect
 	return section.assignPrefixForSingleBlock().ToIPv6()
 }
 
+// Increment returns the item that is the given increment upwards into the range,
+// with the increment of 0 returning the first in the range.
+//
+// If the increment i matches or exceeds the range count c, then i - c + 1
+// is added to the upper item of the range.
+// An increment matching the count gives you the item just above the highest in the range.
+//
+// If the increment is negative, it is added to the lowest of the range.
+// To get the item just below the lowest of the range, use the increment -1.
+//
+// If this represents just a single value, the item is simply incremented by the given increment, positive or negative.
+//
+// If this item represents multiple values, a positive increment i is equivalent i + 1 values from the iterator and beyond.
+// For instance, a increment of 0 is the first value from the iterator, an increment of 1 is the second value from the iterator, and so on.
+// An increment of a negative value added to the count is equivalent to the same number of iterator values preceding the last value of the iterator.
+// For instance, an increment of count - 1 is the last value from the iterator, an increment of count - 2 is the second last value, and so on.
+//
+// On overflow or underflow, Increment returns nil.
+func (section *IPv6AddressSection) Increment(increment int64) *IPv6AddressSection {
+	if increment == 0 && !section.isMultiple() {
+		return section
+	}
+
+	var bigIncrement big.Int
+	count := section.GetCount()
+	bigIncrement.SetInt64(increment)
+	lowerValue := section.GetValue()
+	upperValue := section.GetUpperValue()
+	if checkOverflowBig(increment, &bigIncrement, lowerValue, upperValue, count, func() *big.Int { return getIPv6MaxValue(section.GetSegmentCount()) }) {
+		return nil
+	}
+
+	prefixLength := section.getPrefixLen()
+	result := fastIncrement(section.ToSectionBase(), increment, ipv6Network.getIPAddressCreator(), section.getLower, section.getUpper, prefixLength)
+	if result != nil {
+		return result.ToIPv6()
+	}
+
+	bigIncrement.SetInt64(increment)
+	return incrementBig(section.ToSectionBase(), increment, &bigIncrement, ipv6Network.getIPAddressCreator(), section.getLower, section.getUpper, prefixLength).ToIPv6()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
