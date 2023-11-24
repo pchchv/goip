@@ -268,3 +268,17 @@ func PartitionIpv6WithSpanningBlocks(newAddr *IPv6Address) *Partition[*IPv6Addre
 func PartitionIpv4WithSpanningBlocks(newAddr *IPv4Address) *Partition[*IPv4Address] {
 	return PartitionWithSpanningBlocks(newAddr)
 }
+
+// PartitionIPv6WithSingleBlockSize partitions the IPv6 address into prefix blocks and single addresses.
+//
+// This function is here for backwards compatibility, PartitionWithSingleBlockSize is recommended instead.
+func PartitionIPv6WithSingleBlockSize(newAddr *IPv6Address) *Partition[*IPv6Address] {
+	return PartitionWithSingleBlockSize(newAddr)
+}
+
+// PartitionIPv4WithSingleBlockSize partitions the IPv4 address into prefix blocks and single addresses.
+//
+// This function is here for backwards compatibility, PartitionWithSingleBlockSize is recommended instead.
+func PartitionIPv4WithSingleBlockSize(newAddr *IPv4Address) *Partition[*IPv4Address] {
+	return PartitionWithSingleBlockSize(newAddr)
+}
