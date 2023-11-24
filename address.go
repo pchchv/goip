@@ -1511,6 +1511,36 @@ func (addr *Address) TrieCompare(other *Address) (int, address_error.Incompatibl
 	return 0, &incompatibleAddressError{addressError{key: "ipaddress.error.mismatched.bit.size"}}
 }
 
+// Contains returns whether this is the same type and version as
+// the given address or subnet and whether
+// it contains all addresses in the given address or subnet.
+func (addr *Address) Contains(other AddressType) bool {
+	if addr == nil {
+		return other == nil || other.ToAddressBase() == nil
+	}
+	return addr.init().contains(other)
+}
+
+// Compare returns a negative integer, zero,
+// or a positive integer if this address or subnet is less than, equal,
+// or greater than the given item.
+// Any address item is comparable to any other.
+// All address items use CountComparator to compare.
+func (addr *Address) Compare(item AddressItem) int {
+	return CountComparator.Compare(addr, item)
+}
+
+// Equal returns whether the given address or subnet is equal to this address or subnet.
+// Two address instances are equal if they represent the same set of addresses.
+func (addr *Address) Equal(other AddressType) bool {
+	if addr == nil {
+		return other == nil || other.ToAddressBase() == nil
+	} else if other.ToAddressBase() == nil {
+		return false
+	}
+	return addr.init().equals(other)
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
