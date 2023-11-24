@@ -170,3 +170,39 @@ func ApplyForEach[T GenericKeyConstraint[T], V any](part *Partition[T], action f
 	}
 	return results
 }
+
+// PartitionWithSpanningBlocks partitions the address series into prefix blocks and single addresses.
+//
+// This method iterates through a list of prefix blocks of different sizes that span the entire subnet.
+func PartitionWithSpanningBlocks[T SpanPartitionConstraint[T]](newAddr T) *Partition[T] {
+	if !newAddr.IsMultiple() {
+		if !newAddr.IsPrefixed() {
+			return &Partition[T]{
+				original:  newAddr,
+				single:    newAddr,
+				hasSingle: true,
+				count:     bigOneConst(),
+			}
+		}
+		return &Partition[T]{
+			original:  newAddr,
+			single:    newAddr.WithoutPrefixLen(),
+			hasSingle: true,
+			count:     bigOneConst(),
+		}
+	} else if newAddr.IsSinglePrefixBlock() {
+		return &Partition[T]{
+			original:  newAddr,
+			single:    newAddr,
+			hasSingle: true,
+			count:     bigOneConst(),
+		}
+	}
+
+	blocks := newAddr.SpanWithPrefixBlocks()
+	return &Partition[T]{
+		original: newAddr,
+		iterator: &sliceIterator[T]{blocks},
+		count:    big.NewInt(int64(len(blocks))),
+	}
+}
