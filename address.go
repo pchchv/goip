@@ -816,6 +816,46 @@ func (addr *addressInternal) trieCompare(other *Address) int {
 	}
 }
 
+func (addr *addressInternal) contains(other AddressType) bool {
+	if other == nil {
+		return true
+	}
+
+	otherAddr := other.ToAddressBase()
+	if addr.toAddress() == otherAddr || otherAddr == nil {
+		return true
+	}
+
+	otherSection := otherAddr.GetSection()
+	if addr.section == nil {
+		return otherSection.GetSegmentCount() == 0
+	}
+	return addr.section.Contains(otherSection) &&
+		// if it is IPv6 and has a zone, then it does not contain addresses from other zones
+		addr.isSameZone(otherAddr)
+}
+
+func (addr *addressInternal) equals(other AddressType) bool {
+	if other == nil {
+		return false
+	}
+
+	otherAddr := other.ToAddressBase()
+	if addr.toAddress() == otherAddr {
+		return true
+	} else if otherAddr == nil {
+		return false
+	}
+
+	otherSection := otherAddr.GetSection()
+	if addr.section == nil {
+		return otherSection.GetSegmentCount() == 0
+	}
+	return addr.section.Equal(otherSection) &&
+		// if it it is IPv6 and has a zone, then it does not equal addresses from other zones
+		addr.isSameZone(otherAddr)
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
