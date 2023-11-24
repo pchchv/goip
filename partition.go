@@ -254,3 +254,17 @@ func PartitionWithSingleBlockSize[T IteratePartitionConstraint[T]](newAddr T) *P
 		count:    newAddr.GetCount(),
 	}
 }
+
+// PartitionIpv6WithSpanningBlocks partitions the IPv6 address into prefix blocks and single addresses.
+//
+// This function is here for backwards compatibility, PartitionWithSpanningBlocks is recommended instead.
+func PartitionIpv6WithSpanningBlocks(newAddr *IPv6Address) *Partition[*IPv6Address] {
+	return PartitionWithSpanningBlocks(newAddr)
+}
+
+// PartitionIpv4WithSpanningBlocks partitions the IPv4 address into prefix blocks and single addresses.
+//
+// This function is here for backwards compatibility, PartitionWithSpanningBlocks is recommended instead.
+func PartitionIpv4WithSpanningBlocks(newAddr *IPv4Address) *Partition[*IPv4Address] {
+	return PartitionWithSpanningBlocks(newAddr)
+}
