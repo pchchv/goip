@@ -861,6 +861,50 @@ func (rng *SequentialRange[T]) ToKey() SequentialRangeKey[T] {
 	return newSequentialRangeKey(rng.init())
 }
 
+// PrefixIterator provides an iterator to iterate through the individual prefixes of the given prefix length in this address range,
+// each iterated element spanning the range of values for its prefix.
+//
+// It is similar to the prefix block iterator, except for possibly the first and last iterated elements, which might not be prefix blocks,
+// instead constraining themselves to values from this range.
+//
+// Since a range between two arbitrary addresses cannot always be represented with a single IPAddress instance,
+// the returned iterator iterates through SequentialRange instances.
+//
+// For instance, if iterating from "1.2.3.4" to "1.2.4.5" with prefix 8, the range shares the same prefix of value 1,
+// but the range cannot be represented by the address "1.2.3-4.4-5" which does not include "1.2.3.255" or "1.2.4.0" both of which are in the original range.
+// Nor can the range be represented by "1.2.3-4.0-255" which includes "1.2.4.6" and "1.2.3.3", both of which were not in the original range.
+// A SequentialRange is thus required to represent that prefixed range.
+func (rng *SequentialRange[T]) PrefixIterator(prefLength BitCount) Iterator[*SequentialRange[T]] {
+	rng = rng.init()
+	lower := rng.lower
+	if !rng.isMultiple {
+		return &singleIterator[*SequentialRange[T]]{original: rng}
+	}
+	prefLength = checkSubnet(lower, prefLength)
+	return &sequRangeIterator[T]{
+		rng:                 rng,
+		creator:             newSequRange[T],
+		prefixBlockIterator: rng.PrefixBlockIterator(prefLength),
+		prefixLength:        prefLength,
+	}
+}
+
+// Contains returns whether this range contains all addresses in the given address or subnet.
+func (rng *SequentialRange[T]) Contains(other IPAddressType) bool {
+	if rng == nil {
+		return other == nil || other.ToAddressBase() == nil
+	} else if other == nil {
+		return true
+	}
+	otherAddr := other.ToIP()
+	if otherAddr == nil {
+		return true
+	}
+	rng = rng.init()
+	return compareLowIPAddressValues(otherAddr.GetLower(), rng.lower) >= 0 &&
+		compareLowIPAddressValues(otherAddr.GetUpper(), rng.upper) <= 0
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
