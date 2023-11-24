@@ -2,6 +2,15 @@ package goip
 
 import "math/big"
 
+var (
+	_ SpanPartitionConstraint[*IPAddress]
+	_ SpanPartitionConstraint[*IPv4Address]
+	_ SpanPartitionConstraint[*IPv6Address]
+	_ SpanPartitionConstraint[*IPAddressSection]
+	_ SpanPartitionConstraint[*IPv4AddressSection]
+	_ SpanPartitionConstraint[*IPv6AddressSection]
+)
+
 // MappedPartition is a mapping from the address types in a [Partition] to values of a generic type V.
 type MappedPartition[T GenericKeyConstraint[T], V any] map[Key[T]]V
 
@@ -101,4 +110,11 @@ func (part *Partition[T]) PredicateForEachEarly(predicate func(T) bool) bool {
 // The method returns when one application of the predicate returns true (determining the overall result)
 func (part *Partition[T]) PredicateForAnyEarly(predicate func(T) bool) bool {
 	return part.predicateForAny(predicate, true)
+}
+
+// SpanPartitionConstraint is the generic type constraint for IP subnet spanning partitions.
+type SpanPartitionConstraint[T any] interface {
+	AddressDivisionSeries
+	PrefixedConstraint[T]
+	SpanWithPrefixBlocks() []T
 }
