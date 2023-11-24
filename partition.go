@@ -18,3 +18,35 @@ type Partition[T any] struct {
 	iterator  Iterator[T]
 	count     *big.Int
 }
+
+// ForEach calls the given action on each partition element.
+func (part *Partition[T]) ForEach(action func(T)) {
+	if part.iterator == nil {
+		if part.hasSingle {
+			part.hasSingle = false
+			action(part.single)
+		}
+	} else {
+		iterator := part.iterator
+		for iterator.HasNext() {
+			action(iterator.Next())
+		}
+		part.iterator = nil
+	}
+}
+
+// Iterator provides an iterator to iterate through each element of the partition.
+func (part *Partition[T]) Iterator() Iterator[T] {
+	if part.iterator == nil {
+		if part.hasSingle {
+			part.hasSingle = false
+			res := &singleIterator[T]{original: part.single}
+			return res
+		}
+		return nil
+	}
+
+	res := part.iterator
+	part.iterator = nil
+	return res
+}
