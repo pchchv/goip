@@ -19,6 +19,12 @@ var (
 	_ IteratePartitionConstraint[*IPv4AddressSection]
 	_ IteratePartitionConstraint[*IPv6AddressSection]
 	_ IteratePartitionConstraint[*MACAddressSection]
+
+	_ MappedPartition[*Address, any]     = ApplyForEach[*Address, any](nil, nil)
+	_ MappedPartition[*IPAddress, any]   = ApplyForEach[*IPAddress, any](nil, nil)
+	_ MappedPartition[*IPv4Address, any] = ApplyForEach[*IPv4Address, any](nil, nil)
+	_ MappedPartition[*IPv6Address, any] = ApplyForEach[*IPv6Address, any](nil, nil)
+	_ MappedPartition[*MACAddress, any]  = ApplyForEach[*MACAddress, any](nil, nil)
 )
 
 // MappedPartition is a mapping from the address types in a [Partition] to values of a generic type V.
@@ -136,4 +142,31 @@ type IteratePartitionConstraint[T any] interface {
 	AssignMinPrefixForBlock() T
 	PrefixBlockIterator() Iterator[T]
 	Iterator() Iterator[T]
+}
+
+// ApplyForEachConditionally supplies to the given function each element of the given partition,
+// inserting return values into the returned map as directed.  When the action returns true as the second return value,
+// then the other return value is added to the map.
+func ApplyForEachConditionally[T GenericKeyConstraint[T], V any](part *Partition[T], action func(T) (V, bool)) MappedPartition[T, V] {
+	results := make(map[Key[T]]V)
+	if action != nil && part != nil {
+		part.ForEach(func(addr T) {
+			if result, ok := action(addr); ok {
+				results[addr.ToGenericKey()] = result
+			}
+		})
+	}
+	return results
+}
+
+// ApplyForEach supplies to the given function each element of the given partition,
+// inserting return values into the returned map.
+func ApplyForEach[T GenericKeyConstraint[T], V any](part *Partition[T], action func(T) V) MappedPartition[T, V] {
+	results := make(map[Key[T]]V)
+	if action != nil && part != nil {
+		part.ForEach(func(addr T) {
+			results[addr.ToGenericKey()] = action(addr)
+		})
+	}
+	return results
 }
