@@ -1246,3 +1246,39 @@ func joinRanges[T SequentialRangeConstraint[T]](ranges []*SequentialRange[T]) []
 	ret := ranges[:finalLen]
 	return ret
 }
+
+// NewIPSeqRange creates an IP sequential range from the given addresses.
+// It is here for backwards compatibility. NewSequentialRange is recommended instead.
+// If the type of T is *IPAddress and the versions of lower and upper do not match (one is IPv4, one IPv6), then nil is returned.
+// Otherwise, the range is returned.
+func NewIPSeqRange(lower, upper *IPAddress) *SequentialRange[*IPAddress] { // for backwards compatibility
+	if lower == nil && upper == nil {
+		lower = zeroIPAddr
+	} else if lower != nil && upper != nil {
+		if lower.getAddrType() != upper.getAddrType() {
+			// when both are zero-type, we do not go in here
+			// but if only one is, we return nil.  zero-type is "indeterminate", so we cannot "infer" a different version for it
+			// However, nil is the absence of a version/type so we can and do
+			return nil
+		}
+	}
+	return newSequRange(lower, upper)
+}
+
+// NewIPv4SeqRange creates an IPv4 sequential range from the given addresses.
+// It is here for backwards compatibility. NewSequentialRange is recommended instead.
+func NewIPv4SeqRange(lower, upper *IPv4Address) *SequentialRange[*IPv4Address] { // for backwards compatibility
+	if lower == nil && upper == nil {
+		lower = zeroIPv4
+	}
+	return newSequRange(lower, upper)
+}
+
+// NewIPv6SeqRange creates an IPv6 sequential range from the given addresses.
+// It is here for backwards compatibility. NewSequentialRange is recommended instead.
+func NewIPv6SeqRange(lower, upper *IPv6Address) *SequentialRange[*IPv6Address] { // for backwards compatibility
+	if lower == nil && upper == nil {
+		lower = zeroIPv6
+	}
+	return newSequRange(lower, upper)
+}
