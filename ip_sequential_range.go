@@ -941,6 +941,61 @@ func (rng *SequentialRange[T]) Equal(other IPAddressSeqRangeType) bool {
 	return rng.lower.Equal(otherRange.GetLower()) && rng.upper.Equal(otherRange.GetUpper())
 }
 
+// ToIP converts to a SequentialRange[*IPAddress],
+// a polymorphic type usable with all IP address sequential ranges.
+//
+// ToIP can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (rng *SequentialRange[T]) ToIP() *SequentialRange[*IPAddress] {
+	if rng != nil {
+		if ip, ok := any(rng).(*SequentialRange[*IPAddress]); ok {
+			return ip
+		}
+		return newSequRangeUnchecked(rng.GetLower().ToIP(), rng.GetUpper().ToIP(), rng.isMultiple)
+	}
+	return nil
+}
+
+// ToIPv4 converts to a SequentialRange[*IPv4Address] if this address range is an IPv4 address range.
+// If not, ToIPv4 returns nil.
+//
+// ToIPv4 can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (rng *SequentialRange[T]) ToIPv4() *SequentialRange[*IPv4Address] {
+	if rng != nil {
+		if ipv4, ok := any(rng).(*SequentialRange[*IPv4Address]); ok {
+			return ipv4
+		} else {
+			t := any(rng.GetLower())
+			if addr, ok := t.(*IPAddress); ok && addr.IsIPv4() {
+				t = any(rng.GetUpper())
+				return newSequRangeUnchecked(addr.ToIPv4(), t.(*IPAddress).ToIPv4(), rng.isMultiple)
+			}
+		}
+	}
+	return nil
+}
+
+// ToIPv6 converts to a SequentialRange[*IPv6Address] if this address range is an IPv6 address range.
+// If not, ToIPv6 returns nil.
+//
+// ToIPv6 can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (rng *SequentialRange[T]) ToIPv6() *SequentialRange[*IPv6Address] {
+	if rng != nil {
+		if ipv6, ok := any(rng).(*SequentialRange[*IPv6Address]); ok {
+			return ipv6
+		} else {
+			t := any(rng.GetLower())
+			if addr, ok := t.(*IPAddress); ok && addr.IsIPv6() {
+				t = any(rng.GetUpper())
+				return newSequRangeUnchecked(addr.ToIPv6(), t.(*IPAddress).ToIPv6(), rng.isMultiple)
+			}
+		}
+	}
+	return nil
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
