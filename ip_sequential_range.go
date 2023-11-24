@@ -997,6 +997,14 @@ func (rng *SequentialRange[T]) ToIPv6() *SequentialRange[*IPv6Address] {
 	return nil
 }
 
+// Join joins the receiver with the given ranges into the fewest number of ranges.
+// The returned array will be sorted by ascending lowest range value.
+// Nil ranges are tolerated, and ignored.
+func (rng *SequentialRange[T]) Join(ranges ...*SequentialRange[T]) []*SequentialRange[T] {
+	ranges = append(append(make([]*SequentialRange[T], 0, len(ranges)+1), ranges...), rng)
+	return joinRanges(ranges)
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
