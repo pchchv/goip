@@ -6,6 +6,7 @@ import (
 	"math/bits"
 	"net"
 	"net/netip"
+	"sort"
 	"strings"
 	"unsafe"
 )
@@ -1159,4 +1160,81 @@ func getPrefixLenForSingleBlock(lower, upper DivInt, bitCount BitCount) PrefixLe
 		}
 	}
 	return nil
+}
+
+func joinRanges[T SequentialRangeConstraint[T]](ranges []*SequentialRange[T]) []*SequentialRange[T] {
+	// nil entries are automatic joins
+	joinedCount := 0
+	rangesLen := len(ranges)
+	for i, j := 0, rangesLen-1; i <= j; i++ {
+		if ranges[i] == nil {
+			joinedCount++
+			for ranges[j] == nil && j > i {
+				j--
+				joinedCount++
+			}
+			if j > i {
+				ranges[i] = ranges[j]
+				ranges[j] = nil
+				j--
+			}
+		}
+	}
+
+	rangesLen = rangesLen - joinedCount
+	ranges = ranges[:rangesLen]
+	joinedCount = 0
+	sort.Slice(ranges, func(i, j int) bool {
+		return LowValueComparator.CompareRanges(ranges[i], ranges[j]) < 0
+	})
+	for i := 0; i < rangesLen; {
+		rng := ranges[i]
+		currentLower, currentUpper := rng.GetLower(), rng.GetUpper()
+		var isMultiJoin, didJoin bool
+		j := i + 1
+		for ; j < rangesLen; j++ {
+			rng2 := ranges[j]
+			nextLower := rng2.GetLower()
+			doJoin := compareLowIPAddressValues(currentUpper, nextLower) >= 0
+			if !doJoin && nextLower.GetIPVersion().Equal(currentUpper.GetIPVersion()) {
+				doJoin = currentUpper.Increment(1).Equal(nextLower)
+				isMultiJoin = true
+			}
+			if doJoin {
+				//Join them
+				joinedCount++
+				nextUpper := rng2.GetUpper()
+				if compareLowIPAddressValues(currentUpper, nextUpper) < 0 {
+					currentUpper = nextUpper
+				}
+				ranges[j] = nil
+				isMultiJoin = isMultiJoin || rng.isMultiple || rng2.isMultiple
+				didJoin = true
+			} else {
+				break
+			}
+		}
+		if didJoin {
+			ranges[i] = newSequRangeUnchecked(currentLower, currentUpper, isMultiJoin)
+		}
+		i = j
+	}
+
+	finalLen := rangesLen - joinedCount
+	if finalLen > 0 {
+		for i, j := 0, 0; ; i++ {
+			rng := ranges[i]
+			if rng == nil {
+				continue
+			}
+			ranges[j] = rng
+			j++
+			if j >= finalLen {
+				break
+			}
+		}
+	}
+
+	ret := ranges[:finalLen]
+	return ret
 }
