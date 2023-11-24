@@ -905,6 +905,42 @@ func (rng *SequentialRange[T]) Contains(other IPAddressType) bool {
 		compareLowIPAddressValues(otherAddr.GetUpper(), rng.upper) <= 0
 }
 
+// ContainsRange returns whether all the addresses in the given sequential range are also contained in this sequential range.
+func (rng *SequentialRange[T]) ContainsRange(other IPAddressSeqRangeType) bool {
+	if rng == nil {
+		return other == nil || other.ToIP() == nil
+	} else if other == nil {
+		return true
+	}
+
+	rng = rng.init()
+	otherRange := other.ToIP()
+	if otherRange == nil {
+		return true
+	}
+
+	return compareLowIPAddressValues(otherRange.GetLower(), rng.lower) >= 0 &&
+		compareLowIPAddressValues(otherRange.GetUpper(), rng.upper) <= 0
+}
+
+// Equal returns whether the given sequential address range is equal to this sequential address range.
+// Two sequential address ranges are equal if their lower and upper range boundaries are equal.
+func (rng *SequentialRange[T]) Equal(other IPAddressSeqRangeType) bool {
+	if rng == nil {
+		return other == nil || other.ToIP() == nil
+	} else if other == nil {
+		return false
+	}
+
+	rng = rng.init()
+	otherRange := other.ToIP()
+	if otherRange == nil {
+		return false
+	}
+
+	return rng.lower.Equal(otherRange.GetLower()) && rng.upper.Equal(otherRange.GetUpper())
+}
+
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
 
