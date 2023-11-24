@@ -50,3 +50,27 @@ func (part *Partition[T]) Iterator() Iterator[T] {
 	part.iterator = nil
 	return res
 }
+
+func (part *Partition[T]) predicateForEach(predicate func(T) bool, returnEarly bool) bool {
+	if part.iterator == nil {
+		return predicate(part.single)
+	}
+
+	result := true
+	iterator := part.iterator
+	for iterator.HasNext() {
+		if !predicate(iterator.Next()) {
+			result = false
+			if returnEarly {
+				break
+			}
+		}
+	}
+	return result
+}
+
+// PredicateForEach applies the supplied predicate operation to each element of the partition,
+// returning true if they all return true, false otherwise
+func (part *Partition[T]) PredicateForEach(predicate func(T) bool) bool {
+	return part.predicateForEach(predicate, false)
+}
