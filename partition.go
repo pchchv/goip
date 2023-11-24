@@ -2,6 +2,9 @@ package goip
 
 import "math/big"
 
+// MappedPartition is a mapping from the address types in a [Partition] to values of a generic type V.
+type MappedPartition[T GenericKeyConstraint[T], V any] map[Key[T]]V
+
 // Partition is a collection of items (such as addresses)
 // partitioned from an original item (such as a subnet).
 // Much like an iterator,
