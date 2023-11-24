@@ -74,3 +74,15 @@ func (part *Partition[T]) predicateForEach(predicate func(T) bool, returnEarly b
 func (part *Partition[T]) PredicateForEach(predicate func(T) bool) bool {
 	return part.predicateForEach(predicate, false)
 }
+
+func (part *Partition[T]) predicateForAny(predicate func(address T) bool, returnEarly bool) bool {
+	return !part.predicateForEach(func(addr T) bool {
+		return !predicate(addr)
+	}, returnEarly)
+}
+
+// PredicateForAny applies the supplied predicate operation to each element of the partition,
+// returning true if the given predicate returns true for any of the elements.
+func (part *Partition[T]) PredicateForAny(predicate func(T) bool) bool {
+	return part.predicateForAny(predicate, false)
+}
