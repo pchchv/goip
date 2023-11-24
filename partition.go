@@ -206,3 +206,51 @@ func PartitionWithSpanningBlocks[T SpanPartitionConstraint[T]](newAddr T) *Parti
 		count:    big.NewInt(int64(len(blocks))),
 	}
 }
+
+// PartitionWithSingleBlockSize partitions the address series into prefix blocks and single addresses.
+//
+// This method chooses the maximum block size for a list of prefix blocks contained by the address or subnet,
+// and then iterates to produce blocks of that size.
+func PartitionWithSingleBlockSize[T IteratePartitionConstraint[T]](newAddr T) *Partition[T] {
+	if !newAddr.IsMultiple() {
+		if !newAddr.IsPrefixed() {
+			return &Partition[T]{
+				original:  newAddr,
+				single:    newAddr,
+				hasSingle: true,
+				count:     bigOneConst(),
+			}
+		}
+		return &Partition[T]{
+			original:  newAddr,
+			single:    newAddr.WithoutPrefixLen(),
+			hasSingle: true,
+			count:     bigOneConst(),
+		}
+	} else if newAddr.IsSinglePrefixBlock() {
+		return &Partition[T]{
+			original:  newAddr,
+			single:    newAddr,
+			hasSingle: true,
+			count:     bigOneConst(),
+		}
+	}
+
+	// prefix blocks are handled as prefix blocks,
+	// such as 1.2.*.*, which is handled as prefix block iterator for 1.2.0.0/16,
+	// but 1.2.3-4.5 is handled as iterator with no prefix lengths involved
+	series := newAddr.AssignMinPrefixForBlock()
+	if series.GetPrefixLen().bitCount() != newAddr.GetBitCount() {
+		return &Partition[T]{
+			original: newAddr,
+			iterator: series.PrefixBlockIterator(),
+			count:    series.GetPrefixCountLen(series.GetPrefixLen().bitCount()),
+		}
+	}
+
+	return &Partition[T]{
+		original: newAddr,
+		iterator: newAddr.WithoutPrefixLen().Iterator(),
+		count:    newAddr.GetCount(),
+	}
+}
