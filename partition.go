@@ -9,6 +9,16 @@ var (
 	_ SpanPartitionConstraint[*IPAddressSection]
 	_ SpanPartitionConstraint[*IPv4AddressSection]
 	_ SpanPartitionConstraint[*IPv6AddressSection]
+
+	_ IteratePartitionConstraint[*Address]
+	_ IteratePartitionConstraint[*IPAddress]
+	_ IteratePartitionConstraint[*IPv4Address]
+	_ IteratePartitionConstraint[*IPv6Address]
+	_ IteratePartitionConstraint[*MACAddress]
+	_ IteratePartitionConstraint[*IPAddressSection]
+	_ IteratePartitionConstraint[*IPv4AddressSection]
+	_ IteratePartitionConstraint[*IPv6AddressSection]
+	_ IteratePartitionConstraint[*MACAddressSection]
 )
 
 // MappedPartition is a mapping from the address types in a [Partition] to values of a generic type V.
@@ -117,4 +127,13 @@ type SpanPartitionConstraint[T any] interface {
 	AddressDivisionSeries
 	PrefixedConstraint[T]
 	SpanWithPrefixBlocks() []T
+}
+
+// IteratePartitionConstraint is the generic type constraint for IP subnet and IP section iteration partitions.
+type IteratePartitionConstraint[T any] interface {
+	AddressDivisionSeries
+	PrefixedConstraint[T]
+	AssignMinPrefixForBlock() T
+	PrefixBlockIterator() Iterator[T]
+	Iterator() Iterator[T]
 }
