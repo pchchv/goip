@@ -86,3 +86,19 @@ func (part *Partition[T]) predicateForAny(predicate func(address T) bool, return
 func (part *Partition[T]) PredicateForAny(predicate func(T) bool) bool {
 	return part.predicateForAny(predicate, false)
 }
+
+// PredicateForEachEarly applies the supplied predicate operation to each element of the partition,
+// returning false if the given predicate returns false for any of the elements.
+//
+// The method returns when one application of the predicate returns false (determining the overall result)
+func (part *Partition[T]) PredicateForEachEarly(predicate func(T) bool) bool {
+	return part.predicateForEach(predicate, false)
+}
+
+// PredicateForAnyEarly applies the supplied predicate operation to each element of the partition,
+// returning true if the given predicate returns true for any of the elements.
+//
+// The method returns when one application of the predicate returns true (determining the overall result)
+func (part *Partition[T]) PredicateForAnyEarly(predicate func(T) bool) bool {
+	return part.predicateForAny(predicate, true)
+}
