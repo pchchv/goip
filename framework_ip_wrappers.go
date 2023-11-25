@@ -321,6 +321,22 @@ func (section WrappedIPAddressSection) Equal(other ExtendedIPSegmentSeries) bool
 	return ok && section.IPAddressSection.Equal(s)
 }
 
+// ToIPv4 converts to an IPv4AddressSegmentSeries if this section originated as an IPv4 section.
+// If not, ToIPv4 returns nil.
+//
+// ToIPv4 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (section WrappedIPAddressSection) ToIPv4() IPv4AddressSegmentSeries {
+	return section.IPAddressSection.ToIPv4()
+}
+
+// ToIPv6 converts to an IPv6AddressSegmentSeries if this section originated as an IPv6 section.
+// If not, ToIPv6 returns nil.
+//
+// ToIPv6 can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
+func (section WrappedIPAddressSection) ToIPv6() IPv6AddressSegmentSeries {
+	return section.IPAddressSection.ToIPv6()
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }

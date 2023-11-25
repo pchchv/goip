@@ -18,6 +18,7 @@ var (
 		&SequentialRange[*IPv4Address]{},
 		&SequentialRange[*IPv6Address]{}
 )
+var _, _, _ IPAddressSeqRangeType = &SequentialRange[*IPAddress]{}, &SequentialRange[*IPv4Address]{}, &SequentialRange[*IPv6Address]{}
 
 // AddressComponent represents all addresses, address sections and address segments.
 type AddressComponent interface { //AddressSegment and above, AddressSegmentSeries and above
