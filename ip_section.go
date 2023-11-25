@@ -1715,6 +1715,44 @@ func (section *IPAddressSection) IncrementBoundary(increment int64) *IPAddressSe
 	return section.incrementBoundary(increment).ToIP()
 }
 
+// Increment returns the item that is the given increment upwards into the range,
+// with the increment of 0 returning the first in the range.
+//
+// If the increment i matches or exceeds the range count c, then i - c + 1
+// is added to the upper item of the range.
+// An increment matching the count gives you the item just above the highest in the range.
+//
+// If the increment is negative, it is added to the lowest of the range.
+// To get the item just below the lowest of the range, use the increment -1.
+//
+// If this represents just a single value, the item is simply incremented by the given increment, positive or negative.
+//
+// If this item represents multiple values, a positive increment i is equivalent i + 1 values from the iterator and beyond.
+// For instance, a increment of 0 is the first value from the iterator, an increment of 1 is the second value from the iterator, and so on.
+// An increment of a negative value added to the count is equivalent to the same number of iterator values preceding the last value of the iterator.
+// For instance, an increment of count - 1 is the last value from the iterator, an increment of count - 2 is the second last value, and so on.
+//
+// On overflow or underflow, Increment returns nil.
+func (section *IPAddressSection) Increment(increment int64) *IPAddressSection {
+	return section.increment(increment).ToIP()
+}
+
+// SpanWithPrefixBlocks returns an array of prefix blocks that spans the same set of individual address sections as this section.
+//
+// Unlike SpanWithPrefixBlocksTo, the result only includes blocks that are a part of this section.
+func (section *IPAddressSection) SpanWithPrefixBlocks() []*IPAddressSection {
+	if section.IsSequential() {
+		if section.IsSinglePrefixBlock() {
+			return []*IPAddressSection{section}
+		}
+		wrapped := wrapIPSection(section)
+		spanning := getSpanningPrefixBlocks(wrapped, wrapped)
+		return cloneToIPSections(spanning)
+	}
+	wrapped := wrapIPSection(section)
+	return cloneToIPSections(spanWithPrefixBlocks(wrapped))
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
