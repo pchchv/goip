@@ -1354,6 +1354,25 @@ func (section *ipAddressSectionInternal) spanWithSequentialBlocks() []ExtendedIP
 	return spanWithSequentialBlocks(wrapped)
 }
 
+func (section *ipAddressSectionInternal) coverWithPrefixBlockTo(other *IPAddressSection) (*IPAddressSection, address_error.SizeMismatchError) {
+	if err := section.checkSectionCount(other); err != nil {
+		return nil, err
+	}
+
+	res := getCoveringPrefixBlock(
+		wrapIPSection(section.toIPAddressSection()),
+		wrapIPSection(other))
+	return res.(WrappedIPAddressSection).IPAddressSection, nil
+}
+
+func (section *ipAddressSectionInternal) toCustomString(stringOptions address_string.IPStringOptions) string {
+	return toNormalizedIPZonedString(stringOptions, section.toIPAddressSection(), NoZone)
+}
+
+func (section *ipAddressSectionInternal) toCustomZonedString(stringOptions address_string.IPStringOptions, zone Zone) string {
+	return toNormalizedIPZonedString(stringOptions, section.toIPAddressSection(), zone)
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
