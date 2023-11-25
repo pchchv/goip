@@ -28,7 +28,7 @@ const (
 )
 
 var (
-// CountComparator compares by count first, then by value.
+	// CountComparator compares by count first, then by value.
 	CountComparator = AddressComparator{countComparator{}}
 	// HighValueComparator compares by high value first, then low, then count.
 	HighValueComparator = AddressComparator{valueComparator{compareHighValue: true}}
@@ -277,6 +277,37 @@ func (comp AddressComparator) CompareDivisions(one, two DivisionType) int {
 		}
 	}
 
+	return compComp.compareLargeValues(one.GetUpperValue(), one.GetValue(), two.GetUpperValue(), two.GetValue())
+}
+
+// CompareRanges compares any two IP address sequential ranges
+// (including from different IP versions).
+// It returns a negative integer, zero,
+// or a positive integer if address item one is less than, equal,
+// or greater than address item two.
+func (comp AddressComparator) CompareRanges(one, two IPAddressSeqRangeType) int {
+	oneIsNil, r1Type, r1 := checkRangeTypeX(one)
+	twoIsNil, r2Type, r2 := checkRangeTypeX(two)
+	if oneIsNil {
+		if twoIsNil {
+			return 0
+		}
+		return -1
+	} else if twoIsNil {
+		return 1
+	}
+
+	result := r1Type - r2Type
+	if result != 0 {
+		return int(result)
+	}
+
+	compComp := comp.getCompComp()
+	if r1Type == ipv4rangetype { // avoid using the large values
+		r1ipv4 := r1.ToIPv4()
+		r2ipv4 := r2.ToIPv4()
+		return compComp.compareValues(uint64(r1ipv4.GetUpper().Uint32Value()), uint64(r1ipv4.GetLower().Uint32Value()), uint64(r2ipv4.GetUpper().Uint32Value()), uint64(r2ipv4.GetLower().Uint32Value()))
+	}
 	return compComp.compareLargeValues(one.GetUpperValue(), one.GetValue(), two.GetUpperValue(), two.GetValue())
 }
 
