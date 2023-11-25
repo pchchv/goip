@@ -1661,6 +1661,39 @@ func (section *IPAddressSection) ReverseBytes() (*IPAddressSection, address_erro
 	return res.ToIP(), err
 }
 
+// Compare returns a negative integer, zero, or a positive integer if this address section is less than, equal, or greater than the given item.
+// Any address item is comparable to any other.  All address items use CountComparator to compare.
+func (section *IPAddressSection) Compare(item AddressItem) int {
+	return CountComparator.Compare(section, item)
+}
+
+// CompareSize compares the counts of two address sections or other items, the number of individual items represented.
+//
+// Rather than calculating counts with GetCount, there can be more efficient ways of determining whether this section represents more individual address sections than another item.
+//
+// CompareSize returns a positive integer if this address section has a larger count than the item given, zero if they are the same, or a negative integer if the other has a larger count.
+func (section *IPAddressSection) CompareSize(other AddressItem) int {
+	if section == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// we have size 0, other has size >= 1
+		return -1
+	}
+	return section.compareSize(other)
+}
+
+// PrefixIterator provides an iterator to iterate through the individual prefixes of this address section,
+// each iterated element spanning the range of values for its prefix.
+//
+// It is similar to the prefix block iterator, except for possibly the first and last iterated elements, which might not be prefix blocks,
+// instead constraining themselves to values from this address section.
+//
+// If the series has no prefix length, then this is equivalent to Iterator.
+func (section *IPAddressSection) PrefixIterator() Iterator[*IPAddressSection] {
+	return ipSectionIterator{section.prefixIterator(false)}
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
