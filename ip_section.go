@@ -1213,6 +1213,128 @@ func (section *ipAddressSectionInternal) intersect(other *IPAddressSection) (res
 	return
 }
 
+func (section *ipAddressSectionInternal) subtract(other *IPAddressSection) (res []*IPAddressSection, err address_error.SizeMismatchError) {
+	// check if they are comparable section
+	err = section.checkSectionCount(other)
+	if err != nil {
+		return
+	}
+
+	// Since this is only called from IPv4 and IPv6, we need not check section versions or types here
+	if !section.isMultiple() {
+		if other.Contains(section.toIPAddressSection()) {
+			return
+		}
+		res = []*IPAddressSection{section.toIPAddressSection()}
+		return
+	}
+	//getDifference: same as removing the intersection
+	//   section you confirm there is an intersection in each segment.
+	// Then you remove each intersection, one at a time, leaving the other segments the same, since only one segment needs to differ.
+	// To prevent adding the same section twice, use only the intersection (ie the relative complement of the diff)
+	// of segments already handled and not the whole segment.
+	//
+	// For example: 0-3.0-3.2.4 subtracting 1-4.1-3.2.4, the intersection is 1-3.1-3.2.4
+	// The diff of the section segment is just 0, giving 0.0-3.2.4 (subtract the section segment, leave the others the same)
+	// The diff of the second segment is also 0, but for the section segment we use the intersection since we handled the section already, giving 1-3.0.2.4
+	// 	(take the intersection of the section segment, subtract the second segment, leave remaining segments the same)
+	segCount := section.GetSegmentCount()
+	for i := 0; i < segCount; i++ {
+		seg := section.GetSegment(i)
+		otherSeg := other.GetSegment(i)
+		lower := seg.GetSegmentValue()
+		higher := seg.getUpperSegmentValue()
+		otherLower := otherSeg.GetSegmentValue()
+		otherHigher := otherSeg.getUpperSegmentValue()
+		if otherLower > higher || lower > otherHigher {
+			// no overlap in this segment means no overlap at all
+			res = []*IPAddressSection{section.toIPAddressSection()}
+			return
+		}
+	}
+
+	// As we create each section, the initial segments created by us will have no prefix,
+	// the trailing segments come from the original section, so the resulting section will have prefix-consistent segments.
+	// We do not care what that prefix length is, because at the end of this method we assign a new prefix.
+	// We just need to be sure that we create a valid section, one with prefix-consistent segments.
+	intersections := createSegmentArray(segCount)
+	sections := make([]*IPAddressSection, 0, segCount<<1)
+	for i := 0; i < segCount; i++ {
+		seg := section.GetSegment(i)
+		otherSeg := other.GetSegment(i)
+		lower := seg.GetSegmentValue()
+		higher := seg.getUpperSegmentValue()
+		otherLower := otherSeg.GetSegmentValue()
+		otherHigher := otherSeg.getUpperSegmentValue()
+		if lower >= otherLower {
+			if higher <= otherHigher {
+				// this segment is contained in the other
+				if seg.isPrefixed() {
+					intersections[i] = createAddressDivision(seg.deriveNewMultiSeg(lower, higher, nil))
+				} else {
+					intersections[i] = seg.ToDiv()
+				}
+				continue
+			}
+			//otherLower <= lower <= otherHigher < higher
+			intersections[i] = createAddressDivision(seg.deriveNewMultiSeg(lower, otherHigher, nil))
+			section := section.createDiffSection(seg, otherHigher+1, higher, i, intersections)
+			sections = append(sections, section)
+		} else {
+			//lower < otherLower <= otherHigher
+			section := section.createDiffSection(seg, lower, otherLower-1, i, intersections)
+			sections = append(sections, section)
+			if higher <= otherHigher {
+				intersections[i] = createAddressDivision(seg.deriveNewMultiSeg(otherLower, higher, nil))
+			} else {
+				//lower < otherLower <= otherHigher < higher
+				intersections[i] = createAddressDivision(seg.deriveNewMultiSeg(otherLower, otherHigher, nil))
+				section = section.createDiffSection(seg, otherHigher+1, higher, i, intersections)
+				sections = append(sections, section)
+			}
+		}
+	}
+
+	if len(sections) == 0 {
+		return
+	}
+
+	// apply the prefix to the sections
+	// for each section, we figure out what each prefix length should be
+	if section.isPrefixed() {
+		thisPrefix := section.getNetworkPrefixLen().bitCount()
+		for i := 0; i < len(sections); i++ {
+			section := sections[i]
+			bitCount := section.GetBitCount()
+			totalPrefix := bitCount
+			for j := section.GetSegmentCount() - 1; j >= 0; j-- {
+				seg := section.GetSegment(j)
+				segBitCount := seg.GetBitCount()
+				segPrefix := seg.GetMinPrefixLenForBlock()
+				if segPrefix == segBitCount {
+					break
+				} else {
+					totalPrefix -= segBitCount
+					if segPrefix != 0 {
+						totalPrefix += segPrefix
+						break
+					}
+				}
+			}
+			if totalPrefix != bitCount {
+				if totalPrefix < thisPrefix {
+					totalPrefix = thisPrefix
+				}
+				section = section.SetPrefixLen(totalPrefix)
+				sections[i] = section
+			}
+		}
+	}
+
+	res = sections
+	return
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
