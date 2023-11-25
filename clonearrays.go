@@ -27,3 +27,13 @@ func copyTo[T any, U any](dest []U, orig []T, conv func(T) U) {
 	}
 	return
 }
+
+func cloneToIPSections(orig []ExtendedIPSegmentSeries) []*IPAddressSection {
+	return cloneTo(orig, func(a ExtendedIPSegmentSeries) *IPAddressSection { return a.(WrappedIPAddressSection).IPAddressSection })
+}
+
+func cloneToIPv4Sections(orig []ExtendedIPSegmentSeries) []*IPv4AddressSection {
+	return cloneTo(orig, func(a ExtendedIPSegmentSeries) *IPv4AddressSection {
+		return a.(WrappedIPAddressSection).IPAddressSection.ToIPv4()
+	})
+}
