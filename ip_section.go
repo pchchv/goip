@@ -1335,6 +1335,25 @@ func (section *ipAddressSectionInternal) subtract(other *IPAddressSection) (res 
 	return
 }
 
+func (section *ipAddressSectionInternal) spanWithPrefixBlocks() []ExtendedIPSegmentSeries {
+	wrapped := wrapIPSection(section.toIPAddressSection())
+	if section.IsSequential() {
+		if section.IsSinglePrefixBlock() {
+			return []ExtendedIPSegmentSeries{wrapped}
+		}
+		return getSpanningPrefixBlocks(wrapped, wrapped)
+	}
+	return spanWithPrefixBlocks(wrapped)
+}
+
+func (section *ipAddressSectionInternal) spanWithSequentialBlocks() []ExtendedIPSegmentSeries {
+	wrapped := wrapIPSection(section.toIPAddressSection())
+	if section.IsSequential() {
+		return []ExtendedIPSegmentSeries{wrapped}
+	}
+	return spanWithSequentialBlocks(wrapped)
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
