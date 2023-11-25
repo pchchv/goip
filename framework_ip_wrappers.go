@@ -349,6 +349,25 @@ func (section WrappedIPAddressSection) GetHostMask() ExtendedIPSegmentSeries {
 	return wrapIPSection(section.IPAddressSection.GetHostMask())
 }
 
+// Unwrap returns the wrapped address section as an interface, IPAddressSegmentSeries.
+func (section WrappedIPAddressSection) Unwrap() IPAddressSegmentSeries {
+	res := section.IPAddressSection
+	if res == nil {
+		return nil
+	}
+	return res
+}
+
+// SequentialBlockIterator iterates through the sequential series that make up this series.
+//
+// Practically, this means finding the count of segments for which the segments that follow are not full range,
+// and then using BlockIterator with that segment count.
+//
+// Use GetSequentialBlockCount to get the number of iterated elements.
+func (section WrappedIPAddressSection) SequentialBlockIterator() Iterator[ExtendedIPSegmentSeries] {
+	return ipSectionSeriesIterator{section.IPAddressSection.SequentialBlockIterator()}
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }
