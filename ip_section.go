@@ -1998,6 +1998,26 @@ func (section *IPAddressSection) SpanWithPrefixBlocks() []*IPAddressSection {
 	return cloneToIPSections(spanWithPrefixBlocks(wrapped))
 }
 
+// SpanWithSequentialBlocks produces the smallest slice of sequential blocks that cover the same set of sections as this.
+//
+// This slice can be shorter than that produced by SpanWithPrefixBlocks and is never longer.
+func (section *IPAddressSection) SpanWithSequentialBlocks() []*IPAddressSection {
+	if section.IsSequential() {
+		return []*IPAddressSection{section}
+	}
+
+	wrapped := wrapIPSection(section)
+	return cloneToIPSections(spanWithSequentialBlocks(wrapped))
+}
+
+// ToCustomString creates a customized string from this address section according to the given string option parameters.
+func (section *IPAddressSection) ToCustomString(stringOptions address_string.IPStringOptions) string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toCustomString(stringOptions)
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
