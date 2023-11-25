@@ -206,6 +206,14 @@ func (addr WrappedAddress) GetSection() *AddressSection {
 	return addr.Address.GetSection()
 }
 
+// Equal returns whether the given address series is equal to this address series.
+// Two address series are equal if they represent the same set of series.
+// Both must be equal addresses.
+func (addr WrappedAddress) Equal(other ExtendedSegmentSeries) bool {
+	a, ok := other.Unwrap().(AddressType)
+	return ok && addr.Address.Equal(a)
+}
+
 // WrappedAddressSection is the implementation of ExtendedSegmentSeries for address sections.
 type WrappedAddressSection struct {
 	*AddressSection
