@@ -55,3 +55,19 @@ func cloneToIPv4Addrs(orig []ExtendedIPSegmentSeries) []*IPv4Address {
 func cloneToIPv6Addrs(orig []ExtendedIPSegmentSeries) []*IPv6Address {
 	return cloneTo(orig, func(a ExtendedIPSegmentSeries) *IPv6Address { return a.(WrappedIPAddress).IPAddress.ToIPv6() })
 }
+
+func cloneIPv4Sections(sect *IPv4AddressSection, orig []*IPv4AddressSection) []ExtendedIPSegmentSeries {
+	converter := func(a *IPv4AddressSection) ExtendedIPSegmentSeries { return wrapIPSection(a.ToIP()) }
+	if sect == nil {
+		return cloneTo(orig, converter)
+	}
+	return cloneToExtra(sect, orig, converter) // return types matter with interfaces - https://play.golang.org/p/HZR8FSp42a9 )
+}
+
+func cloneIPv6Sections(sect *IPv6AddressSection, orig []*IPv6AddressSection) []ExtendedIPSegmentSeries {
+	converter := func(a *IPv6AddressSection) ExtendedIPSegmentSeries { return wrapIPSection(a.ToIP()) }
+	if sect == nil {
+		return cloneTo(orig, converter)
+	}
+	return cloneToExtra(sect, orig, converter)
+}
