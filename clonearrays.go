@@ -37,3 +37,13 @@ func cloneToIPv4Sections(orig []ExtendedIPSegmentSeries) []*IPv4AddressSection {
 		return a.(WrappedIPAddressSection).IPAddressSection.ToIPv4()
 	})
 }
+
+func cloneToIPv6Sections(orig []ExtendedIPSegmentSeries) []*IPv6AddressSection {
+	return cloneTo(orig, func(a ExtendedIPSegmentSeries) *IPv6AddressSection {
+		return a.(WrappedIPAddressSection).IPAddressSection.ToIPv6()
+	})
+}
+
+func cloneToIPAddrs(orig []ExtendedIPSegmentSeries) []*IPAddress {
+	return cloneTo(orig, func(a ExtendedIPSegmentSeries) *IPAddress { return a.(WrappedIPAddress).IPAddress })
+}
