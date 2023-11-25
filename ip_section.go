@@ -1694,6 +1694,27 @@ func (section *IPAddressSection) PrefixIterator() Iterator[*IPAddressSection] {
 	return ipSectionIterator{section.prefixIterator(false)}
 }
 
+// PrefixBlockIterator provides an iterator to iterate through the individual prefix blocks, one for each prefix of this address section.
+// Each iterated address section will be a prefix block with the same prefix length as this address section.
+//
+// If this address section has no prefix length, then this is equivalent to Iterator.
+func (section *IPAddressSection) PrefixBlockIterator() Iterator[*IPAddressSection] {
+	return ipSectionIterator{section.prefixIterator(true)}
+}
+
+// IncrementBoundary returns the item that is the given increment from the range boundaries of this item.
+//
+// If the given increment is positive, adds the value to the highest (GetUpper) in the range to produce a new item.
+// If the given increment is negative, adds the value to the lowest (GetLower) in the range to produce a new item.
+// If the increment is zero, returns this.
+//
+// If this represents just a single value, this item is simply incremented by the given increment value, positive or negative.
+//
+// On overflow or underflow, IncrementBoundary returns nil.
+func (section *IPAddressSection) IncrementBoundary(increment int64) *IPAddressSection {
+	return section.incrementBoundary(increment).ToIP()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
