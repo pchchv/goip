@@ -368,6 +368,21 @@ func (section WrappedIPAddressSection) SequentialBlockIterator() Iterator[Extend
 	return ipSectionSeriesIterator{section.IPAddressSection.SequentialBlockIterator()}
 }
 
+// BlockIterator Iterates through the series that can be obtained by iterating through all the upper segments up to the given segment count.
+// The segments following remain the same in all iterated series.
+func (section WrappedIPAddressSection) BlockIterator(segmentCount int) Iterator[ExtendedIPSegmentSeries] {
+	return ipSectionSeriesIterator{section.IPAddressSection.BlockIterator(segmentCount)}
+}
+
+// Iterator provides an iterator to iterate through the individual series of this series.
+//
+// When iterating, the prefix length is preserved.  Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual series.
+//
+// Call IsMultiple to determine if this instance represents multiple series, or GetCount for the count.
+func (section WrappedIPAddressSection) Iterator() Iterator[ExtendedIPSegmentSeries] {
+	return ipSectionSeriesIterator{section.IPAddressSection.Iterator()}
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }
