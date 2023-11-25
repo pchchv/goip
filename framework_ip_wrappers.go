@@ -337,6 +337,18 @@ func (section WrappedIPAddressSection) ToIPv6() IPv6AddressSegmentSeries {
 	return section.IPAddressSection.ToIPv6()
 }
 
+// GetNetworkMask returns the network mask associated with the CIDR network prefix length of this address section.
+// If this series has no prefix length, then the all-ones mask is returned.
+func (section WrappedIPAddressSection) GetNetworkMask() ExtendedIPSegmentSeries {
+	return wrapIPSection(section.IPAddressSection.GetNetworkMask())
+}
+
+// GetHostMask returns the host mask associated with the CIDR network prefix length of this address section.
+// If this series has no prefix length, then the all-ones mask is returned.
+func (section WrappedIPAddressSection) GetHostMask() ExtendedIPSegmentSeries {
+	return wrapIPSection(section.IPAddressSection.GetHostMask())
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }
