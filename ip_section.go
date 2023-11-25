@@ -1128,6 +1128,91 @@ func (section *ipAddressSectionInternal) toMaxHostLen(prefixLength BitCount) (*I
 		func(i int) SegInt { return mask.GetSegment(i).GetSegmentValue() })
 }
 
+func (section *ipAddressSectionInternal) intersect(other *IPAddressSection) (res *IPAddressSection, err address_error.SizeMismatchError) {
+	// check if they are comparable section.  We only check segment count, we do not care about start index.
+	err = section.checkSectionCount(other)
+	if err != nil {
+		return
+	}
+
+	// larger prefix length should prevail?    hmmmmm... I would say that is true, choose the larger prefix
+	pref := section.getNetworkPrefixLen()
+	otherPref := other.getNetworkPrefixLen()
+	if pref != nil {
+		if otherPref != nil {
+			if otherPref.bitCount() > pref.bitCount() {
+				pref = otherPref
+			}
+		} else {
+			pref = nil
+		}
+	}
+
+	if other.Contains(section.toIPAddressSection()) {
+		if pref.Equal(section.getNetworkPrefixLen()) {
+			res = section.toIPAddressSection()
+			return
+		}
+	} else if !section.isMultiple() {
+		// no intersection, for single valued section, any intersection would have to be containment
+		return
+	}
+
+	if section.contains(other) {
+		if pref.Equal(other.getNetworkPrefixLen()) {
+			res = other.toIPAddressSection()
+			return
+		}
+	} else if !other.isMultiple() {
+		// no intersection, for single valued section, any intersection would have to be containment
+		return
+	}
+
+	segCount := section.GetSegmentCount()
+	for i := 0; i < segCount; i++ {
+		seg := section.GetSegment(i)
+		otherSeg := other.GetSegment(i)
+		lower := seg.GetSegmentValue()
+		higher := seg.getUpperSegmentValue()
+		otherLower := otherSeg.GetSegmentValue()
+		otherHigher := otherSeg.getUpperSegmentValue()
+		if otherLower > higher || lower > otherHigher {
+			// no overlap in this segment means no overlap at all
+			return
+		}
+	}
+
+	// all segments have overlap
+	segs := createSegmentArray(segCount)
+	for i := 0; i < segCount; i++ {
+		seg := section.GetSegment(i)
+		otherSeg := other.GetSegment(i)
+		segPref := getSegmentPrefixLength(seg.getBitCount(), pref, i)
+		if seg.Contains(otherSeg) {
+			if segPref.Equal(otherSeg.GetSegmentPrefixLen()) {
+				segs[i] = otherSeg.ToDiv()
+				continue
+			}
+		}
+		if otherSeg.Contains(seg) {
+			if segPref.Equal(seg.GetSegmentPrefixLen()) {
+				segs[i] = seg.ToDiv()
+				continue
+			}
+		}
+		lower := seg.GetSegmentValue()
+		higher := seg.getUpperSegmentValue()
+		otherLower := otherSeg.GetSegmentValue()
+		otherHigher := otherSeg.getUpperSegmentValue()
+		lower = maxSegInt(lower, otherLower)
+		higher = minSegInt(higher, otherHigher)
+		segs[i] = createAddressDivision(seg.deriveNewMultiSeg(lower, higher, segPref))
+	}
+
+	res = deriveIPAddressSectionPrefLen(section.toIPAddressSection(), segs, pref)
+	return
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
