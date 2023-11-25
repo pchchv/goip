@@ -96,16 +96,44 @@ type addressSeriesIterator struct {
 	Iterator[*Address]
 }
 
+func (iter addressSeriesIterator) Next() ExtendedSegmentSeries {
+	if !iter.HasNext() {
+		return nil
+	}
+	return wrapAddress(iter.Iterator.Next())
+}
+
 type ipaddressSeriesIterator struct {
 	Iterator[*IPAddress]
+}
+
+func (iter ipaddressSeriesIterator) Next() ExtendedIPSegmentSeries {
+	if !iter.HasNext() {
+		return nil
+	}
+	return iter.Iterator.Next().Wrap()
 }
 
 type sectionSeriesIterator struct {
 	Iterator[*AddressSection]
 }
 
+func (iter sectionSeriesIterator) Next() ExtendedSegmentSeries {
+	if !iter.HasNext() {
+		return nil
+	}
+	return wrapSection(iter.Iterator.Next())
+}
+
 type ipSectionSeriesIterator struct {
 	Iterator[*IPAddressSection]
+}
+
+func (iter ipSectionSeriesIterator) Next() ExtendedIPSegmentSeries {
+	if !iter.HasNext() {
+		return nil
+	}
+	return wrapIPSection(iter.Iterator.Next())
 }
 
 func nilAddrIterator() Iterator[*Address] {
