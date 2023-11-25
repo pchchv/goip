@@ -71,3 +71,32 @@ func cloneIPv6Sections(sect *IPv6AddressSection, orig []*IPv6AddressSection) []E
 	}
 	return cloneToExtra(sect, orig, converter)
 }
+
+// returns a slice of addresses that match the same IP version as the given
+func filterCloneIPAddrs(addr *IPAddress, orig []*IPAddress) []ExtendedIPSegmentSeries {
+	addrType := addr.getAddrType()
+	result := make([]ExtendedIPSegmentSeries, 0, len(orig)+1)
+	result = append(result, wrapIPAddress(addr))
+	for _, a := range orig {
+		if addrType == a.getAddrType() {
+			result = append(result, a.Wrap())
+		}
+	}
+	return result
+}
+
+func cloneIPv4Addrs(sect *IPv4Address, orig []*IPv4Address) []ExtendedIPSegmentSeries {
+	converter := func(a *IPv4Address) ExtendedIPSegmentSeries { return wrapIPAddress(a.ToIP()) }
+	if sect == nil {
+		return cloneTo(orig, converter)
+	}
+	return cloneToExtra(sect, orig, converter)
+}
+
+func cloneIPv6Addrs(sect *IPv6Address, orig []*IPv6Address) []ExtendedIPSegmentSeries {
+	converter := func(a *IPv6Address) ExtendedIPSegmentSeries { return wrapIPAddress(a.ToIP()) }
+	if sect == nil {
+		return cloneTo(orig, converter)
+	}
+	return cloneToExtra(sect, orig, converter)
+}
