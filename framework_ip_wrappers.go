@@ -296,6 +296,14 @@ func (addr WrappedIPAddress) WithoutPrefixLen() ExtendedIPSegmentSeries {
 	return wrapIPAddress(addr.IPAddress.WithoutPrefixLen())
 }
 
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the series.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (addr WrappedIPAddress) SetPrefixLen(prefixLen BitCount) ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.SetPrefixLen(prefixLen))
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
