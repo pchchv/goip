@@ -84,6 +84,30 @@ func (addr WrappedIPAddress) ToMaxHostLen(bitCount BitCount) (ExtendedIPSegmentS
 	return wrapIPAddrWithErr(addr.IPAddress.ToMaxHostLen(bitCount))
 }
 
+// ToMaxHost converts the subnet to one in which all individual addresses have a host of all one-bits, the max value,
+// the host being the bits following the prefix length.
+// If the subnet has no prefix length, then it returns an all-ones address, the max address.
+//
+// The returned series will have the same prefix length.
+//
+// For instance, the max host of "1.2.3.4/16" gives the broadcast address "1.2.255.255/16".
+//
+// This returns an error if the series is a range which cannot be converted to
+// a range in which all individual elements have max hosts,
+// because the conversion results in a series segment that is not a sequential range of values.
+func (addr WrappedIPAddress) ToMaxHost() (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapIPAddrWithErr(addr.IPAddress.ToMaxHost())
+}
+
+// AssignPrefixForSingleBlock returns the equivalent prefix block that matches exactly the range of values in this series.
+// The returned block will have an assigned prefix length indicating the prefix length for the block.
+//
+// There may be no such series - it is required that the range of values match the range of a prefix block.
+// If there is no such series, then nil is returned.
+func (addr WrappedIPAddress) AssignPrefixForSingleBlock() ExtendedIPSegmentSeries {
+	return convIPAddrToIntf(addr.IPAddress.AssignPrefixForSingleBlock())
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
