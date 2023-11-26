@@ -383,6 +383,25 @@ func (section WrappedIPAddressSection) Iterator() Iterator[ExtendedIPSegmentSeri
 	return ipSectionSeriesIterator{section.IPAddressSection.Iterator()}
 }
 
+// PrefixIterator provides an iterator to iterate through the individual prefixes of this series,
+// each iterated element spanning the range of values for its prefix.
+//
+// It is similar to the prefix block iterator, except for possibly the first and last iterated elements, which might not be prefix blocks,
+// instead constraining themselves to values from this series.
+//
+// If the series has no prefix length, then this is equivalent to Iterator.
+func (section WrappedIPAddressSection) PrefixIterator() Iterator[ExtendedIPSegmentSeries] {
+	return ipSectionSeriesIterator{section.IPAddressSection.PrefixIterator()}
+}
+
+// PrefixBlockIterator provides an iterator to iterate through the individual prefix blocks, one for each prefix of this series.
+// Each iterated series will be a prefix block with the same prefix length as this series.
+//
+// If this series has no prefix length, then this is equivalent to Iterator.
+func (section WrappedIPAddressSection) PrefixBlockIterator() Iterator[ExtendedIPSegmentSeries] {
+	return ipSectionSeriesIterator{section.IPAddressSection.PrefixBlockIterator()}
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }
