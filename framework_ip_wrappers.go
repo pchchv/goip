@@ -32,6 +32,29 @@ func (addr WrappedIPAddress) BlockIterator(segmentCount int) Iterator[ExtendedIP
 	return ipaddressSeriesIterator{addr.IPAddress.BlockIterator(segmentCount)}
 }
 
+// Iterator provides an iterator to iterate through the individual series of this series.
+//
+// When iterating, the prefix length is preserved.
+// Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual series.
+//
+// Call IsMultiple to determine if this instance represents multiple series,
+// or GetCount for the count.
+func (addr WrappedIPAddress) Iterator() Iterator[ExtendedIPSegmentSeries] {
+	return ipaddressSeriesIterator{addr.IPAddress.Iterator()}
+}
+
+// ToZeroHostLen converts the subnet to one in which all individual addresses have a host of zero,
+// the host being the bits following the given prefix length.
+// If this address has the same prefix length,
+// then the returned one will too, otherwise the returned series will have no prefix length.
+//
+// This returns an error if the subnet is a range which cannot be converted to
+// a range in which all addresses have zero hosts,
+// because the conversion results in a segment that is not a sequential range of values.
+func (addr WrappedIPAddress) ToZeroHostLen(bitCount BitCount) (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapIPAddrWithErr(addr.IPAddress.ToZeroHostLen(bitCount)) //in IPAddress/Section
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
