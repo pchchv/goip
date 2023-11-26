@@ -724,6 +724,14 @@ func (div *addressDivisionInternal) getRangeDigitCount(radix int) int {
 	}
 }
 
+func (div *addressDivisionInternal) getDefaultRangeStringVals(val1, val2 uint64, radix int) string {
+	return getDefaultRangeStringVals(div, val1, val2, radix)
+}
+
+func (div *addressDivisionInternal) buildDefaultRangeString(radix int) string {
+	return buildDefaultRangeString(div, radix)
+}
+
 // divIntValues are used by AddressDivision.
 type divIntValues struct {
 	bitCount   BitCount
