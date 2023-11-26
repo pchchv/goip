@@ -55,6 +55,35 @@ func (addr WrappedIPAddress) ToZeroHostLen(bitCount BitCount) (ExtendedIPSegment
 	return wrapIPAddrWithErr(addr.IPAddress.ToZeroHostLen(bitCount)) //in IPAddress/Section
 }
 
+// ToZeroHost converts the subnet to one in which all individual addresses have a host of zero,
+// the host being the bits following the prefix length.
+// If the subnet has no prefix length, then it returns an all-zero series.
+//
+// The returned series will have the same prefix length.
+//
+// For instance, the zero host of "1.2.3.4/16" is the individual address "1.2.0.0/16".
+//
+// This returns an error if the series is a range which cannot be converted to
+// a range in which all individual elements have zero hosts,
+// because the conversion results in a series segment that is not a sequential range of values.
+func (addr WrappedIPAddress) ToZeroHost() (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapIPAddrWithErr(addr.IPAddress.ToZeroHost()) // in IPAddress/Section/Segment
+}
+
+// ToMaxHostLen converts the address or subnet to one in which all individual addresses have a host of all one-bits, the max host,
+// the host being the bits following the given prefix length.
+// If this address or subnet has the same prefix length,
+// then the resulting one will too, otherwise the resulting series will have no prefix length.
+//
+// For instance, the zero host of "1.2.3.4" for the prefix length of 16 is the address "1.2.255.255".
+//
+// This returns an error if the address or subnet is a range which cannot be converted to
+// a range in which all individual addresses have max hosts,
+// because the conversion results in a series segment that is not a sequential range of values.
+func (addr WrappedIPAddress) ToMaxHostLen(bitCount BitCount) (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapIPAddrWithErr(addr.IPAddress.ToMaxHostLen(bitCount))
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
