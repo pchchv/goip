@@ -423,3 +423,19 @@ func wrapIPAddrWithErr(addr *IPAddress, err address_error.IncompatibleAddressErr
 	}
 	return nil, err
 }
+
+// In go, a nil value is not converted to a nil interface,
+// it is converted to a non-nil interface instance with underlying value nil
+func convIPAddrToIntf(addr *IPAddress) ExtendedIPSegmentSeries {
+	if addr == nil {
+		return nil
+	}
+	return wrapIPAddress(addr)
+}
+
+func convIPSectToIntf(sect *IPAddressSection) ExtendedIPSegmentSeries {
+	if sect == nil {
+		return nil
+	}
+	return wrapIPSection(sect)
+}
