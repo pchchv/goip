@@ -147,6 +147,22 @@ func (addr WrappedIPAddress) SetPrefixLenZeroed(prefixLen BitCount) (ExtendedIPS
 	return wrapIPAddrWithErr(addr.IPAddress.SetPrefixLenZeroed(prefixLen))
 }
 
+// AdjustPrefixLenZeroed increases or decreases the prefix length by
+// the given increment while zeroing out the bits that have moved into or outside the prefix.
+//
+// A prefix length will not be adjusted lower than zero or beyond the bit length of the series.
+//
+// If this series has no prefix length, then the prefix length will be set to the adjustment if positive,
+// or it will be set to the adjustment added to the bit count if negative.
+//
+// When prefix length is increased, the bits moved within the prefix become zero.
+// When a prefix length is decreased, the bits moved outside the prefix become zero.
+//
+// If the result cannot be zeroed because zeroing out bits results in a non-contiguous segment, an error is returned.
+func (addr WrappedIPAddress) AdjustPrefixLenZeroed(prefixLen BitCount) (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapIPAddrWithErr(addr.IPAddress.AdjustPrefixLenZeroed(prefixLen))
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
