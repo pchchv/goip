@@ -15,6 +15,23 @@ func (addr WrappedIPAddress) GetSection() *IPAddressSection {
 	return addr.IPAddress.GetSection()
 }
 
+// SequentialBlockIterator iterates through the sequential series that make up this series.
+//
+// Practically, this means finding the count of segments for which the segments that follow are not full range,
+// and then using BlockIterator with that segment count.
+//
+// Use GetSequentialBlockCount to get the number of iterated elements.
+func (addr WrappedIPAddress) SequentialBlockIterator() Iterator[ExtendedIPSegmentSeries] {
+	return ipaddressSeriesIterator{addr.IPAddress.SequentialBlockIterator()}
+}
+
+// BlockIterator Iterates through the series that can be obtained
+// by iterating through all the upper segments up to the given segment count.
+// The segments following remain the same in all iterated series.
+func (addr WrappedIPAddress) BlockIterator(segmentCount int) Iterator[ExtendedIPSegmentSeries] {
+	return ipaddressSeriesIterator{addr.IPAddress.BlockIterator(segmentCount)}
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
