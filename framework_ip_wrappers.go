@@ -283,6 +283,19 @@ func (addr WrappedIPAddress) GetUpper() ExtendedIPSegmentSeries {
 	return wrapIPAddress(addr.IPAddress.GetUpper())
 }
 
+// AssignMinPrefixForBlock returns an equivalent series, assigned the smallest prefix length possible,
+// such that the prefix block for that prefix length is in this series.
+//
+// In other words, this method assigns a prefix length to this series matching the largest prefix block in this series.
+func (addr WrappedIPAddress) AssignMinPrefixForBlock() ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.AssignMinPrefixForBlock())
+}
+
+// WithoutPrefixLen provides the same address series but with no prefix length.  The values remain unchanged.
+func (addr WrappedIPAddress) WithoutPrefixLen() ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.WithoutPrefixLen())
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
