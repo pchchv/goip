@@ -185,6 +185,33 @@ func (addr WrappedIPAddress) ReverseBits(perByte bool) (ExtendedIPSegmentSeries,
 	return wrapIPAddrWithErr(addr.IPAddress.ReverseBits(perByte))
 }
 
+// Unwrap returns the wrapped address as an interface, IPAddressSegmentSeries.
+func (addr WrappedIPAddress) Unwrap() IPAddressSegmentSeries {
+	res := addr.IPAddress
+	if res == nil {
+		return nil
+	}
+	return res
+}
+
+// ToIPv4 converts to an IPv4AddressSegmentSeries if this address originated as an IPv4 section.
+// If not, ToIPv4 returns nil.
+//
+// ToIPv4 can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (addr WrappedIPAddress) ToIPv4() IPv4AddressSegmentSeries {
+	return addr.IPAddress.ToIPv4()
+}
+
+// ToIPv6 converts to an IPv6AddressSegmentSeries if this address originated as an IPv6 section.
+// If not, ToIPv6 returns nil.
+//
+// ToIPv6 can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (addr WrappedIPAddress) ToIPv6() IPv6AddressSegmentSeries {
+	return addr.IPAddress.ToIPv6()
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
