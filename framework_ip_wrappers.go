@@ -212,6 +212,21 @@ func (addr WrappedIPAddress) ToIPv6() IPv6AddressSegmentSeries {
 	return addr.IPAddress.ToIPv6()
 }
 
+// AdjustPrefixLen increases or decreases the prefix length by the given increment.
+//
+// A prefix length will not be adjusted lower than zero or beyond the bit length of the series.
+//
+// If this series has no prefix length, then the prefix length will be set to the adjustment if positive,
+// or it will be set to the adjustment added to the bit count if negative.
+func (addr WrappedIPAddress) AdjustPrefixLen(prefixLen BitCount) ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.AdjustPrefixLen(prefixLen))
+}
+
+// ReverseSegments returns a new series with the segments reversed.
+func (addr WrappedIPAddress) ReverseSegments() ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.ReverseSegments())
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
