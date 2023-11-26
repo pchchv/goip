@@ -269,6 +269,20 @@ func (addr WrappedIPAddress) ToZeroNetwork() ExtendedIPSegmentSeries {
 	return wrapIPAddress(addr.IPAddress.ToZeroNetwork()) //IPAddress/Section.  ToZeroHost() is in IPAddress/Section/Segment
 }
 
+// GetLower returns the series in the range with the lowest numeric value,
+// which will be the same series if it represents a single value.
+// For example, for "1.2-3.4.5-6", the series "1.2.4.5" is returned.
+func (addr WrappedIPAddress) GetLower() ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.GetLower())
+}
+
+// GetUpper returns the series in the range with the highest numeric value,
+// which will be the same series if it represents a single value.
+// For example, for the subnet "1.2-3.4.5-6", the address "1.3.4.6" is returned.
+func (addr WrappedIPAddress) GetUpper() ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.GetUpper())
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
