@@ -227,6 +227,18 @@ func (addr WrappedIPAddress) ReverseSegments() ExtendedIPSegmentSeries {
 	return wrapIPAddress(addr.IPAddress.ReverseSegments())
 }
 
+// GetNetworkMask returns the network mask associated with the CIDR network prefix length of this address or subnet.
+// If this series has no prefix length, then the all-ones mask is returned.
+func (addr WrappedIPAddress) GetNetworkMask() ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.GetNetworkMask())
+}
+
+// GetHostMask returns the host mask associated with the CIDR network prefix length of this address or subnet.
+// If this series has no prefix length, then the all-ones mask is returned.
+func (addr WrappedIPAddress) GetHostMask() ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.GetHostMask())
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
