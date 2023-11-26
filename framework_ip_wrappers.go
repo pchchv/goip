@@ -163,6 +163,28 @@ func (addr WrappedIPAddress) AdjustPrefixLenZeroed(prefixLen BitCount) (Extended
 	return wrapIPAddrWithErr(addr.IPAddress.AdjustPrefixLenZeroed(prefixLen))
 }
 
+// ReverseBytes returns a new segment series with the bytes reversed.  Any prefix length is dropped.
+//
+// If each segment is more than 1 byte long, and the bytes within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, then this returns an error.
+//
+// In practice this means that to be reversible, a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+func (addr WrappedIPAddress) ReverseBytes() (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapIPAddrWithErr(addr.IPAddress.ReverseBytes())
+}
+
+// ReverseBits returns a new segment series with the bits reversed.  Any prefix length is dropped.
+//
+// If the bits within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, this returns an error.
+//
+// In practice this means that to be reversible, a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (addr WrappedIPAddress) ReverseBits(perByte bool) (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapIPAddrWithErr(addr.IPAddress.ReverseBits(perByte))
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
