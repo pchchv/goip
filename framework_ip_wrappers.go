@@ -122,6 +122,31 @@ func (addr WrappedIPAddress) SpanWithSequentialBlocks() []ExtendedIPSegmentSerie
 	return addr.IPAddress.spanWithSequentialBlocks()
 }
 
+// CoverWithPrefixBlock returns the minimal-size prefix block that covers all the addresses in this subnet.
+// The resulting block will have a larger subnet size than this,
+// unless this series is already a prefix block.
+func (addr WrappedIPAddress) CoverWithPrefixBlock() ExtendedIPSegmentSeries {
+	return addr.IPAddress.coverSeriesWithPrefixBlock()
+}
+
+// SetPrefixLenZeroed sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the series.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+//
+// If this series has a prefix length, and the prefix length is increased when setting the new prefix length,
+// the bits moved within the prefix become zero.
+// If this series has a prefix length, and the prefix length is decreased when setting the new prefix length,
+// the bits moved outside the prefix become zero.
+//
+// In other words, bits that move from one side of the prefix length to the other
+// (bits moved into the prefix or outside the prefix) are zeroed.
+//
+// If the result cannot be zeroed because zeroing out bits results in a non-contiguous segment, an error is returned.
+func (addr WrappedIPAddress) SetPrefixLenZeroed(prefixLen BitCount) (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapIPAddrWithErr(addr.IPAddress.SetPrefixLenZeroed(prefixLen))
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
