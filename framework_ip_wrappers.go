@@ -108,6 +108,20 @@ func (addr WrappedIPAddress) AssignPrefixForSingleBlock() ExtendedIPSegmentSerie
 	return convIPAddrToIntf(addr.IPAddress.AssignPrefixForSingleBlock())
 }
 
+// SpanWithPrefixBlocks returns an array of prefix blocks
+// that spans the same set of individual series as this subnet.
+func (addr WrappedIPAddress) SpanWithPrefixBlocks() []ExtendedIPSegmentSeries {
+	return addr.IPAddress.spanWithPrefixBlocks()
+}
+
+// SpanWithSequentialBlocks produces the smallest slice of sequential blocks
+// that cover the same set of individual addresses as this subnet.
+//
+// This slice can be shorter than that produced by SpanWithPrefixBlocks and is never longer.
+func (addr WrappedIPAddress) SpanWithSequentialBlocks() []ExtendedIPSegmentSeries {
+	return addr.IPAddress.spanWithSequentialBlocks()
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
