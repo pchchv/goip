@@ -1002,6 +1002,36 @@ func (grouping *AddressDivisionGrouping) CompareSize(other AddressItem) int {
 	return grouping.compareSize(other)
 }
 
+// CopyDivisions copies the existing divisions from the
+// given start index until but not including the division at the given end index,
+// into the given slice, as much as can be fit into the slice,
+// returning the number of divisions copied.
+func (grouping *AddressDivisionGrouping) CopyDivisions(divs []*AddressDivision) (count int) {
+	return grouping.copyDivisions(divs)
+}
+
+// GetDivisionStrings returns a slice containing each string returned from
+// the String method of each division in the grouping.
+func (grouping *AddressDivisionGrouping) GetDivisionStrings() []string {
+	if grouping == nil {
+		return nil
+	}
+	return grouping.getDivisionStrings()
+}
+
+// String implements the [fmt.Stringer] interface.
+// It returns "<nil>" if the receiver is a nil pointer.
+// It returns the normalized string provided by
+// ToNormalizedString if this grouping originated as an address section.
+// Otherwise, the string is printed like a slice,
+// with each division converted to a string by its own String method (like "[ div0 div1 ... ]").
+func (grouping *AddressDivisionGrouping) String() string {
+	if grouping == nil {
+		return nilString()
+	}
+	return grouping.toString()
+}
+
 func cachePrefLenSingleBlock(cache *valueCache, prefLen PrefixLen, calc func() *PrefixLen) PrefixLen {
 	if cache == nil {
 		return *calc()
