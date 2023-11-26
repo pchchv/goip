@@ -239,6 +239,19 @@ func (addr WrappedIPAddress) GetHostMask() ExtendedIPSegmentSeries {
 	return wrapIPAddress(addr.IPAddress.GetHostMask())
 }
 
+// ToBlock creates a new series block by changing the segment at the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (addr WrappedIPAddress) ToBlock(segmentIndex int, lower, upper SegInt) ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.ToBlock(segmentIndex, lower, upper))
+}
+
+// ToPrefixBlockLen returns the series with the same prefix of
+// the given length as this series while the remaining bits span all values.
+// The returned series will be the block of all series with the same prefix.
+func (addr WrappedIPAddress) ToPrefixBlockLen(bitCount BitCount) ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.ToPrefixBlockLen(bitCount))
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
