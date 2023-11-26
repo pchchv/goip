@@ -732,6 +732,13 @@ func (div *addressDivisionInternal) buildDefaultRangeString(radix int) string {
 	return buildDefaultRangeString(div, radix)
 }
 
+func (div *addressDivisionInternal) getString() string {
+	if seg := div.toAddressDivision().ToIP(); seg != nil {
+		return seg.GetString()
+	}
+	return div.getDivString()
+}
+
 // divIntValues are used by AddressDivision.
 type divIntValues struct {
 	bitCount   BitCount
@@ -1029,9 +1036,12 @@ func (div *AddressDivision) MatchesValsWithMask(lowerValue, upperValue, mask Div
 }
 
 // String produces a string that is useful when a division string is provided with no context.
-// It uses a string prefix for octal or hex ("0" or "0x"), and does not use the wildcard '*', because division size is variable, and so '*' is ambiguous.
-// GetWildcardString is more appropriate in context with other segments or divisions.  It does not use a string prefix and uses '*' for full-range segments.
-// GetString is more appropriate in context with prefix lengths, it uses zeros instead of wildcards for prefix block ranges.
+// It uses a string prefix for octal or hex ("0" or "0x"), and does not use the wildcard '*',
+// because division size is variable, and so '*' is ambiguous.
+// GetWildcardString is more appropriate in context with other segments or divisions.
+// It does not use a string prefix and uses '*' for full-range segments.
+// GetString is more appropriate in context with prefix lengths,
+// it uses zeros instead of wildcards for prefix block ranges.
 func (div *AddressDivision) String() string {
 	if div == nil {
 		return nilString()
