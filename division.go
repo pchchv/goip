@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"math/big"
 	"math/bits"
 	"strings"
@@ -615,6 +616,48 @@ func (div *addressDivisionInternal) ContainsSinglePrefixBlock(prefixLen BitCount
 // GetString() is more appropriate in context with prefix lengths, it uses zeros instead of wildcards for prefix block ranges.
 func (div *addressDivisionInternal) toString() string { // this can be moved to addressDivisionBase when we have ContainsPrefixBlock and similar methods implemented for big.Int in the base.
 	return toString(div.toAddressDivision())
+}
+
+// Format implements [fmt.Formatter] interface. It accepts the formats
+//   - 'v' for the default address and section format (either the normalized or canonical string),
+//   - 's' (string) for the same,
+//   - 'b' (binary), 'o' (octal with 0 prefix), 'O' (octal with 0o prefix),
+//   - 'd' (decimal), 'x' (lowercase hexadecimal), and
+//   - 'X' (uppercase hexadecimal).
+//
+// Also supported are some of fmt's format flags for integral types.
+// Sign control is not supported since addresses and sections are never negative.
+// '#' for an alternate format is supported, which adds a leading zero for octal, and for hexadecimal it adds
+// a leading "0x" or "0X" for "%#x" and "%#X" respectively.
+// Also supported is specification of minimum digits precision, output field width,
+// space or zero padding, and '-' for left or right justification.
+func (div addressDivisionInternal) Format(state fmt.State, verb rune) {
+	switch verb {
+	case 's', 'v':
+		_, _ = state.Write([]byte(div.toString()))
+		return
+	}
+	// we try to filter through the flags provided to the DivInt values, as if the fmt string were applied to the int(s) directly
+	formatStr := flagsFromState(state, verb)
+	if div.isMultiple() {
+		formatStr = fmt.Sprintf("%s%c%s", formatStr, RangeSeparator, formatStr)
+		_, _ = state.Write([]byte(fmt.Sprintf(formatStr, div.getDivisionValue(), div.getUpperDivisionValue())))
+	} else {
+		_, _ = state.Write([]byte(fmt.Sprintf(formatStr, div.getDivisionValue())))
+	}
+}
+
+// String produces a string that is useful when a division string is provided with no context.
+// If the division was originally constructed as an address segment,
+// uses the default radix for that segment, which is decimal for IPv4 and hexadecimal for IPv6, MAC or other.
+// It uses a string prefix for octal or hex ("0" or "0x"),
+// and does not use the wildcard '*', because division size is variable, so '*' is ambiguous.
+// GetWildcardString is more appropriate in context with other segments or divisions.
+// It does not use a string prefix and uses '*' for full-range segments.
+// GetString is more appropriate in context with prefix lengths,
+// it uses zeros instead of wildcards for prefix block ranges.
+func (div *addressDivisionInternal) String() string {
+	return div.toString()
 }
 
 // divIntValues are used by AddressDivision.
