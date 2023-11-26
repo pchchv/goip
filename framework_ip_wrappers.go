@@ -409,3 +409,17 @@ func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 func wrapIPSection(section *IPAddressSection) WrappedIPAddressSection {
 	return WrappedIPAddressSection{section}
 }
+
+func wrapIPSectWithErr(section *IPAddressSection, err address_error.IncompatibleAddressError) (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	if err == nil {
+		return wrapIPSection(section), nil
+	}
+	return nil, err
+}
+
+func wrapIPAddrWithErr(addr *IPAddress, err address_error.IncompatibleAddressError) (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	if err == nil {
+		return wrapIPAddress(addr), nil
+	}
+	return nil, err
+}
