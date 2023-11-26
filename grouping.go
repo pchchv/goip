@@ -976,6 +976,32 @@ func (grouping *AddressDivisionGrouping) ForEachDivision(consumer func(divisionI
 	return len(divArray)
 }
 
+// Compare returns a negative integer, zero,
+// or a positive integer if this address division grouping is less than, equal, or greater than the given item.
+// Any address item is comparable to any other.
+// All address items use CountComparator to compare.
+func (grouping *AddressDivisionGrouping) Compare(item AddressItem) int {
+	return CountComparator.Compare(grouping, item)
+}
+
+// CompareSize compares the counts of two items, the number of individual items represented in each.
+//
+// Rather than calculating counts with GetCount,
+// there can be more efficient ways of determining whether this grouping represents more individual items than another.
+//
+// CompareSize returns a positive integer if this address division grouping has a larger count than the item given,
+// zero if they are the same, or a negative integer if the other has a larger count.
+func (grouping *AddressDivisionGrouping) CompareSize(other AddressItem) int {
+	if grouping == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// we have size 0, other has size >= 1
+		return -1
+	}
+	return grouping.compareSize(other)
+}
+
 func cachePrefLenSingleBlock(cache *valueCache, prefLen PrefixLen, calc func() *PrefixLen) PrefixLen {
 	if cache == nil {
 		return *calc()
