@@ -1028,6 +1028,23 @@ func (div *AddressDivision) MatchesValsWithMask(lowerValue, upperValue, mask Div
 	return div.matchesValsWithMask(lowerValue, upperValue, mask)
 }
 
+// String produces a string that is useful when a division string is provided with no context.
+// It uses a string prefix for octal or hex ("0" or "0x"), and does not use the wildcard '*', because division size is variable, and so '*' is ambiguous.
+// GetWildcardString is more appropriate in context with other segments or divisions.  It does not use a string prefix and uses '*' for full-range segments.
+// GetString is more appropriate in context with prefix lengths, it uses zeros instead of wildcards for prefix block ranges.
+func (div *AddressDivision) String() string {
+	if div == nil {
+		return nilString()
+	}
+	return div.toString()
+}
+
+// Compare returns a negative integer, zero, or a positive integer if this address division is less than, equal, or greater than the given item.
+// Any address item is comparable to any other.  All address items use CountComparator to compare.
+func (div *AddressDivision) Compare(item AddressItem) int {
+	return CountComparator.Compare(div, item)
+}
+
 func testRange(lowerValue, upperValue, finalUpperValue, networkMask, hostMask DivInt) bool {
 	return lowerValue == (lowerValue&networkMask) && finalUpperValue == (upperValue|hostMask)
 }
