@@ -252,6 +252,23 @@ func (addr WrappedIPAddress) ToPrefixBlockLen(bitCount BitCount) ExtendedIPSegme
 	return wrapIPAddress(addr.IPAddress.ToPrefixBlockLen(bitCount))
 }
 
+// ToPrefixBlock returns the series with the same prefix as this series while the remaining bits span all values.
+// The series will be the block of all series with the same prefix.
+//
+// If this series has no prefix, this series is returned.
+func (addr WrappedIPAddress) ToPrefixBlock() ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.ToPrefixBlock())
+}
+
+// ToZeroNetwork converts the address or subnet to one in which all individual addresses have a network of zero,
+// the network being the bits within the prefix length.
+// If the address or subnet has no prefix length, then it returns an all-zero address.
+//
+// The returned address or subnet will have the same prefix length.
+func (addr WrappedIPAddress) ToZeroNetwork() ExtendedIPSegmentSeries {
+	return wrapIPAddress(addr.IPAddress.ToZeroNetwork()) //IPAddress/Section.  ToZeroHost() is in IPAddress/Section/Segment
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
