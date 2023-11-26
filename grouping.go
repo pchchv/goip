@@ -727,6 +727,57 @@ func (grouping *addressDivisionGroupingInternal) GetPrefixLenForSingleBlock() Pr
 	return cachePrefLenSingleBlock(grouping.cache, grouping.getPrefixLen(), calc)
 }
 
+// ContainsSinglePrefixBlock returns whether the values of this grouping contains a single prefix block for the given prefix length.
+//
+// This means there is only one prefix of the given length in this item,
+// and this item contains the prefix block for that given prefix.
+//
+// Use GetPrefixLenForSingleBlock to determine whether there is a prefix length for which this method returns true.
+func (grouping *addressDivisionGroupingInternal) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	prefixLen = checkSubnet(grouping, prefixLen)
+	divisionCount := grouping.GetDivisionCount()
+	var prevBitCount BitCount
+	for i := 0; i < divisionCount; i++ {
+		division := grouping.getDivision(i)
+		bitCount := division.getBitCount()
+		totalBitCount := bitCount + prevBitCount
+		if prefixLen >= totalBitCount {
+			if division.isMultiple() {
+				return false
+			}
+		} else {
+			divPrefixLen := prefixLen - prevBitCount
+			if !division.ContainsSinglePrefixBlock(divPrefixLen) {
+				return false
+			}
+			for i++; i < divisionCount; i++ {
+				division = grouping.getDivision(i)
+				if !division.IsFullRange() {
+					return false
+				}
+			}
+			return true
+		}
+		prevBitCount = totalBitCount
+	}
+	return true
+}
+
+// IsSinglePrefixBlock returns whether the range of values matches a single subnet block for the prefix length.
+//
+// What distinguishes this method with ContainsSinglePrefixBlock is that this method returns
+// false if the series does not have a prefix length assigned to it,
+// or a prefix length that differs from the prefix length for which ContainsSinglePrefixBlock returns true.
+//
+// It is similar to IsPrefixBlock but returns false when there are multiple prefixes.
+func (grouping *addressDivisionGroupingInternal) IsSinglePrefixBlock() bool { // Note for any given prefix length you can compare with GetPrefixLenForSingleBlock
+	calc := func() bool {
+		prefLen := grouping.getPrefixLen()
+		return prefLen != nil && grouping.ContainsSinglePrefixBlock(prefLen.bitCount())
+	}
+	return cacheIsSinglePrefixBlock(grouping.cache, grouping.getPrefixLen(), calc)
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
