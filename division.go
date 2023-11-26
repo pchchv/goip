@@ -660,6 +660,70 @@ func (div *addressDivisionInternal) String() string {
 	return div.toString()
 }
 
+func (div *addressDivisionInternal) compareSize(other AddressItem) int {
+	return compareCount(div.toAddressDivision(), other)
+}
+
+func (div *addressDivisionInternal) toStringOpts(opts address_string.StringOptions) string {
+	return toStringOpts(opts, div.toAddressDivision())
+}
+
+func (div *addressDivisionInternal) getRangeDigitCount(radix int) int {
+	if !div.isMultiple() {
+		return 0
+	}
+
+	if radix == 16 {
+		prefix := div.GetMinPrefixLenForBlock()
+		bitCount := div.GetBitCount()
+		if prefix < bitCount && div.ContainsSinglePrefixBlock(prefix) {
+			bitsPerCharacter := BitCount(4)
+			if prefix%bitsPerCharacter == 0 {
+				return int((bitCount - prefix) / bitsPerCharacter)
+			}
+		}
+		return 0
+	}
+
+	value := div.getDivisionValue()
+	upperValue := div.getUpperDivisionValue()
+	maxValue := div.getMaxValue()
+	factorRadix := DivInt(radix)
+	factor := factorRadix
+	numDigits := 1
+	for {
+		lowerRemainder := value % factor
+		if lowerRemainder == 0 {
+			// Consider in ipv4 the segment 24_
+			// what does this mean?  It means 240 to 249 (not 240 to 245)
+			// Consider 25_.  It means 250-255.
+			// so the last digit ranges between 0-5 or 0-9 depending on whether the front matches the max possible front of 25.
+			// If the front matches, the back ranges from 0 to the highest value of 255.
+			// if the front does not match, the back must range across all values for the radix (0-9)
+			var max DivInt
+			if maxValue/factor == upperValue/factor {
+				max = maxValue % factor
+			} else {
+				max = factor - 1
+			}
+
+			upperRemainder := upperValue % factor
+			if upperRemainder == max {
+				// whatever range there is must be accounted entirely by range digits, otherwise the range digits is 0
+				// so here we check if that is the case
+				if upperValue-upperRemainder == value {
+					return numDigits
+				} else {
+					numDigits++
+					factor *= factorRadix
+					continue
+				}
+			}
+		}
+		return 0
+	}
+}
+
 // divIntValues are used by AddressDivision.
 type divIntValues struct {
 	bitCount   BitCount
