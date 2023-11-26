@@ -778,6 +778,28 @@ func (grouping *addressDivisionGroupingInternal) IsSinglePrefixBlock() bool { //
 	return cacheIsSinglePrefixBlock(grouping.cache, grouping.getPrefixLen(), calc)
 }
 
+func (grouping *addressDivisionGroupingInternal) compareSize(other AddressItem) int { // the getCount() is optimized which is why we do not defer to the method in addressDivisionGroupingBase
+	return compareCount(grouping.toAddressDivisionGrouping(), other)
+}
+
+func (grouping *addressDivisionGroupingInternal) getDivisionStrings() []string {
+	if grouping.hasNoDivisions() {
+		return []string{}
+	}
+	result := make([]string, grouping.GetDivisionCount())
+	for i := range result {
+		result[i] = grouping.getDivision(i).String()
+	}
+	return result
+}
+
+func (grouping *addressDivisionGroupingInternal) toString() string {
+	if sect := grouping.toAddressSection(); sect != nil {
+		return sect.ToNormalizedString()
+	}
+	return fmt.Sprint(grouping.initDivs().getDivArray())
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
