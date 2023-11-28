@@ -1373,6 +1373,27 @@ func (section *ipAddressSectionInternal) toCustomZonedString(stringOptions addre
 	return toNormalizedIPZonedString(stringOptions, section.toIPAddressSection(), zone)
 }
 
+// ContainsSinglePrefixBlock returns whether the values of this section contains a single prefix block for the given prefix length.
+//
+// This means there is only one prefix of the given length in this item, and this item contains the prefix block for that given prefix.
+//
+// Use GetPrefixLenForSingleBlock to determine whether there is a prefix length for which this method returns true.
+func (section *ipAddressSectionInternal) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	return section.addressSectionInternal.ContainsSinglePrefixBlock(prefixLen)
+}
+
+// IsSinglePrefixBlock returns whether the range matches the block of values for a single prefix identified by the prefix length of this address.
+// This is similar to IsPrefixBlock except that it returns false when the subnet has multiple prefixes.
+//
+// What distinguishes this method from ContainsSinglePrefixBlock is that this method returns
+// false if the series does not have a prefix length assigned to it,
+// or a prefix length that differs from the prefix length for which ContainsSinglePrefixBlock returns true.
+//
+// It is similar to IsPrefixBlock but returns false when there are multiple prefixes.
+func (section *ipAddressSectionInternal) IsSinglePrefixBlock() bool {
+	return section.addressSectionInternal.IsSinglePrefixBlock()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
