@@ -2271,6 +2271,36 @@ func (section *AddressSection) ToHexString(with0xPrefix bool) (string, address_e
 	return section.toHexString(with0xPrefix)
 }
 
+// ToOctalString writes this address section as a single octal value (possibly two values if a range),
+// the number of digits according to the bit count, with or without a preceding "0" prefix.
+//
+// If a multiple-valued section cannot be written as a single prefix block or a range of two values, an error is returned.
+func (section *AddressSection) ToOctalString(with0Prefix bool) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toOctalString(with0Prefix)
+}
+
+// ToBinaryString writes this address section as a single binary value (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0b" prefix.
+//
+// If a multiple-valued section cannot be written as a single prefix block or a range of two values, an error is returned.
+func (section *AddressSection) ToBinaryString(with0bPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toBinaryString(with0bPrefix)
+}
+
+// ToCustomString creates a customized string from this address section according to the given string option parameters.
+func (section *AddressSection) ToCustomString(stringOptions address_string.StringOptions) string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toCustomString(stringOptions)
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
