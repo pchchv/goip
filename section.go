@@ -1581,6 +1581,14 @@ func (section *addressSectionInternal) toLongOctalStringZoned(zone Zone, opts ad
 	return toParams(opts).toZonedString(part, zone), nil
 }
 
+func (section *addressSectionInternal) toCustomString(stringOptions address_string.StringOptions) string {
+	return toNormalizedString(stringOptions, section.toAddressSection())
+}
+
+func (section *addressSectionInternal) toCustomStringZoned(stringOptions address_string.StringOptions, zone Zone) string {
+	return toNormalizedZonedString(stringOptions, section.toAddressSection(), zone)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
