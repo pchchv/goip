@@ -2248,6 +2248,29 @@ func (section *AddressSection) Increment(increment int64) *AddressSection {
 	return section.increment(increment)
 }
 
+// String implements the [fmt.Stringer] interface,
+// returning the normalized string provided by ToNormalizedString,
+// or "<nil>" if the receiver is a nil pointer.
+func (section *AddressSection) String() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toString()
+}
+
+// ToHexString writes this address section as a single hexadecimal value
+// (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count,
+// with or without a preceding "0x" prefix.
+//
+// If a multiple-valued section cannot be written as a single prefix block or a range of two values, an error is returned.
+func (section *AddressSection) ToHexString(with0xPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toHexString(with0xPrefix)
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
