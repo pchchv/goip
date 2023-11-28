@@ -1589,6 +1589,23 @@ func (section *addressSectionInternal) toCustomStringZoned(stringOptions address
 	return toNormalizedZonedString(stringOptions, section.toAddressSection(), zone)
 }
 
+func (section *addressSectionInternal) toLongStringZoned(zone Zone, params address_string.StringOptions) (string, address_error.IncompatibleAddressError) {
+	if isDual, err := section.isDualString(); err != nil {
+		return "", err
+	} else if isDual {
+		sect := section.toAddressSection()
+		return toNormalizedStringRange(toParams(params), sect.GetLower(), sect.GetUpper(), zone), nil
+	}
+	return section.toCustomStringZoned(params, zone), nil
+}
+
+func (section *addressSectionInternal) toBinaryStringZoned(with0bPrefix bool, zone Zone) (string, address_error.IncompatibleAddressError) {
+	if with0bPrefix {
+		return section.toLongStringZoned(zone, binaryPrefixedParams)
+	}
+	return section.toLongStringZoned(zone, binaryParams)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
