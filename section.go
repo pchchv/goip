@@ -1606,6 +1606,42 @@ func (section *addressSectionInternal) toBinaryStringZoned(with0bPrefix bool, zo
 	return section.toLongStringZoned(zone, binaryParams)
 }
 
+func (section *addressSectionInternal) toBinaryString(with0bPrefix bool) (string, address_error.IncompatibleAddressError) {
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toBinaryStringZoned(with0bPrefix, NoZone)
+	}
+
+	var cacheField **string
+	if with0bPrefix {
+		cacheField = &cache.binaryStringPrefixed
+	} else {
+		cacheField = &cache.binaryString
+	}
+	return cacheStrErr(cacheField,
+		func() (string, address_error.IncompatibleAddressError) {
+			return section.toBinaryStringZoned(with0bPrefix, NoZone)
+		})
+}
+
+func (section *addressSectionInternal) toHexString(with0xPrefix bool) (string, address_error.IncompatibleAddressError) {
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toHexStringZoned(with0xPrefix, NoZone)
+	}
+	
+	var cacheField **string
+	if with0xPrefix {
+		cacheField = &cache.hexStringPrefixed
+	} else {
+		cacheField = &cache.hexString
+	}
+	return cacheStrErr(cacheField,
+		func() (string, address_error.IncompatibleAddressError) {
+			return section.toHexStringZoned(with0xPrefix, NoZone)
+		})
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
