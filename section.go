@@ -1555,6 +1555,32 @@ func (section *addressSectionInternal) incrementBoundary(increment int64) *Addre
 	return section.getUpper().increment(increment)
 }
 
+func (section *addressSectionInternal) toOctalStringZoned(with0Prefix bool, zone Zone) (string, address_error.IncompatibleAddressError) {
+	var opts address_string.StringOptions
+	if with0Prefix {
+		opts = octalPrefixedParams
+	} else {
+		opts = octalParams
+	}
+	return section.toLongOctalStringZoned(zone, opts)
+}
+
+func (section *addressSectionInternal) toLongOctalStringZoned(zone Zone, opts address_string.StringOptions) (string, address_error.IncompatibleAddressError) {
+	if isDual, err := section.isDualString(); err != nil {
+		return "", err
+	} else if isDual {
+		lowerDivs, _ := section.getLower().createNewDivisions(3)
+		upperDivs, _ := section.getUpper().createNewDivisions(3)
+		lowerPart := createInitializedGrouping(lowerDivs, nil)
+		upperPart := createInitializedGrouping(upperDivs, nil)
+		return toNormalizedStringRange(toParams(opts), lowerPart, upperPart, zone), nil
+	}
+
+	divs, _ := section.createNewDivisions(3)
+	part := createInitializedGrouping(divs, nil)
+	return toParams(opts).toZonedString(part, zone), nil
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
