@@ -770,6 +770,27 @@ func (section WrappedIPAddressSection) IncrementBoundary(i int64) ExtendedIPSegm
 	return convIPSectToIntf(section.IPAddressSection.IncrementBoundary(i))
 }
 
+// AssignPrefixForSingleBlock returns the equivalent prefix block that matches exactly the range of values in this series.
+// The returned block will have an assigned prefix length indicating the prefix length for the block.
+//
+// There may be no such series - it is required that the range of values match the range of a prefix block.
+// If there is no such series, then nil is returned.
+func (section WrappedIPAddressSection) AssignPrefixForSingleBlock() ExtendedIPSegmentSeries {
+	return convIPSectToIntf(section.IPAddressSection.AssignPrefixForSingleBlock())
+}
+
+// SpanWithPrefixBlocks returns an array of prefix blocks that spans the same set of individual series as this subnet section.
+func (section WrappedIPAddressSection) SpanWithPrefixBlocks() []ExtendedIPSegmentSeries {
+	return section.IPAddressSection.spanWithPrefixBlocks()
+}
+
+// SpanWithSequentialBlocks produces the smallest slice of sequential blocks that cover the same set of individual address sections as this series.
+//
+// This slice can be shorter than that produced by SpanWithPrefixBlocks and is never longer.
+func (section WrappedIPAddressSection) SpanWithSequentialBlocks() []ExtendedIPSegmentSeries {
+	return section.IPAddressSection.spanWithSequentialBlocks()
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }
