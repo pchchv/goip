@@ -2046,6 +2046,49 @@ func (section *IPAddressSection) ToCustomString(stringOptions address_string.IPS
 	return section.toCustomString(stringOptions)
 }
 
+// String implements the [fmt.Stringer] interface,
+// returning the normalized string provided by ToNormalizedString,
+// or "<nil>" if the receiver is a nil pointer.
+func (section *IPAddressSection) String() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toString()
+}
+
+// ToHexString writes this address section as a single hexadecimal value (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0x" prefix.
+//
+// If a multiple-valued section cannot be written as a single prefix block or a range of two values, an error is returned.
+func (section *IPAddressSection) ToHexString(with0xPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toHexString(with0xPrefix)
+}
+
+// ToOctalString writes this address section as a single octal value (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0" prefix.
+//
+// If a multiple-valued section cannot be written as a single prefix block or a range of two values, an error is returned.
+func (section *IPAddressSection) ToOctalString(with0Prefix bool) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toOctalString(with0Prefix)
+}
+
+// ToBinaryString writes this address section as a single binary value (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0b" prefix.
+//
+// If a multiple-valued section cannot be written as a single prefix block or a range of two values, an error is returned.
+func (section *IPAddressSection) ToBinaryString(with0bPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toBinaryString(with0bPrefix)
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
