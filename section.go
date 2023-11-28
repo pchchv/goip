@@ -1512,6 +1512,28 @@ func (section *addressSectionInternal) assignPrefixForSingleBlock() *AddressSect
 	return newSect
 }
 
+// IsSinglePrefixBlock returns whether the range matches the block of values for
+// a single prefix identified by the prefix length of this address.
+// This is similar to IsPrefixBlock except that it returns false when the subnet has multiple prefixes.
+//
+// What distinguishes this method from ContainsSinglePrefixBlock is that this method returns
+// false if the series does not have a prefix length assigned to it,
+// or a prefix length that differs from a prefix length for which ContainsSinglePrefixBlock returns true.
+//
+// It is similar to IsPrefixBlock but returns false when there are multiple prefixes.
+func (section *addressSectionInternal) IsSinglePrefixBlock() bool {
+	return section.addressDivisionGroupingInternal.IsSinglePrefixBlock()
+}
+
+// GetGenericSegment returns the segment as an AddressSegmentType,
+// allowing all segment types to be represented by a single type.
+// The first segment is at index 0.
+// GetGenericSegment will panic given a negative index or
+// an index matching or larger than the segment count.
+func (section *addressSectionInternal) GetGenericSegment(index int) AddressSegmentType {
+	return section.GetSegment(index)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
