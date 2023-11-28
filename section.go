@@ -1642,6 +1642,31 @@ func (section *addressSectionInternal) toHexString(with0xPrefix bool) (string, a
 		})
 }
 
+func (section *addressSectionInternal) toHexStringZoned(with0xPrefix bool, zone Zone) (string, address_error.IncompatibleAddressError) {
+	if with0xPrefix {
+		return section.toLongStringZoned(zone, hexPrefixedParams)
+	}
+	return section.toLongStringZoned(zone, hexParams)
+}
+
+func (section *addressSectionInternal) toOctalString(with0Prefix bool) (string, address_error.IncompatibleAddressError) {
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toOctalStringZoned(with0Prefix, NoZone)
+	}
+	
+	var cacheField **string
+	if with0Prefix {
+		cacheField = &cache.octalStringPrefixed
+	} else {
+		cacheField = &cache.octalString
+	}
+	return cacheStrErr(cacheField,
+		func() (string, address_error.IncompatibleAddressError) {
+			return section.toOctalStringZoned(with0Prefix, NoZone)
+		})
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
