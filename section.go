@@ -2158,6 +2158,34 @@ func (section *AddressSection) AssignMinPrefixForBlock() *AddressSection {
 	return section.assignMinPrefixForBlock()
 }
 
+// Compare returns a negative integer, zero,
+// or a positive integer if this address section is less than, equal,
+// or greater than the given item.
+// Any address item is comparable to any other.
+// All address items use CountComparator to compare.
+func (section *AddressSection) Compare(item AddressItem) int {
+	return CountComparator.Compare(section, item)
+}
+
+// CompareSize compares the counts of two address sections, the number of individual sections represented.
+//
+// Rather than calculating counts with GetCount,
+// there can be more efficient ways of determining whether one section represents more individual address sections than another.
+//
+// CompareSize returns a positive integer if this address section has a larger count than the one given,
+// zero if they are the same,
+// or a negative integer if the other has a larger count.
+func (section *AddressSection) CompareSize(other AddressItem) int {
+	if section == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// we have size 0, other has size >= 1
+		return -1
+	}
+	return section.compareSize(other)
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
