@@ -1394,6 +1394,13 @@ func (section *ipAddressSectionInternal) IsSinglePrefixBlock() bool {
 	return section.addressSectionInternal.IsSinglePrefixBlock()
 }
 
+// GetGenericSegment returns the segment at the given index as an AddressSegmentType.
+// The first segment is at index 0.
+// GetGenericSegment will panic given a negative index or an index matching or larger than the segment count.
+func (section *ipAddressSectionInternal) GetGenericSegment(index int) AddressSegmentType {
+	return section.addressSectionInternal.GetGenericSegment(index)
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
