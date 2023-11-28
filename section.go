@@ -1629,7 +1629,6 @@ func (section *addressSectionInternal) toHexString(with0xPrefix bool) (string, a
 	if cache == nil {
 		return section.toHexStringZoned(with0xPrefix, NoZone)
 	}
-	
 	var cacheField **string
 	if with0xPrefix {
 		cacheField = &cache.hexStringPrefixed
@@ -1654,7 +1653,6 @@ func (section *addressSectionInternal) toOctalString(with0Prefix bool) (string, 
 	if cache == nil {
 		return section.toOctalStringZoned(with0Prefix, NoZone)
 	}
-	
 	var cacheField **string
 	if with0Prefix {
 		cacheField = &cache.octalStringPrefixed
@@ -1712,6 +1710,18 @@ func (section *addressSectionInternal) prefixIterator(isBlockIterator bool) Iter
 		return sectIterator(useOriginal, section.toAddressSection(), prefLength < section.GetBitCount(), iterator)
 	}
 	return prefixSectIterator(useOriginal, section.toAddressSection(), iterator)
+}
+
+// ContainsSinglePrefixBlock returns whether the values of this grouping contains
+// a single prefix block for the given prefix length.
+//
+// This means there is only one prefix of the given length in this item,
+// and this item contains the prefix block for that given prefix.
+//
+// Use GetPrefixLenForSingleBlock to determine whether there is
+// a prefix length for which this method returns true.
+func (section *addressSectionInternal) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	return section.addressDivisionGroupingInternal.ContainsSinglePrefixBlock(prefixLen)
 }
 
 // AddressSection is an address section containing a certain number of consecutive segments.
