@@ -1534,6 +1534,27 @@ func (section *addressSectionInternal) GetGenericSegment(index int) AddressSegme
 	return section.GetSegment(index)
 }
 
+func (section *addressSectionInternal) increment(increment int64) *AddressSection {
+	if sect := section.toIPv4AddressSection(); sect != nil {
+		return sect.Increment(increment).ToSectionBase()
+	} else if sect := section.toIPv6AddressSection(); sect != nil {
+		return sect.Increment(increment).ToSectionBase()
+	} else if sect := section.toMACAddressSection(); sect != nil {
+		return sect.Increment(increment).ToSectionBase()
+	}
+	return nil
+}
+
+func (section *addressSectionInternal) incrementBoundary(increment int64) *AddressSection {
+	if increment <= 0 {
+		if increment == 0 {
+			return section.toAddressSection()
+		}
+		return section.getLower().increment(increment)
+	}
+	return section.getUpper().increment(increment)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
