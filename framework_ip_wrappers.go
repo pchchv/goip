@@ -723,6 +723,53 @@ func (section WrappedIPAddressSection) ToMaxHostLen(bitCount BitCount) (Extended
 	return wrapIPSectWithErr(section.IPAddressSection.ToMaxHostLen(bitCount))
 }
 
+// ToMaxHost converts the address section to one in which all individual address sections have a host of all one-bits, the max value,
+// the host being the bits following the prefix length.
+// If the section has no prefix length, then it returns an all-ones section, the max address section.
+//
+// The returned series will have the same prefix length.
+//
+// This returns an error if the series is a range which cannot be converted to a range in which all individual elements have max hosts,
+// because the conversion results in a series segment that is not a sequential range of values.
+func (section WrappedIPAddressSection) ToMaxHost() (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapIPSectWithErr(section.IPAddressSection.ToMaxHost())
+}
+
+// Increment returns the item that is the given increment upwards into the range,
+// with the increment of 0 returning the first in the range.
+//
+// If the increment i matches or exceeds the range count c, then i - c + 1
+// is added to the upper item of the range.
+// An increment matching the count gives you the item just above the highest in the range.
+//
+// If the increment is negative, it is added to the lowest of the range.
+// To get the item just below the lowest of the range, use the increment -1.
+//
+// If this represents just a single value, the item is simply incremented by the given increment, positive or negative.
+//
+// If this item represents multiple values, a positive increment i is equivalent i + 1 values from the iterator and beyond.
+// For instance, a increment of 0 is the first value from the iterator, an increment of 1 is the second value from the iterator, and so on.
+// An increment of a negative value added to the count is equivalent to the same number of iterator values preceding the last value of the iterator.
+// For instance, an increment of count - 1 is the last value from the iterator, an increment of count - 2 is the second last value, and so on.
+//
+// On overflow or underflow, Increment returns nil.
+func (section WrappedIPAddressSection) Increment(i int64) ExtendedIPSegmentSeries {
+	return convIPSectToIntf(section.IPAddressSection.Increment(i))
+}
+
+// IncrementBoundary returns the item that is the given increment from the range boundaries of this item.
+//
+// If the given increment is positive, adds the value to the highest (GetUpper) in the range to produce a new item.
+// If the given increment is negative, adds the value to the lowest (GetLower) in the range to produce a new item.
+// If the increment is zero, returns this.
+//
+// If this represents just a single value, this item is simply incremented by the given increment value, positive or negative.
+//
+// On overflow or underflow, IncrementBoundary returns nil.
+func (section WrappedIPAddressSection) IncrementBoundary(i int64) ExtendedIPSegmentSeries {
+	return convIPSectToIntf(section.IPAddressSection.IncrementBoundary(i))
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }
