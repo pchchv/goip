@@ -1667,6 +1667,53 @@ func (section *addressSectionInternal) toOctalString(with0Prefix bool) (string, 
 		})
 }
 
+func (section *addressSectionInternal) prefixIterator(isBlockIterator bool) Iterator[*AddressSection] {
+	prefLen := section.prefixLength
+	if prefLen == nil {
+		return section.sectionIterator(nil)
+	}
+
+	var useOriginal bool
+	prefLength := prefLen.bitCount()
+	if isBlockIterator {
+		useOriginal = section.IsSinglePrefixBlock()
+	} else {
+		useOriginal = section.GetPrefixCount().CmpAbs(bigOneConst()) == 0
+	}
+
+	var iterator Iterator[[]*AddressDivision]
+	segCount := section.GetSegmentCount()
+	bitsPerSeg := section.GetBitsPerSegment()
+	bytesPerSeg := section.GetBytesPerSegment()
+	hostSegIndex := getHostSegmentIndex(prefLength, bytesPerSeg, bitsPerSeg)
+	networkSegIndex := getNetworkSegmentIndex(prefLength, bytesPerSeg, bitsPerSeg)
+	if !useOriginal {
+		var hostSegIteratorProducer func(index int) Iterator[*AddressSegment]
+		if isBlockIterator {
+			hostSegIteratorProducer = func(index int) Iterator[*AddressSegment] {
+				return section.GetSegment(index).prefixBlockIterator()
+			}
+		} else {
+			hostSegIteratorProducer = func(index int) Iterator[*AddressSegment] {
+				return section.GetSegment(index).prefixIterator()
+			}
+		}
+		iterator = segmentsIterator(
+			segCount,
+			nil, //when no prefix we defer to other iterator, when there is one we use the whole original section in the encompassing iterator and not just the original segments
+			func(index int) Iterator[*AddressSegment] { return section.GetSegment(index).iterator() },
+			nil,
+			networkSegIndex,
+			hostSegIndex,
+			hostSegIteratorProducer)
+	}
+
+	if isBlockIterator {
+		return sectIterator(useOriginal, section.toAddressSection(), prefLength < section.GetBitCount(), iterator)
+	}
+	return prefixSectIterator(useOriginal, section.toAddressSection(), iterator)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
