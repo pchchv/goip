@@ -691,6 +691,38 @@ func (section WrappedIPAddressSection) PrefixBlockIterator() Iterator[ExtendedIP
 	return ipSectionSeriesIterator{section.IPAddressSection.PrefixBlockIterator()}
 }
 
+// ToZeroHostLen converts the section to one in which all individual sections have a host of zero,
+// the host being the bits following the given prefix length.
+// If this section has the same prefix length, then the returned one will too, otherwise the returned series will have no prefix length.
+//
+// This returns an error if the section is a range which cannot be converted to a range in which all individual sections have zero hosts,
+// because the conversion results in a segment that is not a sequential range of values.
+func (section WrappedIPAddressSection) ToZeroHostLen(bitCount BitCount) (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapIPSectWithErr(section.IPAddressSection.ToZeroHostLen(bitCount))
+}
+
+// ToZeroHost converts the section to one in which all individual sections have a host of zero,
+// the host being the bits following the prefix length.
+// If the section has no prefix length, then it returns an all-zero section.
+//
+// The returned series will have the same prefix length.
+//
+// This returns an error if the section is a range which cannot be converted to a range in which all individual elements have zero hosts,
+// because the conversion results in a segment that is not a sequential range of values.
+func (section WrappedIPAddressSection) ToZeroHost() (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapIPSectWithErr(section.IPAddressSection.ToZeroHost())
+}
+
+// ToMaxHostLen converts the address section to one in which all individual address sections have a host of all one-bits, the max host,
+// the host being the bits following the given prefix length.
+// If this address section has the same prefix length, then the resulting series will too, otherwise the resulting series will have no prefix length.
+//
+// This returns an error if the address section is a range which cannot be converted to a range in which all individual address sections have max hosts,
+// because the conversion results in a series segment that is not a sequential range of values.
+func (section WrappedIPAddressSection) ToMaxHostLen(bitCount BitCount) (ExtendedIPSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapIPSectWithErr(section.IPAddressSection.ToMaxHostLen(bitCount))
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }
