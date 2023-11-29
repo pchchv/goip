@@ -1750,6 +1750,50 @@ func (addr *Address) PrefixBlockIterator() Iterator[*Address] {
 	return addr.prefixIterator(true)
 }
 
+// Increment returns the address from the subnet that is the given increment upwards into the subnet range,
+// with the increment of 0 returning the first address in the range.
+//
+// If the increment i matches or exceeds the subnet size count c, then i - c + 1
+// is added to the upper address of the range.
+// An increment matching the subnet count gives you the address just above the highest address in the subnet.
+//
+// If the increment is negative, it is added to the lower address of the range.
+// To get the address just below the lowest address of the subnet, use the increment -1.
+//
+// If this is just a single address value, the address is simply incremented by the given increment, positive or negative.
+//
+// If this is a subnet with multiple values, a positive increment i is equivalent i + 1 values from the subnet iterator and beyond.
+// For instance, a increment of 0 is the first value from the iterator, an increment of 1 is the second value from the iterator, and so on.
+// An increment of a negative value added to the subnet count is equivalent to the same number of iterator values preceding the upper bound of the iterator.
+// For instance, an increment of count - 1 is the last value from the iterator, an increment of count - 2 is the second last value, and so on.
+//
+// On address overflow or underflow, Increment returns nil.
+func (addr *Address) Increment(increment int64) *Address {
+	return addr.init().increment(increment)
+}
+
+// ToHexString writes this address as a single hexadecimal value (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0x" prefix.
+//
+// If an address collection cannot be written as a single prefix block or a range of two values, an error is returned.
+func (addr *Address) ToHexString(with0xPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	return addr.init().toHexString(with0xPrefix)
+}
+
+// ToOctalString writes this address as a single octal value (possibly two values if a range),
+// the number of digits according to the bit count, with or without a preceding "0" prefix.
+//
+// If an address collection cannot be written as a single prefix block or a range of two values, an error is returned.
+func (addr *Address) ToOctalString(with0Prefix bool) (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	return addr.init().toOctalString(with0Prefix)
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
