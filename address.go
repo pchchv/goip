@@ -994,6 +994,26 @@ func (addr *addressInternal) toBinaryString(with0bPrefix bool) (string, address_
 	return addr.section.ToBinaryString(with0bPrefix)
 }
 
+func (addr *addressInternal) toHexString(with0xPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.toHexStringZoned(with0xPrefix, addr.zone)
+		}
+		var cacheField **string
+		if with0xPrefix {
+			cacheField = &cache.hexStringPrefixed
+		} else {
+			cacheField = &cache.hexString
+		}
+		return cacheStrErr(cacheField,
+			func() (string, address_error.IncompatibleAddressError) {
+				return addr.section.toHexStringZoned(with0xPrefix, addr.zone)
+			})
+	}
+	return addr.section.ToHexString(with0xPrefix)
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
