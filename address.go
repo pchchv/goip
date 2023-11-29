@@ -5,6 +5,7 @@ import (
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string"
 	"github.com/pchchv/goip/tree"
 )
 
@@ -1792,6 +1793,26 @@ func (addr *Address) ToOctalString(with0Prefix bool) (string, address_error.Inco
 		return nilString(), nil
 	}
 	return addr.init().toOctalString(with0Prefix)
+}
+
+// ToBinaryString writes this address as a single binary value (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count,
+// with or without a preceding "0b" prefix.
+//
+// If a subnet cannot be written as a single prefix block or a range of two values, an error is returned.
+func (addr *Address) ToBinaryString(with0bPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	return addr.init().toBinaryString(with0bPrefix)
+}
+
+// ToCustomString creates a customized string from this address or subnet according to the given string option parameters.
+func (addr *Address) ToCustomString(stringOptions address_string.StringOptions) string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.GetSection().toCustomStringZoned(stringOptions, addr.zone)
 }
 
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
