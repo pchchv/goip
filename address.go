@@ -1726,6 +1726,30 @@ func (addr *Address) GetGenericDivision(index int) DivisionType {
 	return addr.getDivision(index)
 }
 
+// PrefixIterator provides an iterator to iterate through the individual prefixes of this subnet,
+// each iterated element spanning the range of values for its prefix.
+//
+// It is similar to the prefix block iterator,
+// except for possibly the first and last iterated elements,
+// which might not be prefix blocks,
+// instead constraining themselves to values from this subnet.
+//
+// If the subnet has no prefix length,
+// then this is equivalent to Iterator.
+func (addr *Address) PrefixIterator() Iterator[*Address] {
+	return addr.prefixIterator(false)
+}
+
+// PrefixBlockIterator provides an iterator to iterate through the individual prefix blocks,
+// one for each prefix of this address or subnet.
+// Each iterated address or subnet will be a prefix block with the same prefix length as this address or subnet.
+//
+// If this address has no prefix length,
+// then this is equivalent to Iterator.
+func (addr *Address) PrefixBlockIterator() Iterator[*Address] {
+	return addr.prefixIterator(true)
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
