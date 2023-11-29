@@ -882,6 +882,20 @@ func (addr *addressInternal) ContainsSinglePrefixBlock(prefixLen BitCount) bool 
 	return addr.section == nil || addr.section.ContainsSinglePrefixBlock(prefixLen)
 }
 
+// In callers, we always need to ensure init is called,
+// otherwise a nil section will be zero-size instead of having size one.
+func (addr *addressInternal) compareSize(other AddressItem) int {
+	return addr.section.compareSize(other)
+}
+
+func (addr *addressInternal) increment(increment int64) *Address {
+	return addr.checkIdentity(addr.section.increment(increment))
+}
+
+func (addr *addressInternal) incrementBoundary(increment int64) *Address {
+	return addr.checkIdentity(addr.section.incrementBoundary(increment))
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
