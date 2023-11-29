@@ -954,6 +954,46 @@ func (addr *addressInternal) prefixIterator(isBlockIterator bool) Iterator[*Addr
 	return prefixAddrIterator(useOriginal, address, address.getPrefixLen(), iterator)
 }
 
+func (addr *addressInternal) toOctalString(with0Prefix bool) (string, address_error.IncompatibleAddressError) {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.toOctalStringZoned(with0Prefix, addr.zone)
+		}
+		var cacheField **string
+		if with0Prefix {
+			cacheField = &cache.octalStringPrefixed
+		} else {
+			cacheField = &cache.octalString
+		}
+		return cacheStrErr(cacheField,
+			func() (string, address_error.IncompatibleAddressError) {
+				return addr.section.toOctalStringZoned(with0Prefix, addr.zone)
+			})
+	}
+	return addr.section.ToOctalString(with0Prefix)
+}
+
+func (addr *addressInternal) toBinaryString(with0bPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.toBinaryStringZoned(with0bPrefix, addr.zone)
+		}
+		var cacheField **string
+		if with0bPrefix {
+			cacheField = &cache.binaryStringPrefixed
+		} else {
+			cacheField = &cache.binaryString
+		}
+		return cacheStrErr(cacheField,
+			func() (string, address_error.IncompatibleAddressError) {
+				return addr.section.toBinaryStringZoned(with0bPrefix, addr.zone)
+			})
+	}
+	return addr.section.ToBinaryString(with0bPrefix)
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
