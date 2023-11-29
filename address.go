@@ -896,6 +896,64 @@ func (addr *addressInternal) incrementBoundary(increment int64) *Address {
 	return addr.checkIdentity(addr.section.incrementBoundary(increment))
 }
 
+func (addr *addressInternal) prefixIterator(isBlockIterator bool) Iterator[*Address] {
+	prefLen := addr.getPrefixLen()
+	if prefLen == nil {
+		return addr.addrIterator(nil)
+	}
+
+	var useOriginal bool
+	if isBlockIterator {
+		useOriginal = addr.IsSinglePrefixBlock()
+	} else {
+		useOriginal = bigIsOne(addr.GetPrefixCount())
+	}
+
+	prefLength := prefLen.bitCount()
+	bitsPerSeg := addr.GetBitsPerSegment()
+	bytesPerSeg := addr.GetBytesPerSegment()
+	networkSegIndex := getNetworkSegmentIndex(prefLength, bytesPerSeg, bitsPerSeg)
+	hostSegIndex := getHostSegmentIndex(prefLength, bytesPerSeg, bitsPerSeg)
+	segCount := addr.getDivisionCount()
+	var iterator Iterator[[]*AddressDivision]
+	address := addr.toAddress()
+	if !useOriginal {
+		var hostSegIteratorProducer func(index int) Iterator[*AddressSegment]
+		if isBlockIterator {
+			hostSegIteratorProducer = func(index int) Iterator[*AddressSegment] {
+				seg := address.getSegment(index)
+				if seg.isPrefixed() { // IP address segments know their own prefix, MAC segments do not
+					return seg.prefixBlockIterator()
+				}
+				segPref := getPrefixedSegmentPrefixLength(bitsPerSeg, prefLength, index)
+				return seg.prefixedBlockIterator(segPref.bitCount())
+			}
+		} else {
+			hostSegIteratorProducer = func(index int) Iterator[*AddressSegment] {
+				seg := address.getSegment(index)
+				if seg.isPrefixed() { // IP address segments know their own prefix, MACS segments do not
+					return seg.prefixIterator()
+				}
+				segPref := getPrefixedSegmentPrefixLength(bitsPerSeg, prefLength, index)
+				return seg.prefixedIterator(segPref.bitCount())
+			}
+		}
+		iterator = segmentsIterator(
+			segCount,
+			nil, //when no prefix we defer to other iterator, when there is one we use the whole original section in the encompassing iterator and not just the original segments
+			func(index int) Iterator[*AddressSegment] { return address.getSegment(index).iterator() },
+			nil,
+			networkSegIndex,
+			hostSegIndex,
+			hostSegIteratorProducer)
+	}
+
+	if isBlockIterator {
+		return addrIterator(useOriginal, address, address.getPrefixLen(), prefLength < addr.GetBitCount(), iterator)
+	}
+	return prefixAddrIterator(useOriginal, address, address.getPrefixLen(), iterator)
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
