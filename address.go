@@ -856,6 +856,32 @@ func (addr *addressInternal) equals(other AddressType) bool {
 		addr.isSameZone(otherAddr)
 }
 
+// IsSinglePrefixBlock returns whether the address range matches the block
+// of values for a single prefix identified by the prefix length of this address.
+// This is similar to IsPrefixBlock except that it returns false when the subnet has multiple prefixes.
+//
+// What distinguishes this method from ContainsSinglePrefixBlock is that this method returns
+// false if the series does not have a prefix length assigned to it,
+// or a prefix length that differs from the prefix length for which ContainsSinglePrefixBlock returns true.
+//
+// It is similar to IsPrefixBlock but returns false when there are multiple prefixes.
+//
+// For instance, "1.*.*.* /16" returns false from this method and returns true from IsPrefixBlock.
+func (addr *addressInternal) IsSinglePrefixBlock() bool {
+	prefLen := addr.getPrefixLen()
+	return prefLen != nil && addr.section.IsSinglePrefixBlock()
+}
+
+// ContainsSinglePrefixBlock returns whether this address contains a single prefix block for the given prefix length.
+//
+// This means there is only one prefix value for the given prefix length,
+// and it also contains the full prefix block for that prefix, all addresses with that prefix.
+//
+// Use GetPrefixLenForSingleBlock to determine whether there is a prefix length for which this method returns true.
+func (addr *addressInternal) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	return addr.section == nil || addr.section.ContainsSinglePrefixBlock(prefixLen)
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
