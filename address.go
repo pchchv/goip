@@ -1699,6 +1699,33 @@ func (addr *Address) Equal(other AddressType) bool {
 	return addr.init().equals(other)
 }
 
+// CompareSize compares the counts of two subnets or addresses or other address items,
+// the number of individual items within.
+//
+// Rather than calculating counts with GetCount,
+// there can be more efficient ways of determining whether one subnet or collection represents more individual items than another.
+//
+// CompareSize returns a positive integer if this address or subnet has a larger count than the item given,
+// zero if they are the same,
+// or a negative integer if the other has a larger count.
+func (addr *Address) CompareSize(other AddressItem) int {
+	if addr == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// have size 0, other has size >= 1
+		return -1
+	}
+	return addr.init().compareSize(other)
+}
+
+// GetGenericDivision returns the segment at the given index as a DivisionType.
+// The first segment is at index 0.
+// GetGenericDivision will panic given a negative index or index larger than the division count.
+func (addr *Address) GetGenericDivision(index int) DivisionType {
+	return addr.getDivision(index)
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
