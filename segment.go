@@ -935,6 +935,37 @@ func (seg *AddressSegment) CompareSize(other AddressItem) int {
 	return seg.compareSize(other)
 }
 
+// GetString produces a normalized string to represent the segment.
+// If the segment is an IP segment string with CIDR network prefix block for its prefix length,
+// then the string contains only the lower value of the block range.
+// Otherwise, the explicit range will be printed.
+// If the segment is not an IP segment, then the string is the same as that produced by GetWildcardString.
+//
+// The string returned is useful in the context of creating strings for address sections or full addresses,
+// in which case the radix and bit-length can be deduced from the context.
+// The String method produces strings more appropriate when no context is provided.
+func (seg *AddressSegment) GetString() string {
+	if seg == nil {
+		return nilString()
+	}
+	return seg.getString()
+}
+
+// String produces a string that is useful when a segment string is provided with no context.
+// If the segment was originally constructed as an IPv4 address segment it uses decimal, otherwise hexadecimal.
+// It uses a string prefix for hex ("0x"), and does not use the wildcard '*',
+// because division size is variable, so '*' is ambiguous.
+// GetWildcardString is more appropriate in context with other segments or divisions.
+// It does not use a string prefix and uses '*' for full-range segments.
+// GetString is more appropriate in context with prefix lengths,
+// it uses zeros instead of wildcards with full prefix block ranges alongside prefix lengths.
+func (seg *AddressSegment) String() string {
+	if seg == nil {
+		return nilString()
+	}
+	return seg.toString()
+}
+
 func segsSame(onePref, twoPref PrefixLen, oneVal, twoVal, oneUpperVal, twoUpperVal SegInt) bool {
 	return onePref.Equal(twoPref) &&
 		oneVal == twoVal && oneUpperVal == twoUpperVal
