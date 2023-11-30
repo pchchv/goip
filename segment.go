@@ -673,6 +673,31 @@ func (seg *addressSegmentInternal) GetPrefixLenForSingleBlock() PrefixLen {
 	return seg.addressDivisionInternal.GetPrefixLenForSingleBlock()
 }
 
+func (seg *addressSegmentInternal) equalsSegment(other *AddressSegment) bool {
+	matchesStructure, _ := seg.matchesStructure(other)
+	return matchesStructure && seg.sameTypeEquals(other)
+}
+
+// ToNormalizedString produces a string that is consistent for all address segments of the same type and version.
+// IPv4 segments use base 10, while other segment types use base 16.
+func (seg *addressSegmentInternal) ToNormalizedString() string {
+	stringer := func() string {
+		switch seg.getDefaultTextualRadix() {
+		case 10:
+			return seg.toStringOpts(decimalParamsSeg)
+		default:
+			return seg.toStringOpts(macCompressedParams)
+		}
+	}
+
+	if seg.divisionValues != nil {
+		if cache := seg.getCache(); cache != nil {
+			return cacheStr(&cache.cachedNormalizedString, stringer)
+		}
+	}
+	return stringer()
+}
+
 // AddressSegment represents a single address segment.
 // A segment contains a single value or range of sequential values and has an assigned bit length.
 // Segments are 1 byte for Ipv4, two bytes for Ipv6, and 1 byte for MAC addresses.
