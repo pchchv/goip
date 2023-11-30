@@ -1193,6 +1193,28 @@ func (params *ipv6v4MixedParams) getPrefixStringLength(addr *IPv6v4MixedAddressG
 	return 0
 }
 
+func (params *ipv6v4MixedParams) getStringLength(addr *IPv6v4MixedAddressGrouping, zone Zone) int {
+	if addr.GetDivisionCount() > 0 {
+		ipv6Params := params.ipv6Params
+		ipv6length := ipv6Params.getSegmentsStringLength(addr.GetIPv6AddressSection())
+		ipv4length := params.ipv4Params.getSegmentsStringLength(addr.GetIPv4AddressSection())
+		length := ipv6length + ipv4length
+		if ipv6Params.nextUncompressedIndex < addr.GetIPv6AddressSection().GetSegmentCount() {
+			length++
+		}
+		length += params.getPrefixStringLength(addr)
+		length += ipv6Params.getZoneLength(zone, ipv6Params.zoneSeparator)
+		length += ipv6Params.getAddressSuffixLength()
+		length += ipv6Params.getAddressLabelLength()
+		return length
+	}
+	return 0
+}
+
+func (params *ipv6v4MixedParams) appendDivision(builder *strings.Builder, seg *AddressDivision) *strings.Builder {
+	return params.ipv6Params.appendDivision(builder, seg)
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
