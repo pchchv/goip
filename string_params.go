@@ -1061,6 +1061,29 @@ func (params *ipv6StringParams) appendSegments(builder *strings.Builder, addr IP
 	return
 }
 
+func (params *ipv6StringParams) append(builder *strings.Builder, addr *IPv6AddressSection, zone Zone) (err address_error.IncompatibleAddressError) {
+	if addr.GetDivisionCount() > 0 {
+		// Label, then segments, then zone, then suffix, then prefix length.
+		if err = params.appendSegments(params.appendLabel(builder), addr); err != nil {
+			return
+		}
+
+		params.appendSuffix(params.appendZone(builder, zone))
+		if !params.reverse && (!params.preferWildcards() || params.hostCompressed) {
+			params.appendPrefixIndicator(builder, addr)
+		}
+	}
+	return
+}
+
+func (params *ipv6StringParams) getStringLength(addr *IPv6AddressSection) int {
+	count := params.getSegmentsStringLength(addr)
+	if !params.reverse && (!params.preferWildcards() || params.hostCompressed) {
+		count += getPrefixIndicatorStringLength(addr)
+	}
+	return count + params.getAddressSuffixLength() + params.getAddressLabelLength()
+}
+
 // Each IPv6StringParams has settings to write exactly one IPv6 address section string.
 type ipv6v4MixedParams struct {
 	ipv6Params *ipv6StringParams
