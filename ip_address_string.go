@@ -606,6 +606,68 @@ func (addrStr *IPAddressString) ToNormalizedString() string {
 	return addrStr.String()
 }
 
+// Contains returns whether the address or subnet identified by this address string contains the address or subnet identified by the given string.
+// If this address string or the given address string is invalid then Contains returns false.
+func (addrStr *IPAddressString) Contains(other *IPAddressString) bool {
+	addrStr = addrStr.init()
+	other = other.init()
+	if addrStr.IsValid() {
+		if other == addrStr {
+			return true
+		}
+		if other.IsValid() {
+			// note the quick result also handles the case of "all addresses"
+			directResult := addrStr.addressProvider.containsProvider(other.addressProvider)
+			if directResult.isSet {
+				return directResult.val
+			}
+			// defer to the constructed addresses
+			addr := addrStr.GetAddress()
+			if addr != nil {
+				otherAddress := other.GetAddress()
+				if otherAddress != nil {
+					return addr.Contains(otherAddress)
+				}
+			}
+		}
+	}
+	return false
+}
+
+// PrefixContains is similar to PrefixEqual,
+// but instead returns whether the prefix of this address contains the same of the given address,
+// using the prefix length of this address.
+// It returns whether the argument address string prefix values of that length are also prefix values in this address string.
+//
+// In other words, determines if the other address is in one of the same prefix subnets using the prefix length of this address.
+//
+// If an address has no prefix length, the whole address is used as the prefix.
+//
+// If this address string or the given address string is invalid, it returns false.
+func (addrStr *IPAddressString) PrefixContains(other *IPAddressString) bool {
+	addrStr = addrStr.init()
+	other = other.init()
+	if other == addrStr {
+		return true
+	} else if !addrStr.IsValid() {
+		return false
+	} else if other.IsValid() {
+		directResult := addrStr.addressProvider.prefixContainsProvider(other.addressProvider)
+		if directResult.isSet {
+			return directResult.val
+		}
+		thisAddress := addrStr.GetAddress()
+		if thisAddress != nil {
+			otherAddress := other.GetAddress()
+			if otherAddress != nil {
+				return thisAddress.prefixContains(otherAddress)
+			}
+		}
+		// one or both addresses are nil, so there is no prefix to speak of
+	}
+	return false
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
