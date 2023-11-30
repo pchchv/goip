@@ -573,6 +573,39 @@ func (addrStr *IPAddressString) AdjustPrefixLen(adjustment BitCount) (*IPAddress
 	return addr.ToAddressString(), nil
 }
 
+func (addrStr *IPAddressString) toNormalizedString(addressProvider ipAddressProvider) (result string, err address_error.IncompatibleAddressError) {
+	if addressProvider.isProvidingAllAddresses() {
+		result = SegmentWildcardStr
+	} else if addressProvider.isProvidingEmpty() {
+		result = ""
+	} else if addressProvider.isProvidingIPAddress() {
+		var addr *IPAddress
+		if addr, err = addressProvider.getProviderAddress(); err == nil {
+			result = addr.ToNormalizedString()
+		}
+	}
+	return
+}
+
+// ToNormalizedString produces a normalized string for the address.
+//
+// For IPv4, it is the same as the canonical string.
+//
+// For IPv6, it differs from the canonical string.  Zero-segments are not compressed.
+//
+// If the address has a prefix length, it will be included in the string.
+//
+// If the original string is not a valid address string, the original string is used.
+func (addrStr *IPAddressString) ToNormalizedString() string {
+	addrStr = addrStr.init()
+	if addrStr.IsValid() {
+		if str, err := addrStr.toNormalizedString(addrStr.addressProvider); err == nil {
+			return str
+		}
+	}
+	return addrStr.String()
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
