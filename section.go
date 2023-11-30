@@ -1724,6 +1724,52 @@ func (section *addressSectionInternal) ContainsSinglePrefixBlock(prefixLen BitCo
 	return section.addressDivisionGroupingInternal.ContainsSinglePrefixBlock(prefixLen)
 }
 
+func (section *addressSectionInternal) prefixContains(other *AddressSection, contains bool) (res bool) {
+	var prefixedSection int
+	prefixLength := section.getPrefixLen()
+	if prefixLength == nil {
+		prefixedSection = section.GetSegmentCount()
+		if prefixedSection > other.GetSegmentCount() {
+			return
+		}
+	} else {
+		prefLen := prefixLength.bitCount()
+		prefixedSection = getNetworkSegmentIndex(prefLen, section.GetBytesPerSegment(), section.GetBitsPerSegment())
+		if prefixedSection >= 0 {
+			if prefixedSection >= other.GetSegmentCount() {
+				return
+			}
+			one := section.GetSegment(prefixedSection)
+			two := other.GetSegment(prefixedSection)
+			segPrefixLength := getPrefixedSegmentPrefixLength(one.getBitCount(), prefLen, prefixedSection)
+			if contains {
+				if !one.PrefixContains(two, segPrefixLength.bitCount()) {
+					return
+				}
+			} else {
+				if !one.PrefixEqual(two, segPrefixLength.bitCount()) {
+					return
+				}
+			}
+		}
+	}
+
+	for prefixedSection--; prefixedSection >= 0; prefixedSection-- {
+		one := section.GetSegment(prefixedSection)
+		two := other.GetSegment(prefixedSection)
+		if contains {
+			if !one.Contains(two) {
+				return
+			}
+		} else {
+			if !one.equalsSegment(two) {
+				return
+			}
+		}
+	}
+	return true
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
