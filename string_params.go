@@ -1084,6 +1084,54 @@ func (params *ipv6StringParams) getStringLength(addr *IPv6AddressSection) int {
 	return count + params.getAddressSuffixLength() + params.getAddressLabelLength()
 }
 
+func (params *ipv6StringParams) getSegmentsStringLength(part IPv6AddressSegmentSeries) int {
+	count := 0
+	divCount := part.GetDivisionCount()
+	if divCount != 0 {
+		i := 0
+		firstCompressedSegmentIndex := params.firstCompressedSegmentIndex
+		nextUncompressedIndex := params.nextUncompressedIndex
+		for {
+			if i < firstCompressedSegmentIndex || i >= nextUncompressedIndex {
+				div := part.GetSegment(i)
+				prefLen := div.GetSegmentPrefixLen()
+				additionalCount, _ := params.appendSegment(i, div, prefLen, nil, part)
+				count += additionalCount
+				i++
+				if i >= divCount {
+					break
+				}
+				if params.hasSeparator() {
+					count++
+				}
+			} else {
+				if i == firstCompressedSegmentIndex && params.hasSeparator() { // the segment is compressed
+					count++
+					if i == 0 { // when compressing the front we use two separators
+						count++
+					}
+				}
+				i++
+				if i >= divCount {
+					break
+				}
+			}
+		}
+	}
+	return count
+}
+
+func (params *ipv6StringParams) getZonedStringLength(addr *IPv6AddressSection, zone Zone) int {
+	if addr.GetDivisionCount() > 0 {
+		result := params.getStringLength(addr)
+		if zone != NoZone {
+			result += params.getZoneLength(zone, params.zoneSeparator)
+		}
+		return result
+	}
+	return 0
+}
+
 // Each IPv6StringParams has settings to write exactly one IPv6 address section string.
 type ipv6v4MixedParams struct {
 	ipv6Params *ipv6StringParams
