@@ -143,3 +143,21 @@ func (host *parsedHost) isUNCIPv6Literal() bool {
 func (host *parsedHost) isReverseDNS() bool {
 	return host.embeddedAddress.isReverseDNS
 }
+
+func (host *parsedHost) asGenericAddressString() *IPAddressString {
+	if host.hasEmbeddedAddress() {
+		addressProvider := host.getAddressProvider()
+		if addressProvider.isProvidingAllAddresses() {
+			return NewIPAddressStringParams(SegmentWildcardStr, addressProvider.getParameters())
+		} else if addressProvider.isProvidingEmpty() {
+			return NewIPAddressStringParams("", addressProvider.getParameters())
+		} else {
+			addr, err := addressProvider.getProviderAddress()
+			if err != nil {
+				return NewIPAddressStringParams(host.originalStr, addressProvider.getParameters())
+			}
+			return addr.ToAddressString()
+		}
+	}
+	return nil
+}
