@@ -161,3 +161,52 @@ func (host *parsedHost) asGenericAddressString() *IPAddressString {
 	}
 	return nil
 }
+
+func (host *parsedHost) buildHostString() string {
+	if host.parsedHostCache == nil {
+		var hostStr string
+		if host.hasEmbeddedAddress() {
+			addressProvider := host.getAddressProvider()
+			addr, err := addressProvider.getProviderAddress()
+			if err == nil && addr != nil {
+				section := addr.GetSection()
+				hostStr = section.ToCanonicalWildcardString()
+			} else {
+				hostStr = host.mapString(addressProvider)
+			}
+		} else {
+			var label string
+			normalizedFlags := host.normalizedFlags
+			var hostStrBuilder strings.Builder
+			for i, lastSep := 0, -1; i < len(host.separatorIndices); i++ {
+				index := host.separatorIndices[i]
+				if len(normalizedFlags) > 0 && !normalizedFlags[i] {
+					var normalizedLabelBuilder strings.Builder
+					normalizedLabelBuilder.Grow((index - lastSep) - 1)
+					for j := lastSep + 1; j < index; j++ {
+						c := host.originalStr[j]
+						if c >= 'A' && c <= 'Z' {
+							c = c + ('a' - 'A')
+						}
+						normalizedLabelBuilder.WriteByte(c)
+					}
+					label = normalizedLabelBuilder.String()
+				} else {
+					label = host.originalStr[lastSep+1 : index]
+				}
+				if i > 0 {
+					hostStrBuilder.WriteByte(LabelSeparator)
+				}
+				hostStrBuilder.WriteString(label)
+				lastSep = index
+			}
+			hostStr = hostStrBuilder.String()
+		}
+		return hostStr
+	}
+	return host.parsedHostCache.host
+}
+
+func (host *parsedHost) getHost() string {
+	return host.buildHostString()
+}
