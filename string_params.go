@@ -1215,6 +1215,39 @@ func (params *ipv6v4MixedParams) appendDivision(builder *strings.Builder, seg *A
 	return params.ipv6Params.appendDivision(builder, seg)
 }
 
+func (params *ipv6v4MixedParams) appendPrefixIndicator(builder *strings.Builder, addr *IPv6v4MixedAddressGrouping) {
+	if params.requiresPrefixIndicatorIPv6(addr.GetIPv6AddressSection()) || params.requiresPrefixIndicatorIPv4(addr.GetIPv4AddressSection()) {
+		params.ipv6Params.appendPrefixIndicator(builder, addr)
+	}
+}
+
+func (params *ipv6v4MixedParams) append(builder *strings.Builder, addr *IPv6v4MixedAddressGrouping, zone Zone) *strings.Builder {
+	if addr.GetDivisionCount() > 0 {
+		ipv6Params := params.ipv6Params
+		ipv6Params.appendLabel(builder)
+		_ = ipv6Params.appendSegments(builder, addr.GetIPv6AddressSection())
+		if ipv6Params.nextUncompressedIndex < addr.GetIPv6AddressSection().GetSegmentCount() {
+			builder.WriteByte(ipv6Params.getTrailingSegmentSeparator())
+		}
+		params.ipv4Params.appendSegments(builder, addr.GetIPv4AddressSection())
+
+		/*
+		 * RFC 4038: for bracketed addresses, zone is inside and prefix outside, putting prefix after zone.
+		 *
+		 * Suffixes are things like .in-addr.arpa, .ip6.arpa, .ipv6-literal.net
+		 * which generally convert an address string to a host
+		 * As with our HostName, we support host/prefix in which case the prefix is applied
+		 * to the resolved address.
+		 *
+		 * So in summary, our order is zone, then suffix, then prefix length.
+		 */
+		ipv6Params.appendZone(builder, zone)
+		ipv6Params.appendSuffix(builder)
+		params.appendPrefixIndicator(builder, addr)
+	}
+	return builder
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
