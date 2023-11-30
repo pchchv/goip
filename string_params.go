@@ -1248,6 +1248,19 @@ func (params *ipv6v4MixedParams) append(builder *strings.Builder, addr *IPv6v4Mi
 	return builder
 }
 
+func (params *ipv6v4MixedParams) toZonedString(addr *IPv6v4MixedAddressGrouping, zone Zone) string {
+	length := params.getStringLength(addr, zone)
+	builder := &strings.Builder{}
+	builder.Grow(length)
+	params.append(builder, addr, zone)
+	checkLengths(length, builder)
+	return builder.String()
+}
+
+func (params *ipv6v4MixedParams) toString(addr *IPv6v4MixedAddressGrouping) string {
+	return params.toZonedString(addr, NoZone)
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
