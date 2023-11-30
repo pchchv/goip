@@ -1017,6 +1017,29 @@ func (addr *IPAddress) fromKey(scheme addressScheme, key *keyContents) *IPAddres
 	return zeroAddr.init()
 }
 
+// ToAddressString retrieves or generates an IPAddressString instance for this IPAddress instance.
+// This may be the IPAddressString this instance was generated from, if it was generated from an IPAddressString.
+//
+// In general, users are intended to create IPAddress instances from IPAddressString instances,
+// while the reverse direction is generally not common and not useful, except under specific circumstances.
+//
+// However, the reverse direction can be useful under certain circumstances,
+// such as when maintaining a collection of HostIdentifierString or IPAddressString instances.
+func (addr *IPAddress) ToAddressString() *IPAddressString {
+	addr = addr.init()
+	cache := addr.cache
+	if cache != nil {
+		res := cache.identifierStr
+		if res != nil {
+			hostIdStr := res.idStr
+			if str, ok := hostIdStr.(*IPAddressString); ok {
+				return str
+			}
+		}
+	}
+	return newIPAddressStringFromAddr(addr.toCanonicalString(), addr)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
