@@ -1004,6 +1004,14 @@ func (params *ipv6StringParams) clone() *ipv6StringParams {
 	return &res
 }
 
+func (params *ipv6StringParams) getTrailingSeparatorCount(addr *IPv6AddressSection) int {
+	return params.getTrailingSepCount(addr)
+}
+
+func (params *ipv6StringParams) toString(addr *IPv6AddressSection) string {
+	return params.toZonedString(addr, NoZone)
+}
+
 // Each IPv6StringParams has settings to write exactly one IPv6 address section string.
 type ipv6v4MixedParams struct {
 	ipv6Params *ipv6StringParams
