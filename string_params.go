@@ -1261,6 +1261,10 @@ func (params *ipv6v4MixedParams) toString(addr *IPv6v4MixedAddressGrouping) stri
 	return params.toZonedString(addr, NoZone)
 }
 
+func (params *ipv6v4MixedParams) getDivisionStringLength(seg *AddressDivision) int {
+	return params.ipv6Params.getDivisionStringLength(seg)
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
