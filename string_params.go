@@ -1182,6 +1182,17 @@ func (params *ipv6v4MixedParams) clone() *ipv6v4MixedParams {
 	}
 }
 
+func (params *ipv6v4MixedParams) getTrailingSeparatorCount(addr *IPv6v4MixedAddressGrouping) int {
+	return params.ipv4Params.getTrailingSeparatorCount(addr.GetIPv4AddressSection())
+}
+
+func (params *ipv6v4MixedParams) getPrefixStringLength(addr *IPv6v4MixedAddressGrouping) int {
+	if params.requiresPrefixIndicatorIPv6(addr.GetIPv6AddressSection()) || params.requiresPrefixIndicatorIPv4(addr.GetIPv4AddressSection()) {
+		return getPrefixIndicatorStringLength(addr)
+	}
+	return 0
+}
+
 func getSplitChar(count int, splitDigitSeparator, character byte, stringPrefix string, builder *strings.Builder) {
 	prefLen := len(stringPrefix)
 	if count > 0 {
