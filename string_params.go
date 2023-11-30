@@ -1012,6 +1012,55 @@ func (params *ipv6StringParams) toString(addr *IPv6AddressSection) string {
 	return params.toZonedString(addr, NoZone)
 }
 
+func (params *ipv6StringParams) appendSegments(builder *strings.Builder, addr IPv6AddressSegmentSeries) (err address_error.IncompatibleAddressError) {
+	divisionCount := addr.GetDivisionCount()
+	if divisionCount <= 0 {
+		return nil
+	}
+
+	i := 0
+	reverse := params.reverse
+	separator := params.separator
+	lastIndex := divisionCount - 1
+	hasSep := params.hasSeparator()
+	nextUncompressedIndex := params.nextUncompressedIndex
+	firstCompressedSegmentIndex := params.firstCompressedSegmentIndex
+	for {
+		segIndex := i
+		if reverse {
+			segIndex = lastIndex - i
+		}
+		if segIndex < firstCompressedSegmentIndex || segIndex >= nextUncompressedIndex {
+			div := addr.GetSegment(segIndex)
+			prefLen := div.getDivisionPrefixLength() // Needs to be DivisionType
+			_, err = params.appendSegment(segIndex, div, prefLen, builder, addr)
+			i++
+			if i > lastIndex {
+				break
+			}
+			if hasSep {
+				builder.WriteByte(separator)
+			}
+		} else {
+			firstCompressed := firstCompressedSegmentIndex
+			if reverse {
+				firstCompressed = nextUncompressedIndex - 1
+			}
+			if segIndex == firstCompressed && hasSep { //the segment is compressed
+				builder.WriteByte(separator)
+				if i == 0 { //when compressing the front we use two separators
+					builder.WriteByte(separator)
+				}
+			} // else we are in the middle of a compressed set of segments, so nothing to write
+			i++
+			if i > lastIndex {
+				break
+			}
+		}
+	}
+	return
+}
+
 // Each IPv6StringParams has settings to write exactly one IPv6 address section string.
 type ipv6v4MixedParams struct {
 	ipv6Params *ipv6StringParams
