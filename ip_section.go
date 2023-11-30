@@ -2168,6 +2168,35 @@ func (section *IPAddressSection) ToSegmentedBinaryString() string {
 	return section.toSegmentedBinaryString()
 }
 
+// ToSQLWildcardString create a string similar to that from toNormalizedWildcardString except that
+// it uses SQL wildcards.  It uses '%' instead of '*' and also uses the wildcard '_'.
+func (section *IPAddressSection) ToSQLWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toSQLWildcardString()
+}
+
+// ToFullString produces a string with no compressed segments and all segments of full length with leading zeros,
+// which is 4 characters for IPv6 segments and 3 characters for IPv4 segments.
+func (section *IPAddressSection) ToFullString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toFullString()
+}
+
+// ToReverseDNSString generates the reverse-DNS lookup string,
+// returning an error if this address section is an IPv6 multiple-valued section for which the range cannot be represented.
+// For "8.255.4.4" it is "4.4.255.8.in-addr.arpa".
+// For "2001:db8::567:89ab" it is "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa".
+func (section *IPAddressSection) ToReverseDNSString() (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toReverseDNSString()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
