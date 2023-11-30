@@ -2109,6 +2109,29 @@ func (section *IPAddressSection) ToCanonicalWildcardString() string {
 	return section.toCanonicalWildcardString()
 }
 
+// CoverWithPrefixBlock returns the minimal-size prefix block that covers all the individual address sections in this section.
+// The resulting block will have a larger count than this, unless this section is already a prefix block.
+func (section *IPAddressSection) CoverWithPrefixBlock() *IPAddressSection {
+	return section.coverWithPrefixBlock()
+}
+
+// ToCanonicalString produces a canonical string for the address section.
+//
+// For IPv4, dotted octet format, also known as dotted decimal format, is used.
+// https://datatracker.ietf.org/doc/html/draft-main-ipaddr-text-rep-00#section-2.1
+//
+// For IPv6, RFC 5952 describes canonical string representation.
+// https://en.wikipedia.org/wiki/IPv6_address#Representation
+// http://tools.ietf.org/html/rfc5952
+//
+// With IP addresses, the prefix length is included in the string.
+func (section *IPAddressSection) ToCanonicalString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toCanonicalString()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
