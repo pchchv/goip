@@ -1040,6 +1040,23 @@ func (addr *IPAddress) ToAddressString() *IPAddressString {
 	return newIPAddressStringFromAddr(addr.toCanonicalString(), addr)
 }
 
+// PrefixContains returns whether the prefix values in the given address or subnet
+// are prefix values in this address or subnet, using the prefix length of this address or subnet.
+// If this address has no prefix length, the entire address is compared.
+//
+// It returns whether the prefix of this address contains all values of the same prefix length in the given address.
+func (addr *IPAddress) PrefixContains(other AddressType) bool {
+	return addr.init().prefixContains(other)
+}
+
+// Contains returns whether this is the same type and version as the given address or subnet and whether it contains all addresses in the given address or subnet.
+func (addr *IPAddress) Contains(other AddressType) bool {
+	if addr == nil {
+		return other == nil || other.ToAddressBase() == nil
+	}
+	return addr.init().contains(other)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
