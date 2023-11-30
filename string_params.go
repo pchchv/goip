@@ -1132,6 +1132,28 @@ func (params *ipv6StringParams) getZonedStringLength(addr *IPv6AddressSection, z
 	return 0
 }
 
+func (params *ipv6StringParams) toZonedSplitString(addr *IPv6AddressSection, zone Zone) (str string, err address_error.IncompatibleAddressError) {
+	length := params.getZonedStringLength(addr, zone)
+	builder := strings.Builder{}
+	builder.Grow(length)
+	if err = params.append(&builder, addr, zone); err != nil {
+		return
+	}
+
+	checkLengths(length, &builder)
+	str = builder.String()
+	return
+}
+
+func (params *ipv6StringParams) toZonedString(addr *IPv6AddressSection, zone Zone) string {
+	length := params.getZonedStringLength(addr, zone)
+	builder := strings.Builder{}
+	builder.Grow(length)
+	_ = params.append(&builder, addr, zone) // only split strings produce errors
+	checkLengths(length, &builder)
+	return builder.String()
+}
+
 // Each IPv6StringParams has settings to write exactly one IPv6 address section string.
 type ipv6v4MixedParams struct {
 	ipv6Params *ipv6StringParams
