@@ -2197,6 +2197,37 @@ func (section *IPAddressSection) ToReverseDNSString() (string, address_error.Inc
 	return section.toReverseDNSString()
 }
 
+// ToPrefixLenString returns a string with a CIDR network prefix length if this address has a network prefix length.
+// For IPv6, a zero host section will be compressed with "::". For IPv4 the string is equivalent to the canonical string.
+func (section *IPAddressSection) ToPrefixLenString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toPrefixLenString()
+}
+
+// ToSubnetString produces a string with specific formats for subnets.
+// The subnet string looks like "1.2.*.*" or "1:2::/16".
+//
+// In the case of IPv4, this means that wildcards are used instead of a network prefix when a network prefix has been supplied.
+// In the case of IPv6, when a network prefix has been supplied, the prefix will be shown and the host section will be compressed with "::".
+func (section *IPAddressSection) ToSubnetString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toSubnetString()
+}
+
+// ToCompressedWildcardString produces a string similar to ToNormalizedWildcardString,
+// avoiding the CIDR prefix, but with full IPv6 segment compression as well, including single zero-segments.
+// For IPv4 it is the same as ToNormalizedWildcardString.
+func (section *IPAddressSection) ToCompressedWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toCompressedWildcardString()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
