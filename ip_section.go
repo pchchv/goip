@@ -2089,6 +2089,26 @@ func (section *IPAddressSection) ToBinaryString(with0bPrefix bool) (string, addr
 	return section.toBinaryString(with0bPrefix)
 }
 
+// ToNormalizedWildcardString produces a string similar to the normalized string but avoids the CIDR prefix length.
+// CIDR addresses will be shown with wildcards and ranges (denoted by '*' and '-') instead of using the CIDR prefix notation.
+func (section *IPAddressSection) ToNormalizedWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toNormalizedWildcardString()
+}
+
+// ToCanonicalWildcardString produces a string similar to the canonical string but avoids the CIDR prefix length.
+// Address sections with a network prefix length will be shown with wildcards and ranges (denoted by '*' and '-') instead of using the CIDR prefix length notation.
+// IPv6 sections will be compressed according to the canonical representation.
+// For IPv4 it is the same as ToNormalizedWildcardString.
+func (section *IPAddressSection) ToCanonicalWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toCanonicalWildcardString()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
