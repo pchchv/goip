@@ -2132,6 +2132,42 @@ func (section *IPAddressSection) ToCanonicalString() string {
 	return section.toCanonicalString()
 }
 
+// ToNormalizedString produces a normalized string for the address section.
+//
+// For IPv4, it is the same as the canonical string.
+//
+// For IPv6, it differs from the canonical string.  Zero-segments are not compressed.
+//
+// With IP addresses, the prefix length is included in the string.
+func (section *IPAddressSection) ToNormalizedString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toNormalizedString()
+}
+
+// ToCompressedString produces a short representation of
+// this address section while remaining within the confines of standard representation(s) of the address.
+//
+// For IPv4, it is the same as the canonical string.
+//
+// For IPv6, it differs from the canonical string.
+// It compresses the maximum number of zeros and/or host segments with the IPv6 compression notation '::'.
+func (section *IPAddressSection) ToCompressedString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toCompressedString()
+}
+
+// ToSegmentedBinaryString writes this IP address section as segments of binary values preceded by the "0b" prefix.
+func (section *IPAddressSection) ToSegmentedBinaryString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toSegmentedBinaryString()
+}
+
 func applyPrefixToSegments(
 	sectionPrefixBits BitCount,
 	segments []*AddressDivision,
