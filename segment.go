@@ -698,6 +698,40 @@ func (seg *addressSegmentInternal) ToNormalizedString() string {
 	return stringer()
 }
 
+// ToHexString writes this address segment as a single hexadecimal value
+// (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0x" prefix.
+//
+// For segments, the error is always nil.
+func (seg *addressSegmentInternal) ToHexString(with0xPrefix bool) (string, address_error.IncompatibleAddressError) {
+	var stringer func() string
+	if with0xPrefix {
+		stringer = func() string {
+			return seg.toStringOpts(hexParamsSeg)
+		}
+	} else {
+		stringer = func() string {
+			return seg.toStringOpts(macCompressedParams)
+		}
+	}
+
+	if seg.divisionValues != nil {
+		if cache := seg.getCache(); cache != nil {
+			if with0xPrefix {
+				return cacheStr(&cache.cached0xHexString, stringer), nil
+			}
+			return cacheStr(&cache.cachedHexString, stringer), nil
+		}
+	}
+	return stringer(), nil
+}
+
+// ContainsSinglePrefixBlock returns whether the segment range matches exactly
+// the block of values for the given prefix length and has just a single prefix for that prefix length.
+func (seg *addressSegmentInternal) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	return seg.addressDivisionInternal.ContainsSinglePrefixBlock(prefixLen)
+}
+
 // AddressSegment represents a single address segment.
 // A segment contains a single value or range of sequential values and has an assigned bit length.
 // Segments are 1 byte for Ipv4, two bytes for Ipv6, and 1 byte for MAC addresses.
