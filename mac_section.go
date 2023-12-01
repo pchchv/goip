@@ -742,7 +742,7 @@ func (section *MACAddressSection) ToSpaceDelimitedString() string {
 	if section == nil {
 		return nilString()
 	}
-	
+
 	cache := section.getStringCache()
 	if cache == nil {
 		return section.toCustomString(spaceDelimitedParams)
@@ -772,6 +772,21 @@ func (section *MACAddressSection) ToColonDelimitedString() string {
 	}
 	return section.ToNormalizedString()
 }
+
+// ToNormalizedWildcardString produces the normalized string.
+func (section *MACAddressSection) ToNormalizedWildcardString() string {
+	return section.ToNormalizedString()
+}
+
+// String implements the [fmt.Stringer] interface, returning the normalized string provided by ToNormalizedString, or "<nil>" if the receiver is a nil pointer.
+func (section *MACAddressSection) String() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toString()
+}
+
+
 
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
