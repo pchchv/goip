@@ -866,6 +866,35 @@ func (addr *MACAddress) GetGenericSegment(index int) AddressSegmentType {
 	return addr.init().getSegment(index)
 }
 
+// Compare returns a negative integer, zero,
+// or a positive integer if this address or address collection is less than, equal,
+// or greater than the given item.
+// Any address item is comparable to any other.
+// All address items use CountComparator to compare.
+func (addr *MACAddress) Compare(item AddressItem) int {
+	return CountComparator.Compare(addr, item)
+}
+
+// CompareSize compares the counts of two addresses or address collections or address items,
+// the number of individual addresses or items within.
+//
+// Rather than calculating counts with GetCount,
+// there can be more efficient ways of determining whether one address collection represents more individual addresses than another.
+//
+// CompareSize returns a positive integer if this address or address collection has a larger count than the one given,
+// zero if they are the same,
+// or a negative integer if the other has a larger count.
+func (addr *MACAddress) CompareSize(other AddressItem) int { // this is here to take advantage of the CompareSize in IPAddressSection
+	if addr == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// have size 0, other has size >= 1
+		return -1
+	}
+	return addr.init().compareSize(other)
+}
+
 func fromMACKey(key MACAddressKey) *MACAddress {
 	additionalByteCount := key.additionalByteCount
 	segCount := int(additionalByteCount) + MediaAccessControlSegmentCount
