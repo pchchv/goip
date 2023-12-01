@@ -789,6 +789,588 @@ func (parseData *parsedIPAddress) containsProv(other *parsedIPAddress, networkOn
 	return boolSetting{true, true}
 }
 
+func (parseData *parsedIPAddress) createIPv6Sections(doSections, doRangeBoundaries, withUpper bool) (sections sectionResult, boundaries boundaryResult) {
+	qualifier := parseData.getQualifier()
+	prefLen := getPrefixLength(qualifier)
+	mask := parseData.getProviderMask()
+	if mask != nil && mask.GetBlockMaskPrefixLen(true) != nil {
+		mask = nil // don't do any masking if the mask is a subnet mask, instead just map it to the corresponding prefix length
+	}
+
+	var segIsMult bool
+	isMultiple := false
+	hasMask := mask != nil
+	isHostMultiple := false
+	addressParseData := parseData.getAddressParseData()
+	segmentCount := addressParseData.getSegmentCount()
+	if hasMask && parseData.maskers == nil {
+		parseData.maskers = make([]Masker, segmentCount)
+	}
+
+	var hostSegments, segments, lowerSegments, upperSegments []*AddressDivision
+	creator := ipv6Type.getIPNetwork().getIPAddressCreator()
+	ipv6SegmentCount := IPv6SegmentCount
+	if doSections {
+		segments = createSegmentArray(IPv6SegmentCount)
+	} else if doRangeBoundaries {
+		lowerSegments = createSegmentArray(IPv6SegmentCount)
+	} else {
+		return
+	}
+	mixed := parseData.isProvidingMixedIPv6()
+
+	var missingSegmentCount int
+	normalizedSegmentIndex := 0
+	if mixed {
+		missingSegmentCount = IPv6MixedOriginalSegmentCount
+	} else {
+		missingSegmentCount = IPv6SegmentCount
+	}
+	missingSegmentCount -= segmentCount
+
+	expandedSegments := missingSegmentCount <= 0
+	expandedStart, expandedEnd := -1, -1
+	addressString := parseData.str
+	maskedIsDifferent := false
+
+	// get the segments for IPv6
+	for i := 0; i < segmentCount; i++ {
+		lower := addressParseData.getValue(i, keyLower)
+		upper := addressParseData.getValue(i, keyUpper)
+
+		if !expandedSegments {
+			isLastSegment := i == segmentCount-1
+			isWildcard := addressParseData.isWildcard(i)
+			isCompressed := parseData.segmentIsCompressed(i)
+
+			// figure out if this segment should be expanded
+			expandedSegments = isLastSegment || isCompressed
+			if !expandedSegments {
+				// check if we are wildcard and no other wildcard or compressed segment further down
+				expandedSegments = isWildcard
+				if expandedSegments {
+					for j := i + 1; j < segmentCount; j++ {
+						if addressParseData.isWildcard(j) || parseData.segmentIsCompressed(j) {
+							expandedSegments = false
+							break
+						}
+					}
+				}
+			}
+			if expandedSegments {
+				var lowerHighBytes, upperHighBytes uint64
+				hostIsRange := false
+				if !isCompressed {
+					if isWildcard {
+						if missingSegmentCount > 3 {
+							upperHighBytes = 0xffffffffffffffff >> uint((7-missingSegmentCount)<<4)
+							upper = 0xffffffffffffffff
+						} else {
+							upperHighBytes = 0
+							upper = 0xffffffffffffffff >> uint((3-missingSegmentCount)<<4)
+						}
+						lower = 0
+						hostIsRange = true
+					} else {
+						if missingSegmentCount > 3 {
+							lowerHighBytes = addressParseData.getValue(i, keyExtendedLower) // the high half of the lower value
+							upperHighBytes = addressParseData.getValue(i, keyExtendedUpper) // the high half of the upper value
+							hostIsRange = (lower != upper) || (lowerHighBytes != upperHighBytes)
+						} else {
+							hostIsRange = lower != upper
+						}
+						expandedStart = i
+						expandedEnd = i + missingSegmentCount
+					}
+				}
+				bits := BitCount(missingSegmentCount+1) << ipv6BitsToSegmentBitshift
+				var maskedLower, maskedUpper, maskedLowerHighBytes, maskedUpperHighBytes uint64
+				maskedIsRange := false
+				if hasMask {
+					// line up the mask segments into two longs
+					if isCompressed {
+						parseData.maskers[i] = defaultMasker
+					} else {
+						bitsPerSegment := IPv6BitsPerSegment
+						var maskVal uint64 = 0
+						if missingSegmentCount >= 4 {
+							cachedMasker := parseData.maskers[i]
+							var extendedMaskVal uint64
+							extendedCount := missingSegmentCount - 3
+							for k := 0; k < extendedCount; k++ {
+								extendedMaskVal = (extendedMaskVal << uint(bitsPerSegment)) | mask.GetSegment(normalizedSegmentIndex+k).getDivisionValue()
+							}
+							for k := extendedCount; k <= missingSegmentCount; k++ {
+								maskVal = (maskVal << uint(bitsPerSegment)) | mask.GetSegment(normalizedSegmentIndex+k).getDivisionValue()
+							}
+							if cachedMasker == nil {
+								// shift must be 6 bits at most for this shift to work per the java spec (so it must be less than 2^6 = 64)
+								extendedMaxValue := ^(^DivInt(0) << uint(bits-DivIntSize))
+								cachedMasker = MaskExtendedRange(
+									lower, lowerHighBytes,
+									upper, upperHighBytes,
+									maskVal, extendedMaskVal,
+									0xffffffffffffffff, extendedMaxValue)
+								parseData.maskers[i] = cachedMasker
+							}
+							if !cachedMasker.IsSequential() && sections.maskError == nil {
+								sections.maskError = &incompatibleAddressError{
+									addressError: addressError{
+										str: addressString,
+										key: "ipaddress.error.maskMismatch",
+									},
+								}
+							}
+							masker := cachedMasker.(ExtendedMasker)
+							maskedLowerHighBytes = masker.GetExtendedMaskedLower(lowerHighBytes, extendedMaskVal)
+							maskedUpperHighBytes = masker.GetExtendedMaskedUpper(upperHighBytes, extendedMaskVal)
+							maskedLower = masker.GetMaskedLower(lower, maskVal)
+							maskedUpper = masker.GetMaskedUpper(upper, maskVal)
+							maskedIsRange = (maskedLower != maskedUpper) || (maskedLowerHighBytes != maskedUpperHighBytes)
+							maskedIsDifferent = maskedIsDifferent || maskedLower != lower || maskedUpper != upper || maskedLowerHighBytes != lowerHighBytes || maskedUpperHighBytes != upperHighBytes
+						} else {
+							masker := parseData.maskers[i]
+							for k := 0; k <= missingSegmentCount; k++ {
+								maskVal = (maskVal << uint(bitsPerSegment)) | mask.GetSegment(normalizedSegmentIndex+k).getDivisionValue()
+							}
+							if masker == nil {
+								// shift must be 6 bits at most for this shift to work per the java spec (so it must be less than 2^6 = 64)
+								maxValue := ^(^DivInt(0) << uint(bits))
+								masker = MaskRange(lower, upper, maskVal, maxValue)
+								parseData.maskers[i] = masker
+							}
+							if !masker.IsSequential() && sections.maskError == nil {
+								sections.maskError = &incompatibleAddressError{
+									addressError: addressError{
+										str: maskString(lower, upper, maskVal),
+										key: "ipaddress.error.maskMismatch",
+									},
+								}
+							}
+							maskedLower = masker.GetMaskedLower(lower, maskVal)
+							maskedUpper = masker.GetMaskedUpper(upper, maskVal)
+							maskedIsRange = maskedLower != maskedUpper
+							maskedIsDifferent = maskedIsDifferent || maskedLower != lower || maskedUpper != upper
+						}
+					}
+				} else {
+					maskedLowerHighBytes = lowerHighBytes
+					maskedUpperHighBytes = upperHighBytes
+					maskedLower = lower
+					maskedUpper = upper
+					maskedIsRange = hostIsRange
+				}
+				shift := bits
+				count := missingSegmentCount
+				for count >= 0 { // add the missing segments
+					currentPrefix := getSegmentPrefixLength(IPv6BitsPerSegment, prefLen, normalizedSegmentIndex)
+					var hostSegLower, hostSegUpper, maskedSegLower, maskedSegUpper uint64
+					if !isCompressed {
+						shift -= IPv6BitsPerSegment
+						if count >= 4 {
+							shorterShift := shift - (IPv6BitsPerSegment << 2)
+							hostSegLower = (lowerHighBytes >> uint(shorterShift)) & IPv6MaxValuePerSegment
+							if hostIsRange {
+								hostSegUpper = (upperHighBytes >> uint(shorterShift)) & IPv6MaxValuePerSegment
+							} else {
+								hostSegUpper = hostSegLower
+							}
+							if hasMask {
+								maskedSegLower = (maskedLowerHighBytes >> uint(shorterShift)) & IPv6MaxValuePerSegment
+								if maskedIsRange {
+									maskedSegUpper = (maskedUpperHighBytes >> uint(shorterShift)) & IPv6MaxValuePerSegment
+								} else {
+									maskedSegUpper = maskedSegLower
+								}
+							} else {
+								maskedSegLower = hostSegLower
+								maskedSegUpper = hostSegUpper
+							}
+						} else {
+							hostSegLower = (lower >> uint(shift)) & IPv6MaxValuePerSegment
+							if hostIsRange {
+								hostSegUpper = (upper >> uint(shift)) & IPv6MaxValuePerSegment
+							} else {
+								hostSegUpper = hostSegLower
+							}
+							if hasMask {
+								maskedSegLower = (maskedLower >> uint(shift)) & IPv6MaxValuePerSegment
+								if maskedIsRange {
+									maskedSegUpper = (maskedUpper >> uint(shift)) & IPv6MaxValuePerSegment
+								} else {
+									maskedSegUpper = maskedSegLower
+								}
+							} else {
+								maskedSegLower = hostSegLower
+								maskedSegUpper = hostSegUpper
+							}
+						}
+					}
+					if doSections {
+						if maskedIsDifferent || currentPrefix != nil {
+							hostSegments = allocateSegments(hostSegments, segments, ipv6SegmentCount, normalizedSegmentIndex)
+							hostSegments[normalizedSegmentIndex], segIsMult = parseData.createSegment(
+								addressString,
+								IPv6,
+								SegInt(hostSegLower),
+								SegInt(hostSegUpper),
+								false,
+								i,
+								nil,
+								creator)
+							isHostMultiple = isHostMultiple || segIsMult
+						}
+						segments[normalizedSegmentIndex], segIsMult = parseData.createSegment(
+							addressString,
+							IPv6,
+							SegInt(maskedSegLower),
+							SegInt(maskedSegUpper),
+							false,
+							i,
+							currentPrefix,
+							creator)
+						isMultiple = isMultiple || segIsMult
+					}
+					if doRangeBoundaries {
+						isSegRange := maskedSegLower != maskedSegUpper
+						if !doSections || isSegRange {
+							if doSections {
+								lowerSegments = allocateSegments(lowerSegments, segments, ipv6SegmentCount, normalizedSegmentIndex)
+							} // else segments already allocated
+							lowerSegments[normalizedSegmentIndex], _ = parseData.createSegment(
+								addressString,
+								IPv6,
+								SegInt(maskedSegLower),
+								SegInt(maskedSegLower),
+								false,
+								i,
+								currentPrefix,
+								creator)
+
+						} else if lowerSegments != nil {
+							lowerSegments[normalizedSegmentIndex] = segments[normalizedSegmentIndex]
+						}
+						if withUpper {
+							if isSegRange {
+								upperSegments = allocateSegments(upperSegments, lowerSegments, ipv6SegmentCount, normalizedSegmentIndex)
+								upperSegments[normalizedSegmentIndex], _ = parseData.createSegment(
+									addressString,
+									IPv6,
+									SegInt(maskedSegUpper),
+									SegInt(maskedSegUpper),
+									false,
+									i,
+									currentPrefix,
+									creator)
+							} else if upperSegments != nil {
+								upperSegments[normalizedSegmentIndex] = lowerSegments[normalizedSegmentIndex]
+							}
+						}
+					}
+					normalizedSegmentIndex++
+					count--
+				}
+				addressParseData.setBitLength(i, bits)
+				continue
+			} // end handle joined segments
+		}
+
+		var masker Masker
+		unmasked := true
+		hostLower, hostUpper := lower, upper
+		if hasMask {
+			masker = parseData.maskers[i]
+			maskInt := uint64(mask.GetSegment(normalizedSegmentIndex).GetSegmentValue())
+			if masker == nil {
+				masker = MaskRange(lower, upper, maskInt, uint64(creator.getMaxValuePerSegment()))
+				parseData.maskers[i] = masker
+			}
+			if !masker.IsSequential() && sections.maskError == nil {
+				sections.maskError = &incompatibleAddressError{
+					addressError: addressError{
+						str: maskString(lower, upper, maskInt),
+						key: "ipaddress.error.maskMismatch",
+					},
+				}
+			}
+			lower = masker.GetMaskedLower(lower, maskInt)
+			upper = masker.GetMaskedUpper(upper, maskInt)
+			unmasked = hostLower == lower && hostUpper == upper
+			maskedIsDifferent = maskedIsDifferent || !unmasked
+		}
+
+		segmentPrefixLength := getSegmentPrefixLength(IPv6BitsPerSegment, prefLen, normalizedSegmentIndex)
+		if doSections {
+			if maskedIsDifferent || segmentPrefixLength != nil {
+				hostSegments = allocateSegments(hostSegments, segments, ipv6SegmentCount, normalizedSegmentIndex)
+				hostSegments[normalizedSegmentIndex], segIsMult = parseData.createSegment(
+					addressString,
+					IPv6,
+					SegInt(hostLower),
+					SegInt(hostUpper),
+					true,
+					i,
+					nil,
+					creator)
+				isHostMultiple = isHostMultiple || segIsMult
+			}
+			segments[normalizedSegmentIndex], segIsMult = parseData.createSegment(
+				addressString,
+				IPv6,
+				SegInt(lower),
+				SegInt(upper),
+				unmasked,
+				i,
+				segmentPrefixLength,
+				creator)
+			isMultiple = isMultiple || segIsMult
+		}
+		if doRangeBoundaries {
+			isRange := lower != upper
+			if !doSections || isRange {
+				if doSections {
+					lowerSegments = allocateSegments(lowerSegments, segments, ipv6SegmentCount, normalizedSegmentIndex)
+				} // else segments already allocated
+				lowerSegments[normalizedSegmentIndex], _ = parseData.createSegment(
+					addressString,
+					IPv6,
+					SegInt(lower),
+					SegInt(lower),
+					false,
+					i,
+					segmentPrefixLength,
+					creator)
+
+			} else if lowerSegments != nil {
+				lowerSegments[normalizedSegmentIndex] = segments[normalizedSegmentIndex]
+			}
+			if withUpper {
+				if isRange {
+					upperSegments = allocateSegments(upperSegments, lowerSegments, ipv6SegmentCount, normalizedSegmentIndex)
+					upperSegments[normalizedSegmentIndex], _ = parseData.createSegment(
+						addressString,
+						IPv6,
+						SegInt(upper),
+						SegInt(upper),
+						false,
+						i,
+						segmentPrefixLength,
+						creator)
+				} else if upperSegments != nil {
+					upperSegments[normalizedSegmentIndex] = lowerSegments[normalizedSegmentIndex]
+				}
+			}
+		}
+		normalizedSegmentIndex++
+		addressParseData.setBitLength(i, IPv6BitsPerSegment)
+	}
+
+	prefLength := getPrefixLength(qualifier)
+	if mixed {
+		ipv4Range := parseData.mixedParsedAddress.getProviderSeqRange().ToIPv4()
+		if hasMask && parseData.mixedMaskers == nil {
+			parseData.mixedMaskers = make([]Masker, IPv4SegmentCount)
+		}
+		for n := 0; n < 2; n++ {
+			m := n << 1
+			segmentPrefixLength := getSegmentPrefixLength(IPv6BitsPerSegment, prefLen, normalizedSegmentIndex)
+			//segmentPrefixLength := getQualifierSegmentPrefixLength(normalizedSegmentIndex, IPv6BitsPerSegment, qualifier)
+			o := m + 1
+			oneLow := ipv4Range.GetLower().GetSegment(m)
+			twoLow := ipv4Range.GetLower().GetSegment(o)
+			oneUp := ipv4Range.GetUpper().GetSegment(m)
+			twoUp := ipv4Range.GetUpper().GetSegment(o)
+			oneLower := oneLow.GetSegmentValue()
+			twoLower := twoLow.GetSegmentValue()
+			oneUpper := oneUp.GetSegmentValue()
+			twoUpper := twoUp.GetSegmentValue()
+
+			originalOneLower := oneLower
+			originalTwoLower := twoLower
+			originalOneUpper := oneUpper
+			originalTwoUpper := twoUpper
+
+			if hasMask {
+				maskInt := uint64(mask.GetSegment(normalizedSegmentIndex).GetSegmentValue())
+				shift := IPv4BitsPerSegment
+				shiftedMask := maskInt >> uint(shift)
+				masker := parseData.mixedMaskers[m]
+				lstringLower := uint64(oneLower)
+				lstringUpper := uint64(oneUpper)
+				if masker == nil {
+					masker = MaskRange(lstringLower, lstringUpper, shiftedMask, IPv4MaxValuePerSegment)
+					parseData.mixedMaskers[m] = masker
+				}
+				if !masker.IsSequential() && sections.maskError == nil {
+					sections.maskError = &incompatibleAddressError{
+						addressError: addressError{
+							str: maskString(lstringLower, lstringUpper, shiftedMask),
+							key: "ipaddress.error.maskMismatch",
+						},
+					}
+				}
+				oneLower = SegInt(masker.GetMaskedLower(lstringLower, shiftedMask))
+				oneUpper = SegInt(masker.GetMaskedUpper(lstringUpper, shiftedMask))
+				lstringLower = uint64(twoLower)
+				lstringUpper = uint64(twoUpper)
+				masker = parseData.mixedMaskers[m+1]
+				if masker == nil {
+					masker = MaskRange(lstringLower, lstringUpper, maskInt, IPv4MaxValuePerSegment)
+					parseData.mixedMaskers[m+1] = masker
+				}
+				if !masker.IsSequential() && sections.maskError == nil {
+					sections.maskError = &incompatibleAddressError{
+						addressError: addressError{
+							str: maskString(lstringLower, lstringUpper, maskInt),
+							key: "ipaddress.error.maskMismatch",
+						},
+					}
+				}
+				twoLower = SegInt(masker.GetMaskedLower(lstringLower, maskInt))
+				twoUpper = SegInt(masker.GetMaskedUpper(lstringUpper, maskInt))
+				maskedIsDifferent = maskedIsDifferent || oneLower != originalOneLower || oneUpper != originalOneUpper ||
+					twoLower != originalTwoLower || twoUpper != originalTwoUpper
+			}
+			isRange := oneLower != oneUpper || twoLower != twoUpper
+			if doSections {
+				doHostSegment := maskedIsDifferent || segmentPrefixLength != nil
+				if doHostSegment {
+					hostSegments = allocateSegments(hostSegments, segments, ipv6SegmentCount, normalizedSegmentIndex)
+				}
+				if !isRange {
+					if doHostSegment {
+						hostSegments[normalizedSegmentIndex] = createIPv6Segment(originalOneLower, originalTwoLower, nil, creator)
+					}
+					segments[normalizedSegmentIndex] = createIPv6Segment(
+						oneLower,
+						twoLower,
+						segmentPrefixLength,
+						creator)
+				} else {
+					if doHostSegment {
+						hostSegments[normalizedSegmentIndex] = createIPv6RangeSegment(
+							&sections,
+							ipv4Range,
+							originalOneLower,
+							originalOneUpper,
+							originalTwoLower,
+							originalTwoUpper,
+							nil,
+							creator)
+					}
+					segments[normalizedSegmentIndex] = createIPv6RangeSegment(
+						&sections,
+						ipv4Range,
+						oneLower,
+						oneUpper,
+						twoLower,
+						twoUpper,
+						segmentPrefixLength,
+						creator)
+					isMultiple = true
+				}
+			}
+			if doRangeBoundaries {
+				if !doSections || isRange {
+					if doSections {
+						lowerSegments = allocateSegments(lowerSegments, segments, ipv6SegmentCount, normalizedSegmentIndex)
+					} // else segments already allocated
+					lowerSegments[normalizedSegmentIndex] = createIPv6Segment(
+						oneLower,
+						twoLower,
+						segmentPrefixLength,
+						creator)
+				} else if lowerSegments != nil {
+					lowerSegments[normalizedSegmentIndex] = segments[normalizedSegmentIndex]
+				}
+				if withUpper {
+					if isRange {
+						upperSegments = allocateSegments(upperSegments, lowerSegments, ipv6SegmentCount, normalizedSegmentIndex)
+						upperSegments[normalizedSegmentIndex] = createIPv6Segment(
+							oneUpper,
+							twoUpper,
+							segmentPrefixLength, // we must keep prefix length for upper to get prefix subnet creation
+							creator)
+					} else if upperSegments != nil {
+						upperSegments[normalizedSegmentIndex] = lowerSegments[normalizedSegmentIndex]
+					}
+				}
+			}
+			normalizedSegmentIndex++
+		}
+	}
+
+	var result, hostResult *IPAddressSection
+	if doSections {
+		if hostSegments != nil {
+			hostResult = creator.createSectionInternal(hostSegments, isHostMultiple).ToIP()
+			sections.hostSection = hostResult
+			if checkExpandedValues(hostResult, expandedStart, expandedEnd) {
+				sections.joinHostError = &incompatibleAddressError{addressError{str: addressString, key: "ipaddress.error.invalid.joined.ranges"}}
+			}
+		}
+		result = creator.createPrefixedSectionInternal(segments, isMultiple, prefLength)
+		sections.section = result
+		if checkExpandedValues(result, expandedStart, expandedEnd) {
+			sections.joinAddressError = &incompatibleAddressError{addressError{str: addressString, key: "ipaddress.error.invalid.joined.ranges"}}
+			if hostResult == nil {
+				sections.joinHostError = sections.joinAddressError
+			}
+		}
+	}
+
+	if doRangeBoundaries {
+		prefixLength := getPrefixLength(qualifier)
+		isPrefixSub := false
+		if prefixLength != nil {
+			var lowerSegs, upperSegs []*AddressDivision
+			if doSections {
+				lowerSegs = segments
+				upperSegs = segments
+			} else {
+				lowerSegs = lowerSegments
+				if upperSegments == nil {
+					upperSegs = lowerSegments
+				} else {
+					upperSegs = upperSegments
+				}
+			}
+			isPrefixSub = isPrefixSubnet(
+				func(index int) SegInt { return lowerSegs[index].ToSegmentBase().GetSegmentValue() },
+				func(index int) SegInt { return upperSegs[index].ToSegmentBase().GetUpperSegmentValue() },
+				len(lowerSegs),
+				IPv6BytesPerSegment,
+				IPv6BitsPerSegment,
+				IPv6MaxValuePerSegment,
+				prefixLength.bitCount(),
+				zerosOnly)
+			if isPrefixSub {
+				if lowerSegments == nil {
+					// allocate lower segments from address segments
+					lowerSegments = allocateSegments(lowerSegments, segments, ipv6SegmentCount, ipv6SegmentCount)
+				}
+				if upperSegments == nil {
+					// allocate upper segments from lower segments
+					upperSegments = allocateSegments(upperSegments, lowerSegments, ipv6SegmentCount, ipv6SegmentCount)
+				}
+			}
+		}
+
+		if lowerSegments != nil {
+			boundaries.lowerSection = creator.createPrefixedSectionInternalSingle(lowerSegments, false, prefLength)
+		}
+
+		if upperSegments != nil {
+			section := creator.createPrefixedSectionInternal(upperSegments, false, prefLength)
+			if isPrefixSub {
+				section = section.ToPrefixBlock()
+			}
+			boundaries.upperSection = section.GetUpper()
+		}
+	}
+	return
+}
+
 func createRangeSeg(
 	addressString string,
 	_ IPVersion,
