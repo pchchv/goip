@@ -947,6 +947,41 @@ func (addr *MACAddress) PrefixBlockIterator() Iterator[*MACAddress] {
 	return macAddressIterator{addr.init().prefixIterator(true)}
 }
 
+// IncrementBoundary returns the address that is the given increment from the range boundaries of this address collection.
+//
+// If the given increment is positive, adds the value to the upper address (GetUpper) in the range to produce a new address.
+// If the given increment is negative, adds the value to the lower address (GetLower) in the range to produce a new address.
+// If the increment is zero, returns this address.
+//
+// If this is a single address value, that address is simply incremented by the given increment value, positive or negative.
+//
+// On address overflow or underflow, IncrementBoundary returns nil.
+func (addr *MACAddress) IncrementBoundary(increment int64) *MACAddress {
+	return addr.init().incrementBoundary(increment).ToMAC()
+}
+
+// Increment returns the address from the address collection that is the given increment upwards into the address range,
+// with the increment of 0 returning the first address in the range.
+//
+// If the increment i matches or exceeds the size count c, then i - c + 1
+// is added to the upper address of the range.
+// An increment matching the range count gives you the address just above the highest address in the range.
+//
+// If the increment is negative, it is added to the lower address of the range.
+// To get the address just below the lowest address of the address range, use the increment -1.
+//
+// If this is just a single address value, the address is simply incremented by the given increment, positive or negative.
+//
+// If this is an address range with multiple values, a positive increment i is equivalent i + 1 values from the iterator and beyond.
+// For instance, a increment of 0 is the first value from the iterator, an increment of 1 is the second value from the iterator, and so on.
+// An increment of a negative value added to the range count is equivalent to the same number of iterator values preceding the upper bound of the iterator.
+// For instance, an increment of count - 1 is the last value from the iterator, an increment of count - 2 is the second last value, and so on.
+//
+// On address overflow or underflow, Increment returns nil.
+func (addr *MACAddress) Increment(increment int64) *MACAddress {
+	return addr.init().increment(increment).ToMAC()
+}
+
 func fromMACKey(key MACAddressKey) *MACAddress {
 	additionalByteCount := key.additionalByteCount
 	segCount := int(additionalByteCount) + MediaAccessControlSegmentCount
