@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string"
 )
 
 const (
@@ -1039,6 +1040,25 @@ func (addr *MACAddress) ToDashedString() string {
 		return nilString()
 	}
 	return addr.init().GetSection().ToDashedString()
+}
+
+// ToColonDelimitedString produces a string delimited by colons: "aa:bb:cc:dd:ee:ff".
+// For range segments, '-' is used: "11:22:33-44:55:66".
+// It returns the same string as ToNormalizedString.
+func (addr *MACAddress) ToColonDelimitedString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().GetSection().ToColonDelimitedString()
+}
+
+// ToCustomString creates a customized string
+// from this address or address collection according to the given string option parameters.
+func (addr *MACAddress) ToCustomString(stringOptions address_string.StringOptions) string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().GetSection().toCustomString(stringOptions)
 }
 
 func fromMACKey(key MACAddressKey) *MACAddress {
