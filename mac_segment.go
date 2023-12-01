@@ -357,6 +357,27 @@ func (seg *MACAddressSegment) CompareSize(other AddressItem) int {
 	return seg.init().compareSize(other)
 }
 
+// GetString produces a normalized string to represent the segment.
+//
+// For MAC segments, the string is the same as that produced by GetWildcardString.
+func (seg *MACAddressSegment) GetString() string {
+	if seg == nil {
+		return nilString()
+	}
+	return seg.init().getString()
+}
+
+// String produces a string that is useful when a segment is provided with no context.
+// It uses the hexadecimal radix with the string prefix for hex ("0x").
+// GetWildcardString and GetString are more appropriate in context with other segments or divisions.
+// They do not use a string prefix and use '*' for full-range segments.
+func (seg *MACAddressSegment) String() string {
+	if seg == nil {
+		return nilString()
+	}
+	return seg.init().toString()
+}
+
 type macSegmentValues struct {
 	value      MACSegInt
 	upperValue MACSegInt
@@ -517,10 +538,10 @@ func NewMACRangeSegment(val, upperVal MACSegInt) *MACAddressSegment {
 // WrapMACSegmentValueProvider converts the given MACSegmentValueProvider to a SegmentValueProvider
 func WrapMACSegmentValueProvider(f MACSegmentValueProvider) SegmentValueProvider {
 	if f != nil {
-	return func(segmentIndex int) SegInt {
-		return SegInt(f(segmentIndex))
+		return func(segmentIndex int) SegInt {
+			return SegInt(f(segmentIndex))
+		}
 	}
-}
 	return nil
 }
 
