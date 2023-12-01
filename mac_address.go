@@ -895,6 +895,37 @@ func (addr *MACAddress) CompareSize(other AddressItem) int { // this is here to 
 	return addr.init().compareSize(other)
 }
 
+// ContainsSinglePrefixBlock returns whether this address contains a single prefix block for the given prefix length.
+//
+// This means there is only one prefix value for the given prefix length,
+// and it also contains the full prefix block for that prefix,
+// all addresses with that prefix.
+//
+// Use GetPrefixLenForSingleBlock to determine whether there is a prefix length for which this method returns true.
+func (addr *MACAddress) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	return addr.init().addressInternal.ContainsSinglePrefixBlock(prefixLen)
+}
+
+// Contains returns whether this is the same type and version as
+// the given address or subnet and whether it contains all addresses in the given address or subnet.
+func (addr *MACAddress) Contains(other AddressType) bool {
+	if addr == nil {
+		return other == nil || other.ToAddressBase() == nil
+	}
+	// note: don't use the same optimization as in IPv4/6 because do need to check segment count with MAC
+	return addr.init().contains(other)
+}
+
+// Equal returns whether the given address or address collection is equal to this address or address collection.
+// Two address instances are equal if they represent the same set of addresses.
+func (addr *MACAddress) Equal(other AddressType) bool {
+	if addr == nil {
+		return other == nil || other.ToAddressBase() == nil
+	}
+	// note: don't use the same optimization as in IPv4/6 because do need to check segment count with MAC
+	return addr.init().equals(other)
+}
+
 func fromMACKey(key MACAddressKey) *MACAddress {
 	additionalByteCount := key.additionalByteCount
 	segCount := int(additionalByteCount) + MediaAccessControlSegmentCount
