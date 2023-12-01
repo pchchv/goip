@@ -679,6 +679,40 @@ func (addrStr *IPAddressString) IsIPv4Mapped() bool {
 	return addrStr.IsIPv6() && ipv4MappedPrefix.PrefixEqual(addrStr)
 }
 
+// PrefixEqual is similar to Equal, but instead returns whether the prefix of this address string matches the same of the given address string,
+// using the prefix length of this address string.
+// It returns whether the argument address string has the same address prefix values as this.
+//
+// In other words, it determines if the other address has the same prefix subnet using the prefix length of this address.
+//
+// If an address has no prefix length, the whole address is compared.
+//
+// If this address string or the given address string is invalid, it returns false.
+func (addrStr *IPAddressString) PrefixEqual(other *IPAddressString) bool {
+	// getting the prefix
+	addrStr = addrStr.init()
+	other = other.init()
+	if other == addrStr {
+		return true
+	} else if !addrStr.IsValid() {
+		return false
+	} else if other.IsValid() {
+		directResult := addrStr.addressProvider.prefixEqualsProvider(other.addressProvider)
+		if directResult.isSet {
+			return directResult.val
+		}
+		thisAddress := addrStr.GetAddress()
+		if thisAddress != nil {
+			otherAddress := other.GetAddress()
+			if otherAddress != nil {
+				return thisAddress.prefixEquals(otherAddress)
+			}
+		}
+		// one or both addresses are nil, so there is no prefix to speak of
+	}
+	return false
+}
+
 func newIPAddressStringFromAddr(str string, addr *IPAddress) *IPAddressString {
 	return &IPAddressString{
 		str:             str,
