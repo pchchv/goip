@@ -610,6 +610,52 @@ func (section *MACAddressSection) PrefixBlockIterator() Iterator[*MACAddressSect
 	return macSectionIterator{section.prefixIterator(true)}
 }
 
+// IncrementBoundary returns the item that is the given increment from the range boundaries of this item.
+//
+// If the given increment is positive, adds the value to the highest (GetUpper) in the range to produce a new item.
+// If the given increment is negative, adds the value to the lowest (GetLower) in the range to produce a new item.
+// If the increment is zero, returns this.
+//
+// If this represents just a single value, this item is simply incremented by the given increment value, positive or negative.
+//
+// On overflow or underflow, IncrementBoundary returns nil.
+func (section *MACAddressSection) IncrementBoundary(increment int64) *MACAddressSection {
+	return section.incrementBoundary(increment).ToMAC()
+}
+
+// ToHexString writes this address section as a single hexadecimal value (possibly two values if a range),
+// the number of digits according to the bit count, with or without a preceding "0x" prefix.
+//
+// If a multiple-valued section cannot be written as a range of two values, an error is returned.
+func (section *MACAddressSection) ToHexString(with0xPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toHexString(with0xPrefix)
+}
+
+// ToOctalString writes this address section as a single octal value (possibly two values if a range),
+// the number of digits according to the bit count, with or without a preceding "0" prefix.
+//
+// If a multiple-valued section cannot be written as a single prefix block or a range of two values, an error is returned.
+func (section *MACAddressSection) ToOctalString(with0Prefix bool) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toOctalString(with0Prefix)
+}
+
+// ToBinaryString writes this address section as a single binary value (possibly two values if a range),
+// the number of digits according to the bit count, with or without a preceding "0b" prefix.
+//
+// If a multiple-valued section cannot be written as a range of two values, an error is returned.
+func (section *MACAddressSection) ToBinaryString(with0bPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toBinaryString(with0bPrefix)
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
