@@ -8,22 +8,13 @@ import (
 )
 
 var (
+	macMaxValues         = []uint64{0, MACMaxValuePerSegment, 0xffff, 0xffffff, 0xffffffff, 0xffffffffff, 0xffffffffffff, 0xffffffffffffff, 0xffffffffffffffff}
+	dottedParams         = new(address_string.MACStringOptionsBuilder).SetSeparator(MacDottedSegmentSeparator).SetExpandedSegments(true).ToOptions()
 	macCanonicalParams   = new(address_string.MACStringOptionsBuilder).SetSeparator(MACDashSegmentSeparator).SetExpandedSegments(true).SetWildcards(canonicalWildcards).ToOptions()
 	canonicalWildcards   = new(address_string.WildcardsBuilder).SetRangeSeparator(MacDashedSegmentRangeSeparatorStr).SetWildcard(SegmentWildcardStr).ToWildcards()
-	dottedParams         = new(address_string.MACStringOptionsBuilder).SetSeparator(MacDottedSegmentSeparator).SetExpandedSegments(true).ToOptions()
-	spaceDelimitedParams = new(address_string.MACStringOptionsBuilder).SetSeparator(MacSpaceSegmentSeparator).SetExpandedSegments(true).ToOptions()
 	macNormalizedParams  = new(address_string.MACStringOptionsBuilder).SetExpandedSegments(true).ToOptions()
 	macCompressedParams  = new(address_string.MACStringOptionsBuilder).ToOptions()
-	macMaxValues         = []uint64{
-	0,
-	MACMaxValuePerSegment,
-	0xffff,
-	0xffffff,
-	0xffffffff,
-	0xffffffffff,
-	0xffffffffffff,
-	0xffffffffffffff,
-	0xffffffffffffffff}
+	spaceDelimitedParams = new(address_string.MACStringOptionsBuilder).SetSeparator(MacSpaceSegmentSeparator).SetExpandedSegments(true).ToOptions()
 )
 
 // MACAddressSection is a section of a MACAddress.
@@ -566,6 +557,34 @@ func (section *MACAddressSection) Increment(incrementVal int64) *MACAddressSecti
 		section.addressSectionInternal.getLower,
 		section.addressSectionInternal.getUpper,
 		section.getPrefixLen()).ToMAC()
+}
+
+// Compare returns a negative integer, zero,
+// or a positive integer if this address section is less than, equal,
+// or greater than the given item.
+// Any address item is comparable to any other.
+// All address items use CountComparator to compare.
+func (section *MACAddressSection) Compare(item AddressItem) int {
+	return CountComparator.Compare(section, item)
+}
+
+// CompareSize compares the counts of two items,
+// the number of individual items represented.
+//
+// Rather than calculating counts with GetCount,
+// there can be more efficient ways of determining whether this section represents more individual address sections than another.
+//
+// CompareSize returns a positive integer if this address section has a larger count than the one given, zero if they are the same,
+// or a negative integer if the other has a larger count.
+func (section *MACAddressSection) CompareSize(other AddressItem) int {
+	if section == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// have size 0, other has size >= 1
+		return -1
+	}
+	return section.compareSize(other)
 }
 
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
