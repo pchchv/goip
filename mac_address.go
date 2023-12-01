@@ -854,6 +854,18 @@ func (addr *MACAddress) TrieCompare(other *MACAddress) (int, address_error.Incom
 	return addr.init().trieCompare(other.ToAddressBase()), nil
 }
 
+// GetGenericDivision returns the segment at the given index as a DivisionType.
+func (addr *MACAddress) GetGenericDivision(index int) DivisionType {
+	return addr.init().getDivision(index)
+}
+
+// GetGenericSegment returns the segment at the given index as an AddressSegmentType.
+// The first segment is at index 0.
+// GetGenericSegment will panic given a negative index or an index matching or larger than the segment count.
+func (addr *MACAddress) GetGenericSegment(index int) AddressSegmentType {
+	return addr.init().getSegment(index)
+}
+
 func fromMACKey(key MACAddressKey) *MACAddress {
 	additionalByteCount := key.additionalByteCount
 	segCount := int(additionalByteCount) + MediaAccessControlSegmentCount
