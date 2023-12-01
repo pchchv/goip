@@ -25,6 +25,20 @@ func (res *boundaryResult) createMask() *IPAddress {
 	return creator.createAddressInternalFromSection(res.lowerSection, NoZone, nil)
 }
 
+func (res *boundaryResult) createRange() *SequentialRange[*IPAddress] {
+	// add zone in order to reuse the lower and upper
+	var rangeUpper *IPAddress
+	lowerSection := res.lowerSection
+	creator := lowerSection.getAddrType().getIPNetwork().getIPAddressCreator()
+	rangeLower := creator.createAddressInternalFromSection(lowerSection, NoZone, nil)
+	if res.upperSection == nil {
+		rangeUpper = rangeLower
+	} else {
+		rangeUpper = creator.createAddressInternalFromSection(res.upperSection, NoZone, nil)
+	}
+	return rangeLower.SpanWithRange(rangeUpper)
+}
+
 type sectionResult struct {
 	section          *IPAddressSection
 	hostSection      *IPAddressSection
