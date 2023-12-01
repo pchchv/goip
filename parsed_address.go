@@ -1513,6 +1513,14 @@ func (parseData *parsedIPAddress) parsedEquals(other ipAddressProvider) (res boo
 	return parseData.containmentCheck(other, false, true, true)
 }
 
+func (parseData *parsedIPAddress) prefixContainsProvider(other ipAddressProvider) boolSetting {
+	return parseData.containmentCheck(other, true, false, false)
+}
+
+func (parseData *parsedIPAddress) prefixEqualsProvider(other ipAddressProvider) boolSetting {
+	return parseData.containmentCheck(other, true, true, false)
+}
+
 func createRangeSeg(
 	addressString string,
 	_ IPVersion,
