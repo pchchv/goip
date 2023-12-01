@@ -696,6 +696,63 @@ func (section *MACAddressSection) ToNormalizedString() string {
 		})
 }
 
+// ToCompressedString produces a short representation of
+// this address section while remaining within the confines of standard representation(s) of the address.
+//
+// For MAC, it differs from the canonical string.
+// It produces a shorter string for the address that has no leading zeros.
+func (section *MACAddressSection) ToCompressedString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toCustomString(macCompressedParams)
+	}
+	return cacheStr(&cache.compressedMACString,
+		func() string {
+			return section.toCustomString(macCompressedParams)
+		})
+}
+
+// ToDottedString produces the dotted hexadecimal format "aaaa.bbbb.cccc".
+func (section *MACAddressSection) ToDottedString() (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+
+	dottedGrouping, err := section.GetDottedGrouping()
+	if err != nil {
+		return "", err
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return toNormalizedString(dottedParams, dottedGrouping), nil
+	}
+	return cacheStrErr(&cache.dottedString,
+		func() (string, address_error.IncompatibleAddressError) {
+			return toNormalizedString(dottedParams, dottedGrouping), nil
+		})
+}
+
+// ToSpaceDelimitedString produces a string delimited by spaces: "aa bb cc dd ee ff".
+func (section *MACAddressSection) ToSpaceDelimitedString() string {
+	if section == nil {
+		return nilString()
+	}
+	
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toCustomString(spaceDelimitedParams)
+	}
+	return cacheStr(&cache.spaceDelimitedString,
+		func() string {
+			return section.toCustomString(spaceDelimitedParams)
+		})
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
