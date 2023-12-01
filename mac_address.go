@@ -1015,6 +1015,32 @@ func (addr *MACAddress) ToBinaryString(with0bPrefix bool) (string, address_error
 	return addr.init().toBinaryString(with0bPrefix)
 }
 
+// ToDottedString produces the dotted hexadecimal format aaaa.bbbb.cccc
+func (addr *MACAddress) ToDottedString() (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	return addr.init().GetSection().ToDottedString()
+}
+
+// ToSpaceDelimitedString produces a string delimited by spaces: aa bb cc dd ee ff.
+func (addr *MACAddress) ToSpaceDelimitedString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().GetSection().ToSpaceDelimitedString()
+}
+
+// ToDashedString produces a string delimited by dashes: "aa-bb-cc-dd-ee-ff".
+// For range segments, '|' is used: "11-22-33|44-55-66".
+// It returns the same string as ToCanonicalString.
+func (addr *MACAddress) ToDashedString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().GetSection().ToDashedString()
+}
+
 func fromMACKey(key MACAddressKey) *MACAddress {
 	additionalByteCount := key.additionalByteCount
 	segCount := int(additionalByteCount) + MediaAccessControlSegmentCount
