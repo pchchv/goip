@@ -926,6 +926,27 @@ func (addr *MACAddress) Equal(other AddressType) bool {
 	return addr.init().equals(other)
 }
 
+// PrefixIterator provides an iterator to iterate through the individual prefixes of this subnet,
+// each iterated element spanning the range of values for its prefix.
+//
+// It is similar to the prefix block iterator, except for possibly the first and last iterated elements,
+// which might not be prefix blocks,
+// instead constraining themselves to values from this subnet.
+//
+// If the subnet has no prefix length, then this is equivalent to Iterator.
+func (addr *MACAddress) PrefixIterator() Iterator[*MACAddress] {
+	return macAddressIterator{addr.init().prefixIterator(false)}
+}
+
+// PrefixBlockIterator provides an iterator to iterate through the individual prefix blocks,
+// one for each prefix of this address or subnet.
+// Each iterated address or subnet will be a prefix block with the same prefix length as this address or subnet.
+//
+// If this address has no prefix length, then this is equivalent to Iterator.
+func (addr *MACAddress) PrefixBlockIterator() Iterator[*MACAddress] {
+	return macAddressIterator{addr.init().prefixIterator(true)}
+}
+
 func fromMACKey(key MACAddressKey) *MACAddress {
 	additionalByteCount := key.additionalByteCount
 	segCount := int(additionalByteCount) + MediaAccessControlSegmentCount
