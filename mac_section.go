@@ -656,6 +656,46 @@ func (section *MACAddressSection) ToBinaryString(with0bPrefix bool) (string, add
 	return section.toBinaryString(with0bPrefix)
 }
 
+// ToCanonicalString produces a canonical string for the address section.
+//
+// For MAC, it uses the canonical standardized IEEE 802 MAC address representation of xx-xx-xx-xx-xx-xx.
+// An example is "01-23-45-67-89-ab".
+// For range segments, '|' is used: "11-22-33|44-55-66".
+func (section *MACAddressSection) ToCanonicalString() string {
+	if section == nil {
+		return nilString()
+	}
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toCustomString(macCanonicalParams)
+	}
+	return cacheStr(&cache.canonicalString,
+		func() string {
+			return section.toCustomString(macCanonicalParams)
+		})
+}
+
+// ToNormalizedString produces a normalized string for the address section.
+//
+// For MAC, it differs from the canonical string.
+// It uses the most common representation of MAC addresses: "xx:xx:xx:xx:xx:xx".
+// An example is "01:23:45:67:89:ab".
+// For range segments, '-' is used: "11:22:33-44:55:66".
+func (section *MACAddressSection) ToNormalizedString() string {
+	if section == nil {
+		return nilString()
+	}
+	cch := section.getStringCache()
+	if cch == nil {
+		return section.toCustomString(macNormalizedParams)
+	}
+	strp := &cch.normalizedMACString
+	return cacheStr(strp,
+		func() string {
+			return section.toCustomString(macNormalizedParams)
+		})
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
