@@ -3,6 +3,7 @@ package goip
 import (
 	"strconv"
 	"sync"
+	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/address_string_param"
@@ -1369,6 +1370,101 @@ func (parseData *parsedIPAddress) createIPv6Sections(doSections, doRangeBoundari
 		}
 	}
 	return
+}
+
+func (parseData *parsedIPAddress) createSections(doSections, doRangeBoundaries, withUpper bool) (sections sectionResult, boundaries boundaryResult) {
+	version := parseData.getProviderIPVersion()
+	if version.IsIPv4() {
+		return parseData.createIPv4Sections(doSections, doRangeBoundaries, withUpper)
+	} else if version.IsIPv6() {
+		return parseData.createIPv6Sections(doSections, doRangeBoundaries, withUpper)
+	}
+	return
+}
+
+func (parseData *parsedIPAddress) getCachedAddresses(forHostAddr bool) *sectionResult {
+	val := parseData.values()
+	sections := (*sectionResult)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&val.sections))))
+	if sections == nil {
+		parseData.creationLock.Lock()
+		sections = val.sections
+		if sections == nil {
+			sects, _ := parseData.createSections(true, false, false)
+			sections = &sects
+			dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&val.sections))
+			atomicStorePointer(dataLoc, unsafe.Pointer(sections))
+		}
+		parseData.creationLock.Unlock()
+	}
+
+	if sections.withoutAddressException() {
+		var addr *IPAddress
+		if forHostAddr {
+			addr = (*IPAddress)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&sections.hostAddress))))
+		} else {
+			addr = (*IPAddress)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&sections.address))))
+		}
+		if addr == nil {
+			parseData.creationLock.Lock()
+			if forHostAddr {
+				addr = sections.hostAddress
+			} else {
+				addr = sections.address
+			}
+			if addr == nil {
+				var section *IPAddressSection
+				var originator HostIdentifierString
+				if forHostAddr {
+					section = sections.hostSection
+					if section == nil {
+						section = sections.section
+					}
+				} else {
+					section = sections.section
+					originator = parseData.originator
+				}
+				creator := section.getAddrType().getIPNetwork().getIPAddressCreator()
+				addr = creator.createAddressInternalFromSection(section, parseData.getQualifier().getZone(), originator)
+				var dataLoc *unsafe.Pointer
+				if forHostAddr {
+					dataLoc = (*unsafe.Pointer)(unsafe.Pointer(&sections.hostAddress))
+				} else {
+					// if range created first, stick the lower and upper into the address cache,
+					// but only if the address no prefix, because the range never has prefix lengths
+					if rng := val.rng; rng != nil && !addr.IsPrefixed() {
+						cache := addr.cache
+						if cache != nil {
+							cache.addrsCache = &addrsCache{
+								lower: rng.lower.ToAddressBase(),
+								upper: rng.upper.ToAddressBase(),
+							}
+						}
+					}
+					dataLoc = (*unsafe.Pointer)(unsafe.Pointer(&sections.address))
+				}
+				atomicStorePointer(dataLoc, unsafe.Pointer(addr))
+			}
+			parseData.creationLock.Unlock()
+		}
+	}
+	return sections
+}
+
+func (parseData *parsedIPAddress) getValForMask() *IPAddress {
+	val := parseData.values()
+	mask := (*IPAddress)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&val.mask))))
+	if mask == nil {
+		parseData.creationLock.Lock()
+		mask = val.mask
+		if mask == nil {
+			_, boundaries := parseData.createSections(false, true, false)
+			mask = boundaries.createMask()
+			dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&val.mask))
+			atomicStorePointer(dataLoc, unsafe.Pointer(mask))
+		}
+		parseData.creationLock.Unlock()
+	}
+	return mask
 }
 
 func createRangeSeg(
