@@ -1489,6 +1489,30 @@ func (parseData *parsedIPAddress) getProviderAddress() (*IPAddress, address_erro
 	return addrs.address, nil
 }
 
+func (parseData *parsedIPAddress) containmentCheck(other ipAddressProvider, networkOnly, equals, checkZone bool) (res boolSetting) {
+	if otherParsed, ok := other.(*parsedIPAddress); ok {
+		sect := (*sectionResult)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&parseData.vals.sections))))
+		otherSect := (*sectionResult)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&otherParsed.vals.sections))))
+		if sect == nil || otherSect == nil {
+			// one or the other value not yet created, so take the shortcut that provides an answer most (but not all) of the time
+			// An answer is provided for all normalized, conventional or canonical addresses
+			res = parseData.containsProv(otherParsed, networkOnly, equals)
+			if checkZone && res.isSet && res.val {
+				res.val = parseData.getQualifier().getZone() == otherParsed.getQualifier().getZone()
+			}
+		} // else defer to the values-based containment check (in the caller), which is best since it is ready to go
+	}
+	return
+}
+
+func (parseData *parsedIPAddress) containsProvider(other ipAddressProvider) (res boolSetting) {
+	return parseData.containmentCheck(other, false, false, true)
+}
+
+func (parseData *parsedIPAddress) parsedEquals(other ipAddressProvider) (res boolSetting) {
+	return parseData.containmentCheck(other, false, true, true)
+}
+
 func createRangeSeg(
 	addressString string,
 	_ IPVersion,
