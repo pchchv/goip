@@ -753,6 +753,26 @@ func (section *MACAddressSection) ToSpaceDelimitedString() string {
 		})
 }
 
+// ToDashedString produces a string delimited by dashes: "aa-bb-cc-dd-ee-ff".
+// For range segments, '|' is used: "11-22-33|44-55-66".
+// It returns the same string as ToCanonicalString.
+func (section *MACAddressSection) ToDashedString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.ToCanonicalString()
+}
+
+// ToColonDelimitedString produces a string delimited by colons: "aa:bb:cc:dd:ee:ff".
+// For range segments, '-' is used: "11:22:33-44:55:66".
+// It returns the same string as ToNormalizedString.
+func (section *MACAddressSection) ToColonDelimitedString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.ToNormalizedString()
+}
+
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
