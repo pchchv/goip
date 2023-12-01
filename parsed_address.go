@@ -1467,6 +1467,28 @@ func (parseData *parsedIPAddress) getValForMask() *IPAddress {
 	return mask
 }
 
+func (parseData *parsedIPAddress) getProviderHostAddress() (*IPAddress, address_error.IncompatibleAddressError) {
+	addrs := parseData.getCachedAddresses(true)
+	if addrs.mixedError != nil {
+		return nil, addrs.mixedError
+	} else if addrs.joinHostError != nil {
+		return nil, addrs.joinHostError
+	}
+	return addrs.hostAddress, nil
+}
+
+func (parseData *parsedIPAddress) getProviderAddress() (*IPAddress, address_error.IncompatibleAddressError) {
+	addrs := parseData.getCachedAddresses(false)
+	if addrs.mixedError != nil {
+		return nil, addrs.mixedError
+	} else if addrs.maskError != nil {
+		return nil, addrs.maskError
+	} else if addrs.joinAddressError != nil {
+		return nil, addrs.joinAddressError
+	}
+	return addrs.address, nil
+}
+
 func createRangeSeg(
 	addressString string,
 	_ IPVersion,
