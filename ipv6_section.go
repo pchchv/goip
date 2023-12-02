@@ -1361,6 +1361,14 @@ func (section *IPv6AddressSection) toNormalizedMixedZonedString(options address_
 	return stringParams.toZonedString(section, zone), nil
 }
 
+func (section *IPv6AddressSection) toNormalizedZonedString(options address_string.IPv6StringOptions, zone Zone) string {
+	return from(options, section).toZonedString(section, zone)
+}
+
+func (section *IPv6AddressSection) toNormalizedSplitZonedString(options address_string.IPv6StringOptions, zone Zone) (string, address_error.IncompatibleAddressError) {
+	return from(options, section).toZonedSplitString(section, zone)
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
