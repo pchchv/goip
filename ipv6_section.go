@@ -1562,6 +1562,33 @@ func (section *IPv6AddressSection) ToNormalizedString() string {
 		})
 }
 
+func (section *IPv6AddressSection) toCompressedString(zone Zone) string {
+	return section.toNormalizedZonedString(ipv6CompressedParams, zone)
+}
+
+func (section *IPv6AddressSection) toMixedStringZoned(zone Zone) (string, address_error.IncompatibleAddressError) {
+	return section.toNormalizedMixedZonedString(mixedParams, zone)
+}
+
+// ToCompressedString produces a short representation of this address section while remaining within the confines of standard representation(s) of the address.
+//
+// For IPv6, it differs from the canonical string.
+// It compresses the maximum number of zeros and/or host segments with the IPv6 compression notation '::'.
+func (section *IPv6AddressSection) ToCompressedString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toCompressedString(NoZone)
+	}
+	return cacheStr(&cache.compressedIPv6String,
+		func() string {
+			return section.toCompressedString(NoZone)
+		})
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
