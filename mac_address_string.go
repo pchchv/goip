@@ -191,6 +191,97 @@ func (addrStr *MACAddressString) IsValid() bool {
 	return addrStr.Validate() == nil
 }
 
+// Compare compares this address string with another,
+// returning a negative number, zero,
+// or a positive number if this address string is less than, equal to,
+// or greater than the other.
+//
+// All address strings are comparable.
+// If two address strings are invalid, their strings are compared.
+// Two valid address trings are compared using the comparison rules for their respective addresses.
+func (addrStr *MACAddressString) Compare(other *MACAddressString) int {
+	if addrStr == other {
+		return 0
+	} else if addrStr == nil {
+		return -1
+	} else if other == nil {
+		return 1
+	}
+
+	addrStr = addrStr.init()
+	other = other.init()
+	if addrStr == other {
+		return 0
+	}
+
+	if addrStr.IsValid() {
+		if other.IsValid() {
+			addr := addrStr.GetAddress()
+			if addr != nil {
+				otherAddr := other.GetAddress()
+				if otherAddr != nil {
+					return addr.Compare(otherAddr)
+				}
+			}
+			// one or the other is nil, either empty or IncompatibleAddressException
+			return strings.Compare(addrStr.String(), other.String())
+		}
+		return 1
+	} else if other.IsValid() {
+		return -1
+	}
+	return strings.Compare(addrStr.String(), other.String())
+}
+
+// Equal returns whether this MACAddressString is equal to the given one.
+// Two MACAddressString objects are equal if they represent the same set of addresses.
+//
+// If a MACAddressString is invalid,
+// it is equal to another address only if the other address was constructed from the same string.
+func (addrStr *MACAddressString) Equal(other *MACAddressString) bool {
+	if addrStr == nil {
+		return other == nil
+	} else if other == nil {
+		return false
+	}
+	addrStr = addrStr.init()
+	other = other.init()
+	if addrStr == other {
+		return true
+	}
+
+	// if have the same string, must be the same,
+	// but the converse is not true, if have different strings, can still be the same
+	//
+	// Also note that do not call equals() on the validation options, this is intended as an optimization,
+	// and probably better to avoid going through all the validation objects here
+	stringsMatch := addrStr.String() == other.String()
+	if stringsMatch && addrStr.GetValidationOptions() == other.GetValidationOptions() {
+		return true
+	}
+
+	if addrStr.IsValid() {
+		if other.IsValid() {
+			value := addrStr.GetAddress()
+			if value != nil {
+				otherValue := other.GetAddress()
+				if otherValue != nil {
+					return value.equals(otherValue)
+				} else {
+					return false
+				}
+			} else if other.GetAddress() != nil {
+				return false
+			}
+			// both are nil, either empty or address_error.IncompatibleAddressError
+			return stringsMatch
+		}
+	} else if !other.IsValid() { // both are invalid
+		return stringsMatch // Two invalid addresses are not equal unless strings match, regardless of validation options
+	}
+	return false
+}
+
 func parseMACAddressString(str string, params address_string_param.MACAddressStringParams) *MACAddressString {
 	str = strings.TrimSpace(str)
 	res := &MACAddressString{str: str}
