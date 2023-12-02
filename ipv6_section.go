@@ -1448,6 +1448,18 @@ func (section *IPv6AddressSection) ToSQLWildcardString() string {
 		})
 }
 
+func (section *IPv6AddressSection) toFullStringZoned(zone Zone) string {
+	return section.toNormalizedZonedString(ipv6FullParams, zone)
+}
+
+func (section *IPv6AddressSection) toReverseDNSStringZoned(zone Zone) (string, address_error.IncompatibleAddressError) {
+	return section.toNormalizedSplitZonedString(ipv6ReverseDNSParams, zone)
+}
+
+func (section *IPv6AddressSection) toPrefixLenStringZoned(zone Zone) string {
+	return section.toNormalizedZonedString(networkPrefixLengthParams, zone)
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
