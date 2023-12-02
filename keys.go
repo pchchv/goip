@@ -176,6 +176,16 @@ type MACAddressKey struct {
 	additionalByteCount uint8 // 0 for MediaAccessControlSegmentCount or 2 for ExtendedUniqueIdentifier64SegmentCount
 }
 
+// ToAddress converts back to an address instance.
+func (key MACAddressKey) ToAddress() *MACAddress {
+	return fromMACKey(key)
+}
+
+// String calls the String method in the corresponding address.
+func (key MACAddressKey) String() string {
+	return key.ToAddress().String()
+}
+
 type addressScheme byte
 
 // KeyConstraint is the generic type constraint for
