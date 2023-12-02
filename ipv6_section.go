@@ -1224,6 +1224,33 @@ func (section *IPv6AddressSection) SpanWithPrefixBlocksTo(other *IPv6AddressSect
 	), nil
 }
 
+// SpanWithSequentialBlocks produces the smallest slice of sequential blocks that cover the same set of sections as this.
+//
+// This slice can be shorter than that produced by SpanWithPrefixBlocks and is never longer.
+//
+// Unlike SpanWithSequentialBlocksTo,
+// this method only includes values that are a part of this section.
+func (section *IPv6AddressSection) SpanWithSequentialBlocks() []*IPv6AddressSection {
+	if section.IsSequential() {
+		return []*IPv6AddressSection{section}
+	}
+	wrapped := wrapIPSection(section.ToIP())
+	return cloneToIPv6Sections(spanWithSequentialBlocks(wrapped))
+}
+
+// SpanWithSequentialBlocksTo produces the smallest slice of sequential block address sections that span from this section to the given section.
+func (section *IPv6AddressSection) SpanWithSequentialBlocksTo(other *IPv6AddressSection) ([]*IPv6AddressSection, address_error.SizeMismatchError) {
+	if err := section.checkSectionCount(other.ToIP()); err != nil {
+		return nil, err
+	}
+	return cloneToIPv6Sections(
+		getSpanningSequentialBlocks(
+			wrapIPSection(section.ToIP()),
+			wrapIPSection(other.ToIP()),
+		),
+	), nil
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
