@@ -1395,6 +1395,45 @@ func (addr *IPv6Address) TrieCompare(other *IPv6Address) int {
 	return addr.init().trieCompare(other.ToAddressBase())
 }
 
+// GetGenericDivision returns the segment at the given index as a DivisionType.
+func (addr *IPv6Address) GetGenericDivision(index int) DivisionType {
+	return addr.init().getDivision(index)
+}
+
+// GetGenericSegment returns the segment at the given index as an AddressSegmentType.
+// The first segment is at index 0.
+// GetGenericSegment will panic given a negative index or an index matching or larger than the segment count.
+func (addr *IPv6Address) GetGenericSegment(index int) AddressSegmentType {
+	return addr.init().getSegment(index)
+}
+
+// Subtract subtracts the given subnet from this subnet, returning an array of subnets for the result
+// (the subnets will not be contiguous so an array is required).
+// Subtract computes the subnet difference, the set of addresses in this address subnet but not in the provided subnet.
+// This is also known as the relative complement of the given argument in this subnet.
+// This is set subtraction, not subtraction of address values (use Increment for the latter).
+// We have a subnet of addresses and we are removing those addresses found in the argument subnet.
+// If there are no remaining addresses, nil is returned.
+func (addr *IPv6Address) Subtract(other *IPv6Address) []*IPv6Address {
+	addr = addr.init()
+	sects, _ := addr.GetSection().Subtract(other.GetSection())
+	sectLen := len(sects)
+	if sectLen == 0 {
+		return nil
+	} else if sectLen == 1 {
+		sec := sects[0]
+		if sec.ToSectionBase() == addr.section {
+			return []*IPv6Address{addr}
+		}
+	}
+
+	res := make([]*IPv6Address, sectLen)
+	for i, sect := range sects {
+		res[i] = newIPv6AddressZoned(sect, string(addr.zone))
+	}
+	return res
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
