@@ -1460,6 +1460,40 @@ func (section *IPv6AddressSection) toPrefixLenStringZoned(zone Zone) string {
 	return section.toNormalizedZonedString(networkPrefixLengthParams, zone)
 }
 
+// ToFullString produces a string with no compressed segments and all segments of full length with leading zeros,
+// which is 4 characters for IPv6 segments.
+func (section *IPv6AddressSection) ToFullString() string {
+	if section == nil {
+		return nilString()
+	}
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toFullStringZoned(NoZone)
+	}
+	return cacheStr(&cache.fullString,
+		func() string {
+			return section.toFullStringZoned(NoZone)
+		})
+}
+
+// ToReverseDNSString generates the reverse-DNS lookup string,
+// returning an error if this address section is a multiple-valued section for which the range cannot be represented.
+// For "2001:db8::567:89ab" it is "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa".
+func (section *IPv6AddressSection) ToReverseDNSString() (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toReverseDNSStringZoned(NoZone)
+	}
+	return cacheStrErr(&cache.reverseDNSString,
+		func() (string, address_error.IncompatibleAddressError) {
+			return section.toReverseDNSStringZoned(NoZone)
+		})
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
