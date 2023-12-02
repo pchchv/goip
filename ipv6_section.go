@@ -1369,6 +1369,25 @@ func (section *IPv6AddressSection) toNormalizedSplitZonedString(options address_
 	return from(options, section).toZonedSplitString(section, zone)
 }
 
+// ToCustomString creates a customized string from this address section according to the given string option parameters.
+//
+// Errors can result from split digits with ranged values, or mixed IPv4/v6 with ranged values, when the segment ranges are incompatible.
+func (section *IPv6AddressSection) ToCustomString(stringOptions address_string.IPv6StringOptions) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toCustomString(stringOptions, NoZone)
+}
+
+func (section *IPv6AddressSection) toCustomString(stringOptions address_string.IPv6StringOptions, zone Zone) (string, address_error.IncompatibleAddressError) {
+	if stringOptions.IsMixed() {
+		return section.toNormalizedMixedZonedString(stringOptions, zone)
+	} else if stringOptions.IsSplitDigits() {
+		return section.toNormalizedSplitZonedString(stringOptions, zone)
+	}
+	return section.toNormalizedZonedString(stringOptions, zone), nil
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
