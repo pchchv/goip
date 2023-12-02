@@ -1340,6 +1340,27 @@ func (section *IPv6AddressSection) toSegmentedBinaryStringZoned(zone Zone) strin
 	return section.ipAddressSectionInternal.toCustomZonedString(ipv6SegmentedBinaryParams, zone)
 }
 
+func (section *IPv6AddressSection) toNormalizedMixedString(mixedParams *ipv6v4MixedParams, zone Zone) (string, address_error.IncompatibleAddressError) {
+	mixed, err := section.getMixedAddressGrouping()
+	if err != nil {
+		return "", err
+	}
+	return mixedParams.toZonedString(mixed, zone), nil
+}
+
+func (section *IPv6AddressSection) toNormalizedMixedZonedString(options address_string.IPv6StringOptions, zone Zone) (string, address_error.IncompatibleAddressError) {
+	stringParams := from(options, section)
+	if stringParams.nextUncompressedIndex <= IPv6MixedOriginalSegmentCount { // the mixed section is not compressed
+		mixedParams := &ipv6v4MixedParams{
+			ipv6Params: stringParams,
+			ipv4Params: toIPParams(options.GetIPv4Opts()),
+		}
+		return section.toNormalizedMixedString(mixedParams, zone)
+	}
+	// the mixed section is compressed
+	return stringParams.toZonedString(section, zone), nil
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
