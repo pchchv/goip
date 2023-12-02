@@ -1173,6 +1173,57 @@ func (section *IPv6AddressSection) PrefixBlockIterator() Iterator[*IPv6AddressSe
 	return ipv6SectionIterator{section.prefixIterator(true)}
 }
 
+// IncrementBoundary returns the item that is the given increment from the range boundaries of this item.
+//
+// If the given increment is positive,
+// adds the value to the highest (GetUpper) in the range to produce a new item.
+// If the given increment is negative,
+// adds the value to the lowest (GetLower) in the range to produce a new item.
+// If the increment is zero, returns this.
+//
+// If this represents just a single value,
+// this item is simply incremented by the given increment value,
+// positive or negative.
+//
+// On overflow or underflow, IncrementBoundary returns nil.
+func (section *IPv6AddressSection) IncrementBoundary(increment int64) *IPv6AddressSection {
+	return section.incrementBoundary(increment).ToIPv6()
+}
+
+// SpanWithPrefixBlocks returns an array of prefix blocks that spans the same set of individual address sections as this section.
+//
+// Unlike SpanWithPrefixBlocksTo,
+// the result only includes blocks that are a part of this section.
+func (section *IPv6AddressSection) SpanWithPrefixBlocks() []*IPv6AddressSection {
+	if section.IsSequential() {
+		if section.IsSinglePrefixBlock() {
+			return []*IPv6AddressSection{section}
+		}
+		wrapped := wrapIPSection(section.ToIP())
+		spanning := getSpanningPrefixBlocks(wrapped, wrapped)
+		return cloneToIPv6Sections(spanning)
+	}
+	wrapped := wrapIPSection(section.ToIP())
+	return cloneToIPv6Sections(spanWithPrefixBlocks(wrapped))
+}
+
+// SpanWithPrefixBlocksTo returns the smallest slice of prefix block subnet sections that span from this section to the given section.
+//
+// If the given section has a different segment count, an error is returned.
+//
+// The resulting slice is sorted from lowest address value to highest, regardless of the size of each prefix block.
+func (section *IPv6AddressSection) SpanWithPrefixBlocksTo(other *IPv6AddressSection) ([]*IPv6AddressSection, address_error.SizeMismatchError) {
+	if err := section.checkSectionCount(other.ToIP()); err != nil {
+		return nil, err
+	}
+	return cloneToIPv6Sections(
+		getSpanningPrefixBlocks(
+			wrapIPSection(section.ToIP()),
+			wrapIPSection(other.ToIP()),
+		),
+	), nil
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
