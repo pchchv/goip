@@ -1388,6 +1388,29 @@ func (section *IPv6AddressSection) toCustomString(stringOptions address_string.I
 	return section.toNormalizedZonedString(stringOptions, zone), nil
 }
 
+func (section *IPv6AddressSection) toCanonicalWildcardStringZoned(zone Zone) string {
+	return section.toNormalizedZonedString(canonicalWildcardParams, zone)
+}
+
+// ToCanonicalWildcardString produces a string similar to the canonical string but avoids the CIDR prefix length.
+// Address sections with a network prefix length will be shown with wildcards and ranges
+// (denoted by '*' and '-') instead of using the CIDR prefix length notation.
+// IPv6 sections will be compressed according to the canonical representation.
+func (section *IPv6AddressSection) ToCanonicalWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toCanonicalWildcardStringZoned(NoZone)
+	}
+	return cacheStr(&cache.canonicalWildcardString,
+		func() string {
+			return section.toCanonicalWildcardStringZoned(NoZone)
+		})
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
