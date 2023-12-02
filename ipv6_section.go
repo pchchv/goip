@@ -1292,6 +1292,39 @@ func (section *IPv6AddressSection) MergeToPrefixBlocks(sections ...*IPv6AddressS
 	return cloneToIPv6Sections(blocks), nil
 }
 
+// String implements the [fmt.Stringer] interface,
+// returning the normalized string provided by ToNormalizedString,
+// or "<nil>" if the receiver is a nil pointer.
+func (section *IPv6AddressSection) String() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toString()
+}
+
+// ToHexString writes this address section as a single hexadecimal value
+// (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0x" prefix.
+//
+// If a multiple-valued section cannot be written as a single prefix block or a range of two values, an error is returned.
+func (section *IPv6AddressSection) ToHexString(with0xPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toHexString(with0xPrefix)
+}
+
+// ToOctalString writes this address section as a single octal value (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0" prefix.
+//
+// If a multiple-valued section cannot be written as a single prefix block or a range of two values, an error is returned.
+func (section *IPv6AddressSection) ToOctalString(with0Prefix bool) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toOctalString(with0Prefix)
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
