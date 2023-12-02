@@ -1494,6 +1494,32 @@ func (section *IPv6AddressSection) ToReverseDNSString() (string, address_error.I
 		})
 }
 
+// ToPrefixLenString returns a string with a CIDR network prefix length if this address has a network prefix length.
+// For IPv6, a zero host section will be compressed with "::".
+// For IPv4 the string is equivalent to the canonical string.
+func (section *IPv6AddressSection) ToPrefixLenString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toPrefixLenStringZoned(NoZone)
+	}
+	return cacheStr(&cache.networkPrefixLengthString,
+		func() string {
+			return section.toPrefixLenStringZoned(NoZone)
+		})
+}
+
+func (section *IPv6AddressSection) toCanonicalString(zone Zone) string {
+	return section.toNormalizedZonedString(ipv6CanonicalParams, zone)
+}
+
+func (section *IPv6AddressSection) toNormalizedString(zone Zone) string {
+	return section.toNormalizedZonedString(ipv6normalizedParams, zone)
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
