@@ -1639,6 +1639,24 @@ func (section *IPv6AddressSection) ToSubnetString() string {
 	return section.ToPrefixLenString()
 }
 
+// ToCompressedWildcardString produces a string similar to ToNormalizedWildcardString,
+// avoiding the CIDR prefix, but with full IPv6 segment compression as well,
+// including single zero-segments.
+func (section *IPv6AddressSection) ToCompressedWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toCompressedWildcardStringZoned(NoZone)
+	}
+	return cacheStr(&cache.compressedWildcardString,
+		func() string {
+			return section.toCompressedWildcardStringZoned(NoZone)
+		})
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
