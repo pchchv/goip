@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"math/big"
 	"net"
 
@@ -1059,6 +1060,34 @@ func (addr *MACAddress) ToCustomString(stringOptions address_string.StringOption
 		return nilString()
 	}
 	return addr.init().GetSection().toCustomString(stringOptions)
+}
+
+// String implements the [fmt.Stringer] interface,
+// returning the canonical string provided by ToCanonicalString,
+// or "<nil>" if the receiver is a nil pointer.
+func (addr *MACAddress) String() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().addressInternal.toString()
+}
+
+// Format implements [fmt.Formatter] interface. It accepts the formats
+//   - 'v' for the default address and section format (either the normalized or canonical string),
+//   - 's' (string) for the same,
+//   - 'b' (binary), 'o' (octal with 0 prefix), 'O' (octal with 0o prefix),
+//   - 'd' (decimal), 'x' (lowercase hexadecimal), and
+//   - 'X' (uppercase hexadecimal).
+//
+// Also supported are some of fmt's format flags for integral types.
+// Sign control is not supported since addresses and sections are never negative.
+// '#' for an alternate format is supported,
+// which adds a leading zero for octal, and for hexadecimal it adds
+// a leading "0x" or "0X" for "%#x" and "%#X" respectively.
+// Also supported is specification of minimum digits precision, output field width,
+// space or zero padding, and '-' for left or right justification.
+func (addr MACAddress) Format(state fmt.State, verb rune) {
+	addr.init().format(state, verb)
 }
 
 func fromMACKey(key MACAddressKey) *MACAddress {
