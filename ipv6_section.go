@@ -1266,6 +1266,32 @@ func (section *IPv6AddressSection) CoverWithPrefixBlock() *IPv6AddressSection {
 	return section.coverWithPrefixBlock().ToIPv6()
 }
 
+// MergeToSequentialBlocks merges this with the list of sections to produce the smallest array of sequential blocks.
+//
+// The resulting slice is sorted from lowest address value to highest, regardless of the size of each prefix block.
+func (section *IPv6AddressSection) MergeToSequentialBlocks(sections ...*IPv6AddressSection) ([]*IPv6AddressSection, address_error.SizeMismatchError) {
+	if err := section.checkSectionCounts(sections); err != nil {
+		return nil, err
+	}
+
+	series := cloneIPv6Sections(section, sections)
+	blocks := getMergedSequentialBlocks(series)
+	return cloneToIPv6Sections(blocks), nil
+}
+
+// MergeToPrefixBlocks merges this section with the list of sections to produce the smallest array of prefix blocks.
+//
+// The resulting slice is sorted from lowest value to highest, regardless of the size of each prefix block.
+func (section *IPv6AddressSection) MergeToPrefixBlocks(sections ...*IPv6AddressSection) ([]*IPv6AddressSection, address_error.SizeMismatchError) {
+	if err := section.checkSectionCounts(sections); err != nil {
+		return nil, err
+	}
+
+	series := cloneIPv6Sections(section, sections)
+	blocks := getMergedPrefixBlocks(series)
+	return cloneToIPv6Sections(blocks), nil
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
