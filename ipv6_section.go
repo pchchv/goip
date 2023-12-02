@@ -1589,6 +1589,27 @@ func (section *IPv6AddressSection) ToCompressedString() string {
 		})
 }
 
+// toMixedString produces the mixed IPv6/IPv4 string.  It is the shortest such string (ie fully compressed).
+// For some address sections with ranges of values in the IPv4 part of the address, there is no mixed string, and an error is returned.
+func (section *IPv6AddressSection) toMixedString() (string, address_error.IncompatibleAddressError) {
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toMixedStringZoned(NoZone)
+	}
+	return cacheStrErr(&cache.mixedString,
+		func() (string, address_error.IncompatibleAddressError) {
+			return section.toMixedStringZoned(NoZone)
+		})
+}
+
+func (section *IPv6AddressSection) toNormalizedWildcardStringZoned(zone Zone) string {
+	return section.toNormalizedZonedString(ipv6NormalizedWildcardParams, zone)
+}
+
+func (section *IPv6AddressSection) toCompressedWildcardStringZoned(zone Zone) string {
+	return section.toNormalizedZonedString(wildcardCompressedParams, zone)
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
