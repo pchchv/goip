@@ -1092,6 +1092,34 @@ func (section *IPv6AddressSection) Increment(increment int64) *IPv6AddressSectio
 	return incrementBig(section.ToSectionBase(), increment, &bigIncrement, ipv6Network.getIPAddressCreator(), section.getLower, section.getUpper, prefixLength).ToIPv6()
 }
 
+// Compare returns a negative integer, zero,
+// or a positive integer if this address section is less than, equal,
+// or greater than the given item.
+// Any address item is comparable to any other.
+// All address items use CountComparator to compare.
+func (section *IPv6AddressSection) Compare(item AddressItem) int {
+	return CountComparator.Compare(section, item)
+}
+
+// CompareSize compares the counts of two items,
+// the number of individual sections represented.
+//
+// Rather than calculating counts with GetCount,
+// there can be more efficient ways of determining whether one item represents more individual items than another.
+//
+// CompareSize returns a positive integer if this address section has a larger count than the item given,
+// zero if they are the same, or a negative integer if the other has a larger count.
+func (section *IPv6AddressSection) CompareSize(other AddressItem) int {
+	if section == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// have size 0, other has size >= 1
+		return -1
+	}
+	return section.compareSize(other)
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
