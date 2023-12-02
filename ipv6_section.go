@@ -1411,6 +1411,43 @@ func (section *IPv6AddressSection) ToCanonicalWildcardString() string {
 		})
 }
 
+func (section *IPv6AddressSection) toSQLWildcardStringZoned(zone Zone) string {
+	return section.toNormalizedZonedString(ipv6SqlWildcardParams, zone)
+}
+
+// ToSegmentedBinaryString writes this address section as segments of binary values preceded by the "0b" prefix.
+func (section *IPv6AddressSection) ToSegmentedBinaryString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toSegmentedBinaryStringZoned(NoZone)
+	}
+	return cacheStr(&cache.segmentedBinaryString,
+		func() string {
+			return section.toSegmentedBinaryStringZoned(NoZone)
+		})
+}
+
+// ToSQLWildcardString create a string similar to that from toNormalizedWildcardString except that
+// it uses SQL wildcards.  It uses '%' instead of '*' and also uses the wildcard '_'.
+func (section *IPv6AddressSection) ToSQLWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toSQLWildcardStringZoned(NoZone)
+	}
+	return cacheStr(&cache.sqlWildcardString,
+		func() string {
+			return section.toSQLWildcardStringZoned(NoZone)
+		})
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
