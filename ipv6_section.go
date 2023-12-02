@@ -1520,6 +1520,48 @@ func (section *IPv6AddressSection) toNormalizedString(zone Zone) string {
 	return section.toNormalizedZonedString(ipv6normalizedParams, zone)
 }
 
+// ToCanonicalString produces a canonical string for the address section.
+//
+// For IPv6, RFC 5952 describes canonical string representation.
+// https://en.wikipedia.org/wiki/IPv6_address#Representation
+//
+// If this section has a prefix length, it will be included in the string.
+func (section *IPv6AddressSection) ToCanonicalString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toCanonicalString(NoZone)
+	}
+	return cacheStr(&cache.canonicalString,
+		func() string {
+			return section.toCanonicalString(NoZone)
+		})
+}
+
+// ToNormalizedString produces a normalized string for the address section.
+//
+// For IPv6, it differs from the canonical string.
+// Zero-segments are not compressed.
+//
+// If this section has a prefix length, it will be included in the string.
+func (section *IPv6AddressSection) ToNormalizedString() string {
+	if section == nil {
+		return nilString()
+	}
+	
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toNormalizedString(NoZone)
+	}
+	return cacheStr(&cache.normalizedIPv6String,
+		func() string {
+			return section.toNormalizedString(NoZone)
+		})
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
