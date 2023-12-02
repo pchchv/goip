@@ -641,6 +641,37 @@ func (seg *IPv6AddressSegment) ReverseBytes() (res *IPv6AddressSegment, err addr
 	return
 }
 
+// Compare returns a negative integer, zero,
+// or a positive integer if this address segment is less than, equal,
+// or greater than the given item.
+// Any address item is comparable to any other.
+// All address items use CountComparator to compare.
+func (seg *IPv6AddressSegment) Compare(item AddressItem) int {
+	if seg != nil {
+		seg = seg.init()
+	}
+	return CountComparator.Compare(seg, item)
+}
+
+// CompareSize compares the counts of two items,
+// the number of individual values within.
+//
+// Rather than calculating counts with GetCount,
+// there can be more efficient ways of determining whether one represents more individual values than another.
+//
+// CompareSize returns a positive integer if this segment has a larger count than the one given,
+// zero if they are the same, or a negative integer if the other has a larger count.
+func (seg *IPv6AddressSegment) CompareSize(other AddressItem) int {
+	if seg == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// have size 0, other has size >= 1
+		return -1
+	}
+	return seg.init().compareSize(other)
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
