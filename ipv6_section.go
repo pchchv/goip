@@ -1610,6 +1610,35 @@ func (section *IPv6AddressSection) toCompressedWildcardStringZoned(zone Zone) st
 	return section.toNormalizedZonedString(wildcardCompressedParams, zone)
 }
 
+// ToNormalizedWildcardString produces a string similar to the normalized string but avoids the CIDR prefix length.
+// CIDR addresses will be shown with wildcards and ranges (denoted by '*' and '-') instead of using the CIDR prefix notation.
+func (section *IPv6AddressSection) ToNormalizedWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toNormalizedWildcardStringZoned(NoZone)
+	}
+	return cacheStr(&cache.normalizedWildcardString,
+		func() string {
+			return section.toNormalizedWildcardStringZoned(NoZone)
+		})
+}
+
+// ToSubnetString produces a string with specific formats for subnets.
+// The subnet string looks like "1.2.*.*" or "1:2::/16".
+//
+// In the case of IPv6, when a network prefix has been supplied,
+// the prefix will be shown and the host section will be compressed with "::".
+func (section *IPv6AddressSection) ToSubnetString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.ToPrefixLenString()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
