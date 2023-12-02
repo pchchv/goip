@@ -1251,6 +1251,21 @@ func (section *IPv6AddressSection) SpanWithSequentialBlocksTo(other *IPv6Address
 	), nil
 }
 
+// CoverWithPrefixBlockTo returns the minimal-size prefix block section that covers all the address sections spanning from this to the given section.
+//
+// If the other section has a different segment count, an error is returned.
+func (section *IPv6AddressSection) CoverWithPrefixBlockTo(other *IPv6AddressSection) (*IPv6AddressSection, address_error.SizeMismatchError) {
+	res, err := section.coverWithPrefixBlockTo(other.ToIP())
+	return res.ToIPv6(), err
+}
+
+// CoverWithPrefixBlock returns the minimal-size prefix block that covers all the individual address sections in this section.
+// The resulting block will have a larger count than this,
+// unless this section is already a prefix block.
+func (section *IPv6AddressSection) CoverWithPrefixBlock() *IPv6AddressSection {
+	return section.coverWithPrefixBlock().ToIPv6()
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
