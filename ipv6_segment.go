@@ -672,6 +672,34 @@ func (seg *IPv6AddressSegment) CompareSize(other AddressItem) int {
 	return seg.init().compareSize(other)
 }
 
+// GetString produces a normalized string to represent the segment.
+// If the segment is a CIDR network prefix block for its prefix length,
+// then the string contains only the lower value of the block range.
+// Otherwise, the explicit range will be printed.
+//
+// The string returned is useful in the context of creating strings for address sections or full addresses,
+// in which case the radix and bit-length can be deduced from the context.
+// The String method produces strings more appropriate when no context is provided.
+func (seg *IPv6AddressSegment) GetString() string {
+	if seg == nil {
+		return nilString()
+	}
+	return seg.init().getString()
+}
+
+// String produces a string that is useful when a segment is provided with no context.
+// It uses the hexadecimal radix with the string prefix for hex ("0x").
+// GetWildcardString is more appropriate in context with other segments or divisions.
+// It does not use a string prefix and uses '*' for full-range segments.
+// GetString is more appropriate in context with prefix lengths,
+// it uses zeros instead of wildcards with full prefix block ranges alongside prefix lengths.
+func (seg *IPv6AddressSegment) String() string {
+	if seg == nil {
+		return nilString()
+	}
+	return seg.init().toString()
+}
+
 func newIPv6Segment(vals *ipv6SegmentValues) *IPv6AddressSegment {
 	return &IPv6AddressSegment{
 		ipAddressSegmentInternal{
