@@ -1325,6 +1325,21 @@ func (section *IPv6AddressSection) ToOctalString(with0Prefix bool) (string, addr
 	return section.toOctalString(with0Prefix)
 }
 
+// ToBinaryString writes this address section as a single binary value (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0b" prefix.
+//
+// If a multiple-valued section cannot be written as a single prefix block or a range of two values, an error is returned.
+func (section *IPv6AddressSection) ToBinaryString(with0bPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+	return section.toBinaryString(with0bPrefix)
+}
+
+func (section *IPv6AddressSection) toSegmentedBinaryStringZoned(zone Zone) string {
+	return section.ipAddressSectionInternal.toCustomZonedString(ipv6SegmentedBinaryParams, zone)
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
