@@ -1120,6 +1120,37 @@ func (section *IPv6AddressSection) CompareSize(other AddressItem) int {
 	return section.compareSize(other)
 }
 
+// Subtract subtracts the given subnet sections from this subnet section,
+// returning an array of sections for the result
+// (the subnet sections will not be contiguous so an array is required).
+//
+// Subtract  computes the subnet difference,
+// the set of address sections in this address section but not in the provided section.
+// This is also known as the relative complement of the given argument in this subnet section.
+//
+// This is set subtraction, not subtraction of values.
+func (section *IPv6AddressSection) Subtract(other *IPv6AddressSection) (res []*IPv6AddressSection, err address_error.SizeMismatchError) {
+	sections, err := section.subtract(other.ToIP())
+	if err == nil {
+		res = cloneTo(sections, (*IPAddressSection).ToIPv6)
+	}
+	return
+}
+
+// Intersect returns the subnet sections whose individual sections are found in both this and the given subnet section argument,
+// or nil if no such sections exist.
+//
+// This is also known as the conjunction of the two sets of address sections.
+//
+// If the two sections have different segment counts, an error is returned.
+func (section *IPv6AddressSection) Intersect(other *IPv6AddressSection) (res *IPv6AddressSection, err address_error.SizeMismatchError) {
+	sec, err := section.intersect(other.ToIP())
+	if err == nil {
+		res = sec.ToIPv6()
+	}
+	return
+}
+
 type embeddedIPv6AddressSection struct {
 	IPv6AddressSection
 }
