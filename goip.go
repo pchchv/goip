@@ -1530,6 +1530,137 @@ func (addr *ipAddressInternal) GetPrefixLenForSingleBlock() PrefixLen {
 	return addr.addressInternal.GetPrefixLenForSingleBlock()
 }
 
+func (addr *ipAddressInternal) rangeIterator(
+	upper *IPAddress,
+	valsAreMultiple bool,
+	prefixLen PrefixLen,
+	segProducer func(addr *IPAddress, index int) *IPAddressSegment,
+	segmentIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
+	segValueComparator func(seg1, seg2 *IPAddress, index int) bool,
+	networkSegmentIndex,
+	hostSegmentIndex int,
+	prefixedSegIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
+) Iterator[*Address] {
+	lower := addr.toIPAddress()
+	divCount := lower.GetSegmentCount()
+
+	// at any given point in time, this list provides an iterator for the segment at each index
+	segIteratorProducerList := make([]func() Iterator[*IPAddressSegment], divCount)
+
+	// at any given point in time, finalValue[i] is true if and only if we have reached the very last value for segment i - 1
+	// when that happens, the next iterator for the segment at index i will be the last
+	finalValue := make([]bool, divCount+1)
+
+	// here is how the segment iterators will work:
+	// the low and high values of the range at each segment are low, high
+	// the maximum possible values for any segment are min, max
+	// first find the first k >= 0 such that low != high for the segment at index k
+
+	//	the initial set of iterators at each index are as follows:
+	//    for i < k finalValue[i] is set to true right away.
+	//		create an iterator from seg = new Seg(low)
+	//    for i == k we create a wrapped iterator from Seg(low, high), wrapper will set finalValue[i] once we reach the final value of the iterator
+	//    for i > k we create an iterator from Seg(low, max)
+	//
+	// after the initial iterator has been supplied, any further iterator supplied for the same segment is as follows:
+	//    for i <= k, there was only one iterator, there will be no further iterator
+	//    for i > k,
+	//	  	if i == 0 or of if flagged[i - 1] is true, we create a wrapped iterator from Seg(low, high), wrapper will set finalValue[i] once we reach the final value of the iterator
+	//      otherwise we create an iterator from Seg(min, max)
+	//
+	// By following these rules, we iterate through all possible addresses
+
+	var allSegShared *IPAddressSegment
+	notDiffering := true
+	finalValue[0] = true
+	for i := 0; i < divCount; i++ {
+		var segIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment]
+		if prefixedSegIteratorProducer != nil && i >= networkSegmentIndex {
+			segIteratorProducer = prefixedSegIteratorProducer
+		} else {
+			segIteratorProducer = segmentIteratorProducer
+		}
+		lowerSeg := segProducer(lower, i)
+		indexi := i
+		if notDiffering {
+			notDiffering = segValueComparator(lower, upper, i)
+			if notDiffering {
+				// there is only one iterator and it produces only one value
+				finalValue[i+1] = true
+				iterator := segIteratorProducer(lowerSeg, i)
+				segIteratorProducerList[i] = func() Iterator[*IPAddressSegment] { return iterator }
+			} else {
+				// in the first differing segment the only iterator will go from segment value of lower address to segment value of upper address
+				iterator := segIteratorProducer(
+					createAddressDivision(lowerSeg.deriveNewMultiSeg(lowerSeg.getSegmentValue(), upper.GetGenericSegment(i).GetSegmentValue(), nil)).ToIP(),
+					i)
+				wrappedFinalIterator := &wrappedIterator{
+					iterator:   iterator,
+					finalValue: finalValue,
+					indexi:     indexi,
+				}
+				segIteratorProducerList[i] = func() Iterator[*IPAddressSegment] { return wrappedFinalIterator }
+			}
+		} else {
+			// in the second and all following differing segments, rather than go from segment value of lower address to segment value of upper address
+			// we go from segment value of lower address to the max seg value the first time through
+			// then we go from the min value of the seg to the max seg value each time until the final time,
+			// the final time we go from the min value to the segment value of upper address
+			// we know it is the final time through when the previous iterator has reached its final value, which we track
+
+			// the first iterator goes from the segment value of lower address to the max value of the segment
+			firstIterator := segIteratorProducer(
+				createAddressDivision(lowerSeg.deriveNewMultiSeg(lowerSeg.getSegmentValue(), lower.GetMaxSegmentValue(), nil)).ToIP(),
+				i)
+
+			// the final iterator goes from 0 to the segment value of our upper address
+			finalIterator := segIteratorProducer(
+				createAddressDivision(lowerSeg.deriveNewMultiSeg(0, upper.GetGenericSegment(i).GetSegmentValue(), nil)).ToIP(),
+				i)
+
+			// the wrapper iterator detects when the final iterator has reached its final value
+			wrappedFinalIterator := &wrappedIterator{
+				iterator:   finalIterator,
+				finalValue: finalValue,
+				indexi:     indexi,
+			}
+			if allSegShared == nil {
+				allSegShared = createAddressDivision(lowerSeg.deriveNewMultiSeg(0, lower.GetMaxSegmentValue(), nil)).ToIP()
+			}
+			// all iterators after the first iterator and before the final iterator go from 0 the max segment value,
+			// and there will be many such iterators
+			finalIteratorProducer := func() Iterator[*IPAddressSegment] {
+				if finalValue[indexi] {
+					return wrappedFinalIterator
+				}
+				return segIteratorProducer(allSegShared, indexi)
+			}
+			segIteratorProducerList[i] = func() Iterator[*IPAddressSegment] {
+				//the first time through, we replace the iterator producer so the first iterator used only once (ie we remove this function from the list)
+				segIteratorProducerList[indexi] = finalIteratorProducer
+				return firstIterator
+			}
+		}
+	}
+	iteratorProducer := func(iteratorIndex int) Iterator[*AddressSegment] {
+		iter := segIteratorProducerList[iteratorIndex]()
+		return wrappedSegmentIterator[*IPAddressSegment]{iter}
+	}
+	return rangeAddrIterator(
+		false,
+		lower.ToAddressBase(),
+		prefixLen,
+		valsAreMultiple,
+		rangeSegmentsIterator(
+			divCount,
+			iteratorProducer,
+			networkSegmentIndex,
+			hostSegmentIndex,
+			iteratorProducer,
+		),
+	)
+}
+
 // IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
 type IPAddressValueProvider interface {
 	AddressValueProvider
