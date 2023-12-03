@@ -1801,6 +1801,40 @@ func (section *addressSectionInternal) PrefixEqual(other AddressSectionType) (re
 	return section.prefixContains(o, false)
 }
 
+func (section *addressSectionInternal) toNormalizedWildcardString() string {
+	if sect := section.toIPv4AddressSection(); sect != nil {
+		return sect.ToNormalizedWildcardString()
+	} else if sect := section.toIPv6AddressSection(); sect != nil {
+		return sect.ToNormalizedWildcardString()
+	} else if sect := section.toMACAddressSection(); sect != nil {
+		return sect.ToNormalizedWildcardString()
+	}
+	return nilSection()
+}
+
+func (section *addressSectionInternal) toCompressedString() string {
+	if sect := section.toIPv4AddressSection(); sect != nil {
+		return sect.ToCompressedString()
+	} else if sect := section.toIPv6AddressSection(); sect != nil {
+		return sect.ToCompressedString()
+	} else if sect := section.toMACAddressSection(); sect != nil {
+		return sect.ToCompressedString()
+	}
+	return nilSection()
+}
+
+func (section *addressSectionInternal) toCanonicalString() string {
+	if sect := section.toIPv4AddressSection(); sect != nil {
+		return sect.ToCanonicalString()
+	} else if sect := section.toIPv6AddressSection(); sect != nil {
+		return sect.ToCanonicalString()
+	} else if sect := section.toMACAddressSection(); sect != nil {
+		return sect.ToCanonicalString()
+	}
+	// zero section
+	return nilSection()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
