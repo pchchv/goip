@@ -1015,6 +1015,35 @@ func (addr *addressInternal) toHexString(with0xPrefix bool) (string, address_err
 	return addr.section.ToHexString(with0xPrefix)
 }
 
+func (addr *addressInternal) toCanonicalString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toCanonicalString(addr.zone)
+		}
+		return cacheStr(&cache.canonicalString,
+			func() string { return addr.section.ToIPv6().toCanonicalString(addr.zone) })
+	}
+	return addr.section.ToCanonicalString()
+}
+
+func (addr *addressInternal) toNormalizedString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toNormalizedString(addr.zone)
+		}
+		return cacheStr(&cache.normalizedIPv6String,
+			func() string { return addr.section.ToIPv6().toNormalizedString(addr.zone) })
+	}
+	return addr.section.ToNormalizedString()
+}
+
+func (addr *addressInternal) format(state fmt.State, verb rune) {
+	section := addr.section
+	section.format(state, verb, addr.zone, addr.isIP())
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
