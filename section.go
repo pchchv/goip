@@ -2567,6 +2567,33 @@ func (section *AddressSection) ToNormalizedString() string {
 	return section.toNormalizedString()
 }
 
+// ToNormalizedWildcardString produces a string similar to the normalized string but
+// for IP address sections it avoids the CIDR prefix length.
+// Multiple-valued segments will be shown with wildcards and ranges (denoted by '*' and '-')
+// instead of using the CIDR prefix notation.
+func (section *AddressSection) ToNormalizedWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toNormalizedWildcardString()
+}
+
+// ToCompressedString produces a short representation of this address section while remaining within the confines of standard representation(s) of the address.
+//
+// For IPv4, it is the same as the canonical string.
+//
+// For IPv6, it differs from the canonical string.
+// It compresses the maximum number of zeros and/or host segments with the IPv6 compression notation '::'.
+//
+// For MAC, it differs from the canonical string.
+// It produces a shorter string for the address that has no leading zeros.
+func (section *AddressSection) ToCompressedString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toCompressedString()
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
