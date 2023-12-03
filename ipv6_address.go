@@ -1775,7 +1775,20 @@ func (addr *IPv6Address) ToMixedString() (string, address_error.IncompatibleAddr
 			})
 	}
 	return addr.GetSection().toMixedString()
+}
 
+func (addr *IPv6Address) rangeIterator(
+	upper *IPv6Address,
+	valsAreMultiple bool,
+	prefixLen PrefixLen,
+	segProducer func(addr *IPAddress, index int) *IPAddressSegment,
+	segmentIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
+	segValueComparator func(seg1, seg2 *IPAddress, index int) bool,
+	networkSegmentIndex,
+	hostSegmentIndex int,
+	prefixedSegIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
+) Iterator[*IPv6Address] {
+	return ipv6AddressIterator{addr.ipAddressInternal.rangeIterator(upper.ToIP(), valsAreMultiple, prefixLen, segProducer, segmentIteratorProducer, segValueComparator, networkSegmentIndex, hostSegmentIndex, prefixedSegIteratorProducer)}
 }
 
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
