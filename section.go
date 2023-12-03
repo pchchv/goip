@@ -1846,6 +1846,114 @@ func (section *addressSectionInternal) toNormalizedString() string {
 	return nilSection()
 }
 
+func (section *addressSectionInternal) format(state fmt.State, verb rune, zone Zone, useCanonical bool) {
+	var err error
+	var str string
+	var isStringFormat bool
+	_, hasPrecision := state.Precision()
+	_, hasWidth := state.Width()
+	useDefaultStr := !hasPrecision && !hasWidth
+
+	switch verb {
+	case 's', 'v', 'q':
+		isStringFormat = true
+		if useCanonical {
+			if zone != NoZone {
+				str = section.toAddressSection().ToIPv6().toCanonicalString(zone)
+			} else {
+				str = section.toCanonicalString()
+			}
+		} else {
+			if zone != NoZone {
+				str = section.toAddressSection().ToIPv6().toNormalizedString(zone)
+			} else {
+				str = section.toNormalizedString()
+			}
+		}
+		if verb == 'q' && useDefaultStr {
+			if state.Flag('#') && (zone == NoZone || strconv.CanBackquote(string(zone))) {
+				str = "`" + str + "`"
+			} else if zone == NoZone {
+				str = `"` + str + `"`
+			} else {
+				str = strconv.Quote(str) // zones should not have special characters, but you cannot be sure
+			}
+		}
+	case 'x':
+		useDefaultStr = useDefaultStr && zone == NoZone
+		str, err = section.toHexString(useDefaultStr && state.Flag('#'))
+	case 'X':
+		useDefaultStr = useDefaultStr && zone == NoZone
+		if useDefaultStr && state.Flag('#') {
+			str, err = section.toLongStringZoned(NoZone, hexPrefixedUppercaseParams)
+		} else {
+
+			str, err = section.toLongStringZoned(NoZone, hexUppercaseParams)
+		}
+	case 'b':
+		useDefaultStr = useDefaultStr && zone == NoZone
+		str, err = section.toBinaryString(useDefaultStr && state.Flag('#'))
+	case 'o':
+		useDefaultStr = useDefaultStr && zone == NoZone
+		str, err = section.toOctalString(useDefaultStr && state.Flag('#'))
+	case 'O':
+		useDefaultStr = useDefaultStr && zone == NoZone
+		if useDefaultStr {
+			str, err = section.toLongOctalStringZoned(NoZone, octal0oPrefixedParams)
+		} else {
+			str, err = section.toLongOctalStringZoned(NoZone, octalParams)
+		}
+	case 'd':
+		useDefaultStr = useDefaultStr && zone == NoZone
+		str, err = section.toDecimalStringZoned(NoZone)
+	default:
+		// format not supported
+		_, _ = fmt.Fprintf(state, "%%!%c(address=%s)", verb, section.toString())
+		return
+	}
+
+	if err != nil { // could not produce an octal, binary, hex or decimal string, so use string format instead
+		isStringFormat = true
+		if useCanonical {
+			str = section.toCanonicalString()
+		} else {
+			str = section.toNormalizedString()
+		}
+	}
+
+	if useDefaultStr {
+		_, _ = state.Write([]byte(str))
+	} else if isStringFormat {
+		section.writeStrFmt(state, verb, str, zone)
+	} else {
+		section.writeNumberFmt(state, verb, str, zone)
+	}
+}
+
+// Format is intentionally the only method with non-pointer receivers.
+// It is not intended to be called directly, it is intended for use by the fmt package.
+// When called by a function in the fmt package,
+// nil values are detected before this method is called,
+// avoiding a panic when calling this method.
+//
+// Format implements [fmt.Formatter] interface.
+// It accepts the formats
+//   - 'v' for the default address and section format (either the normalized or canonical string),
+//   - 's' (string) for the same,
+//   - 'b' (binary), 'o' (octal with 0 prefix), 'O' (octal with 0o prefix),
+//   - 'd' (decimal), 'x' (lowercase hexadecimal), and
+//   - 'X' (uppercase hexadecimal).
+//
+// Also supported are some of fmt's format flags for integral types.
+// Sign control is not supported since addresses and sections are never negative.
+// '#' for an alternate format is supported, which adds a leading zero for octal, and for hexadecimal it adds
+// a leading "0x" or "0X" for "%#x" and "%#X" respectively.
+// Also supported is specification of minimum digits precision, output field width,
+// space or zero padding, and '-' for left or right justification.
+func (section addressSectionInternal) Format(state fmt.State, verb rune) {
+	section.format(state, verb, NoZone, false)
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
