@@ -1835,6 +1835,17 @@ func (section *addressSectionInternal) toCanonicalString() string {
 	return nilSection()
 }
 
+func (section *addressSectionInternal) toNormalizedString() string {
+	if sect := section.toIPv4AddressSection(); sect != nil {
+		return sect.ToNormalizedString()
+	} else if sect := section.toIPv6AddressSection(); sect != nil {
+		return sect.ToNormalizedString()
+	} else if sect := section.toMACAddressSection(); sect != nil {
+		return sect.ToNormalizedString()
+	}
+	return nilSection()
+}
+
 // AddressSection is an address section containing a certain number of consecutive segments.
 // It is a series of individual address segments.
 // Each segment has the same bit length.
