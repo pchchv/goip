@@ -1457,6 +1457,33 @@ func (addr *IPv6Address) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
 	return addr.init().ipAddressInternal.ContainsSinglePrefixBlock(prefixLen)
 }
 
+// Compare returns a negative integer, zero, or a positive integer if this address or subnet is less than, equal, or greater than the given item.
+// Any address item is comparable to any other.
+// All address items use CountComparator to compare.
+func (addr *IPv6Address) Compare(item AddressItem) int {
+	return CountComparator.Compare(addr, item)
+}
+
+// CompareSize compares the counts of two subnets or addresses or items,
+// the number of individual addresses or items within.
+//
+// Rather than calculating counts with GetCount,
+// there can be more efficient ways of determining whether this subnet represents more individual addresses or items than another.
+//
+// CompareSize returns a positive integer if this address or subnet has a larger count than the one given,
+// zero if they are the same,
+// or a negative integer if the other has a larger count.
+func (addr *IPv6Address) CompareSize(other AddressItem) int {
+	if addr == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// have size 0, other has size >= 1
+		return -1
+	}
+	return addr.init().compareSize(other)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
