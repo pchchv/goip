@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"math/big"
 	"net"
 	"net/netip"
@@ -1482,6 +1483,33 @@ func (addr *IPv6Address) CompareSize(other AddressItem) int {
 		return -1
 	}
 	return addr.init().compareSize(other)
+}
+
+// Format implements [fmt.Formatter] interface. It accepts the formats
+//   - 'v' for the default address and section format (either the normalized or canonical string),
+//   - 's' (string) for the same,
+//   - 'b' (binary), 'o' (octal with 0 prefix), 'O' (octal with 0o prefix),
+//   - 'd' (decimal), 'x' (lowercase hexadecimal), and
+//   - 'X' (uppercase hexadecimal).
+//
+// Also supported are some of fmt's format flags for integral types.
+// Sign control is not supported since addresses and sections are never negative.
+// '#' for an alternate format is supported, which adds a leading zero for octal, and for hexadecimal it adds
+// a leading "0x" or "0X" for "%#x" and "%#X" respectively.
+// Also supported is specification of minimum digits precision, output field width,
+// space or zero padding, and '-' for left or right justification.
+func (addr IPv6Address) Format(state fmt.State, verb rune) {
+	addr.init().format(state, verb)
+}
+
+// String implements the [fmt.Stringer] interface,
+// returning the canonical string provided by ToCanonicalString,
+// or "<nil>" if the receiver is a nil pointer.
+func (addr *IPv6Address) String() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().addressInternal.toString()
 }
 
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
