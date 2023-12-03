@@ -1082,6 +1082,30 @@ func (addr *addressInternal) prefixContains(other AddressType) bool {
 	return addr.section.PrefixContains(otherSection) && addr.isSameZone(otherAddr)
 }
 
+func (addr *addressInternal) toNormalizedWildcardString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toNormalizedWildcardStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.normalizedIPv6String,
+			func() string { return addr.section.ToIPv6().toNormalizedWildcardStringZoned(addr.zone) })
+	}
+	return addr.section.ToNormalizedWildcardString()
+}
+
+func (addr *addressInternal) toCompressedString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toCompressedString(addr.zone)
+		}
+		return cacheStr(&cache.compressedIPv6String,
+			func() string { return addr.section.ToIPv6().toCompressedString(addr.zone) })
+	}
+	return addr.section.ToCompressedString()
+}
+
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
 //
 // Addresses consist of a sequence of segments, each with the same bit-size.
