@@ -1658,6 +1658,19 @@ func (addr *IPv6Address) SpanWithSequentialBlocksTo(other *IPv6Address) []*IPv6A
 	return cloneToIPv6Addrs(getSpanningSequentialBlocks(wrapIPAddress(addr.ToIP()), wrapIPAddress(other.ToIP())))
 }
 
+// CoverWithPrefixBlockTo returns the minimal-size prefix block that covers all
+// the addresses spanning from this subnet to the given subnet.
+func (addr *IPv6Address) CoverWithPrefixBlockTo(other *IPv6Address) *IPv6Address {
+	return addr.init().coverWithPrefixBlockTo(other.ToIP()).ToIPv6()
+}
+
+// CoverWithPrefixBlock returns the minimal-size prefix block that covers all the addresses in this subnet.
+// The resulting block will have a larger subnet size than this,
+// unless this subnet is already a prefix block.
+func (addr *IPv6Address) CoverWithPrefixBlock() *IPv6Address {
+	return addr.init().coverWithPrefixBlock().ToIPv6()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
