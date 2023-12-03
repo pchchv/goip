@@ -1609,6 +1609,32 @@ func (addr *IPv6Address) Increment(increment int64) *IPv6Address {
 	return addr.init().increment(increment).ToIPv6()
 }
 
+// SpanWithPrefixBlocks returns an array of prefix blocks that cover the same set of addresses as this subnet.
+//
+// Unlike SpanWithPrefixBlocksTo, the result only includes addresses that are a part of this subnet.
+func (addr *IPv6Address) SpanWithPrefixBlocks() []*IPv6Address {
+	if addr.IsSequential() {
+		if addr.IsSinglePrefixBlock() {
+			return []*IPv6Address{addr}
+		}
+		wrapped := wrapIPAddress(addr.ToIP())
+		spanning := getSpanningPrefixBlocks(wrapped, wrapped)
+		return cloneToIPv6Addrs(spanning)
+	}
+	wrapped := wrapIPAddress(addr.ToIP())
+	return cloneToIPv6Addrs(spanWithPrefixBlocks(wrapped))
+}
+
+// SpanWithPrefixBlocksTo returns the smallest slice of prefix block subnets that span from this subnet to the given subnet.
+//
+// The resulting slice is sorted from lowest address value to highest, regardless of the size of each prefix block.
+//
+// From the list of returned subnets you can recover the original range (from this to other) by converting each to [SequentialRange] with ToSequentialRange
+// and them joining them into a single range with the Join method of [SequentialRange].
+func (addr *IPv6Address) SpanWithPrefixBlocksTo(other *IPv6Address) []*IPv6Address {
+	return cloneToIPv6Addrs(getSpanningPrefixBlocks(wrapIPAddress(addr.ToIP()), wrapIPAddress(other.ToIP())))
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
