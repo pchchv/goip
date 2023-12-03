@@ -1715,6 +1715,69 @@ func (addr *IPv6Address) ToOctalString(with0Prefix bool) (string, address_error.
 	return addr.init().toOctalString(with0Prefix)
 }
 
+// ToBinaryString writes this address as a single binary value
+// (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0b" prefix.
+//
+// If a subnet cannot be written as a single prefix block or a range of two values, an error is returned.
+func (addr *IPv6Address) ToBinaryString(with0bPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	return addr.init().toBinaryString(with0bPrefix)
+}
+
+// ToUNCHostName Generates the Microsoft UNC path component for this address.
+// For examples see https://ipv6-literal.com/
+//
+// For IPv6, it is the canonical string but with colons replaced by dashes,
+// percent signs with the letter “s”,
+// and then appended with the root domain ".ipv6-literal.net".
+func (addr *IPv6Address) ToUNCHostName() string {
+	if addr == nil {
+		return nilString()
+	}
+
+	cache := addr.getStringCache()
+	if cache == nil {
+		res, _ := addr.GetSection().toCustomString(uncParams, addr.zone)
+		return res
+	}
+
+	var cacheField **string
+	cacheField = &cache.uncString
+	return cacheStr(cacheField,
+		func() string {
+			res, _ := addr.GetSection().toCustomString(uncParams, addr.zone)
+			return res
+		})
+}
+
+// ToMixedString produces the mixed IPv6/IPv4 string.
+// It is the shortest such string (ie fully compressed).
+// For some address sections with ranges of values in the IPv4 part of the address,
+// there is not mixed string, and an error is returned.
+func (addr *IPv6Address) ToMixedString() (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.GetSection().toMixedStringZoned(addr.zone)
+		}
+		var cacheField **string
+		cacheField = &cache.mixedString
+		return cacheStrErr(cacheField,
+			func() (string, address_error.IncompatibleAddressError) {
+				return addr.GetSection().toMixedStringZoned(addr.zone)
+			})
+	}
+	return addr.GetSection().toMixedString()
+
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
