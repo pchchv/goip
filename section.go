@@ -2531,6 +2531,42 @@ func (section *AddressSection) ToCustomString(stringOptions address_string.Strin
 	return section.toCustomString(stringOptions)
 }
 
+// ToCanonicalString produces a canonical string for the address section.
+//
+// For IPv4, dotted octet format, also known as dotted decimal format, is used.
+// https://datatracker.ietf.org/doc/html/draft-main-ipaddr-text-rep-00#section-2.1
+//
+// For IPv6, RFC 5952 describes canonical string representation.
+// https://en.wikipedia.org/wiki/IPv6_address#Representation
+//
+// For MAC, it uses the canonical standardized IEEE 802 MAC address representation of xx-xx-xx-xx-xx-xx.
+// An example is "01-23-45-67-89-ab".
+// For range segments, '|' is used: "11-22-33|44-55-66".
+func (section *AddressSection) ToCanonicalString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toCanonicalString()
+}
+
+// ToNormalizedString produces a normalized string for the address section.
+//
+// For IPv4, it is the same as the canonical string.
+//
+// For IPv6, it differs from the canonical string.
+// Zero-segments are not compressed.
+//
+// For MAC, it differs from the canonical string.
+// It uses the most common representation of MAC addresses: "xx:xx:xx:xx:xx:xx".
+// An example is "01:23:45:67:89:ab".
+// For range segments, '-' is used: "11:22:33-44:55:66".
+func (section *AddressSection) ToNormalizedString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toNormalizedString()
+}
+
 func assignStringCache(section *addressDivisionGroupingBase, addrType addrType) {
 	stringCache := &section.cache.stringCache
 	if addrType.isIPv4() {
