@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"math/big"
 	"unsafe"
 
@@ -1042,6 +1043,43 @@ func (addr *addressInternal) toNormalizedString() string {
 func (addr *addressInternal) format(state fmt.State, verb rune) {
 	section := addr.section
 	section.format(state, verb, addr.zone, addr.isIP())
+}
+
+func (addr *addressInternal) toString() string {
+	section := addr.section
+	if section == nil {
+		return nilSection() // note no zone possible since a zero-address like Address{} or IPAddress{} cannot have a zone
+	} else if addr.isMAC() {
+		return addr.toNormalizedString()
+	}
+	return addr.toCanonicalString()
+}
+
+func (addr *addressInternal) prefixEquals(other AddressType) bool {
+	otherAddr := other.ToAddressBase()
+	if addr.toAddress() == otherAddr {
+		return true
+	}
+
+	otherSection := otherAddr.GetSection()
+	if addr.section == nil {
+		return otherSection.GetSegmentCount() == 0
+	}
+	// If it is IPv6 and has a zone, then it does not contain addresses from other zones.
+	return addr.section.PrefixEqual(otherSection) && addr.isSameZone(otherAddr)
+}
+
+func (addr *addressInternal) prefixContains(other AddressType) bool {
+	otherAddr := other.ToAddressBase()
+	if addr.toAddress() == otherAddr {
+		return true
+	}
+	otherSection := otherAddr.GetSection()
+	if addr.section == nil {
+		return otherSection.GetSegmentCount() == 0
+	}
+	// If it is IPv6 and has a zone, then it does not contain addresses from other zones.
+	return addr.section.PrefixContains(otherSection) && addr.isSameZone(otherAddr)
 }
 
 // Address represents a single address or a set of multiple addresses, such as an IP subnet or a set of MAC addresses.
