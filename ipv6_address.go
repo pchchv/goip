@@ -1538,6 +1538,29 @@ func (addr *IPv6Address) TrieDecrement() *IPv6Address {
 	return nil
 }
 
+// ToAddressString retrieves or generates an IPAddressString instance for this IPAddress instance.
+// This may be the IPAddressString this instance was generated from, if it was generated from an IPAddressString.
+//
+// In general, users are intended to create IPAddress instances from IPAddressString instances,
+// while the reverse direction is generally not common and not useful, except under specific circumstances.
+//
+// However, the reverse direction can be useful under certain circumstances,
+// such as when maintaining a collection of HostIdentifierString instances.
+func (addr *IPv6Address) ToAddressString() *IPAddressString {
+	return addr.init().ToIP().ToAddressString()
+}
+
+// PrefixIterator provides an iterator to iterate through the individual prefixes of this subnet,
+// each iterated element spanning the range of values for its prefix.
+//
+// It is similar to the prefix block iterator, except for possibly the first and last iterated elements, which might not be prefix blocks,
+// instead constraining themselves to values from this subnet.
+//
+// If the subnet has no prefix length, then this is equivalent to Iterator.
+func (addr *IPv6Address) PrefixIterator() Iterator[*IPv6Address] {
+	return ipv6AddressIterator{addr.init().prefixIterator(false)}
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
