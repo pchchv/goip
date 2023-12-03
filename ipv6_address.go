@@ -1512,6 +1512,32 @@ func (addr *IPv6Address) String() string {
 	return addr.init().addressInternal.toString()
 }
 
+// TrieIncrement returns the next address or block according to address trie ordering
+//
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *IPv6Address) TrieIncrement() *IPv6Address {
+	if res, ok := trieIncrement(addr); ok {
+		return res
+	}
+	return nil
+}
+
+// TrieDecrement returns the previous address or block according to address trie ordering
+//
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *IPv6Address) TrieDecrement() *IPv6Address {
+	if res, ok := trieDecrement(addr); ok {
+		return res
+	}
+	return nil
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
