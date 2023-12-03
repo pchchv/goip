@@ -1434,6 +1434,29 @@ func (addr *IPv6Address) Subtract(other *IPv6Address) []*IPv6Address {
 	return res
 }
 
+// Intersect returns the subnet whose addresses are found in both this and the given subnet argument, or nil if no such addresses exist.
+//
+// This is also known as the conjunction of the two sets of addresses.
+func (addr *IPv6Address) Intersect(other *IPv6Address) *IPv6Address {
+	addr = addr.init()
+	section, _ := addr.GetSection().Intersect(other.GetSection())
+	if section == nil {
+		return nil
+	}
+	return addr.checkIdentity(section)
+}
+
+// ContainsSinglePrefixBlock returns whether this address contains a single prefix block for the given prefix length.
+//
+// This means there is only one prefix value for the given prefix length,
+// and it also contains the full prefix block for that prefix,
+// all addresses with that prefix.
+//
+// Use GetPrefixLenForSingleBlock to determine whether there is a prefix length for which this method returns true.
+func (addr *IPv6Address) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	return addr.init().ipAddressInternal.ContainsSinglePrefixBlock(prefixLen)
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
