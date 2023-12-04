@@ -792,6 +792,44 @@ func (section *IPv4AddressSection) Increment(inc int64) *IPv4AddressSection {
 	return increment(section.ToSectionBase(), inc, ipv4Network.getIPAddressCreator(), count-1, lowerValue, upperValue, section.getLower, section.getUpper, section.getPrefixLen()).ToIPv4()
 }
 
+// Compare returns a negative integer, zero,
+// or a positive integer if this address section is less than, equal,
+// or greater than the given item.
+// Any address item is comparable to any other.
+// All address items use CountComparator to compare.
+func (section *IPv4AddressSection) Compare(item AddressItem) int {
+	return CountComparator.Compare(section, item)
+}
+
+// CompareSize compares the counts of two address sections or items,
+// the number of individual sections or other items represented.
+//
+// Rather than calculating counts with GetCount,
+// there can be more efficient ways of determining whether this section represents more individual address sections than another.
+//
+// CompareSize returns a positive integer if this address section has a larger count than the one given,
+// zero if they are the same, or a negative integer if the other has a larger count.
+func (section *IPv4AddressSection) CompareSize(other AddressItem) int {
+	if section == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// have size 0, other has size >= 1
+		return -1
+	}
+	return section.compareSize(other)
+}
+
+// String implements the [fmt.Stringer] interface,
+// returning the normalized string provided by ToNormalizedString,
+// or "<nil>" if the receiver is a nil pointer.
+func (section *IPv4AddressSection) String() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.toString()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
