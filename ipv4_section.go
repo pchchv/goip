@@ -1261,6 +1261,39 @@ func (section *IPv4AddressSection) ToNormalizedJoinedString(stringParams address
 	return toNormalizedIPString(stringParams, equivalentPart), nil
 }
 
+// ToInetAtonJoinedString returns a string with a format that is styled from the inet_aton routine.
+// The string can have an octal or hexadecimal radix rather than decimal,
+// and can have less than the typical four IPv4 segments by joining the least significant segments together,
+// resulting in a string which just 1, 2 or 3 divisions.
+//
+// When using octal, the octal segments each have a leading zero prefix of "0", and when using hex, a prefix of "0x".
+//
+// If this represents a subnet section, this returns an error when unable to join two or more segments
+// into a division of a larger bit-length that represents the same set of values.
+func (section *IPv4AddressSection) ToInetAtonJoinedString(radix InetAtonRadix, joinedCount int) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+
+	if joinedCount <= 0 {
+		return section.ToInetAtonString(radix), nil
+	}
+
+	var stringParams address_string.IPStringOptions
+	if radix == InetAtonRadixOctal {
+		stringParams = inetAtonOctalParams
+	} else if radix == InetAtonRadixHex {
+		stringParams = inetAtonHexParams
+	} else {
+		stringParams = ipv4CanonicalParams
+	}
+	return section.ToNormalizedJoinedString(stringParams, joinedCount)
+}
+
+func (section *IPv4AddressSection) toNormalizedString(stringOptions address_string.IPStringOptions) string {
+	return toNormalizedIPString(stringOptions, section)
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
