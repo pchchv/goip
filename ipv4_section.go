@@ -939,6 +939,32 @@ func (section *IPv4AddressSection) CoverWithPrefixBlock() *IPv4AddressSection {
 	return section.coverWithPrefixBlock().ToIPv4()
 }
 
+// MergeToSequentialBlocks merges this with the list of sections to produce the smallest array of sequential blocks.
+//
+// The resulting slice is sorted from lowest address value to highest, regardless of the size of each prefix block.
+func (section *IPv4AddressSection) MergeToSequentialBlocks(sections ...*IPv4AddressSection) ([]*IPv4AddressSection, address_error.SizeMismatchError) {
+	if err := section.checkSectionCounts(sections); err != nil {
+		return nil, err
+	}
+
+	series := cloneIPv4Sections(section, sections)
+	blocks := getMergedSequentialBlocks(series)
+	return cloneToIPv4Sections(blocks), nil
+}
+
+// MergeToPrefixBlocks merges this section with the list of sections to produce the smallest array of prefix blocks.
+//
+// The resulting slice is sorted from lowest value to highest, regardless of the size of each prefix block.
+func (section *IPv4AddressSection) MergeToPrefixBlocks(sections ...*IPv4AddressSection) ([]*IPv4AddressSection, address_error.SizeMismatchError) {
+	if err := section.checkSectionCounts(sections); err != nil {
+		return nil, err
+	}
+
+	series := cloneIPv4Sections(section, sections)
+	blocks := getMergedPrefixBlocks(series)
+	return cloneToIPv4Sections(blocks), nil
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
