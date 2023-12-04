@@ -1828,6 +1828,46 @@ func (addr *IPv6Address) ToCanonicalString() string {
 	return addr.init().toCanonicalString()
 }
 
+// ToNormalizedString produces a normalized string for the address.
+//
+// For IPv6, it differs from the canonical string.
+// Zero-segments are not compressed.
+//
+// Each address has a unique normalized string, not counting the prefix length.
+// With IP addresses, the prefix length can cause two equal addresses to have different strings, for example "1.2.3.4/16" and "1.2.3.4".
+// It can also cause two different addresses to have the same string,
+// such as "1.2.0.0/16" for the individual address "1.2.0.0" and also the prefix block "1.2.*.*".
+// Use the method ToNormalizedWildcardString for a unique string for each IP address and subnet.
+func (addr *IPv6Address) ToNormalizedString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toNormalizedString()
+}
+
+// SpanWithRange returns an IPv6AddressSeqRange instance that spans this subnet to the given subnet.
+// If the other address is a different version than this, then the other is ignored,
+// and the result is equivalent to calling ToSequentialRange.
+func (addr *IPv6Address) SpanWithRange(other *IPv6Address) *SequentialRange[*IPv6Address] {
+	return NewSequentialRange(addr.init(), other)
+}
+
+// ToSequentialRange creates a sequential range instance from the lowest and highest addresses in this subnet.
+//
+// The two will represent the same set of individual addresses if and only if IsSequential is true.
+// To get a series of ranges that represent the same set of individual addresses use the SequentialBlockIterator (or PrefixIterator),
+// and apply this method to each iterated subnet.
+//
+// If this represents just a single address then the returned instance covers just that single address as well.
+func (addr *IPv6Address) ToSequentialRange() *SequentialRange[*IPv6Address] {
+	if addr == nil {
+		return nil
+	}
+
+	addr = addr.init().WithoutPrefixLen().WithoutZone()
+	return newSequRangeUnchecked(addr.GetLower(), addr.GetUpper(), addr.isMultiple())
+}
+
 func (addr *IPv6Address) rangeIterator(
 	upper *IPv6Address,
 	valsAreMultiple bool,
