@@ -1063,6 +1063,34 @@ func (section *IPv4AddressSection) ToNormalizedWildcardString() string {
 		})
 }
 
+// ToCanonicalWildcardString produces a string similar to the canonical string but avoids the CIDR prefix length.
+// Address sections with a network prefix length will be shown with wildcards and ranges
+// (denoted by '*' and '-')
+// instead of using the CIDR prefix length notation.
+// For IPv4 it is the same as ToNormalizedWildcardString.
+func (section *IPv4AddressSection) ToCanonicalWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.ToNormalizedWildcardString()
+}
+
+// ToSegmentedBinaryString writes this address section as segments of binary values preceded by the "0b" prefix.
+func (section *IPv4AddressSection) ToSegmentedBinaryString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toNormalizedString(ipv4SegmentedBinaryParams)
+	}
+	return cacheStr(&cache.segmentedBinaryString,
+		func() string {
+			return section.toNormalizedString(ipv4SegmentedBinaryParams)
+		})
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
