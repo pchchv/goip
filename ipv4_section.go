@@ -1091,6 +1091,40 @@ func (section *IPv4AddressSection) ToSegmentedBinaryString() string {
 		})
 }
 
+// ToSQLWildcardString create a string similar to that from toNormalizedWildcardString except that
+// it uses SQL wildcards.  It uses '%' instead of '*' and also uses the wildcard '_'.
+func (section *IPv4AddressSection) ToSQLWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toNormalizedString(ipv4SqlWildcardParams)
+	}
+	return cacheStr(&cache.sqlWildcardString,
+		func() string {
+			return section.toNormalizedString(ipv4SqlWildcardParams)
+		})
+}
+
+// ToFullString produces a string with no compressed segments and all segments of full length with leading zeros,
+// which is 3 characters for IPv4 segments.
+func (section *IPv4AddressSection) ToFullString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toNormalizedString(ipv4FullParams)
+	}
+	return cacheStr(&cache.fullString,
+		func() string {
+			return section.toNormalizedString(ipv4FullParams)
+		})
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
