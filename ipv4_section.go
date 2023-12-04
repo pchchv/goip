@@ -891,6 +891,39 @@ func (section *IPv4AddressSection) SpanWithPrefixBlocks() []*IPv4AddressSection 
 	return cloneToIPv4Sections(spanWithPrefixBlocks(wrapped))
 }
 
+// SpanWithPrefixBlocksTo returns the smallest slice of prefix block subnet sections that span from this section to the given section.
+//
+// If the given section has a different segment count, an error is returned.
+//
+// The resulting slice is sorted from lowest address value to highest, regardless of the size of each prefix block.
+func (section *IPv4AddressSection) SpanWithPrefixBlocksTo(other *IPv4AddressSection) ([]*IPv4AddressSection, address_error.SizeMismatchError) {
+	if err := section.checkSectionCount(other.ToIP()); err != nil {
+		return nil, err
+	}
+	return cloneToIPv4Sections(getSpanningPrefixBlocks(wrapIPSection(section.ToIP()), wrapIPSection(other.ToIP()))), nil
+}
+
+// SpanWithSequentialBlocks produces the smallest slice of sequential blocks that cover the same set of sections as this.
+//
+// This slice can be shorter than that produced by SpanWithPrefixBlocks and is never longer.
+//
+// Unlike SpanWithSequentialBlocksTo, this method only includes values that are a part of this section.
+func (section *IPv4AddressSection) SpanWithSequentialBlocks() []*IPv4AddressSection {
+	if section.IsSequential() {
+		return []*IPv4AddressSection{section}
+	}
+	wrapped := wrapIPSection(section.ToIP())
+	return cloneToIPv4Sections(spanWithSequentialBlocks(wrapped))
+}
+
+// SpanWithSequentialBlocksTo produces the smallest slice of sequential block address sections that span from this section to the given section.
+func (section *IPv4AddressSection) SpanWithSequentialBlocksTo(other *IPv4AddressSection) ([]*IPv4AddressSection, address_error.SizeMismatchError) {
+	if err := section.checkSectionCount(other.ToIP()); err != nil {
+		return nil, err
+	}
+	return cloneToIPv4Sections(getSpanningSequentialBlocks(wrapIPSection(section.ToIP()), wrapIPSection(other.ToIP()))), nil
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
