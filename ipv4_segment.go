@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"math/big"
 	"unsafe"
 
@@ -465,6 +466,51 @@ func (seg *IPv4AddressSegment) CompareSize(other AddressItem) int {
 		return -1
 	}
 	return seg.init().compareSize(other)
+}
+
+// GetString produces a normalized string to represent the segment.
+// If the segment is a CIDR network prefix block for its prefix length,
+// then the string contains only the lower value of the block range.
+// Otherwise, the explicit range will be printed.
+//
+// The string returned is useful in the context of creating strings for address sections or full addresses,
+// in which case the radix and bit-length can be deduced from the context.
+// The String method produces strings more appropriate when no context is provided.
+func (seg *IPv4AddressSegment) GetString() string {
+	if seg == nil {
+		return nilString()
+	}
+	return seg.init().getString()
+}
+
+// Format implements [fmt.Formatter] interface. It accepts the formats
+//   - 'v' for the default address and section format (either the normalized or canonical string),
+//   - 's' (string) for the same,
+//   - 'b' (binary), 'o' (octal with 0 prefix), 'O' (octal with 0o prefix),
+//   - 'd' (decimal), 'x' (lowercase hexadecimal), and
+//   - 'X' (uppercase hexadecimal).
+//
+// Also supported are some of fmt's format flags for integral types.
+// Sign control is not supported since addresses and sections are never negative.
+// '#' for an alternate format is supported, which adds a leading zero for octal, and for hexadecimal it adds
+// a leading "0x" or "0X" for "%#x" and "%#X" respectively.
+// Also supported is specification of minimum digits precision, output field width,
+// space or zero padding, and '-' for left or right justification.
+func (seg IPv4AddressSegment) Format(state fmt.State, verb rune) {
+	seg.init().ipAddressSegmentInternal.Format(state, verb)
+}
+
+// String produces a string that is useful when a segment string is provided with no context.
+// It uses the decimal radix.
+// GetWildcardString is more appropriate in context with other segments or divisions.
+// It does not use a string prefix and uses '*' for full-range segments.
+// GetString is more appropriate in context with prefix lengths,
+// it uses zeros instead of wildcards with full prefix block ranges alongside prefix lengths.
+func (seg *IPv4AddressSegment) String() string {
+	if seg == nil {
+		return nilString()
+	}
+	return seg.init().toString()
 }
 
 type ipv4SegmentValues struct {
