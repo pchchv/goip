@@ -998,6 +998,42 @@ func (section *IPv4AddressSection) ToBinaryString(with0bPrefix bool) (string, ad
 	return section.toBinaryString(with0bPrefix)
 }
 
+// ToCanonicalString produces a canonical string for the address section.
+//
+// For IPv4, dotted octet format, also known as dotted decimal format, is used.
+// https://datatracker.ietf.org/doc/html/draft-main-ipaddr-text-rep-00#section-2.1
+//
+// For IPv6, RFC 5952 describes canonical string representation.
+// https://en.wikipedia.org/wiki/IPv6_address#Representation
+// http://tools.ietf.org/html/rfc5952
+//
+// If this section has a prefix length, it will be included in the string.
+func (section *IPv4AddressSection) ToCanonicalString() string {
+	if section == nil {
+		return nilString()
+	}
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toNormalizedString(ipv4CanonicalParams)
+	}
+	return cacheStr(&cache.canonicalString,
+		func() string {
+			return section.toNormalizedString(ipv4CanonicalParams)
+		})
+}
+
+// ToNormalizedString produces a normalized string for the address section.
+//
+// For IPv4, it is the same as the canonical string.
+//
+// If this section has a prefix length, it will be included in the string.
+func (section *IPv4AddressSection) ToNormalizedString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.ToCanonicalString()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
