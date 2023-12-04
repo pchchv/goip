@@ -1034,6 +1034,35 @@ func (section *IPv4AddressSection) ToNormalizedString() string {
 	return section.ToCanonicalString()
 }
 
+// ToCompressedString produces a short representation of this address section while remaining within the confines of standard representation(s) of the address.
+//
+// For IPv4, it is the same as the canonical string.
+func (section *IPv4AddressSection) ToCompressedString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.ToCanonicalString()
+}
+
+// ToNormalizedWildcardString produces a string similar to the normalized string but avoids the CIDR prefix length.
+// CIDR addresses will be shown with wildcards and ranges
+// (denoted by '*' and '-')
+// instead of using the CIDR prefix notation.
+func (section *IPv4AddressSection) ToNormalizedWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toNormalizedString(ipv4NormalizedWildcardParams)
+	}
+	return cacheStr(&cache.normalizedWildcardString,
+		func() string {
+			return section.toNormalizedString(ipv4NormalizedWildcardParams)
+		})
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
