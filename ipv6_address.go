@@ -8,6 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string"
 )
 
 const (
@@ -1775,6 +1776,30 @@ func (addr *IPv6Address) ToMixedString() (string, address_error.IncompatibleAddr
 			})
 	}
 	return addr.GetSection().toMixedString()
+}
+
+// ToCustomString creates a customized string from this address or subnet according to the given string option parameters.
+//
+// Errors can result from split digits with ranged values,
+// or mixed IPv4/v6 with ranged values, when a range cannot be split up.
+// Options without split digits or mixed addresses do not produce errors.
+// Single addresses do not produce errors.
+func (addr *IPv6Address) ToCustomString(stringOptions address_string.IPv6StringOptions) (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	return addr.GetSection().toCustomString(stringOptions, addr.zone)
+}
+
+// ToCompressedString produces a short representation of this address while remaining within the confines of standard representation(s) of the address.
+//
+// For IPv6, it differs from the canonical string.
+// It compresses the maximum number of zeros and/or host segments with the IPv6 compression notation '::'.
+func (addr *IPv6Address) ToCompressedString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCompressedString()
 }
 
 func (addr *IPv6Address) rangeIterator(
