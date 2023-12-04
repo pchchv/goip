@@ -1125,6 +1125,45 @@ func (section *IPv4AddressSection) ToFullString() string {
 		})
 }
 
+// ToReverseDNSString generates the reverse-DNS lookup string.
+// For IPV4, the error is always nil.
+// For "8.255.4.4" it is "4.4.255.8.in-addr.arpa".
+func (section *IPv4AddressSection) ToReverseDNSString() (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+
+	cache := section.getStringCache()
+	if cache == nil {
+		return section.toNormalizedString(ipv4ReverseDNSParams), nil
+	}
+	return cacheStr(&cache.reverseDNSString,
+		func() string {
+			return section.toNormalizedString(ipv4ReverseDNSParams)
+		}), nil
+}
+
+// ToPrefixLenString returns a string with a CIDR network prefix length if this address has a network prefix length.
+// For IPv4 the string is equivalent to the canonical string.
+func (section *IPv4AddressSection) ToPrefixLenString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.ToCanonicalString()
+}
+
+// ToSubnetString produces a string with specific formats for subnets.
+// The subnet string looks like "1.2.*.*" or "1:2::/16".
+//
+// In the case of IPv4,
+// this means that wildcards are used instead of a network prefix when a network prefix has been supplied.
+func (section *IPv4AddressSection) ToSubnetString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.ToNormalizedWildcardString()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
