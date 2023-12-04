@@ -1233,6 +1233,52 @@ func (addr *IPv4Address) GetGenericSegment(index int) AddressSegmentType {
 	return addr.init().getSegment(index)
 }
 
+// Subtract subtracts the given subnet from this subnet, returning an array of subnets for the result
+// (the subnets will not be contiguous so an array is required).
+// Subtract computes the subnet difference, the set of addresses in this address subnet but not in the provided subnet.
+// This is also known as the relative complement of the given argument in this subnet.
+// This is set subtraction, not subtraction of address values (use Increment for the latter).
+// We have a subnet of addresses and we are removing those addresses found in the argument subnet.
+// If there are no remaining addresses, nil is returned.
+func (addr *IPv4Address) Subtract(other *IPv4Address) []*IPv4Address {
+	addr = addr.init()
+	sects, _ := addr.GetSection().Subtract(other.GetSection())
+	sectLen := len(sects)
+	if sectLen == 0 {
+		return nil
+	} else if sectLen == 1 {
+		sec := sects[0]
+		if sec.ToSectionBase() == addr.section {
+			return []*IPv4Address{addr}
+		}
+	}
+
+	res := make([]*IPv4Address, sectLen)
+	for i, sect := range sects {
+		res[i] = newIPv4Address(sect)
+	}
+	return res
+}
+
+// Intersect returns the subnet whose addresses are found in both this and the given subnet argument,
+// or nil if no such addresses exist.
+//
+// This is also known as the conjunction of the two sets of addresses.
+func (addr *IPv4Address) Intersect(other *IPv4Address) *IPv4Address {
+	addr = addr.init()
+	section, _ := addr.GetSection().Intersect(other.GetSection())
+	if section == nil {
+		return nil
+	}
+	return addr.checkIdentity(section)
+}
+
+// SpanWithRange returns an IPv4AddressSeqRange instance that spans this subnet to the given subnet.
+// If the other address is a different version than this, then the other is ignored, and the result is equivalent to calling ToSequentialRange.
+func (addr *IPv4Address) SpanWithRange(other *IPv4Address) *SequentialRange[*IPv4Address] {
+	return NewSequentialRange(addr.init(), other)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
