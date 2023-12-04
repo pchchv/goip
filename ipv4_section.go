@@ -1203,6 +1203,64 @@ func (section *IPv4AddressSection) ToInetAtonString(radix InetAtonRadix) string 
 	}
 }
 
+// ToJoinedSegments returns an AddressDivisionSeries which organizes the address section by joining the least significant segments together.
+// If joined count is not a positive number, or this section has less than 2 segments, then this returns the original receiver section.
+// Otherwise this returns an AddressDivisionGrouping in which the last division is the division created by joining two or more segments.
+//
+// If this represents a subnet section, this returns an error when unable to join address segments,
+// one of the first with a range of values, into a division of the larger bit-length that represents the same set of values.
+func (section *IPv4AddressSection) ToJoinedSegments(joinCount int) (AddressDivisionSeries, address_error.IncompatibleAddressError) {
+	thisCount := section.GetSegmentCount()
+	if joinCount <= 0 || thisCount <= 1 {
+		return section, nil
+	}
+
+	var totalCount int
+	if joinCount >= thisCount {
+		joinCount = thisCount - 1
+		totalCount = 1
+	} else {
+		totalCount = thisCount - joinCount
+	}
+
+	joinedSegment, err := section.joinSegments(joinCount) //IPv4JoinedSegments
+	if err != nil {
+		return nil, err
+	}
+
+	notJoinedCount := totalCount - 1
+	segs := make([]*AddressDivision, totalCount)
+	section.copySubDivisions(0, notJoinedCount, segs)
+	segs[notJoinedCount] = joinedSegment
+	equivalentPart := createInitializedGrouping(segs, section.getPrefixLen())
+	return equivalentPart, nil
+}
+
+// ToNormalizedJoinedString returns a string with a format that is styled from the inet_aton routine.
+// The string can have less than the typical four IPv4 segments by joining the least significant segments together,
+// resulting in a string which just 1, 2 or 3 divisions.
+//
+// The method accepts an argument of string options as well,
+// allowing callers to customize the string in other ways as well.
+//
+// If this represents a subnet section, this returns an error when unable to join two or more segments
+// into a division of a larger bit-length that represents the same set of values.
+func (section *IPv4AddressSection) ToNormalizedJoinedString(stringParams address_string.IPStringOptions, joinedCount int) (string, address_error.IncompatibleAddressError) {
+	if section == nil {
+		return nilString(), nil
+	}
+
+	if joinedCount <= 0 || section.GetSegmentCount() <= 1 {
+		return section.toNormalizedString(stringParams), nil
+	}
+
+	equivalentPart, err := section.ToJoinedSegments(joinedCount) // AddressDivisionSeries
+	if err != nil {
+		return "", err
+	}
+	return toNormalizedIPString(stringParams, equivalentPart), nil
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
