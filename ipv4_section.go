@@ -583,6 +583,28 @@ func (section *IPv4AddressSection) BlockIterator(segmentCount int) Iterator[*IPv
 	return ipv4SectionIterator{section.blockIterator(segmentCount)}
 }
 
+// PrefixIterator provides an iterator to iterate through the individual prefixes of this address section,
+// each iterated element spanning the range of values for its prefix.
+//
+// It is similar to the prefix block iterator,
+// except for possibly the first and last iterated elements,
+// which might not be prefix blocks,
+// instead constraining themselves to values from this address section.
+//
+// If the series has no prefix length, then this is equivalent to Iterator.
+func (section *IPv4AddressSection) PrefixIterator() Iterator[*IPv4AddressSection] {
+	return ipv4SectionIterator{section.prefixIterator(false)}
+}
+
+// PrefixBlockIterator provides an iterator to iterate through the individual prefix blocks, one for each prefix of this address section.
+// Each iterated address section will be a prefix block with the same prefix length as this address section.
+//
+// If this address section has no prefix length,
+// then this is equivalent to Iterator.
+func (section *IPv4AddressSection) PrefixBlockIterator() Iterator[*IPv4AddressSection] {
+	return ipv4SectionIterator{section.prefixIterator(true)}
+}
+
 // SequentialBlockIterator iterates through the sequential address sections that make up this address section.
 //
 // Practically, this means finding the count of segments for which the segments that follow are not full range,
