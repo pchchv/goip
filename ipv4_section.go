@@ -1164,6 +1164,45 @@ func (section *IPv4AddressSection) ToSubnetString() string {
 	return section.ToNormalizedWildcardString()
 }
 
+// ToCompressedWildcardString produces a string similar to ToNormalizedWildcardString, and in fact
+// for IPv4 it is the same as ToNormalizedWildcardString.
+func (section *IPv4AddressSection) ToCompressedWildcardString() string {
+	if section == nil {
+		return nilString()
+	}
+	return section.ToNormalizedWildcardString()
+}
+
+// ToInetAtonString returns a string with a format that is styled from the inet_aton routine.
+// The string can have an octal or hexadecimal radix rather than decimal.
+// When using octal, the octal segments each have a leading zero prefix of "0", and when using hex, a prefix of "0x".
+func (section *IPv4AddressSection) ToInetAtonString(radix InetAtonRadix) string {
+	if section == nil {
+		return nilString()
+	}
+
+	cache := section.getStringCache()
+	if radix == InetAtonRadixOctal {
+		if cache == nil {
+			return section.toNormalizedString(inetAtonOctalParams)
+		}
+		return cacheStr(&cache.inetAtonOctalString,
+			func() string {
+				return section.toNormalizedString(inetAtonOctalParams)
+			})
+	} else if radix == InetAtonRadixHex {
+		if cache == nil {
+			return section.toNormalizedString(inetAtonHexParams)
+		}
+		return cacheStr(&cache.inetAtonHexString,
+			func() string {
+				return section.toNormalizedString(inetAtonHexParams)
+			})
+	} else {
+		return section.ToCanonicalString()
+	}
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
