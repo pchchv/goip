@@ -924,6 +924,21 @@ func (section *IPv4AddressSection) SpanWithSequentialBlocksTo(other *IPv4Address
 	return cloneToIPv4Sections(getSpanningSequentialBlocks(wrapIPSection(section.ToIP()), wrapIPSection(other.ToIP()))), nil
 }
 
+// CoverWithPrefixBlockTo returns the minimal-size prefix block section that covers all the address sections spanning from this to the given section.
+//
+// If the other section has a different segment count, an error is returned.
+func (section *IPv4AddressSection) CoverWithPrefixBlockTo(other *IPv4AddressSection) (*IPv4AddressSection, address_error.SizeMismatchError) {
+	res, err := section.coverWithPrefixBlockTo(other.ToIP())
+	return res.ToIPv4(), err
+}
+
+// CoverWithPrefixBlock returns the minimal-size prefix block that covers all the individual address sections in this section.
+// The resulting block will have a larger count than this,
+// unless this section is already a prefix block.
+func (section *IPv4AddressSection) CoverWithPrefixBlock() *IPv4AddressSection {
+	return section.coverWithPrefixBlock().ToIPv4()
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
