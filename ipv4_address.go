@@ -1306,6 +1306,17 @@ func (addr *IPv4Address) CompareSize(other AddressItem) int {
 	return addr.init().compareSize(other)
 }
 
+// CoverWithPrefixBlockTo returns the minimal-size prefix block that covers all the addresses spanning from this subnet to the given subnet.
+func (addr *IPv4Address) CoverWithPrefixBlockTo(other *IPv4Address) *IPv4Address {
+	return addr.init().coverWithPrefixBlockTo(other.ToIP()).ToIPv4()
+}
+
+// CoverWithPrefixBlock returns the minimal-size prefix block that covers all the addresses in this subnet.
+// The resulting block will have a larger subnet size than this, unless this subnet is already a prefix block.
+func (addr *IPv4Address) CoverWithPrefixBlock() *IPv4Address {
+	return addr.init().coverWithPrefixBlock().ToIPv4()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
