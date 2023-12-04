@@ -859,6 +859,38 @@ func (section *IPv4AddressSection) Intersect(other *IPv4AddressSection) (res *IP
 	return
 }
 
+// IncrementBoundary returns the item that is the given increment from the range boundaries of this item.
+//
+// If the given increment is positive,
+// adds the value to the highest (GetUpper) in the range to produce a new item.
+// If the given increment is negative,
+// adds the value to the lowest (GetLower) in the range to produce a new item.
+// If the increment is zero, returns this.
+//
+// If this represents just a single value, this item is simply incremented by the given increment value, positive or negative.
+//
+// On overflow or underflow, IncrementBoundary returns nil.
+func (section *IPv4AddressSection) IncrementBoundary(increment int64) *IPv4AddressSection {
+	return section.incrementBoundary(increment).ToIPv4()
+}
+
+// SpanWithPrefixBlocks returns an array of prefix blocks that spans the same set of individual address sections as this section.
+//
+// Unlike SpanWithPrefixBlocksTo,
+// the result only includes blocks that are a part of this section.
+func (section *IPv4AddressSection) SpanWithPrefixBlocks() []*IPv4AddressSection {
+	if section.IsSequential() {
+		if section.IsSinglePrefixBlock() {
+			return []*IPv4AddressSection{section}
+		}
+		wrapped := wrapIPSection(section.ToIP())
+		spanning := getSpanningPrefixBlocks(wrapped, wrapped)
+		return cloneToIPv4Sections(spanning)
+	}
+	wrapped := wrapIPSection(section.ToIP())
+	return cloneToIPv4Sections(spanWithPrefixBlocks(wrapped))
+}
+
 // InetAtonRadix represents a radix for printing an address string.
 type InetAtonRadix int
 
