@@ -1802,6 +1802,32 @@ func (addr *IPv6Address) ToCompressedString() string {
 	return addr.init().toCompressedString()
 }
 
+// ToNormalizedWildcardString produces a string similar to the normalized string but avoids the CIDR prefix length.
+// CIDR addresses will be shown with wildcards and ranges (denoted by '*' and '-') instead of using the CIDR prefix notation.
+func (addr *IPv6Address) ToNormalizedWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toNormalizedWildcardString()
+}
+
+// ToCanonicalString produces a canonical string for the address.
+//
+// For IPv6, RFC 5952 describes canonical string representation.
+// https://en.wikipedia.org/wiki/IPv6_address#Representation
+// http://tools.ietf.org/html/rfc5952
+//
+// Each address has a unique canonical string, not counting the prefix length.
+// With IP addresses, the prefix length can cause two equal addresses to have different strings, for example "1.2.3.4/16" and "1.2.3.4".
+// It can also cause two different addresses to have the same string, such as "1.2.0.0/16" for the individual address "1.2.0.0" and also the prefix block "1.2.*.*".
+// Use ToCanonicalWildcardString for a unique string for each IP address and subnet.
+func (addr *IPv6Address) ToCanonicalString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCanonicalString()
+}
+
 func (addr *IPv6Address) rangeIterator(
 	upper *IPv6Address,
 	valsAreMultiple bool,
