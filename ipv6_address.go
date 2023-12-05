@@ -1897,6 +1897,27 @@ func (addr *IPv6Address) PrefixContains(other AddressType) bool {
 	return addr.init().prefixContains(other)
 }
 
+// ToCompressedWildcardString produces a string similar to ToNormalizedWildcardString,
+// avoiding the CIDR prefix,
+// but with full IPv6 segment compression as well,
+// including single zero-segments.
+func (addr *IPv6Address) ToCompressedWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCompressedWildcardString()
+}
+
+// ToReverseDNSString generates the reverse-DNS lookup string,
+// returning an error if this address is a multiple-valued subnet for which the range cannot be represented.
+// For "2001:db8::567:89ab" it is "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa".
+func (addr *IPv6Address) ToReverseDNSString() (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	return addr.init().toReverseDNSString()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
