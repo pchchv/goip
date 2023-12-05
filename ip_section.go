@@ -1500,6 +1500,25 @@ func (section *ipAddressSectionInternal) coverWithPrefixBlock() *IPAddressSectio
 	return res.(WrappedIPAddressSection).IPAddressSection
 }
 
+// PrefixEqual determines if the given section matches this section up to the prefix length of this section.
+// It returns whether the argument section has the same address section prefix values as this.
+//
+// All prefix bits of this section must be present in the other section to be comparable, otherwise false is returned.
+func (section *ipAddressSectionInternal) PrefixEqual(other AddressSectionType) bool {
+	return section.addressSectionInternal.PrefixEqual(other)
+}
+
+// PrefixContains returns whether the prefix values in the given address section
+// are prefix values in this address section, using the prefix length of this section.
+// If this address section has no prefix length, the entire address is compared.
+//
+// It returns whether the prefix of this address contains all values of the same prefix length in the given address.
+//
+// All prefix bits of this section must be present in the other section to be comparable.
+func (section *ipAddressSectionInternal) PrefixContains(other AddressSectionType) bool {
+	return section.addressSectionInternal.PrefixContains(other)
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
