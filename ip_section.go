@@ -1455,6 +1455,33 @@ func (section *ipAddressSectionInternal) toPrefixLenString() string {
 	return nilSection()
 }
 
+func (section *ipAddressSectionInternal) toFullString() string {
+	if sect := section.toIPv4AddressSection(); sect != nil {
+		return sect.ToFullString()
+	} else if sect := section.toIPv6AddressSection(); sect != nil {
+		return sect.ToFullString()
+	}
+	return nilSection()
+}
+
+func (section *ipAddressSectionInternal) toSubnetString() string {
+	if sect := section.toIPv4AddressSection(); sect != nil {
+		return sect.ToNormalizedWildcardString()
+	} else if sect := section.toIPv6AddressSection(); sect != nil {
+		return sect.ToPrefixLenString()
+	}
+	return nilSection()
+}
+
+func (section *ipAddressSectionInternal) toCompressedWildcardString() string {
+	if sect := section.toIPv4AddressSection(); sect != nil {
+		return sect.ToCompressedWildcardString()
+	} else if sect := section.toIPv6AddressSection(); sect != nil {
+		return sect.ToCompressedWildcardString()
+	}
+	return nilSection()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
