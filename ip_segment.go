@@ -499,6 +499,21 @@ func (seg *ipAddressSegmentInternal) getWildcardString() string {
 	return stringer()
 }
 
+// ToNormalizedString produces a string that is consistent for all address segments of the same type and version.
+// IPv4 segments use base 10, while IPv6 segments use base 16.
+func (seg *ipAddressSegmentInternal) ToNormalizedString() string {
+	return seg.addressSegmentInternal.ToNormalizedString()
+}
+
+// ToHexString writes this address segment as a single hexadecimal value
+// (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0x" prefix.
+//
+// For segments, the error is always nil.
+func (seg *ipAddressSegmentInternal) ToHexString(with0xPrefix bool) (string, address_error.IncompatibleAddressError) {
+	return seg.addressSegmentInternal.ToHexString(with0xPrefix)
+}
+
 // IPAddressSegment represents a single IP address segment.
 // An IP segment contains a single value or a range of sequential values,
 // a prefix length, and has an assigned bit length.
