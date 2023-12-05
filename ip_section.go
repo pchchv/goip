@@ -1437,6 +1437,24 @@ func (section *ipAddressSectionInternal) toSQLWildcardString() string {
 	return nilSection()
 }
 
+func (section *ipAddressSectionInternal) toReverseDNSString() (string, address_error.IncompatibleAddressError) {
+	if sect := section.toIPv4AddressSection(); sect != nil {
+		return sect.ToReverseDNSString()
+	} else if sect := section.toIPv6AddressSection(); sect != nil {
+		return sect.ToReverseDNSString()
+	}
+	return nilSection(), nil
+}
+
+func (section *ipAddressSectionInternal) toPrefixLenString() string {
+	if sect := section.toIPv4AddressSection(); sect != nil {
+		return sect.ToPrefixLenString()
+	} else if sect := section.toIPv6AddressSection(); sect != nil {
+		return sect.ToPrefixLenString()
+	}
+	return nilSection()
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
