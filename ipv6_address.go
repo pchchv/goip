@@ -1949,6 +1949,35 @@ func (addr *IPv6Address) ToSubnetString() string {
 	return addr.init().toSubnetString()
 }
 
+// ToSQLWildcardString create a string similar to that from toNormalizedWildcardString except that
+// it uses SQL wildcards.
+// It uses '%' instead of '*' and also uses the ending single-digit wildcard '_'.
+func (addr *IPv6Address) ToSQLWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toSQLWildcardString()
+}
+
+// ToCanonicalWildcardString produces a string similar to the canonical string and avoids the CIDR prefix length.
+// Addresses and subnets with a network prefix length will be shown with wildcards and ranges (denoted by '*' and '-')
+// instead of using the CIDR prefix length notation.
+// IPv6 addresses will be compressed according to the canonical representation.
+func (addr *IPv6Address) ToCanonicalWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCanonicalWildcardString()
+}
+
+// ToSegmentedBinaryString writes this address as segments of binary values preceded by the "0b" prefix.
+func (addr *IPv6Address) ToSegmentedBinaryString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toSegmentedBinaryString()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
