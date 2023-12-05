@@ -1517,6 +1517,39 @@ func (addr *IPv4Address) ToBinaryString(with0bPrefix bool) (string, address_erro
 	return addr.init().toBinaryString(with0bPrefix)
 }
 
+// ToCanonicalString produces a canonical string for the address.
+//
+// For IPv4, dotted octet format, also known as dotted decimal format, is used.
+// https://datatracker.ietf.org/doc/html/draft-main-ipaddr-text-rep-00#section-2.1
+//
+// Each address has a unique canonical string, not counting the prefix length.
+// With IP addresses, the prefix length can cause two equal addresses to have different strings, for example "1.2.3.4/16" and "1.2.3.4".
+// It can also cause two different addresses to have the same string,
+// such as "1.2.0.0/16" for the individual address "1.2.0.0" and also the prefix block "1.2.*.*".
+// Use ToCanonicalWildcardString for a unique string for each IP address and subnet.
+func (addr *IPv4Address) ToCanonicalString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCanonicalString()
+}
+
+// ToNormalizedString produces a normalized string for the address.
+//
+// For IPv4, it is the same as the canonical string.
+//
+// Each address has a unique normalized string, not counting the prefix length.
+// With IP addresses, the prefix length can cause two equal addresses to have different strings, for example "1.2.3.4/16" and "1.2.3.4".
+// It can also cause two different addresses to have the same string,
+// such as "1.2.0.0/16" for the individual address "1.2.0.0" and also the prefix block "1.2.*.*".
+// Use the method ToNormalizedWildcardString for a unique string for each IP address and subnet.
+func (addr *IPv4Address) ToNormalizedString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toNormalizedString()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
