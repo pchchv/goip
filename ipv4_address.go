@@ -1757,6 +1757,35 @@ func (addr *IPv4Address) MergeToPrefixBlocks(addrs ...*IPv4Address) []*IPv4Addre
 	return cloneToIPv4Addrs(blocks)
 }
 
+// ContainsSinglePrefixBlock returns whether this address contains a single prefix block for the given prefix length.
+//
+// This means there is only one prefix value for the given prefix length,
+// and it also contains the full prefix block for that prefix,
+// all addresses with that prefix.
+//
+// Use GetPrefixLenForSingleBlock to determine whether there is
+// a prefix length for which this method returns true.
+func (addr *IPv4Address) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	return addr.init().ipAddressInternal.ContainsSinglePrefixBlock(prefixLen)
+}
+
+// GetIPv6Address creates an IPv6 mixed address using
+// the given ipv6 segments and using this address for the embedded IPv4 segments
+func (addr *IPv4Address) GetIPv6Address(section *IPv6AddressSection) (*IPv6Address, address_error.AddressError) {
+	if section.GetSegmentCount() < IPv6MixedOriginalSegmentCount {
+		return nil, &addressValueError{addressError: addressError{key: "ipaddress.mac.error.not.eui.convertible"}}
+	}
+
+	newSegs := createSegmentArray(IPv6SegmentCount)
+	section = section.WithoutPrefixLen()
+	section.copyDivisions(newSegs)
+	sect, err := createMixedSection(newSegs, addr)
+	if err != nil {
+		return nil, err
+	}
+	return newIPv6Address(sect), nil
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
