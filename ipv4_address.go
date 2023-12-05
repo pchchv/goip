@@ -1599,6 +1599,34 @@ func (addr *IPv4Address) ToFullString() string {
 	return addr.init().toFullString()
 }
 
+// ToInetAtonString returns a string with a format that is styled from the inet_aton routine.
+// The string can have an octal or hexadecimal radix rather than decimal.
+// When using octal,
+// the octal segments each have a leading zero prefix of "0",
+// and when using hex, a prefix of "0x".
+func (addr *IPv4Address) ToInetAtonString(radix InetAtonRadix) string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.GetSection().ToInetAtonString(radix)
+}
+
+// ToInetAtonJoinedString returns a string with a format that is styled from the inet_aton routine.
+// The string can have an octal or hexadecimal radix rather than decimal,
+// and can have less than the typical four IPv4 segments by joining the least significant segments together,
+// resulting in a string which just 1, 2 or 3 divisions.
+//
+// When using octal, the octal segments each have a leading zero prefix of "0", and when using hex, a prefix of "0x".
+//
+// If this represents a subnet section, this returns an error when unable to join two or more segments
+// into a division of a larger bit-length that represents the same set of values.
+func (addr *IPv4Address) ToInetAtonJoinedString(radix InetAtonRadix, joinedCount int) (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	return addr.GetSection().ToInetAtonJoinedString(radix, joinedCount)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
