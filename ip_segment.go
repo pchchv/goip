@@ -459,6 +459,46 @@ func (seg *ipAddressSegmentInternal) GetPrefixLenForSingleBlock() PrefixLen {
 	return seg.addressSegmentInternal.GetPrefixLenForSingleBlock()
 }
 
+func (seg *ipAddressSegmentInternal) getString() string {
+	stringer := func() string {
+		if !seg.isMultiple() || seg.IsSinglePrefixBlock() { // covers the case of !isMultiple, ie single addresses, when there is no prefix or the prefix is the bit count
+			return seg.getDefaultLowerString()
+		} else if seg.IsFullRange() {
+			return seg.getDefaultSegmentWildcardString()
+		}
+		upperValue := seg.getUpperSegmentValue()
+		if seg.IsPrefixBlock() {
+			upperValue &= seg.GetSegmentNetworkMask(seg.getDivisionPrefixLength().bitCount())
+		}
+		return seg.getDefaultRangeStringVals(seg.getDivisionValue(), DivInt(upperValue), seg.getDefaultTextualRadix())
+	}
+
+	if seg.divisionValues != nil {
+		if cache := seg.getCache(); cache != nil {
+			return cacheStr(&cache.cachedString, stringer)
+		}
+	}
+	return stringer()
+}
+
+func (seg *ipAddressSegmentInternal) getWildcardString() string {
+	stringer := func() string {
+		if !seg.isPrefixed() || !seg.isMultiple() {
+			return seg.getString()
+		} else if seg.IsFullRange() {
+			return seg.getDefaultSegmentWildcardString()
+		}
+		return seg.getDefaultRangeString()
+	}
+
+	if seg.divisionValues != nil {
+		if cache := seg.getCache(); cache != nil {
+			return cacheStr(&cache.cachedWildcardString, stringer)
+		}
+	}
+	return stringer()
+}
+
 // IPAddressSegment represents a single IP address segment.
 // An IP segment contains a single value or a range of sequential values,
 // a prefix length, and has an assigned bit length.
