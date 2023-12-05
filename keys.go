@@ -133,6 +133,11 @@ func (key IPv4AddressKey) ToAddress() *IPv4Address {
 	return fromIPv4Key(key)
 }
 
+// String calls the String method in the corresponding address.
+func (key IPv4AddressKey) String() string {
+	return key.ToAddress().String()
+}
+
 type testComparableConstraint[T comparable] struct{}
 
 type keyContents struct {
@@ -158,6 +163,11 @@ type IPv6AddressKey struct {
 // ToAddress converts back to an address instance.
 func (key IPv6AddressKey) ToAddress() *IPv6Address {
 	return fromIPv6Key(key)
+}
+
+// String calls the String method in the corresponding address.
+func (key IPv6AddressKey) String() string {
+	return key.ToAddress().String()
 }
 
 // MACAddressKey is a representation of a MAC address that is comparable as defined by the language specification.
