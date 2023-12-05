@@ -514,6 +514,11 @@ func (seg *ipAddressSegmentInternal) ToHexString(with0xPrefix bool) (string, add
 	return seg.addressSegmentInternal.ToHexString(with0xPrefix)
 }
 
+// ContainsSinglePrefixBlock returns whether the segment range matches exactly the block of values for the given prefix length and has just a single prefix for that prefix length.
+func (seg *ipAddressSegmentInternal) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	return seg.addressSegmentInternal.ContainsSinglePrefixBlock(prefixLen)
+}
+
 // IPAddressSegment represents a single IP address segment.
 // An IP segment contains a single value or a range of sequential values,
 // a prefix length, and has an assigned bit length.
