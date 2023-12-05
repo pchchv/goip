@@ -8,6 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string"
 )
 
 const (
@@ -1571,6 +1572,31 @@ func (addr *IPv4Address) ToCompressedString() string {
 // such as when maintaining a collection of HostIdentifierString instances.
 func (addr *IPv4Address) ToAddressString() *IPAddressString {
 	return addr.init().ToIP().ToAddressString()
+}
+
+// ToUNCHostName Generates the Microsoft UNC path component for this address.
+//
+// For IPv4 it is the canonical string.
+func (addr *IPv4Address) ToUNCHostName() string {
+	return addr.ToCanonicalString()
+}
+
+// ToCustomString creates a customized string from
+// this address or subnet according to the given string option parameters.
+func (addr *IPv4Address) ToCustomString(stringOptions address_string.IPStringOptions) string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.GetSection().toCustomString(stringOptions)
+}
+
+// ToFullString produces a string with no compressed segments and all segments of full length with leading zeros,
+// which is 3 characters for IPv4 segments.
+func (addr *IPv4Address) ToFullString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toFullString()
 }
 
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
