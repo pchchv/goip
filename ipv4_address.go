@@ -1665,6 +1665,38 @@ func (addr *IPv4Address) ToSegmentedBinaryString() string {
 	return addr.init().toSegmentedBinaryString()
 }
 
+// ToSQLWildcardString create a string similar to that from toNormalizedWildcardString except that
+// it uses SQL wildcards.
+// It uses '%' instead of '*' and also uses the wildcard '_'.
+func (addr *IPv4Address) ToSQLWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toSQLWildcardString()
+}
+
+// ToPrefixLenString returns a string with a CIDR network prefix length if this address has a network prefix length.
+// For IPv6, a zero host section will be compressed with "::".
+// For IPv4 the string is equivalent to the canonical string.
+func (addr *IPv4Address) ToPrefixLenString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toPrefixLenString()
+}
+
+// ToSubnetString produces a string with specific formats for subnets.
+// The subnet string looks like "1.2.*.*" or "1:2::/16".
+//
+// In the case of IPv4,
+// this means that wildcards are used instead of a network prefix when a network prefix has been supplied.
+func (addr *IPv4Address) ToSubnetString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toSubnetString()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
