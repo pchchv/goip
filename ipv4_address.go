@@ -1627,6 +1627,27 @@ func (addr *IPv4Address) ToInetAtonJoinedString(radix InetAtonRadix, joinedCount
 	return addr.GetSection().ToInetAtonJoinedString(radix, joinedCount)
 }
 
+// ToCanonicalWildcardString produces a string similar to the canonical string and avoids the CIDR prefix length.
+// Addresses and subnets with a network prefix length will be shown with wildcards and ranges (denoted by '*' and '-')
+// instead of using the CIDR prefix length notation.
+// For IPv4 it is the same as ToNormalizedWildcardString.
+func (addr *IPv4Address) ToCanonicalWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCanonicalWildcardString()
+}
+
+// ToNormalizedWildcardString produces a string similar to the normalized string but avoids the CIDR prefix length.
+// CIDR addresses will be shown with wildcards and ranges (denoted by '*' and '-')
+// instead of using the CIDR prefix notation.
+func (addr *IPv4Address) ToNormalizedWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toNormalizedWildcardString()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
