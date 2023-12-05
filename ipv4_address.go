@@ -1697,6 +1697,32 @@ func (addr *IPv4Address) ToSubnetString() string {
 	return addr.init().toSubnetString()
 }
 
+// ToReverseDNSString generates the reverse-DNS lookup string.
+// For IPV4, the error is always nil.
+// For "8.255.4.4" it is "4.4.255.8.in-addr.arpa".
+func (addr *IPv4Address) ToReverseDNSString() (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	str, _ := addr.init().toReverseDNSString()
+	return str, nil
+}
+
+// ToSequentialRange creates a sequential range instance from the lowest and highest addresses in this subnet.
+//
+// The two will represent the same set of individual addresses if and only if IsSequential is true.
+// To get a series of ranges that represent the same set of individual addresses use the SequentialBlockIterator (or PrefixIterator),
+// and apply this method to each iterated subnet.
+//
+// If this represents just a single address then the returned instance covers just that single address as well.
+func (addr *IPv4Address) ToSequentialRange() *SequentialRange[*IPv4Address] {
+	if addr == nil {
+		return nil
+	}
+	addr = addr.init().WithoutPrefixLen()
+	return newSequRangeUnchecked(addr.GetLower(), addr.GetUpper(), addr.isMultiple())
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
