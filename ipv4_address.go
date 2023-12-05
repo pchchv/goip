@@ -1737,6 +1737,26 @@ func (addr *IPv4Address) rangeIterator(
 	return ipv4AddressIterator{addr.ipAddressInternal.rangeIterator(upper.ToIP(), valsAreMultiple, prefixLen, segProducer, segmentIteratorProducer, segValueComparator, networkSegmentIndex, hostSegmentIndex, prefixedSegIteratorProducer)}
 }
 
+// MergeToSequentialBlocks merges this with the list of addresses to produce the smallest array of sequential blocks.
+//
+// The resulting slice is sorted from lowest address value to highest,
+// regardless of the size of each prefix block.
+func (addr *IPv4Address) MergeToSequentialBlocks(addrs ...*IPv4Address) []*IPv4Address {
+	series := cloneIPv4Addrs(addr, addrs)
+	blocks := getMergedSequentialBlocks(series)
+	return cloneToIPv4Addrs(blocks)
+}
+
+// MergeToPrefixBlocks merges this subnet with the list of subnets to produce the smallest array of CIDR prefix blocks.
+//
+// The resulting slice is sorted from lowest address value to highest,
+// regardless of the size of each prefix block.
+func (addr *IPv4Address) MergeToPrefixBlocks(addrs ...*IPv4Address) []*IPv4Address {
+	series := cloneIPv4Addrs(addr, addrs)
+	blocks := getMergedPrefixBlocks(series)
+	return cloneToIPv4Addrs(blocks)
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
