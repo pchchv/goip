@@ -1648,6 +1648,23 @@ func (addr *IPv4Address) ToNormalizedWildcardString() string {
 	return addr.init().toNormalizedWildcardString()
 }
 
+// ToCompressedWildcardString produces a string similar to ToNormalizedWildcardString, and in fact
+// for IPv4 it is the same as ToNormalizedWildcardString.
+func (addr *IPv4Address) ToCompressedWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCompressedWildcardString()
+}
+
+// ToSegmentedBinaryString writes this address as segments of binary values preceded by the "0b" prefix.
+func (addr *IPv4Address) ToSegmentedBinaryString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toSegmentedBinaryString()
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
