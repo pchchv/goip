@@ -1452,6 +1452,32 @@ func (addr *IPv4Address) SpanWithSequentialBlocksTo(other *IPv4Address) []*IPv4A
 	return cloneToIPv4Addrs(getSpanningSequentialBlocks(wrapIPAddress(addr.ToIP()), wrapIPAddress(other.ToIP())))
 }
 
+// TrieIncrement returns the next address or block according to address trie ordering
+//
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *IPv4Address) TrieIncrement() *IPv4Address {
+	if res, ok := trieIncrement(addr); ok {
+		return res
+	}
+	return nil
+}
+
+// TrieDecrement returns the previous address or block according to address trie ordering
+//
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *IPv4Address) TrieDecrement() *IPv4Address {
+	if res, ok := trieDecrement(addr); ok {
+		return res
+	}
+	return nil
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
