@@ -1723,6 +1723,20 @@ func (addr *IPv4Address) ToSequentialRange() *SequentialRange[*IPv4Address] {
 	return newSequRangeUnchecked(addr.GetLower(), addr.GetUpper(), addr.isMultiple())
 }
 
+func (addr *IPv4Address) rangeIterator(
+	upper *IPv4Address,
+	valsAreMultiple bool,
+	prefixLen PrefixLen,
+	segProducer func(addr *IPAddress, index int) *IPAddressSegment,
+	segmentIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
+	segValueComparator func(seg1, seg2 *IPAddress, index int) bool,
+	networkSegmentIndex,
+	hostSegmentIndex int,
+	prefixedSegIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
+) Iterator[*IPv4Address] {
+	return ipv4AddressIterator{addr.ipAddressInternal.rangeIterator(upper.ToIP(), valsAreMultiple, prefixLen, segProducer, segmentIteratorProducer, segValueComparator, networkSegmentIndex, hostSegmentIndex, prefixedSegIteratorProducer)}
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
