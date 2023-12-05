@@ -1424,6 +1424,34 @@ func (addr *IPv4Address) SpanWithPrefixBlocksTo(other *IPv4Address) []*IPv4Addre
 	return cloneToIPv4Addrs(getSpanningPrefixBlocks(wrapIPAddress(addr.ToIP()), wrapIPAddress(other.ToIP())))
 }
 
+// SpanWithSequentialBlocks produces the smallest slice of sequential blocks that cover the same set of addresses as this subnet.
+//
+// This slice can be shorter than that produced by SpanWithPrefixBlocks and is never longer.
+//
+// Unlike SpanWithSequentialBlocksTo,
+// this method only includes addresses that are a part of this subnet.
+func (addr *IPv4Address) SpanWithSequentialBlocks() []*IPv4Address {
+	if addr.IsSequential() {
+		return []*IPv4Address{addr}
+	}
+	wrapped := wrapIPAddress(addr.ToIP())
+	return cloneToIPv4Addrs(spanWithSequentialBlocks(wrapped))
+}
+
+// SpanWithSequentialBlocksTo produces the smallest slice of sequential block subnets that span all values from this subnet to the given subnet.
+// The span will cover all addresses in both subnets and everything in between.
+//
+// Individual block subnets come in the form "1-3.1-4.5.6-8",
+// however that particular subnet is not sequential since address "1.1.5.8" is in the subnet,
+// the next sequential address "1.1.5.9" is not in the subnet, and a higher address "1.2.5.6" is in the subnet.
+// Blocks are sequential when the first segment with a range of values is followed by segments that span all values.
+//
+// The resulting slice is sorted from lowest address value to highest,
+// regardless of the size of each prefix block.
+func (addr *IPv4Address) SpanWithSequentialBlocksTo(other *IPv4Address) []*IPv4Address {
+	return cloneToIPv4Addrs(getSpanningSequentialBlocks(wrapIPAddress(addr.ToIP()), wrapIPAddress(other.ToIP())))
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
