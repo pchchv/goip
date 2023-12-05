@@ -1482,6 +1482,24 @@ func (section *ipAddressSectionInternal) toCompressedWildcardString() string {
 	return nilSection()
 }
 
+func (section *ipAddressSectionInternal) coverSeriesWithPrefixBlock() ExtendedIPSegmentSeries {
+	if section.IsSinglePrefixBlock() {
+		return wrapIPSection(section.toIPAddressSection())
+	}
+	return coverWithPrefixBlock(
+		wrapIPSection(section.getLower().ToIP()),
+		wrapIPSection(section.getUpper().ToIP()))
+}
+
+func (section *ipAddressSectionInternal) coverWithPrefixBlock() *IPAddressSection {
+	if section.IsSinglePrefixBlock() {
+		return section.toIPAddressSection()
+	}
+
+	res := coverWithPrefixBlock(wrapIPSection(section.getLower().ToIP()), wrapIPSection(section.getUpper().ToIP()))
+	return res.(WrappedIPAddressSection).IPAddressSection
+}
+
 // IPAddressSection is the address section of an IP address containing a certain number of consecutive IP address segments.
 // It represents a sequence of individual address segments.
 // Each segment has the same bit length.
