@@ -1918,6 +1918,37 @@ func (addr *IPv6Address) ToReverseDNSString() (string, address_error.Incompatibl
 	return addr.init().toReverseDNSString()
 }
 
+// ToFullString produces a string with no compressed segments and all segments of full length with leading zeros,
+// which is 4 characters for IPv6 segments.
+func (addr *IPv6Address) ToFullString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toFullString()
+}
+
+// ToPrefixLenString returns a string with a CIDR network prefix length if this address has a network prefix length.
+// For IPv6, a zero host section will be compressed with "::".
+// For IPv4 the string is equivalent to the canonical string.
+func (addr *IPv6Address) ToPrefixLenString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toPrefixLenString()
+}
+
+// ToSubnetString produces a string with specific formats for subnets.
+// The subnet string looks like "1.2.*.*" or "1:2::/16".
+//
+// In the case of IPv6, when a network prefix has been supplied,
+// the prefix will be shown and the host section will be compressed with "::".
+func (addr *IPv6Address) ToSubnetString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toSubnetString()
+}
+
 func newIPv6Address(section *IPv6AddressSection) *IPv6Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv6()
 }
