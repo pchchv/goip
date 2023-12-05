@@ -1398,6 +1398,32 @@ func (addr *IPv4Address) PrefixContains(other AddressType) bool {
 	return addr.init().prefixContains(other)
 }
 
+// SpanWithPrefixBlocks returns an array of prefix blocks that cover the same set of addresses as this subnet.
+//
+// Unlike SpanWithPrefixBlocksTo, the result only includes addresses that are a part of this subnet.
+func (addr *IPv4Address) SpanWithPrefixBlocks() []*IPv4Address {
+	if addr.IsSequential() {
+		if addr.IsSinglePrefixBlock() {
+			return []*IPv4Address{addr}
+		}
+		wrapped := wrapIPAddress(addr.ToIP())
+		spanning := getSpanningPrefixBlocks(wrapped, wrapped)
+		return cloneToIPv4Addrs(spanning)
+	}
+	wrapped := wrapIPAddress(addr.ToIP())
+	return cloneToIPv4Addrs(spanWithPrefixBlocks(wrapped))
+}
+
+// SpanWithPrefixBlocksTo returns the smallest slice of prefix block subnets that span from this subnet to the given subnet.
+//
+// The resulting slice is sorted from lowest address value to highest, regardless of the size of each prefix block.
+//
+// From the list of returned subnets you can recover the original range (this to other) by converting each to IPAddressRange with ToSequentialRange
+// and them joining them into a single range with the Join method of IPAddressSeqRange.
+func (addr *IPv4Address) SpanWithPrefixBlocksTo(other *IPv4Address) []*IPv4Address {
+	return cloneToIPv4Addrs(getSpanningPrefixBlocks(wrapIPAddress(addr.ToIP()), wrapIPAddress(other.ToIP())))
+}
+
 func newIPv4Address(section *IPv4AddressSection) *IPv4Address {
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4()
 }
