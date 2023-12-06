@@ -933,3 +933,21 @@ func NewHostNameFromNetNetIPAddr(addr netip.Addr) *HostName {
 	ipAddr := NewIPAddressFromNetNetIPAddr(addr)
 	return NewHostNameFromAddr(ipAddr)
 }
+
+// NewHostNameFromNetNetIPPrefix constructs a host name from a netip.Prefix.
+func NewHostNameFromNetNetIPPrefix(addr netip.Prefix) (hostName *HostName, err address_error.AddressValueError) {
+	var ipAddr *IPAddress
+	ipAddr, err = NewIPAddressFromNetNetIPPrefix(addr)
+	if err == nil {
+		hostName = NewHostNameFromAddr(ipAddr)
+	}
+	return
+}
+
+// NewHostNameFromNetNetIPAddrPort constructs a host name from a netip.AddrPort.
+func NewHostNameFromNetNetIPAddrPort(addrPort netip.AddrPort) *HostName {
+	port := addrPort.Port()
+	addr := addrPort.Addr()
+	ipAddr := NewIPAddressFromNetNetIPAddr(addr)
+	return NewHostNameFromAddrPort(ipAddr, port)
+}
