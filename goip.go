@@ -1813,6 +1813,27 @@ func (addr *ipAddressInternal) toPrefixLenString() string {
 	return addr.getSection().ToPrefixLenString()
 }
 
+func (addr *ipAddressInternal) toSubnetString() string {
+	if addr.hasZone() {
+		return addr.toPrefixLenString()
+	}
+	return addr.getSection().ToSubnetString()
+}
+
+func (addr *ipAddressInternal) toCompressedWildcardString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toCompressedWildcardStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.compressedWildcardString,
+			func() string {
+				return addr.section.ToIPv6().toCompressedWildcardStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToCompressedWildcardString()
+}
+
 // IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
 type IPAddressValueProvider interface {
 	AddressValueProvider
