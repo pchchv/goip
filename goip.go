@@ -1694,6 +1694,37 @@ func (addr *ipAddressInternal) spanWithSequentialBlocks() []ExtendedIPSegmentSer
 	return spanWithSequentialBlocks(wrapped)
 }
 
+func (addr *ipAddressInternal) coverSeriesWithPrefixBlock() ExtendedIPSegmentSeries {
+	// call from wrapper
+	if addr.IsSinglePrefixBlock() {
+		return addr.toIPAddress().Wrap()
+	}
+	return coverWithPrefixBlock(
+		addr.getLower().ToIP().Wrap(),
+		addr.getUpper().ToIP().Wrap(),
+	)
+}
+
+func (addr *ipAddressInternal) coverWithPrefixBlock() *IPAddress {
+	// call from ip ipv4 ipv6
+	if addr.IsSinglePrefixBlock() {
+		return addr.toIPAddress()
+	}
+	res := coverWithPrefixBlock(
+		addr.getLower().ToIP().Wrap(),
+		addr.getUpper().ToIP().Wrap(),
+	)
+	return res.(WrappedIPAddress).IPAddress
+}
+
+func (addr *ipAddressInternal) coverWithPrefixBlockTo(other *IPAddress) *IPAddress {
+	res := getCoveringPrefixBlock(
+		addr.toIPAddress().Wrap(),
+		other.Wrap(),
+	)
+	return res.(WrappedIPAddress).IPAddress
+}
+
 // IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
 type IPAddressValueProvider interface {
 	AddressValueProvider
