@@ -672,6 +672,29 @@ func (host *HostName) GetHost() string {
 	return ""
 }
 
+// Wrap wraps this host name, returning a WrappedHostName, an implementation of ExtendedIdentifierString,
+// which can be used to write code that works with a host identifier string including [IPAddressString], [MACAddressString], and [HostName].
+func (host *HostName) Wrap() ExtendedIdentifierString {
+	return WrappedHostName{host}
+}
+
+// ResolvesToSelf returns whether this represents, or resolves to,
+// a host or address representing the same host.
+func (host *HostName) ResolvesToSelf() bool {
+	if host.IsSelf() {
+		return true
+	} else if host.GetAddress() != nil {
+		host.resolveData.resolvedAddrs[0].IsLoopback()
+	}
+	return false
+}
+
+// ToNetTCPAddr returns the TCPAddr if this HostName both resolves to an address and has an associated port.
+// Otherwise, it returns nil.
+func (host *HostName) ToNetTCPAddr() *net.TCPAddr {
+	return host.ToNetTCPAddrService(nil)
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
