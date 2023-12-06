@@ -419,6 +419,60 @@ func (host *HostName) AsAddressString() *IPAddressString {
 	return nil
 }
 
+// ToNormalizedString provides a normalized string which is lowercase for host strings,
+// and which is the normalized string for addresses.
+func (host *HostName) ToNormalizedString() string {
+	if str := host.normalizedString; str != nil {
+		return *str
+	}
+	return host.toNormalizedString(false, false)
+}
+
+func (host *HostName) toNormalizedString(wildcard, addTrailingDot bool) string {
+	if host.IsValid() {
+		var builder strings.Builder
+		if host.IsAddress() {
+			toNormalizedHostString(host.AsAddress(), wildcard, &builder)
+		} else if host.IsAddressString() {
+			builder.WriteString(host.AsAddressString().ToNormalizedString())
+		} else {
+			builder.WriteString(host.parsedHost.getHost())
+			if addTrailingDot {
+				builder.WriteByte(LabelSeparator)
+			}
+			/ *
+			 * If prefix or mask is supplied and there is an address, it is applied directly to the address provider, so
+			 * we need only check for those things here
+			 *
+			 * Also note that ports and prefix/mask cannot appear at the same time, so this does not interfere with the port code below.
+			 * /
+			networkPrefixLength := host.parsedHost.getEquivalentPrefixLen()
+			if networkPrefixLength != nil {
+				builder.WriteByte(PrefixLenSeparator)
+				toUnsignedString(uint64(networkPrefixLength.bitCount()), 10, &builder)
+			} else {
+				mask := host.parsedHost.getMask()
+				if mask != nil {
+					builder.WriteByte(PrefixLenSeparator)
+					builder.WriteString(mask.ToNormalizedString())
+				}
+			}
+		}
+		port := host.parsedHost.getPort()
+		if port != nil {
+			toNormalizedPortString(port.portNum(), &builder)
+		} else {
+			service := host.parsedHost.getService()
+			if service != "" {
+				builder.WriteByte(PortSeparator)
+				builder.WriteString(service)
+			}
+		}
+		return builder.String()
+	}
+	return host.str
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
