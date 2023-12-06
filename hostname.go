@@ -971,3 +971,23 @@ func NewHostNameFromNetIP(bytes net.IP) (hostName *HostName, err address_error.A
 func NewHostNameFromNetTCPAddr(addr *net.TCPAddr) (*HostName, address_error.AddressValueError) {
 	return newHostNameFromSocketAddr(addr.IP, addr.Port, addr.Zone)
 }
+
+// NewHostNameFromNetUDPAddr constructs a HostName from a net.UDPAddr.
+func NewHostNameFromNetUDPAddr(addr *net.UDPAddr) (*HostName, address_error.AddressValueError) {
+	return newHostNameFromSocketAddr(addr.IP, addr.Port, addr.Zone)
+}
+
+// NewHostNameFromPrefixedNetIP constructs a HostName from a net.IP paired with a prefix length.
+func NewHostNameFromPrefixedNetIP(bytes net.IP, prefixLen PrefixLen) (hostName *HostName, err address_error.AddressValueError) {
+	var addr *IPAddress
+	addr, err = NewIPAddressFromPrefixedNetIP(bytes, prefixLen)
+	if err != nil {
+		return
+	} else if addr == nil {
+		err = &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
+		return
+	}
+	
+	hostName = NewHostNameFromAddr(addr)
+	return
+}
