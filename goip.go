@@ -1247,6 +1247,51 @@ func (addr *IPAddress) Intersect(other *IPAddress) *IPAddress {
 	return nil
 }
 
+// Subtract subtracts the given subnet from this subnet, returning an array of subnets for the result (the subnets will not be contiguous so an array is required).
+// Subtract computes the subnet difference, the set of addresses in this address subnet but not in the provided subnet.
+// This is also known as the relative complement of the given argument in this subnet.
+// This is set subtraction, not subtraction of address values (use Increment for the latter).  We have a subnet of addresses and we are removing those addresses found in the argument subnet.
+// If there are no remaining addresses, nil is returned.
+func (addr *IPAddress) Subtract(other *IPAddress) []*IPAddress {
+	if !versionsMatch(addr, other) {
+		return []*IPAddress{addr}
+	}
+
+	addr = addr.init()
+	sects, _ := addr.GetSection().subtract(other.GetSection())
+	sectLen := len(sects)
+	if sectLen == 0 {
+		return nil
+	} else if sectLen == 1 {
+		sec := sects[0]
+		if sec.ToSectionBase() == addr.section {
+			return []*IPAddress{addr}
+		}
+	}
+
+	res := make([]*IPAddress, sectLen)
+	for i, sect := range sects {
+		res[i] = newIPAddressZoned(sect, addr.zone)
+	}
+	return res
+}
+
+// CoverWithPrefixBlockTo returns the minimal-size prefix block that covers all the addresses spanning from this subnet to the given subnet.
+//
+// If the argument is not the same IP version as the receiver, the argument is ignored, and the result is the same as CoverWithPrefixBlock.
+func (addr *IPAddress) CoverWithPrefixBlockTo(other *IPAddress) *IPAddress {
+	if !versionsMatch(addr, other) {
+		return addr.CoverWithPrefixBlock()
+	}
+	return addr.init().coverWithPrefixBlockTo(other)
+}
+
+// CoverWithPrefixBlock returns the minimal-size prefix block that covers all the addresses in this subnet.
+// The resulting block will have a larger subnet size than this, unless this subnet is already a prefix block.
+func (addr *IPAddress) CoverWithPrefixBlock() *IPAddress {
+	return addr.init().coverWithPrefixBlock()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
