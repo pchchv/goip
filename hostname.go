@@ -584,7 +584,7 @@ func (host *HostName) Compare(other *HostName) int {
 			if portRet != 0 {
 				return portRet
 			}
-			
+
 			serviceOne := parsedHost.getService()
 			serviceTwo := otherParsedHost.getService()
 			if serviceOne != "" {
@@ -908,7 +908,7 @@ func NewHostNameFromNetIPAddr(addr *net.IPAddr) (hostName *HostName, err address
 		err = &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
 		return
 	}
-	
+
 	hostName = NewHostNameFromAddr(ipAddr)
 	return
 }
@@ -923,7 +923,7 @@ func NewHostNameFromPrefixedNetIPAddr(addr *net.IPAddr, prefixLen PrefixLen) (ho
 		err = &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
 		return
 	}
-	
+
 	hostName = NewHostNameFromAddr(ipAddr)
 	return
 }
@@ -962,7 +962,7 @@ func NewHostNameFromNetIP(bytes net.IP) (hostName *HostName, err address_error.A
 		err = &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
 		return
 	}
-	
+
 	hostName = NewHostNameFromAddr(addr)
 	return
 }
@@ -990,4 +990,26 @@ func NewHostNameFromPrefixedNetIP(bytes net.IP, prefixLen PrefixLen) (hostName *
 	
 	hostName = NewHostNameFromAddr(addr)
 	return
+}
+
+// NewHostNameFromAddr constructs a HostName from an IP address.
+func NewHostNameFromAddr(addr *IPAddress) *HostName {
+	hostStr := addr.ToNormalizedString()
+	return newHostNameFromAddr(hostStr, addr)
+}
+
+// NewHostNameFromAddrPort constructs a HostName from an IP address and a port.
+func NewHostNameFromAddrPort(addr *IPAddress, port uint16) *HostName {
+	portVal := PortInt(port)
+	hostStr := toNormalizedAddrPortString(addr, portVal)
+	parsedHost := parsedHost{
+		originalStr:     hostStr,
+		embeddedAddress: embeddedAddress{addressProvider: addr.getProvider()},
+		labelsQualifier: parsedHostIdentifierStringQualifier{port: cachePorts(portVal)},
+	}
+	return &HostName{
+		str:        hostStr,
+		hostCache:  &hostCache{normalizedString: &hostStr},
+		parsedHost: &parsedHost,
+	}
 }
