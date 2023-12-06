@@ -1781,6 +1781,38 @@ func (addr *ipAddressInternal) toSQLWildcardString() string {
 	return addr.getSection().ToSQLWildcardString()
 }
 
+func (addr *ipAddressInternal) toFullString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toFullStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.fullString,
+			func() string {
+				return addr.section.ToIPv6().toFullStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToFullString()
+}
+
+func (addr *ipAddressInternal) toReverseDNSString() (string, address_error.IncompatibleAddressError) {
+	return addr.getSection().ToReverseDNSString()
+}
+
+func (addr *ipAddressInternal) toPrefixLenString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toPrefixLenStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.networkPrefixLengthString,
+			func() string {
+				return addr.section.ToIPv6().toPrefixLenStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToPrefixLenString()
+}
+
 // IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
 type IPAddressValueProvider interface {
 	AddressValueProvider
