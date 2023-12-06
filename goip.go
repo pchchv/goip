@@ -1725,6 +1725,34 @@ func (addr *ipAddressInternal) coverWithPrefixBlockTo(other *IPAddress) *IPAddre
 	return res.(WrappedIPAddress).IPAddress
 }
 
+func (addr *ipAddressInternal) toCanonicalWildcardString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toCanonicalWildcardStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.canonicalWildcardString,
+			func() string {
+				return addr.section.ToIPv6().toCanonicalWildcardStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToCanonicalWildcardString()
+}
+
+func (addr *ipAddressInternal) toNormalizedWildcardString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toNormalizedWildcardStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.normalizedWildcardString,
+			func() string {
+				return addr.section.ToIPv6().toNormalizedWildcardStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToNormalizedWildcardString()
+}
+
 // IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
 type IPAddressValueProvider interface {
 	AddressValueProvider
