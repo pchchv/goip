@@ -393,6 +393,32 @@ func (host *HostName) ToAddress() (addr *IPAddress, err address_error.AddressErr
 	return
 }
 
+// GetAddress attempts to convert this host name to an IP address.
+// If this represents an ip address, returns that address.
+// If this represents a host, returns the resolved ip address of that host.
+// Otherwise, returns nil.
+// GetAddress is similar to ToAddress but does not return any errors.
+//
+// If you wish to get the represented address while avoiding DNS resolution,
+// use AsAddress or AsAddressString.
+func (host *HostName) GetAddress() *IPAddress {
+	addr, _ := host.ToAddress()
+	return addr
+}
+
+// AsAddressString returns the address string if this host name represents an ip address or an ip address string.
+// Otherwise, this returns nil.
+// Note that translation includes prefix lengths and IPv6 zones.
+// This does not resolve host names.
+// Call ToAddress or GetAddress to get the resolved address.
+func (host *HostName) AsAddressString() *IPAddressString {
+	host = host.init()
+	if host.IsAddressString() {
+		return host.parsedHost.asGenericAddressString()
+	}
+	return nil
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
