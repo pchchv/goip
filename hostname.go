@@ -473,6 +473,18 @@ func (host *HostName) toNormalizedString(wildcard, addTrailingDot bool) string {
 	return host.str
 }
 
+// ToNormalizedWildcardString provides a normalized string which is lowercase for host strings,
+// and which is a normalized string for addresses.
+func (host *HostName) ToNormalizedWildcardString() string {
+	return host.toNormalizedString(false, false)
+}
+
+// ToQualifiedString provides a normalized string which is lowercase for host strings,
+// and which is a normalized string for addresses.
+func (host *HostName) ToQualifiedString() string {
+	return host.toNormalizedString(false, true)
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
