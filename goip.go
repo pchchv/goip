@@ -1,6 +1,7 @@
 package goip
 
 import (
+	"fmt"
 	"math/big"
 	"net"
 	"net/netip"
@@ -1067,6 +1068,50 @@ func (addr *IPAddress) GetGenericDivision(index int) DivisionType {
 // GetGenericSegment will panic given a negative index or an index matching or larger than the segment count.
 func (addr *IPAddress) GetGenericSegment(index int) AddressSegmentType {
 	return addr.getSegment(index)
+}
+
+// Compare returns a negative integer, zero, or a positive integer if this address or subnet is less than, equal, or greater than the given item.
+// Any address item is comparable to any other.  All address items use CountComparator to compare.
+func (addr *IPAddress) Compare(item AddressItem) int {
+	return CountComparator.Compare(addr, item)
+}
+
+// CompareSize compares the counts of two subnets or addresses or other items, the number of individual items within.
+//
+// Rather than calculating counts with GetCount,
+// there can be more efficient ways of determining whether one subnet represents more individual addresses than another.
+//
+// CompareSize returns a positive integer if
+// this address or subnet has a larger count than the one given,
+// zero if they are the same,
+// or a negative integer if the other has a larger count.
+func (addr *IPAddress) CompareSize(other AddressItem) int { // this is here to take advantage of the CompareSize in IPAddressSection
+	if addr == nil {
+		if isNilItem(other) {
+			return 0
+		}
+		// have size 0, other has size >= 1
+		return -1
+	}
+	return addr.init().compareSize(other)
+}
+
+// Format implements [fmt.Formatter] interface. It accepts the formats
+//   - 'v' for the default address and section format (either the normalized or canonical string),
+//   - 's' (string) for the same,
+//   - 'b' (binary), 'o' (octal with 0 prefix), 'O' (octal with 0o prefix),
+//   - 'd' (decimal), 'x' (lowercase hexadecimal), and
+//   - 'X' (uppercase hexadecimal).
+//
+// Also supported are some of fmt's format flags for integral types.
+// Sign control is not supported since addresses and sections are never negative.
+// '#' for an alternate format is supported, which adds a leading zero for octal,
+// and for hexadecimal it adds
+// a leading "0x" or "0X" for "%#x" and "%#X" respectively.
+// Also supported is specification of minimum digits precision, output field width,
+// space or zero padding, and '-' for left or right justification.
+func (addr IPAddress) Format(state fmt.State, verb rune) {
+	addr.init().format(state, verb)
 }
 
 // IPVersion is the version type used by IP address types.
