@@ -841,3 +841,34 @@ func translateReserved(addr *IPv6Address, str string, builder *strings.Builder) 
 		}
 	}
 }
+
+func toNormalizedHostString(addr *IPAddress, wildcard bool, builder *strings.Builder) {
+	if addr.isIPv6() {
+		if !wildcard && addr.IsPrefixed() { // prefix needs to be outside the brackets
+			normalized := addr.ToNormalizedString()
+			index := strings.IndexByte(normalized, PrefixLenSeparator)
+			builder.WriteByte(IPv6StartBracket)
+			translateReserved(addr.ToIPv6(), normalized[:index], builder)
+			builder.WriteByte(IPv6EndBracket)
+			builder.WriteString(normalized[index:])
+		} else {
+			normalized := addr.ToNormalizedWildcardString()
+			builder.WriteByte(IPv6StartBracket)
+			translateReserved(addr.ToIPv6(), normalized, builder)
+			builder.WriteByte(IPv6EndBracket)
+		}
+	} else {
+		if wildcard {
+			builder.WriteString(addr.ToNormalizedWildcardString())
+		} else {
+			builder.WriteString(addr.ToNormalizedString())
+		}
+	}
+}
+
+func toNormalizedAddrPortString(addr *IPAddress, port PortInt) string {
+	builder := strings.Builder{}
+	toNormalizedHostString(addr, false, &builder)
+	toNormalizedPortString(port, &builder)
+	return builder.String()
+}
