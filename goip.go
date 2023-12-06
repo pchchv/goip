@@ -1753,6 +1753,34 @@ func (addr *ipAddressInternal) toNormalizedWildcardString() string {
 	return addr.getSection().ToNormalizedWildcardString()
 }
 
+func (addr *ipAddressInternal) toSegmentedBinaryString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toSegmentedBinaryStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.segmentedBinaryString,
+			func() string {
+				return addr.section.ToIPv6().toSegmentedBinaryStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToSegmentedBinaryString()
+}
+
+func (addr *ipAddressInternal) toSQLWildcardString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toSQLWildcardStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.sqlWildcardString,
+			func() string {
+				return addr.section.ToIPv6().toSQLWildcardStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToSQLWildcardString()
+}
+
 // IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
 type IPAddressValueProvider interface {
 	AddressValueProvider
