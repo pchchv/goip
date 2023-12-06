@@ -758,6 +758,24 @@ func (host *HostName) ToNetUDPAddrService(serviceMapper func(string) Port) *net.
 	return nil
 }
 
+// GetNetworkPrefixLen returns the prefix length, if a prefix length was supplied,
+// either as part of an address or as part of a domain
+// (in which case the prefix applies to any resolved address).
+// Otherwise, GetNetworkPrefixLen returns nil.
+func (host *HostName) GetNetworkPrefixLen() PrefixLen {
+	if host.IsAddress() {
+		addr, err := host.parsedHost.asAddress()
+		if err == nil {
+			return addr.getNetworkPrefixLen().copy()
+		}
+	} else if host.IsAddressString() {
+		return host.parsedHost.asGenericAddressString().getNetworkPrefixLen().copy()
+	} else if host.IsValid() {
+		return host.parsedHost.getEquivalentPrefixLen().copy()
+	}
+	return nil
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
