@@ -912,3 +912,24 @@ func NewHostNameFromNetIPAddr(addr *net.IPAddr) (hostName *HostName, err address
 	hostName = NewHostNameFromAddr(ipAddr)
 	return
 }
+
+// NewHostNameFromPrefixedNetIPAddr constructs a HostName from a net.IPAddr paired with a prefix length.
+func NewHostNameFromPrefixedNetIPAddr(addr *net.IPAddr, prefixLen PrefixLen) (hostName *HostName, err address_error.AddressValueError) {
+	var ipAddr *IPAddress
+	ipAddr, err = NewIPAddressFromPrefixedNetIPAddr(addr, prefixLen)
+	if err != nil {
+		return
+	} else if ipAddr == nil {
+		err = &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
+		return
+	}
+	
+	hostName = NewHostNameFromAddr(ipAddr)
+	return
+}
+
+// NewHostNameFromNetNetIPAddr constructs a host name from a netip.Addr.
+func NewHostNameFromNetNetIPAddr(addr netip.Addr) *HostName {
+	ipAddr := NewIPAddressFromNetNetIPAddr(addr)
+	return NewHostNameFromAddr(ipAddr)
+}
