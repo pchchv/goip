@@ -1834,6 +1834,16 @@ func (addr *ipAddressInternal) toCompressedWildcardString() string {
 	return addr.getSection().ToCompressedWildcardString()
 }
 
+// ContainsSinglePrefixBlock returns whether this address contains a single prefix block for the given prefix length.
+//
+// This means there is only one prefix value for the given prefix length, and it also contains the full prefix block for that prefix,
+// all addresses with that prefix.
+//
+// Use GetPrefixLenForSingleBlock to determine whether there is a prefix length for which this method returns true.
+func (addr *ipAddressInternal) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	return addr.addressInternal.ContainsSinglePrefixBlock(prefixLen)
+}
+
 // IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
 type IPAddressValueProvider interface {
 	AddressValueProvider
