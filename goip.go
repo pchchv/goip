@@ -1114,6 +1114,39 @@ func (addr IPAddress) Format(state fmt.State, verb rune) {
 	addr.init().format(state, verb)
 }
 
+func (addr *IPAddress) rangeIterator(
+	upper *IPAddress,
+	valsAreMultiple bool,
+	prefixLen PrefixLen,
+	segProducer func(addr *IPAddress, index int) *IPAddressSegment,
+	segmentIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
+	segValueComparator func(seg1, seg2 *IPAddress, index int) bool,
+	networkSegmentIndex,
+	hostSegmentIndex int,
+	prefixedSegIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
+) Iterator[*IPAddress] {
+	return ipAddrIterator{addr.ipAddressInternal.rangeIterator(upper.ToIP(), valsAreMultiple, prefixLen, segProducer, segmentIteratorProducer, segValueComparator, networkSegmentIndex, hostSegmentIndex, prefixedSegIteratorProducer)}
+}
+
+// Equal returns whether the given address or subnet is equal to this address or subnet.
+// Two address instances are equal if they represent the same set of addresses.
+func (addr *IPAddress) Equal(other AddressType) bool {
+	if addr == nil {
+		return other == nil || other.ToAddressBase() == nil
+	}
+	return addr.init().equals(other)
+}
+
+// String implements the [fmt.Stringer] interface,
+// returning the canonical string provided by ToCanonicalString,
+// or "<nil>" if the receiver is a nil pointer.
+func (addr *IPAddress) String() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().ipAddressInternal.toString()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
