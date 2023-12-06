@@ -951,3 +951,23 @@ func NewHostNameFromNetNetIPAddrPort(addrPort netip.AddrPort) *HostName {
 	ipAddr := NewIPAddressFromNetNetIPAddr(addr)
 	return NewHostNameFromAddrPort(ipAddr, port)
 }
+
+// NewHostNameFromNetIP constructs a HostName from a net.IP.
+func NewHostNameFromNetIP(bytes net.IP) (hostName *HostName, err address_error.AddressValueError) {
+	var addr *IPAddress
+	addr, err = NewIPAddressFromNetIP(bytes)
+	if err != nil {
+		return
+	} else if addr == nil {
+		err = &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
+		return
+	}
+	
+	hostName = NewHostNameFromAddr(addr)
+	return
+}
+
+// NewHostNameFromNetTCPAddr constructs a HostName from a net.TCPAddr.
+func NewHostNameFromNetTCPAddr(addr *net.TCPAddr) (*HostName, address_error.AddressValueError) {
+	return newHostNameFromSocketAddr(addr.IP, addr.Port, addr.Zone)
+}
