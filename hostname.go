@@ -872,3 +872,43 @@ func toNormalizedAddrPortString(addr *IPAddress, port PortInt) string {
 	toNormalizedPortString(port, &builder)
 	return builder.String()
 }
+
+func newHostNameFromSocketAddr(ip net.IP, port int, zone string) (hostName *HostName, err address_error.AddressValueError) {
+	var ipAddr *IPAddress
+	ipAddr, err = NewIPAddressFromNetIPAddr(&net.IPAddr{IP: ip, Zone: zone})
+	if err != nil {
+		return
+	} else if ipAddr == nil {
+		err = &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
+		return
+	}
+
+	portVal := PortInt(port)
+	hostStr := toNormalizedAddrPortString(ipAddr, portVal)
+	parsedHost := parsedHost{
+		originalStr:     hostStr,
+		embeddedAddress: embeddedAddress{addressProvider: ipAddr.getProvider()},
+		labelsQualifier: parsedHostIdentifierStringQualifier{port: cachePorts(portVal)},
+	}
+	hostName = &HostName{
+		str:        hostStr,
+		hostCache:  &hostCache{normalizedString: &hostStr},
+		parsedHost: &parsedHost,
+	}
+	return
+}
+
+// NewHostNameFromNetIPAddr constructs a HostName from a net.IPAddr.
+func NewHostNameFromNetIPAddr(addr *net.IPAddr) (hostName *HostName, err address_error.AddressValueError) {
+	var ipAddr *IPAddress
+	ipAddr, err = NewIPAddressFromNetIPAddr(addr)
+	if err != nil {
+		return
+	} else if ipAddr == nil {
+		err = &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
+		return
+	}
+	
+	hostName = NewHostNameFromAddr(ipAddr)
+	return
+}
