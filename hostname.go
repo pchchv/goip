@@ -719,6 +719,45 @@ func (host *HostName) ToNetIPAddr() *net.IPAddr {
 	return nil
 }
 
+// ToNetTCPAddrService returns the TCPAddr if
+// this HostName both resolves to an address and has an associated service or port,
+// otherwise returns nil.
+func (host *HostName) ToNetTCPAddrService(serviceMapper func(string) Port) *net.TCPAddr {
+	if host.IsValid() {
+		port := host.GetPort()
+		if port == nil && serviceMapper != nil {
+			service := host.GetService()
+			if service != "" {
+				port = serviceMapper(service)
+			}
+		}
+		if port != nil {
+			if addr := host.GetAddress(); addr != nil {
+				return &net.TCPAddr{
+					IP:   addr.GetNetIP(),
+					Port: port.portNum(),
+					Zone: string(addr.zone),
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// ToNetUDPAddrService returns the UDPAddr if
+// this HostName both resolves to an address and has an associated service or port.
+func (host *HostName) ToNetUDPAddrService(serviceMapper func(string) Port) *net.UDPAddr {
+	tcpAddr := host.ToNetTCPAddrService(serviceMapper)
+	if tcpAddr != nil {
+		return &net.UDPAddr{
+			IP:   tcpAddr.IP,
+			Port: tcpAddr.Port,
+			Zone: tcpAddr.Zone,
+		}
+	}
+	return nil
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
