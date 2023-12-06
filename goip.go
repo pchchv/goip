@@ -1171,6 +1171,31 @@ func (addr *IPAddress) TrieDecrement() *IPAddress {
 	return nil
 }
 
+// PrefixEqual determines if the given address matches this address up to the prefix length of this address.
+// It returns whether the two addresses share the same range of prefix values.
+func (addr *IPAddress) PrefixEqual(other AddressType) bool {
+	return addr.init().prefixEquals(other)
+}
+
+// PrefixIterator provides an iterator to iterate through the individual prefixes of this subnet,
+// each iterated element spanning the range of values for its prefix.
+//
+// It is similar to the prefix block iterator, except for possibly the first and last iterated elements, which might not be prefix blocks,
+// instead constraining themselves to values from this subnet.
+//
+// If the subnet has no prefix length, then this is equivalent to Iterator.
+func (addr *IPAddress) PrefixIterator() Iterator[*IPAddress] {
+	return ipAddrIterator{addr.init().prefixIterator(false)}
+}
+
+// PrefixBlockIterator provides an iterator to iterate through the individual prefix blocks, one for each prefix of this address or subnet.
+// Each iterated address or subnet will be a prefix block with the same prefix length as this address or subnet.
+//
+// If this address has no prefix length, then this is equivalent to Iterator.
+func (addr *IPAddress) PrefixBlockIterator() Iterator[*IPAddress] {
+	return ipAddrIterator{addr.init().prefixIterator(true)}
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
