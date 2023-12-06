@@ -485,6 +485,130 @@ func (host *HostName) ToQualifiedString() string {
 	return host.toNormalizedString(false, true)
 }
 
+// Compare returns a negative integer, zero,
+// or a positive integer if this host name is less than, equal,
+// or greater than the given host name.
+// Any address item is comparable to any other.
+func (host *HostName) Compare(other *HostName) int {
+	if host == other {
+		return 0
+	} else if host == nil {
+		return -1
+	} else if other == nil {
+		return 1
+	}
+
+	if host.IsValid() {
+		if other.IsValid() {
+			parsedHost := host.parsedHost
+			otherParsedHost := other.parsedHost
+			if parsedHost.isAddressString() {
+				if otherParsedHost.isAddressString() {
+					result := parsedHost.asGenericAddressString().Compare(otherParsedHost.asGenericAddressString())
+					if result != 0 {
+						return result
+					}
+					//fall through to compare ports
+				} else {
+					return -1
+				}
+			} else if otherParsedHost.isAddressString() {
+				return 1
+			} else {
+				// both are non-address hosts
+				var minLen int
+				normalizedLabels := parsedHost.getNormalizedLabels()
+				otherNormalizedLabels := otherParsedHost.getNormalizedLabels()
+				oneLen := len(normalizedLabels)
+				twoLen := len(otherNormalizedLabels)
+				if oneLen < twoLen {
+					minLen = oneLen
+				} else {
+					minLen = twoLen
+				}
+
+				for i := 1; i <= minLen; i++ {
+					one := normalizedLabels[oneLen-i]
+					two := otherNormalizedLabels[twoLen-i]
+					result := strings.Compare(one, two)
+					if result != 0 {
+						return result
+					}
+				}
+
+				if oneLen != twoLen {
+					return oneLen - twoLen
+				}
+
+				// keep in mind that hosts can has masks/prefixes or ports, but not both
+				networkPrefixLength := parsedHost.getEquivalentPrefixLen()
+				otherPrefixLength := otherParsedHost.getEquivalentPrefixLen()
+				if networkPrefixLength != nil {
+					if otherPrefixLength != nil {
+						if *networkPrefixLength != *otherPrefixLength {
+							return otherPrefixLength.bitCount() - networkPrefixLength.bitCount()
+						}
+						// fall through to compare ports
+					} else {
+						return 1
+					}
+				} else {
+					if otherPrefixLength != nil {
+						return -1
+					}
+					mask := parsedHost.getMask()
+					otherMask := otherParsedHost.getMask()
+					if mask != nil {
+						if otherMask != nil {
+							ret := mask.Compare(otherMask)
+							if ret != 0 {
+								return ret
+							}
+							// fall through to compare ports
+						} else {
+							return 1
+						}
+					} else {
+						if otherMask != nil {
+							return -1
+						}
+						// fall through to compare ports
+					}
+				} // end non-address host compare
+			}
+
+			// two equivalent address strings or two equivalent hosts, now check port and service names
+			portOne := parsedHost.getPort()
+			portTwo := otherParsedHost.getPort()
+			portRet := portOne.Compare(portTwo)
+			if portRet != 0 {
+				return portRet
+			}
+			
+			serviceOne := parsedHost.getService()
+			serviceTwo := otherParsedHost.getService()
+			if serviceOne != "" {
+				if serviceTwo != "" {
+					ret := strings.Compare(serviceOne, serviceTwo)
+					if ret != 0 {
+						return ret
+					}
+				} else {
+					return 1
+				}
+			} else if serviceTwo != "" {
+				return -1
+			}
+			return 0
+		} else {
+			return 1
+		}
+	} else if other.IsValid() {
+		return -1
+	}
+	return strings.Compare(host.String(), other.String())
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
