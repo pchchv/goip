@@ -609,6 +609,69 @@ func (host *HostName) Compare(other *HostName) int {
 	return strings.Compare(host.String(), other.String())
 }
 
+// Equal returns true if the given host name matches this one.
+// For hosts to match, they must represent the same addresses or have the same host names.
+// Hosts are not resolved when matching.
+// Also, hosts must have the same port or service.
+// They must have the same masks if they are host names.
+// Even if two hosts are invalid,
+// they match if they have the same invalid string.
+func (host *HostName) Equal(other *HostName) bool {
+	if host == nil {
+		return other == nil
+	} else if other == nil {
+		return false
+	}
+
+	host = host.init()
+	other = other.init()
+	if host == other {
+		return true
+	}
+
+	if host.IsValid() {
+		if other.IsValid() {
+			parsedHost := host.parsedHost
+			otherParsedHost := other.parsedHost
+			if parsedHost.isAddressString() {
+				return otherParsedHost.isAddressString() &&
+					parsedHost.asGenericAddressString().Equal(otherParsedHost.asGenericAddressString()) &&
+					parsedHost.getPort().Equal(otherParsedHost.getPort()) &&
+					parsedHost.getService() == otherParsedHost.getService()
+			}
+			if otherParsedHost.isAddressString() {
+				return false
+			}
+			thisHost := parsedHost.getHost()
+			otherHost := otherParsedHost.getHost()
+			if thisHost != otherHost {
+				return false
+			}
+			return parsedHost.getEquivalentPrefixLen().Equal(otherParsedHost.getEquivalentPrefixLen()) &&
+				parsedHost.getMask().Equal(otherParsedHost.getMask()) &&
+				parsedHost.getPort().Equal(otherParsedHost.getPort()) &&
+				parsedHost.getService() == otherParsedHost.getService()
+		}
+		return false
+	}
+	return !other.IsValid() && host.String() == other.String()
+}
+
+// GetHost returns the host string normalized but without port, service, prefix or mask.
+//
+// If an address, returns the address string normalized, but without port, service, prefix, mask, or brackets for IPv6.
+//
+// To get a normalized string encompassing all details, use ToNormalizedString.
+//
+// If not a valid host, returns the zero string.
+func (host *HostName) GetHost() string {
+	host = host.init()
+	if host.IsValid() {
+		return host.parsedHost.getHost()
+	}
+	return ""
+}
+
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
 	str = strings.TrimSpace(str)
 	res := &HostName{
