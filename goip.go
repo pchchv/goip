@@ -1661,6 +1661,39 @@ func (addr *ipAddressInternal) rangeIterator(
 	)
 }
 
+// IsSinglePrefixBlock returns whether the address range matches the block of values for a single prefix identified by the prefix length of this address.
+// This is similar to IsPrefixBlock except that it returns false when the subnet has multiple prefixes.
+//
+// What distinguishes this method from ContainsSinglePrefixBlock is that this method returns
+// false if the series does not have a prefix length assigned to it,
+// or a prefix length that differs from the prefix length for which ContainsSinglePrefixBlock returns true.
+//
+// It is similar to IsPrefixBlock but returns false when there are multiple prefixes.
+//
+// For instance, "1.*.*.* /16" returns false from this method and returns true from IsPrefixBlock.
+func (addr *ipAddressInternal) IsSinglePrefixBlock() bool {
+	return addr.addressInternal.IsSinglePrefixBlock()
+}
+
+func (addr *ipAddressInternal) spanWithPrefixBlocks() []ExtendedIPSegmentSeries {
+	wrapped := addr.toIPAddress().Wrap()
+	if addr.IsSequential() {
+		if addr.IsSinglePrefixBlock() {
+			return []ExtendedIPSegmentSeries{wrapped}
+		}
+		return getSpanningPrefixBlocks(wrapped, wrapped)
+	}
+	return spanWithPrefixBlocks(wrapped)
+}
+
+func (addr *ipAddressInternal) spanWithSequentialBlocks() []ExtendedIPSegmentSeries {
+	wrapped := addr.toIPAddress().Wrap()
+	if addr.IsSequential() {
+		return []ExtendedIPSegmentSeries{wrapped}
+	}
+	return spanWithSequentialBlocks(wrapped)
+}
+
 // IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
 type IPAddressValueProvider interface {
 	AddressValueProvider
