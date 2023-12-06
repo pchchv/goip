@@ -2,7 +2,9 @@ package goip
 
 import (
 	"fmt"
+	"net"
 	"strings"
+	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
 	"github.com/pchchv/goip/address_string_param"
@@ -242,6 +244,153 @@ func (host *HostName) IsLoopback() bool {
 // Also see IsLocalHost and IsLoopback.
 func (host *HostName) IsSelf() bool {
 	return host.IsLocalHost() || host.IsLoopback()
+}
+
+// ToAddresses resolves to one or more addresses.
+// The error can be address_error.AddressStringError, address_error.IncompatibleAddressError, or address_error.HostNameError.
+// This method can potentially return a list of resolved addresses and an error as well if some resolved addresses were invalid.
+func (host *HostName) ToAddresses() (addrs []*IPAddress, err address_error.AddressError) {
+	host = host.init()
+	data := (*resolveData)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&host.resolveData))))
+	if data == nil {
+		// note that validation handles empty address resolution
+		err = host.Validate() // address_error.HostNameError
+		if err != nil {
+			return
+		}
+		// http://networkbit.ch/golang-dns-lookup/
+		parsedHost := host.parsedHost
+		if parsedHost.isAddressString() {
+			addr, address_Error := parsedHost.asAddress()
+			addrs, err = []*IPAddress{addr}, address_Error
+			// note there is no need to apply prefix or mask here,
+			// it would have been applied to the address already
+		} else {
+			strHost := parsedHost.getHost()
+			validationOptions := host.GetValidationOptions()
+			if len(strHost) == 0 {
+				addrs = []*IPAddress{}
+			} else {
+				var ips []net.IP
+				ips, lookupErr := net.LookupIP(strHost)
+				if lookupErr != nil {
+					//Note we do not set resolveData, so we will attempt to resolve again
+					err = &hostNameNestedError{nested: lookupErr,
+						hostNameError: hostNameError{addressError{str: strHost, key: "ipaddress.host.error.host.resolve"}}}
+					return
+				}
+				count := len(ips)
+				addrs = make([]*IPAddress, 0, count)
+				var errs []address_error.AddressError
+				for j := 0; j < count; j++ {
+					ip := ips[j]
+					if ipv4 := ip.To4(); ipv4 != nil {
+						ip = ipv4
+					}
+					networkPrefixLength := parsedHost.getNetworkPrefixLen()
+					byteLen := len(ip)
+					if networkPrefixLength == nil {
+						mask := parsedHost.getMask()
+						if mask != nil {
+							maskBytes := mask.Bytes()
+							if len(maskBytes) == byteLen {
+								for i := 0; i < byteLen; i++ {
+									ip[i] &= maskBytes[i]
+								}
+								networkPrefixLength = mask.GetBlockMaskPrefixLen(true)
+							}
+						}
+					}
+					ipAddr, address_Error := NewIPAddressFromPrefixedNetIP(ip, networkPrefixLength)
+					if address_Error != nil {
+						errs = append(errs, address_Error)
+					} else {
+						cache := ipAddr.cache
+						if cache != nil {
+							cache.identifierStr = &identifierStr{host}
+						}
+						addrs = append(addrs, ipAddr)
+					}
+				}
+				if len(errs) > 0 {
+					err = &mergedError{AddressError: &hostNameError{addressError{str: strHost, key: "ipaddress.host.error.host.resolve"}}, merged: errs}
+				}
+				count = len(addrs)
+				if count > 0 {
+					// sort by preferred version
+					preferredVersion := IPVersion(validationOptions.GetPreferredVersion())
+					if !preferredVersion.IsIndeterminate() {
+						preferredAddrType := preferredVersion.toType()
+						boundaryCase := 8 // we sort differently based on list size
+						if count > boundaryCase {
+							c := 0
+							newAddrs := make([]*IPAddress, count)
+							for _, val := range addrs {
+								if val.getAddrType() == preferredAddrType {
+									newAddrs[c] = val
+									c++
+								}
+							}
+							for i := 0; c < count; i++ {
+								val := addrs[i]
+								if val.getAddrType() != preferredAddrType {
+									newAddrs[c] = val
+									c++
+								}
+							}
+							addrs = newAddrs
+						} else {
+							preferredIndex := 0
+						top:
+							for i := 0; i < count; i++ {
+								val := addrs[i]
+								if val.getAddrType() != preferredAddrType {
+									var j int
+									if preferredIndex == 0 {
+										j = i + 1
+									} else {
+										j = preferredIndex
+									}
+									for ; j < len(addrs); j++ {
+										if addrs[j].getAddrType() == preferredAddrType {
+											// move the preferred into the non-preferred's spot
+											addrs[i] = addrs[j]
+											// don't swap so the non-preferred order is preserved,
+											// instead shift each upwards by one spot
+											k := i + 1
+											for ; k < j; k++ {
+												addrs[k], val = val, addrs[k]
+											}
+											addrs[k] = val
+											preferredIndex = j + 1
+											continue top
+										}
+									}
+									// no more preferred so nothing more to do
+									break
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		data = &resolveData{addrs, err}
+		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&host.resolveData))
+		atomicStorePointer(dataLoc, unsafe.Pointer(data))
+	}
+	return data.resolvedAddrs, nil
+}
+
+// ToAddress resolves to an address.
+// This method can potentially return a list of resolved addresses and an error as well,
+// if some resolved addresses were invalid.
+func (host *HostName) ToAddress() (addr *IPAddress, err address_error.AddressError) {
+	addresses, err := host.ToAddresses()
+	if len(addresses) > 0 {
+		addr = addresses[0]
+	}
+	return
 }
 
 func parseHostName(str string, params address_string_param.HostNameParams) *HostName {
