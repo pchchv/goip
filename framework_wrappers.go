@@ -341,6 +341,20 @@ func (addr WrappedAddress) ToBlock(segmentIndex int, lower, upper SegInt) Extend
 	return wrapAddress(addr.Address.ToBlock(segmentIndex, lower, upper))
 }
 
+// ToPrefixBlock returns the series with the same prefix as this series while the remaining bits span all values.
+// The series will be the block of all series with the same prefix.
+//
+// If this series has no prefix, this series is returned.
+func (addr WrappedAddress) ToPrefixBlock() ExtendedSegmentSeries {
+	return wrapAddress(addr.Address.ToPrefixBlock())
+}
+
+// ToPrefixBlockLen returns the series with the same prefix of the given length as this series while the remaining bits span all values.
+// The returned series will be the block of all series with the same prefix.
+func (addr WrappedAddress) ToPrefixBlockLen(prefLen BitCount) ExtendedSegmentSeries {
+	return wrapAddress(addr.Address.ToPrefixBlockLen(prefLen))
+}
+
 // WrappedAddressSection is the implementation of ExtendedSegmentSeries for address sections.
 type WrappedAddressSection struct {
 	*AddressSection
