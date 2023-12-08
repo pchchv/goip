@@ -327,6 +327,20 @@ func (addr WrappedAddress) PrefixIterator() Iterator[ExtendedSegmentSeries] {
 	return addressSeriesIterator{addr.Address.PrefixIterator()}
 }
 
+// PrefixBlockIterator provides an iterator to iterate through the individual prefix blocks, one for each prefix of this series.
+// Each iterated series will be a prefix block with the same prefix length as this series.
+//
+// If this series has no prefix length, then this is equivalent to Iterator.
+func (addr WrappedAddress) PrefixBlockIterator() Iterator[ExtendedSegmentSeries] {
+	return addressSeriesIterator{addr.Address.PrefixBlockIterator()}
+}
+
+// ToBlock creates a new series block by changing the segment at the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (addr WrappedAddress) ToBlock(segmentIndex int, lower, upper SegInt) ExtendedSegmentSeries {
+	return wrapAddress(addr.Address.ToBlock(segmentIndex, lower, upper))
+}
+
 // WrappedAddressSection is the implementation of ExtendedSegmentSeries for address sections.
 type WrappedAddressSection struct {
 	*AddressSection
