@@ -1362,6 +1362,28 @@ func (addr *IPAddress) SpanWithSequentialBlocksTo(other *IPAddress) []*IPAddress
 	return cloneToIPAddrs(getSpanningSequentialBlocks(addr.init().Wrap(), other.init().Wrap()))
 }
 
+// MergeToSequentialBlocks merges this with the list of addresses to produce the smallest array of sequential blocks.
+//
+// The resulting slice is sorted from lowest address value to highest,
+// regardless of the size of each prefix block.
+// Arguments that are not the same IP version are ignored.
+func (addr *IPAddress) MergeToSequentialBlocks(addrs ...*IPAddress) []*IPAddress {
+	series := filterCloneIPAddrs(addr, addrs)
+	blocks := getMergedSequentialBlocks(series)
+	return cloneToIPAddrs(blocks)
+}
+
+// MergeToPrefixBlocks merges this subnet with the list of subnets to produce the smallest array of prefix blocks.
+//
+// The resulting slice is sorted from lowest address value to highest,
+// regardless of the size of each prefix block.
+// Arguments that are not the same IP version are ignored.
+func (addr *IPAddress) MergeToPrefixBlocks(addrs ...*IPAddress) []*IPAddress {
+	series := filterCloneIPAddrs(addr, addrs)
+	blocks := getMergedPrefixBlocks(series)
+	return cloneToIPAddrs(blocks)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
