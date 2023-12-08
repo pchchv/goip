@@ -10,17 +10,18 @@ import (
 )
 
 var (
-	_                AddressDivisionSeries = &IPAddressLargeDivisionGrouping{}
-	_, _, _, _, _, _ IPAddressRange        = &IPAddress{},
-		&IPv4Address{},
-		&IPv6Address{},
-		&SequentialRange[*IPAddress]{},
-		&SequentialRange[*IPv4Address]{},
-		&SequentialRange[*IPv6Address]{}
-)
-var (
-	_       StandardDivGroupingType = &AddressDivisionGrouping{}
-	_, _, _ IPAddressSeqRangeType   = &SequentialRange[*IPAddress]{}, &SequentialRange[*IPv4Address]{}, &SequentialRange[*IPv6Address]{}
+	_                AddressSegmentSeries     = &AddressSection{}
+	_                AddressDivisionSeries    = &IPAddressLargeDivisionGrouping{}
+	_                MACAddressSegmentSeries  = &MACAddressSection{}
+	_, _             HostIdentifierString     = &IPAddressString{}, &HostName{}
+	_, _             IPAddressSegmentSeries   = &IPAddress{}, &IPAddressSection{}
+	_, _             StandardDivGroupingType  = &IPv6v4MixedAddressGrouping{}, &AddressDivisionGrouping{}
+	_, _             IPv4AddressSegmentSeries = &IPv4Address{}, &IPv4AddressSection{}
+	_, _, _          IPAddressType            = &IPAddress{}, &IPv4Address{}, &IPv6Address{}
+	_, _, _          IPAddressSeqRangeType    = &SequentialRange[*IPAddress]{}, &SequentialRange[*IPv4Address]{}, &SequentialRange[*IPv6Address]{}
+	_, _, _          IPv6AddressSegmentSeries = &IPv6Address{}, &IPv6AddressSection{}, &EmbeddedIPv6AddressSection{}
+	_, _, _, _, _    AddressSectionType       = &AddressSection{}, &IPAddressSection{}, &IPv4AddressSection{}, &IPv6AddressSection{}, &MACAddressSection{}
+	_, _, _, _, _, _ IPAddressRange           = &IPAddress{}, &IPv4Address{}, &IPv6Address{}, &SequentialRange[*IPAddress]{}, &SequentialRange[*IPv4Address]{}, &SequentialRange[*IPv6Address]{}
 )
 
 // AddressComponent represents all addresses, address sections and address segments.
