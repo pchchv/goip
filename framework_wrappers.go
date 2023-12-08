@@ -5,6 +5,8 @@ import (
 	"github.com/pchchv/goip/address_string"
 )
 
+var _, _ ExtendedSegmentSeries = WrappedAddress{}, WrappedAddressSection{}
+
 // ExtendedSegmentSeries wraps either an Address or AddressSection.
 // ExtendedSegmentSeries can be used to write code that works with both addresses and address sections,
 // going further than AddressSegmentSeries to offer additional methods with the series types in their signature.
@@ -734,6 +736,11 @@ func (section WrappedAddressSection) ReverseBytes() (ExtendedSegmentSeries, addr
 // If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
 func (section WrappedAddressSection) ReverseBits(perByte bool) (ExtendedSegmentSeries, address_error.IncompatibleAddressError) {
 	return wrapSectWithErr(section.AddressSection.ReverseBits(perByte))
+}
+
+// ReverseSegments returns a new series with the segments reversed.
+func (section WrappedAddressSection) ReverseSegments() ExtendedSegmentSeries {
+	return wrapSection(section.AddressSection.ReverseSegments())
 }
 
 func wrapAddress(addr *Address) WrappedAddress {
