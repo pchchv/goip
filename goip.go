@@ -1497,6 +1497,36 @@ func (addr *IPAddress) ToSegmentedBinaryString() string {
 	return addr.init().toSegmentedBinaryString()
 }
 
+// ToSQLWildcardString create a string similar to that
+// from toNormalizedWildcardString except that it uses SQL wildcards.
+// It uses '%' instead of '*' and also uses the wildcard '_'.
+func (addr *IPAddress) ToSQLWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toSQLWildcardString()
+}
+
+// ToFullString produces a string with no compressed segments and all segments of full length with leading zeros,
+// which is 4 characters for IPv6 segments and 3 characters for IPv4 segments.
+func (addr *IPAddress) ToFullString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toFullString()
+}
+
+// ToReverseDNSString generates the reverse-DNS lookup string,
+// returning an error if this address is an IPv6 multiple-valued subnet for which the range cannot be represented.
+// For "8.255.4.4" it is "4.4.255.8.in-addr.arpa".
+// For "2001:db8::567:89ab" it is "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa".
+func (addr *IPAddress) ToReverseDNSString() (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	return addr.init().toReverseDNSString()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
