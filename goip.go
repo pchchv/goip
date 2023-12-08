@@ -8,6 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
+	"github.com/pchchv/goip/address_string"
 )
 
 const (
@@ -1595,6 +1596,25 @@ func (addr *IPAddress) ToBinaryString(with0bPrefix bool) (string, address_error.
 		return nilString(), nil
 	}
 	return addr.init().toBinaryString(with0bPrefix)
+}
+
+// ToCustomString creates a customized string from this address or subnet according to the given string option parameters.
+func (addr *IPAddress) ToCustomString(stringOptions address_string.IPStringOptions) string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.GetSection().toCustomZonedString(stringOptions, addr.zone)
+}
+
+// ToCanonicalHostName does a reverse name lookup to get the canonical host name.
+// Note that the canonical host name may differ on different systems.
+//
+// This returns an error if this address is a subnet multiple values.
+func (addr *IPAddress) ToCanonicalHostName() (*HostName, error) {
+	if addr.isMultiple() {
+		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.unavailable.numeric"}}
+	}
+	return addr.init().lookupAddr()
 }
 
 // IPVersion is the version type used by IP address types.
