@@ -1292,6 +1292,43 @@ func (addr *IPAddress) CoverWithPrefixBlock() *IPAddress {
 	return addr.init().coverWithPrefixBlock()
 }
 
+// SpanWithPrefixBlocks returns an array of prefix blocks that cover the same set of addresses as this subnet.
+//
+// Unlike SpanWithPrefixBlocksTo, the result only includes addresses that are a part of this subnet.
+func (addr *IPAddress) SpanWithPrefixBlocks() []*IPAddress {
+	addr = addr.init()
+	if addr.IsSequential() {
+		if addr.IsSinglePrefixBlock() {
+			return []*IPAddress{addr}
+		}
+		wrapped := addr.Wrap()
+		spanning := getSpanningPrefixBlocks(wrapped, wrapped)
+		return cloneToIPAddrs(spanning)
+	}
+	wrapped := addr.Wrap()
+	return cloneToIPAddrs(spanWithPrefixBlocks(wrapped))
+}
+
+// SpanWithPrefixBlocksTo returns the smallest slice of prefix block subnets that span from this subnet to the given subnet.
+//
+// If the given address is a different version than this, then the given address is ignored, and the result is equivalent to calling SpanWithPrefixBlocks.
+//
+// The resulting slice is sorted from lowest address value to highest, regardless of the size of each prefix block.
+//
+// From the list of returned subnets you can recover the original range (this to other) by converting each to IPAddressRange with ToSequentialRange
+// and them joining them into a single range with the Join method of IPAddressSeqRange.
+func (addr *IPAddress) SpanWithPrefixBlocksTo(other *IPAddress) []*IPAddress {
+	if !versionsMatch(addr, other) {
+		return addr.SpanWithPrefixBlocks()
+	}
+	return cloneToIPAddrs(
+		getSpanningPrefixBlocks(
+			addr.init().Wrap(),
+			other.init().Wrap(),
+		),
+	)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
