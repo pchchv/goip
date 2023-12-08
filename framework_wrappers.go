@@ -296,6 +296,37 @@ func (addr WrappedAddress) AssignMinPrefixForBlock() ExtendedSegmentSeries {
 	return wrapAddress(addr.Address.AssignMinPrefixForBlock())
 }
 
+// Contains returns whether this is same type and version as the given address series and whether it contains all values in the given series.
+//
+// Series must also have the same number of segments to be comparable, otherwise false is returned.
+func (addr WrappedAddress) Contains(other ExtendedSegmentSeries) bool {
+	a, ok := other.Unwrap().(AddressType)
+	return ok && addr.Address.Contains(a)
+}
+
+// Iterator provides an iterator to iterate through the individual series of this series.
+//
+// When iterating, the prefix length is preserved.
+// Remove it using WithoutPrefixLen prior to iterating if you wish to drop it from all individual series.
+//
+// Call IsMultiple to determine if this instance represents multiple series, or GetCount for the count.
+func (addr WrappedAddress) Iterator() Iterator[ExtendedSegmentSeries] {
+	return addressSeriesIterator{addr.Address.Iterator()}
+}
+
+// PrefixIterator provides an iterator to iterate through the individual prefixes of this series,
+// each iterated element spanning the range of values for its prefix.
+//
+// It is similar to the prefix block iterator,
+// except for possibly the first and last iterated elements,
+// which might not be prefix blocks,
+// instead constraining themselves to values from this series.
+//
+// If the series has no prefix length, then this is equivalent to Iterator.
+func (addr WrappedAddress) PrefixIterator() Iterator[ExtendedSegmentSeries] {
+	return addressSeriesIterator{addr.Address.PrefixIterator()}
+}
+
 // WrappedAddressSection is the implementation of ExtendedSegmentSeries for address sections.
 type WrappedAddressSection struct {
 	*AddressSection
