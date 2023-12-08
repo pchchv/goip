@@ -571,6 +571,26 @@ func (section WrappedAddressSection) PrefixBlockIterator() Iterator[ExtendedSegm
 	return sectionSeriesIterator{section.AddressSection.PrefixBlockIterator()}
 }
 
+// ToBlock creates a new series block by changing the segment at the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (section WrappedAddressSection) ToBlock(segmentIndex int, lower, upper SegInt) ExtendedSegmentSeries {
+	return wrapSection(section.AddressSection.ToBlock(segmentIndex, lower, upper))
+}
+
+// ToPrefixBlock returns the series with the same prefix as this series while the remaining bits span all values.
+// The series will be the block of all series with the same prefix.
+//
+// If this series has no prefix, this series is returned.
+func (section WrappedAddressSection) ToPrefixBlock() ExtendedSegmentSeries {
+	return wrapSection(section.AddressSection.ToPrefixBlock())
+}
+
+// ToPrefixBlockLen returns the series with the same prefix of the given length as this series while the remaining bits span all values.
+// The returned series will be the block of all series with the same prefix.
+func (section WrappedAddressSection) ToPrefixBlockLen(prefLen BitCount) ExtendedSegmentSeries {
+	return wrapSection(section.AddressSection.ToPrefixBlockLen(prefLen))
+}
+
 func wrapAddress(addr *Address) WrappedAddress {
 	return WrappedAddress{addr}
 }
