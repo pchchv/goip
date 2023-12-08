@@ -435,6 +435,42 @@ func (addr WrappedAddress) SetPrefixLenZeroed(prefixLen BitCount) (ExtendedSegme
 	return wrapAddrWithErr(addr.Address.SetPrefixLenZeroed(prefixLen))
 }
 
+// ReverseBytes returns a new segment series with the bytes reversed.  Any prefix length is dropped.
+//
+// If each segment is more than 1 byte long,
+// and the bytes within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous,
+// then this returns an error.
+//
+// In practice this means that to be reversible,
+// a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+func (addr WrappedAddress) ReverseBytes() (ExtendedSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapAddrWithErr(addr.Address.ReverseBytes())
+}
+
+// ReverseBits returns a new segment series with the bits reversed.  Any prefix length is dropped.
+//
+// If the bits within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, this returns an error.
+//
+// In practice this means that to be reversible,
+// a range must include all values except possibly the largest and/or smallest,
+// which reverse to themselves.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (addr WrappedAddress) ReverseBits(perByte bool) (ExtendedSegmentSeries, address_error.IncompatibleAddressError) {
+	a, err := addr.Address.ReverseBits(perByte)
+	if err != nil {
+		return nil, err
+	}
+	return wrapAddress(a), nil
+}
+
+// ReverseSegments returns a new series with the segments reversed.
+func (addr WrappedAddress) ReverseSegments() ExtendedSegmentSeries {
+	return wrapAddress(addr.Address.ReverseSegments())
+}
+
 // WrappedAddressSection is the implementation of ExtendedSegmentSeries for address sections.
 type WrappedAddressSection struct {
 	*AddressSection
