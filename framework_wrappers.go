@@ -628,6 +628,18 @@ func (section WrappedAddressSection) IncrementBoundary(i int64) ExtendedSegmentS
 	return convSectToIntf(section.AddressSection.IncrementBoundary(i))
 }
 
+// GetLower returns the series in the range with the lowest numeric value,
+// which will be the same series if it represents a single value.
+func (section WrappedAddressSection) GetLower() ExtendedSegmentSeries {
+	return wrapSection(section.AddressSection.GetLower())
+}
+
+// GetUpper returns the series in the range with the highest numeric value,
+// which will be the same series if it represents a single value.
+func (section WrappedAddressSection) GetUpper() ExtendedSegmentSeries {
+	return wrapSection(section.AddressSection.GetUpper())
+}
+
 func wrapAddress(addr *Address) WrappedAddress {
 	return WrappedAddress{addr}
 }
