@@ -241,6 +241,21 @@ func (addr WrappedAddress) ToIPv6() IPv6AddressSegmentSeries {
 	return addr.Address.ToIPv6()
 }
 
+// ToIP converts to an IP address if this originated as IPv4 or IPv6, or an implicitly zero-valued IP.
+// If not, ToIP returns nil.
+func (addr WrappedAddress) ToIP() IPAddressSegmentSeries {
+	return addr.Address.ToIP()
+}
+
+// ToMAC converts to a MACAddressSegmentSeries if this series originated as a MAC series.
+// If not, ToMAC returns nil.
+//
+// ToMAC implementations can be called with a nil receiver,
+// enabling you to chain this method with methods that might return a nil pointer.
+func (addr WrappedAddress) ToMAC() MACAddressSegmentSeries {
+	return addr.Address.ToMAC()
+}
+
 // WrappedAddressSection is the implementation of ExtendedSegmentSeries for address sections.
 type WrappedAddressSection struct {
 	*AddressSection
