@@ -279,6 +279,23 @@ func (addr WrappedAddress) AdjustPrefixLenZeroed(prefixLen BitCount) (ExtendedSe
 	return wrapAddrWithErr(addr.Address.AdjustPrefixLenZeroed(prefixLen))
 }
 
+// AssignPrefixForSingleBlock returns the equivalent prefix block that matches exactly the range of values in this series.
+// The returned block will have an assigned prefix length indicating the prefix length for the block.
+//
+// There may be no such series - it is required that the range of values match the range of a prefix block.
+// If there is no such series, then nil is returned.
+func (addr WrappedAddress) AssignPrefixForSingleBlock() ExtendedSegmentSeries {
+	return convAddrToIntf(addr.Address.AssignPrefixForSingleBlock())
+}
+
+// AssignMinPrefixForBlock returns an equivalent series, assigned the smallest prefix length possible,
+// such that the prefix block for that prefix length is in this series.
+//
+// In other words, this method assigns a prefix length to this series matching the largest prefix block in this series.
+func (addr WrappedAddress) AssignMinPrefixForBlock() ExtendedSegmentSeries {
+	return wrapAddress(addr.Address.AssignMinPrefixForBlock())
+}
+
 // WrappedAddressSection is the implementation of ExtendedSegmentSeries for address sections.
 type WrappedAddressSection struct {
 	*AddressSection
