@@ -1527,6 +1527,42 @@ func (addr *IPAddress) ToReverseDNSString() (string, address_error.IncompatibleA
 	return addr.init().toReverseDNSString()
 }
 
+// ToPrefixLenString returns a string with a CIDR network prefix length if this address has a network prefix length.
+// For IPv6, a zero host section will be compressed with "::".
+// For IPv4 the string is equivalent to the canonical string.
+func (addr *IPAddress) ToPrefixLenString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toPrefixLenString()
+}
+
+// ToSubnetString produces a string with specific formats for subnets.
+// The subnet string looks like "1.2.*.*" or "1:2::/16".
+//
+// In the case of IPv4, this means that wildcards are used instead of a network prefix when a network prefix has been supplied.
+// In the case of IPv6, when a network prefix has been supplied,
+// the prefix will be shown and the host section will be compressed with "::".
+func (addr *IPAddress) ToSubnetString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toSubnetString()
+}
+
+// ToHexString writes this address as a single hexadecimal value
+// (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count,
+// with or without a preceding "0x" prefix.
+//
+// If a subnet cannot be written as a single prefix block or a range of two values, an error is returned.
+func (addr *IPAddress) ToHexString(with0xPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	return addr.init().toHexString(with0xPrefix)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
