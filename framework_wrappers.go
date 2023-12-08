@@ -640,6 +640,24 @@ func (section WrappedAddressSection) GetUpper() ExtendedSegmentSeries {
 	return wrapSection(section.AddressSection.GetUpper())
 }
 
+// AssignPrefixForSingleBlock returns the equivalent prefix block that matches exactly the range of values in this series.
+// The returned block will have an assigned prefix length indicating the prefix length for the block.
+//
+// There may be no such series - it is required that the range of values match the range of a prefix block.
+// If there is no such series, then nil is returned.
+func (section WrappedAddressSection) AssignPrefixForSingleBlock() ExtendedSegmentSeries {
+	return convSectToIntf(section.AddressSection.AssignPrefixForSingleBlock())
+}
+
+// AssignMinPrefixForBlock returns an equivalent series, assigned the smallest prefix length possible,
+// such that the prefix block for that prefix length is in this series.
+//
+// In other words,
+// this method assigns a prefix length to this series matching the largest prefix block in this series.
+func (section WrappedAddressSection) AssignMinPrefixForBlock() ExtendedSegmentSeries {
+	return wrapSection(section.AddressSection.AssignMinPrefixForBlock())
+}
+
 func wrapAddress(addr *Address) WrappedAddress {
 	return WrappedAddress{addr}
 }
