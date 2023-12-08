@@ -247,3 +247,17 @@ func wrapAddress(addr *Address) WrappedAddress {
 func wrapSection(section *AddressSection) WrappedAddressSection {
 	return WrappedAddressSection{section}
 }
+
+func wrapSectWithErr(section *AddressSection, err address_error.IncompatibleAddressError) (ExtendedSegmentSeries, address_error.IncompatibleAddressError) {
+	if err == nil {
+		return wrapSection(section), nil
+	}
+	return nil, err
+}
+
+func wrapAddrWithErr(addr *Address, err address_error.IncompatibleAddressError) (ExtendedSegmentSeries, address_error.IncompatibleAddressError) {
+	if err == nil {
+		return wrapAddress(addr), nil
+	}
+	return nil, err
+}
