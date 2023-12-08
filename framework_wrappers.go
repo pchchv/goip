@@ -658,6 +658,34 @@ func (section WrappedAddressSection) AssignMinPrefixForBlock() ExtendedSegmentSe
 	return wrapSection(section.AddressSection.AssignMinPrefixForBlock())
 }
 
+// WithoutPrefixLen provides the same address series but with no prefix length.  The values remain unchanged.
+func (section WrappedAddressSection) WithoutPrefixLen() ExtendedSegmentSeries {
+	return wrapSection(section.AddressSection.WithoutPrefixLen())
+}
+
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the series.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (section WrappedAddressSection) SetPrefixLen(prefixLen BitCount) ExtendedSegmentSeries {
+	return wrapSection(section.AddressSection.SetPrefixLen(prefixLen))
+}
+
+// SetPrefixLenZeroed sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the series.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+//
+// If this series has a prefix length, and the prefix length is increased when setting the new prefix length, the bits moved within the prefix become zero.
+// If this series has a prefix length, and the prefix length is decreased when setting the new prefix length, the bits moved outside the prefix become zero.
+//
+// In other words, bits that move from one side of the prefix length to the other (bits moved into the prefix or outside the prefix) are zeroed.
+//
+// If the result cannot be zeroed because zeroing out bits results in a non-contiguous segment, an error is returned.
+func (section WrappedAddressSection) SetPrefixLenZeroed(prefixLen BitCount) (ExtendedSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapSectWithErr(section.AddressSection.SetPrefixLenZeroed(prefixLen))
+}
+
 func wrapAddress(addr *Address) WrappedAddress {
 	return WrappedAddress{addr}
 }
