@@ -1458,6 +1458,45 @@ func (addr *IPAddress) ToCanonicalWildcardString() string {
 	return addr.init().toCanonicalWildcardString()
 }
 
+// ToNormalizedString produces a normalized string for the address.
+//
+// For IPv4, it is the same as the canonical string.
+//
+// For IPv6, it differs from the canonical string.  Zero-segments are not compressed.
+//
+// Each address has a unique normalized string, not counting the prefix length.
+// With IP addresses, the prefix length can cause two equal addresses to have different strings, for example "1.2.3.4/16" and "1.2.3.4".
+// It can also cause two different addresses to have the same string,
+// such as "1.2.0.0/16" for the individual address "1.2.0.0" and also the prefix block "1.2.*.*".
+// Use the method ToNormalizedWildcardString for a unique string for each IP address and subnet.
+func (addr *IPAddress) ToNormalizedString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toNormalizedString()
+}
+
+// ToCompressedString produces a short representation of this address while remaining within the confines of standard representation(s) of the address.
+//
+// For IPv4, it is the same as the canonical string.
+//
+// For IPv6, it differs from the canonical string.
+// It compresses the maximum number of zeros and/or host segments with the IPv6 compression notation '::'.
+func (addr *IPAddress) ToCompressedString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCompressedString()
+}
+
+// ToSegmentedBinaryString writes this IP address segment series as segments of binary values preceded by the "0b" prefix.
+func (addr *IPAddress) ToSegmentedBinaryString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toSegmentedBinaryString()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
