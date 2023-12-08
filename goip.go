@@ -1563,6 +1563,40 @@ func (addr *IPAddress) ToHexString(with0xPrefix bool) (string, address_error.Inc
 	return addr.init().toHexString(with0xPrefix)
 }
 
+// ToCompressedWildcardString produces a string similar to ToNormalizedWildcardString,
+// avoiding the CIDR prefix, but with full IPv6 segment compression as well, including single zero-segments.
+// For IPv4 it is the same as ToNormalizedWildcardString.
+func (addr *IPAddress) ToCompressedWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCompressedWildcardString()
+}
+
+// ToOctalString writes this address as a single octal value
+// (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0" prefix.
+//
+// If a subnet cannot be written as a single prefix block or a range of two values, an error is returned.
+func (addr *IPAddress) ToOctalString(with0Prefix bool) (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	return addr.init().toOctalString(with0Prefix)
+}
+
+// ToBinaryString writes this address as a single binary value
+// (possibly two values if a range that is not a prefixed block),
+// the number of digits according to the bit count, with or without a preceding "0b" prefix.
+//
+// If a subnet cannot be written as a single prefix block or a range of two values, an error is returned.
+func (addr *IPAddress) ToBinaryString(with0bPrefix bool) (string, address_error.IncompatibleAddressError) {
+	if addr == nil {
+		return nilString(), nil
+	}
+	return addr.init().toBinaryString(with0bPrefix)
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
