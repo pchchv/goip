@@ -1384,6 +1384,42 @@ func (addr *IPAddress) MergeToPrefixBlocks(addrs ...*IPAddress) []*IPAddress {
 	return cloneToIPAddrs(blocks)
 }
 
+// ToSequentialRange creates a sequential range instance from the lowest and highest addresses in this subnet.
+//
+// The two will represent the same set of individual addresses if and only if IsSequential is true.
+// To get a series of ranges that represent the same set of individual addresses use the SequentialBlockIterator (or PrefixIterator),
+// and apply this method to each iterated subnet.
+//
+// If this represents just a single address then the returned instance covers just that single address as well.
+func (addr *IPAddress) ToSequentialRange() *SequentialRange[*IPAddress] {
+	if addr != nil {
+		addr = addr.init().WithoutPrefixLen()
+		return newSequRangeUnchecked(addr.GetLower(), addr.GetUpper(), addr.isMultiple())
+	}
+	return nil
+}
+
+// ToNormalizedWildcardString produces a string similar to the normalized string but avoids the CIDR prefix length.
+// CIDR addresses will be shown with wildcards and ranges (denoted by '*' and '-') instead of using the CIDR prefix notation.
+func (addr *IPAddress) ToNormalizedWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toNormalizedWildcardString()
+}
+
+func (addr *IPAddress) lookupAddr() (*HostName, error) {
+	names, err := net.LookupAddr(addr.ToNormalizedWildcardString())
+	if err != nil {
+		return nil, err
+	} else if len(names) == 0 {
+		return nil, nil
+	} else if names[0] == "" {
+		return nil, nil
+	}
+	return NewHostName(names[0]), nil
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
