@@ -709,6 +709,33 @@ func (section WrappedAddressSection) AdjustPrefixLenZeroed(adjustment BitCount) 
 	return wrapSectWithErr(section.AddressSection.AdjustPrefixLenZeroed(adjustment))
 }
 
+// ReverseBytes returns a new segment series with the bytes reversed.
+// Any prefix length is dropped.
+//
+// If each segment is more than 1 byte long,
+// and the bytes within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, then this returns an error.
+//
+// In practice this means that to be reversible,
+// a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+func (section WrappedAddressSection) ReverseBytes() (ExtendedSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapSectWithErr(section.AddressSection.ReverseBytes())
+}
+
+// ReverseBits returns a new segment series with the bits reversed.
+// Any prefix length is dropped.
+//
+// If the bits within a single segment cannot be reversed because the segment represents a range,
+// and reversing the segment values results in a range that is not contiguous, this returns an error.
+//
+// In practice this means that to be reversible,
+// a range must include all values except possibly the largest and/or smallest, which reverse to themselves.
+//
+// If perByte is true, the bits are reversed within each byte, otherwise all the bits are reversed.
+func (section WrappedAddressSection) ReverseBits(perByte bool) (ExtendedSegmentSeries, address_error.IncompatibleAddressError) {
+	return wrapSectWithErr(section.AddressSection.ReverseBits(perByte))
+}
+
 func wrapAddress(addr *Address) WrappedAddress {
 	return WrappedAddress{addr}
 }
