@@ -390,6 +390,18 @@ func (addr WrappedAddress) IncrementBoundary(i int64) ExtendedSegmentSeries {
 	return convAddrToIntf(addr.Address.IncrementBoundary(i))
 }
 
+// GetLower returns the series in the range with the lowest numeric value,
+// which will be the same series if it represents a single value.
+func (addr WrappedAddress) GetLower() ExtendedSegmentSeries {
+	return wrapAddress(addr.Address.GetLower())
+}
+
+// GetUpper returns the series in the range with the highest numeric value,
+// which will be the same series if it represents a single value.
+func (addr WrappedAddress) GetUpper() ExtendedSegmentSeries {
+	return wrapAddress(addr.Address.GetUpper())
+}
+
 // WrappedAddressSection is the implementation of ExtendedSegmentSeries for address sections.
 type WrappedAddressSection struct {
 	*AddressSection
