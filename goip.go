@@ -1420,6 +1420,44 @@ func (addr *IPAddress) lookupAddr() (*HostName, error) {
 	return NewHostName(names[0]), nil
 }
 
+// ToCanonicalString produces a canonical string for the address.
+//
+// For IPv4, dotted octet format, also known as dotted decimal format, is used.
+// https://datatracker.ietf.org/doc/html/draft-main-ipaddr-text-rep-00#section-2.1
+//
+// For IPv6, RFC 5952 describes canonical string representation.
+// https://en.wikipedia.org/wiki/IPv6_address#Representation
+// http://tools.ietf.org/html/rfc5952
+//
+// For MAC, it uses the canonical standardized IEEE 802 MAC address representation of xx-xx-xx-xx-xx-xx.
+// An example is "01-23-45-67-89-ab".
+// For range segments, '|' is used: "11-22-33|44-55-66".
+//
+// Each address has a unique canonical string, not counting the prefix length.
+// With IP addresses, the prefix length is included in the string,
+// and the prefix length can cause two equal addresses to have different strings, for example "1.2.3.4/16" and "1.2.3.4".
+// It can also cause two different addresses to have the same string,
+// such as "1.2.0.0/16" for the individual address "1.2.0.0" and also the prefix block "1.2.*.*".
+// Use ToCanonicalWildcardString for a unique string for each IP address and subnet.
+func (addr *IPAddress) ToCanonicalString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCanonicalString()
+}
+
+// ToCanonicalWildcardString produces a string similar to the canonical string and avoids the CIDR prefix length.
+// Addresses and subnets with a network prefix length will be shown with wildcards and ranges
+// (denoted by '*' and '-') instead of using the CIDR prefix length notation.
+// IPv6 addresses will be compressed according to the canonical representation.
+// For IPv4 it is the same as ToNormalizedWildcardString.
+func (addr *IPAddress) ToCanonicalWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCanonicalWildcardString()
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
