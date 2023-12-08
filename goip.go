@@ -1617,6 +1617,52 @@ func (addr *IPAddress) ToCanonicalHostName() (*HostName, error) {
 	return addr.init().lookupAddr()
 }
 
+// ToUNCHostName Generates the Microsoft UNC path component for this address.
+// See https://ipv6-literal.com/
+//
+// For IPv4 it is the canonical string.
+// For IPv6, it is the canonical string but with colons replaced by dashes,
+// percent signs with the letter “s”,
+// and then appended with the root domain ".ipv6-literal.net".
+func (addr *IPAddress) ToUNCHostName() string {
+	if addr == nil {
+		return nilString()
+	} else if thisAddr := addr.ToIPv4(); thisAddr != nil {
+		return thisAddr.ToUNCHostName()
+	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
+		return thisAddr.ToUNCHostName()
+	}
+	return addr.ToCanonicalString()
+}
+
+// ToHostName returns the HostName used to resolve, if this address was resolved from a host.
+// Otherwise, if this address represents a subnet of multiple addresses,
+// returns a HostName for that subnet.
+// Otherwise, it does a reverse name lookup to obtain the proper HostName.
+func (addr *IPAddress) ToHostName() *HostName {
+	addr = addr.init()
+	cache := addr.cache
+	if cache != nil {
+		res := cache.identifierStr
+		if res != nil {
+			hostIdStr := res.idStr
+			if h, ok := hostIdStr.(*HostName); ok {
+				return h
+			}
+		}
+	}
+
+	var h *HostName
+	if !addr.isMultiple() {
+		h, _ = addr.ToCanonicalHostName()
+	}
+
+	if h == nil {
+		h = NewHostNameFromAddr(addr)
+	}
+	return h
+}
+
 // IPVersion is the version type used by IP address types.
 type IPVersion int
 
