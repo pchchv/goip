@@ -1089,6 +1089,31 @@ func (addr *MACAddress) String() string {
 func (addr MACAddress) Format(state fmt.State, verb rune) {
 	addr.init().format(state, verb)
 }
+// ToCanonicalString produces a canonical string for the address.
+//
+// For MAC, it uses the canonical standardized IEEE 802 MAC address representation of xx-xx-xx-xx-xx-xx.  An example is "01-23-45-67-89-ab".
+// For range segments, '|' is used: "11-22-33|44-55-66".
+//
+// Each MAC address has a unique canonical string.
+func (addr *MACAddress) ToCanonicalString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCanonicalString()
+}
+
+// ToNormalizedString produces a normalized string for the address.
+//
+// For MAC, it differs from the canonical string.  It uses the most common representation of MAC addresses: "xx:xx:xx:xx:xx:xx".  An example is "01:23:45:67:89:ab".
+// For range segments, '-' is used: "11:22:33-44:55:66".
+//
+// Each address has a unique normalized string.
+func (addr *MACAddress) ToNormalizedString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toNormalizedString()
+}
 
 func fromMACKey(key MACAddressKey) *MACAddress {
 	additionalByteCount := key.additionalByteCount
