@@ -1168,6 +1168,32 @@ func (addr *MACAddress) PrefixContains(other AddressType) bool {
 	return addr.init().prefixContains(other)
 }
 
+// TrieIncrement returns the next address or block according to address trie ordering
+//
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *MACAddress) TrieIncrement() *MACAddress {
+	if res, ok := trieIncrement(addr); ok {
+		return res
+	}
+	return nil
+}
+
+// TrieDecrement returns the previous address or block according to address trie ordering
+//
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *MACAddress) TrieDecrement() *MACAddress {
+	if res, ok := trieDecrement(addr); ok {
+		return res
+	}
+	return nil
+}
+
 func fromMACKey(key MACAddressKey) *MACAddress {
 	additionalByteCount := key.additionalByteCount
 	segCount := int(additionalByteCount) + MediaAccessControlSegmentCount
