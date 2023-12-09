@@ -968,6 +968,18 @@ func (section WrappedIPAddressSection) AdjustPrefixLen(prefixLen BitCount) Exten
 	return wrapIPSection(section.IPAddressSection.AdjustPrefixLen(prefixLen))
 }
 
+// CoverWithPrefixBlock returns the minimal-size prefix block that covers all the individual address sections in this section.
+// The resulting block will have a larger count than this, unless this section is already a prefix block.
+func (section WrappedIPAddressSection) CoverWithPrefixBlock() ExtendedIPSegmentSeries {
+	return section.IPAddressSection.coverSeriesWithPrefixBlock()
+}
+
+// ToBlock creates a new series block by changing the segment at the given index to have the given lower and upper value,
+// and changing the following segments to be full-range.
+func (section WrappedIPAddressSection) ToBlock(segmentIndex int, lower, upper SegInt) ExtendedIPSegmentSeries {
+	return wrapIPSection(section.IPAddressSection.ToBlock(segmentIndex, lower, upper))
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }
