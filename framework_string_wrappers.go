@@ -1,6 +1,6 @@
 package goip
 
-var _ ExtendedIdentifierString = WrappedIPAddressString{}
+var _, _ ExtendedIdentifierString = WrappedIPAddressString{}, WrappedMACAddressString{}
 
 // ExtendedIdentifierString is a common interface for strings that identify hosts,
 // namely [IPAddressString], [MACAddressString] and [HostName].
@@ -46,4 +46,30 @@ func (str WrappedIPAddressString) GetAddress() AddressType {
 // WrappedMACAddressString wraps a MACAddressString to get an ExtendedIdentifierString.
 type WrappedMACAddressString struct {
 	*MACAddressString
+}
+
+// Unwrap returns the wrapped MACAddressString as an interface, HostIdentifierString.
+func (str WrappedMACAddressString) Unwrap() HostIdentifierString {
+	res := str.MACAddressString
+	if res == nil {
+		return nil
+	}
+	return res
+}
+
+// ToAddress returns the identified address or an error.
+func (str WrappedMACAddressString) ToAddress() (AddressType, error) {
+	addr, err := str.MACAddressString.ToAddress()
+	if err != nil {
+		return nil, err
+	}
+	return addr, nil
+}
+
+// GetAddress returns the identified address or nil if none.
+func (str WrappedMACAddressString) GetAddress() AddressType {
+	if addr := str.MACAddressString.GetAddress(); addr != nil {
+		return addr
+	}
+	return nil
 }
