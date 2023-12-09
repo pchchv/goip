@@ -5,7 +5,7 @@ import (
 	"github.com/pchchv/goip/address_string"
 )
 
-var _ ExtendedIPSegmentSeries = WrappedIPAddress{}
+var _, _ ExtendedIPSegmentSeries = WrappedIPAddress{}, WrappedIPAddressSection{}
 
 // WrappedIPAddress is the implementation of ExtendedIPSegmentSeries for IP addresses.
 type WrappedIPAddress struct {
@@ -996,6 +996,20 @@ func (section WrappedIPAddressSection) ToPrefixBlockLen(bitCount BitCount) Exten
 // If this series has no prefix, this series is returned.
 func (section WrappedIPAddressSection) ToPrefixBlock() ExtendedIPSegmentSeries {
 	return wrapIPSection(section.IPAddressSection.ToPrefixBlock())
+}
+
+// ToZeroNetwork converts the address section to one in which all individual address sections have a network of zero,
+// the network being the bits within the prefix length.
+// If the section has no prefix length, then it returns an all-zero series.
+//
+// The returned address section will have the same prefix length.
+func (section WrappedIPAddressSection) ToZeroNetwork() ExtendedIPSegmentSeries {
+	return wrapIPSection(section.IPAddressSection.ToZeroNetwork())
+}
+
+// ReverseSegments returns a new series with the segments reversed.
+func (section WrappedIPAddressSection) ReverseSegments() ExtendedIPSegmentSeries {
+	return wrapIPSection(section.IPAddressSection.ReverseSegments())
 }
 
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
