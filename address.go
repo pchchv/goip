@@ -2096,3 +2096,13 @@ func trieDecrement[T TrieKeyConstraint[T]](addr T) (t T, ok bool) {
 	}
 	return
 }
+
+func asMap[T AddressType](addrs []T) (result map[string]struct{}) {
+	if addrLen := len(addrs); addrLen > 0 {
+		result = make(map[string]struct{})
+		for _, addr := range addrs {
+			result[addr.ToAddressBase().ToNormalizedWildcardString()] = struct{}{}
+		}
+	}
+	return
+}
