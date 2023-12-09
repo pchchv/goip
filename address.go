@@ -2049,6 +2049,23 @@ func (addr *Address) ToCompressedString() string {
 	return addr.init().toCompressedString()
 }
 
+// ToAddressString retrieves or generates a HostIdentifierString instance for this Address object.
+//
+// This same Address instance can be retrieved from the resulting HostIdentifierString object using the GetAddress method.
+//
+// In general, users create Address instances from IPAddressString or MACAddressString instances,
+// while the reverse direction is generally not common and not useful.
+//
+// However, the reverse direction can be useful under certain circumstances, such as when maintaining a collection of HostIdentifierString instances.
+func (addr *Address) ToAddressString() HostIdentifierString {
+	if addr.isIP() {
+		return addr.ToIP().ToAddressString()
+	} else if addr.isMAC() {
+		return addr.ToMAC().ToAddressString()
+	}
+	return nil
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
