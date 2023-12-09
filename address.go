@@ -3,6 +3,7 @@ package goip
 import (
 	"fmt"
 	"math/big"
+	"reflect"
 	"unsafe"
 
 	"github.com/pchchv/goip/address_error"
@@ -2103,6 +2104,29 @@ func asMap[T AddressType](addrs []T) (result map[string]struct{}) {
 		for _, addr := range addrs {
 			result[addr.ToAddressBase().ToNormalizedWildcardString()] = struct{}{}
 		}
+	}
+	return
+}
+
+// AddrsMatchUnordered checks if the two slices share the same list of addresses,
+// subnets, or address collections, in any order, using address equality.
+// The function can handle duplicates and nil addresses.
+func AddrsMatchUnordered[T, U AddressType](addrs1 []T, addrs2 []U) (result bool) {
+	len1 := len(addrs1)
+	len2 := len(addrs2)
+	sameLen := len1 == len2
+	if len1 == 0 || len2 == 0 {
+		result = sameLen
+	} else if len1 == 1 && sameLen {
+		result = addrs1[0].Equal(addrs2[0])
+	} else if len1 == 2 && sameLen {
+		if addrs1[0].Equal(addrs2[0]) {
+			result = addrs1[1].Equal(addrs2[1])
+		} else if result = addrs1[0].Equal(addrs2[1]); result {
+			result = addrs1[1].Equal(addrs2[0])
+		}
+	} else {
+		result = reflect.DeepEqual(asMap(addrs1), asMap(addrs2))
 	}
 	return
 }
