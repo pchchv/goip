@@ -308,6 +308,14 @@ func (cached *cachedAddressProvider) getProviderIPVersion() IPVersion {
 	return IndeterminateIPVersion
 }
 
+func (cached *cachedAddressProvider) getProviderSeqRange() *SequentialRange[*IPAddress] {
+	addr, _ := cached.getProviderAddress()
+	if addr != nil {
+		return addr.ToSequentialRange()
+	}
+	return nil
+}
+
 type versionedAddressCreator struct {
 	cachedAddressProvider
 	adjustedVersion             IPVersion
