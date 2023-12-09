@@ -550,6 +550,10 @@ func (all *allCreator) containsProviderFunc(otherProvider ipAddressProvider, fun
 	}
 }
 
+func (all *allCreator) prefixContainsProvider(otherProvider ipAddressProvider) boolSetting {
+	return all.containsProviderFunc(otherProvider, (*IPAddress).prefixContains)
+}
+
 func newMaskCreator(options address_string_param.IPAddressStringParams, adjustedVersion IPVersion, networkPrefixLength PrefixLen) *maskCreator {
 	if adjustedVersion == IndeterminateIPVersion {
 		adjustedVersion = IPVersion(options.GetPreferredVersion())
