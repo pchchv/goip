@@ -1115,6 +1115,22 @@ func (addr *MACAddress) ToNormalizedString() string {
 	return addr.init().toNormalizedString()
 }
 
+// ToNormalizedWildcardString produces the normalized string.
+func (addr *MACAddress) ToNormalizedWildcardString() string {
+	return addr.toNormalizedWildcardString()
+}
+
+// ToCompressedString produces a short representation of this address while remaining within the confines of standard representation(s) of the address.
+//
+// For MAC, it differs from the canonical string.
+// It produces a shorter string for the address that has no leading zeros.
+func (addr *MACAddress) ToCompressedString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCompressedString()
+}
+
 func fromMACKey(key MACAddressKey) *MACAddress {
 	additionalByteCount := key.additionalByteCount
 	segCount := int(additionalByteCount) + MediaAccessControlSegmentCount
