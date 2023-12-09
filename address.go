@@ -2024,6 +2024,31 @@ func (addr Address) Format(state fmt.State, verb rune) {
 	addr.init().format(state, verb)
 }
 
+// ToNormalizedWildcardString produces a string similar to the normalized string but avoids the CIDR prefix length in IP addresses.
+// Multi-valued segments will be shown with wildcards and ranges (denoted by '*' and '-').
+func (addr *Address) ToNormalizedWildcardString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toNormalizedWildcardString()
+}
+
+// ToCompressedString produces a short representation of this address while remaining within the confines of standard representation(s) of the address.
+//
+// For IPv4, it is the same as the canonical string.
+//
+// For IPv6, it differs from the canonical string.
+// It compresses the maximum number of zeros and/or host segments with the IPv6 compression notation '::'.
+//
+// For MAC, it differs from the canonical string.
+// It produces a shorter string for the address that has no leading zeros.
+func (addr *Address) ToCompressedString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCompressedString()
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
