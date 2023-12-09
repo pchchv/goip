@@ -719,3 +719,59 @@ func newAllCreator(qualifier *parsedHostIdentifierStringQualifier, adjustedVersi
 	result.versionedAddressCreatorFunc = result.versionedCreate
 	return result
 }
+
+func providerCompare(p, other ipAddressProvider) (res int, err address_error.IncompatibleAddressError) {
+	if p == other {
+		return
+	}
+
+	value, err := p.getProviderAddress()
+	if err != nil {
+		return
+	}
+
+	if value != nil {
+		var otherValue *IPAddress
+		otherValue, err = other.getProviderAddress()
+		if err != nil {
+			return
+		}
+		if otherValue != nil {
+			res = value.Compare(otherValue)
+			return
+		}
+	}
+
+	var thisType, otherType = p.getType(), other.getType()
+	res = int(thisType - otherType)
+	return
+}
+
+func providerEquals(p, other ipAddressProvider) (res bool, err address_error.IncompatibleAddressError) {
+	if p == other {
+		res = true
+		return
+	}
+
+	value, err := p.getProviderAddress()
+	if err != nil {
+		return
+	}
+
+	if value != nil {
+		var otherValue *IPAddress
+		otherValue, err = other.getProviderAddress()
+		if err != nil {
+			return
+		}
+		if otherValue != nil {
+			res = value.Equal(otherValue)
+			return
+		} else {
+			return // returns false
+		}
+	}
+
+	res = p.getType() == other.getType()
+	return
+}
