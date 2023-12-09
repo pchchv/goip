@@ -1089,6 +1089,7 @@ func (addr *MACAddress) String() string {
 func (addr MACAddress) Format(state fmt.State, verb rune) {
 	addr.init().format(state, verb)
 }
+
 // ToCanonicalString produces a canonical string for the address.
 //
 // For MAC, it uses the canonical standardized IEEE 802 MAC address representation of xx-xx-xx-xx-xx-xx.  An example is "01-23-45-67-89-ab".
@@ -1129,6 +1130,27 @@ func (addr *MACAddress) ToCompressedString() string {
 		return nilString()
 	}
 	return addr.init().toCompressedString()
+}
+
+// ToAddressString retrieves or generates a MACAddressString instance for this MACAddress instance.
+// This may be the MACAddressString this instance was generated from, if it was generated from a MACAddressString.
+//
+// In general, users are intended to create MACAddress instances from MACAddressString instances,
+// while the reverse direction is generally not common and not useful, except under specific circumstances.
+//
+// However, the reverse direction can be useful under certain circumstances,
+// such as when maintaining a collection of MACAddressString instances.
+func (addr *MACAddress) ToAddressString() *MACAddressString {
+	addr = addr.init()
+	cache := addr.cache
+	if cache != nil {
+		res := addr.cache.identifierStr
+		if res != nil {
+			hostIdStr := res.idStr
+			return hostIdStr.(*MACAddressString)
+		}
+	}
+	return newMACAddressStringFromAddr(addr.toCanonicalString(), addr)
 }
 
 func fromMACKey(key MACAddressKey) *MACAddress {
