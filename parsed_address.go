@@ -1529,6 +1529,33 @@ func (parseData *parsedIPAddress) providerEquals(other ipAddressProvider) (bool,
 	return providerEquals(parseData, other)
 }
 
+func (parseData *parsedIPAddress) getProviderSeqRange() *SequentialRange[*IPAddress] {
+	val := parseData.values()
+	result := (*SequentialRange[*IPAddress])(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&val.rng))))
+	if result == nil {
+		parseData.creationLock.Lock()
+		result = val.rng
+		if result == nil {
+			sections := val.sections
+			if sections == nil {
+				_, boundaries := parseData.createSections(false, true, true)
+				result = boundaries.createRange()
+			} else {
+				if sections.withoutAddressException() {
+					result = sections.address.ToSequentialRange()
+				} else {
+					_, boundaries := parseData.createSections(false, true, true)
+					result = boundaries.createRange()
+				}
+			}
+			dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&val.rng))
+			atomicStorePointer(dataLoc, unsafe.Pointer(result))
+		}
+		parseData.creationLock.Unlock()
+	}
+	return result
+}
+
 func createRangeSeg(
 	addressString string,
 	_ IPVersion,
