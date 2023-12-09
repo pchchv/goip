@@ -1949,6 +1949,21 @@ func (addr *Address) ToNormalizedString() string {
 	return addr.init().toNormalizedString()
 }
 
+// PrefixEqual determines if the given address matches this address up to the prefix length of this address.
+// It returns whether the two addresses share the same range of prefix values.
+func (addr *Address) PrefixEqual(other AddressType) bool {
+	return addr.init().prefixEquals(other)
+}
+
+// PrefixContains returns whether the prefix values in the given address or subnet
+// are prefix values in this address or subnet, using the prefix length of this address or subnet.
+// If this address has no prefix length, the entire address is compared.
+//
+// It returns whether the prefix of this address contains all values of the same prefix length in the given address.
+func (addr *Address) PrefixContains(other AddressType) bool {
+	return addr.init().prefixContains(other)
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
