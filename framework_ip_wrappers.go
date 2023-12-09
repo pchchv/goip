@@ -950,6 +950,24 @@ func (section WrappedIPAddressSection) WithoutPrefixLen() ExtendedIPSegmentSerie
 	return wrapIPSection(section.IPAddressSection.WithoutPrefixLen())
 }
 
+// SetPrefixLen sets the prefix length.
+//
+// A prefix length will not be set to a value lower than zero or beyond the bit length of the series.
+// The provided prefix length will be adjusted to these boundaries if necessary.
+func (section WrappedIPAddressSection) SetPrefixLen(prefixLen BitCount) ExtendedIPSegmentSeries {
+	return wrapIPSection(section.IPAddressSection.SetPrefixLen(prefixLen))
+}
+
+// AdjustPrefixLen increases or decreases the prefix length by the given increment.
+//
+// A prefix length will not be adjusted lower than zero or beyond the bit length of the series.
+//
+// If this series has no prefix length, then the prefix length will be set to the adjustment if positive,
+// or it will be set to the adjustment added to the bit count if negative.
+func (section WrappedIPAddressSection) AdjustPrefixLen(prefixLen BitCount) ExtendedIPSegmentSeries {
+	return wrapIPSection(section.IPAddressSection.AdjustPrefixLen(prefixLen))
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }
