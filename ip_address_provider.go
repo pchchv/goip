@@ -528,6 +528,28 @@ func (all *allCreator) getProviderSeqRange() *SequentialRange[*IPAddress] {
 	return all.createRange()
 }
 
+func (all *allCreator) containsProvider(otherProvider ipAddressProvider) (res boolSetting) {
+	return all.containsProviderFunc(otherProvider, (*IPAddress).contains)
+}
+
+func (all *allCreator) containsProviderFunc(otherProvider ipAddressProvider, functor func(*IPAddress, AddressType) bool) (res boolSetting) {
+	if otherProvider.isInvalid() {
+		return boolSetting{true, false}
+	} else if all.adjustedVersion == IndeterminateIPVersion {
+		return boolSetting{true, true}
+	} else if all.adjustedVersion != otherProvider.getProviderIPVersion() {
+		return boolSetting{true, false}
+	} else if all.qualifier.getMaskLower() == nil && all.qualifier.getZone() == NoZone {
+		return boolSetting{true, true}
+	} else if addr, err := all.getProviderAddress(); err != nil {
+		return boolSetting{true, false}
+	} else if otherAddr, err := all.getProviderAddress(); err != nil {
+		return boolSetting{true, false}
+	} else {
+		return boolSetting{true, functor(addr, otherAddr)}
+	}
+}
+
 func newMaskCreator(options address_string_param.IPAddressStringParams, adjustedVersion IPVersion, networkPrefixLength PrefixLen) *maskCreator {
 	if adjustedVersion == IndeterminateIPVersion {
 		adjustedVersion = IPVersion(options.GetPreferredVersion())
