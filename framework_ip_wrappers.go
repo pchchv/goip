@@ -320,6 +320,28 @@ func (addr WrappedIPAddress) Equal(other ExtendedIPSegmentSeries) bool {
 	return ok && addr.IPAddress.Equal(a)
 }
 
+// PrefixIterator provides an iterator to iterate through the individual prefixes of this series,
+// each iterated element spanning the range of values for its prefix.
+//
+// It is similar to the prefix block iterator,
+// except for possibly the first and last iterated elements,
+// which might not be prefix blocks,
+// instead constraining themselves to values from this series.
+//
+// If the series has no prefix length, then this is equivalent to Iterator.
+func (addr WrappedIPAddress) PrefixIterator() Iterator[ExtendedIPSegmentSeries] {
+	return ipaddressSeriesIterator{addr.IPAddress.PrefixIterator()}
+}
+
+// PrefixBlockIterator provides an iterator to iterate through the individual prefix blocks,
+// one for each prefix of this series.
+// Each iterated series will be a prefix block with the same prefix length as this series.
+//
+// If this series has no prefix length, then this is equivalent to Iterator.
+func (addr WrappedIPAddress) PrefixBlockIterator() Iterator[ExtendedIPSegmentSeries] {
+	return ipaddressSeriesIterator{addr.IPAddress.PrefixBlockIterator()}
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
