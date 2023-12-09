@@ -304,6 +304,22 @@ func (addr WrappedIPAddress) SetPrefixLen(prefixLen BitCount) ExtendedIPSegmentS
 	return wrapIPAddress(addr.IPAddress.SetPrefixLen(prefixLen))
 }
 
+// Contains returns whether this is same type and version as the given address series and whether it contains all values in the given series.
+//
+// Series must also have the same number of segments to be comparable, otherwise false is returned.
+func (addr WrappedIPAddress) Contains(other ExtendedIPSegmentSeries) bool {
+	a, ok := other.Unwrap().(AddressType)
+	return ok && addr.IPAddress.Contains(a)
+}
+
+// Equal returns whether the given address series is equal to this address series.
+// Two address series are equal if they represent the same set of series.
+// Both must be equal addresses.
+func (addr WrappedIPAddress) Equal(other ExtendedIPSegmentSeries) bool {
+	a, ok := other.Unwrap().(AddressType)
+	return ok && addr.IPAddress.Equal(a)
+}
+
 // ExtendedIPSegmentSeries wraps either an [IPAddress] or [IPAddressSection].
 // ExtendedIPSegmentSeries can be used to write code that works with both IP addresses and IP address sections,
 // going further than [IPAddressSegmentSeries] to offer additional methods, methods with the series types in their signature.
