@@ -42,3 +42,8 @@ func (str WrappedIPAddressString) GetAddress() AddressType {
 	}
 	return nil
 }
+
+// WrappedMACAddressString wraps a MACAddressString to get an ExtendedIdentifierString.
+type WrappedMACAddressString struct {
+	*MACAddressString
+}
