@@ -1521,6 +1521,14 @@ func (parseData *parsedIPAddress) prefixEqualsProvider(other ipAddressProvider) 
 	return parseData.containmentCheck(other, true, true, false)
 }
 
+func (parseData *parsedIPAddress) providerCompare(other ipAddressProvider) (int, address_error.IncompatibleAddressError) {
+	return providerCompare(parseData, other)
+}
+
+func (parseData *parsedIPAddress) providerEquals(other ipAddressProvider) (bool, address_error.IncompatibleAddressError) {
+	return providerEquals(parseData, other)
+}
+
 func createRangeSeg(
 	addressString string,
 	_ IPVersion,
