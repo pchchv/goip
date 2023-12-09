@@ -1906,6 +1906,49 @@ func (addr *Address) ToCustomString(stringOptions address_string.StringOptions) 
 	return addr.GetSection().toCustomStringZoned(stringOptions, addr.zone)
 }
 
+// ToCanonicalString produces a canonical string for the address.
+//
+// For IPv4, dotted octet format, also known as dotted decimal format, is used.
+// https://datatracker.ietf.org/doc/html/draft-main-ipaddr-text-rep-00#section-2.1
+//
+// For IPv6, RFC 5952 describes canonical string representation.
+// https://en.wikipedia.org/wiki/IPv6_address#Representation
+// http://tools.ietf.org/html/rfc5952
+//
+// For MAC, it uses the canonical standardized IEEE 802 MAC address representation of xx-xx-xx-xx-xx-xx.  An example is "01-23-45-67-89-ab".
+// For range segments, '|' is used: "11-22-33|44-55-66".
+//
+// Each address has a unique canonical string, not counting the prefix length.
+// With IP addresses, the prefix length is included in the string, and the prefix length can cause two equal addresses to have different strings, for example "1.2.3.4/16" and "1.2.3.4".
+// It can also cause two different addresses to have the same string, such as "1.2.0.0/16" for the individual address "1.2.0.0" and also the prefix block "1.2.*.*".
+// Use the IPAddress method ToCanonicalWildcardString for a unique string for each IP address and subnet.
+func (addr *Address) ToCanonicalString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toCanonicalString()
+}
+
+// ToNormalizedString produces a normalized string for the address.
+//
+// For IPv4, it is the same as the canonical string.
+//
+// For IPv6, it differs from the canonical string.  Zero-segments are not compressed.
+//
+// For MAC, it differs from the canonical string.  It uses the most common representation of MAC addresses: "xx:xx:xx:xx:xx:xx".  An example is "01:23:45:67:89:ab".
+// For range segments, '-' is used: "11:22:33-44:55:66".
+//
+// Each address has a unique normalized string, not counting the prefix length.
+// With IP addresses, the prefix length can cause two equal addresses to have different strings, for example "1.2.3.4/16" and "1.2.3.4".
+// It can also cause two different addresses to have the same string, such as "1.2.0.0/16" for the individual address "1.2.0.0" and also the prefix block "1.2.*.*".
+// Use the IPAddress method ToNormalizedWildcardString for a unique string for each IP address and subnet.
+func (addr *Address) ToNormalizedString() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toNormalizedString()
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
