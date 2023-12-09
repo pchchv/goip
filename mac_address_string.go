@@ -146,6 +146,21 @@ func (addrStr *MACAddressString) getPrefixLen() PrefixLen {
 	return nil
 }
 
+// ToNormalizedString produces a normalized string for the address.
+//
+// For MAC, it differs from the canonical string.
+// It uses the most common representation of MAC addresses: "xx:xx:xx:xx:xx:xx".  An example is "01:23:45:67:89:ab".
+// For range segments, '-' is used: "11:22:33-44:55:66".
+//
+// If the original string is not a valid address string, the original string is used.
+func (addrStr *MACAddressString) ToNormalizedString() string {
+	addr := addrStr.GetAddress()
+	if addr != nil {
+		return addr.toNormalizedString()
+	}
+	return addrStr.String()
+}
+
 // IsPrefixed returns whether this address has an associated prefix length,
 // which for MAC means that the string represents the set of all addresses with the same prefix.
 func (addrStr *MACAddressString) IsPrefixed() bool {
