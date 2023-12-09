@@ -962,14 +962,16 @@ func (section WrappedIPAddressSection) SetPrefixLen(prefixLen BitCount) Extended
 //
 // A prefix length will not be adjusted lower than zero or beyond the bit length of the series.
 //
-// If this series has no prefix length, then the prefix length will be set to the adjustment if positive,
+// If this series has no prefix length,
+// then the prefix length will be set to the adjustment if positive,
 // or it will be set to the adjustment added to the bit count if negative.
 func (section WrappedIPAddressSection) AdjustPrefixLen(prefixLen BitCount) ExtendedIPSegmentSeries {
 	return wrapIPSection(section.IPAddressSection.AdjustPrefixLen(prefixLen))
 }
 
 // CoverWithPrefixBlock returns the minimal-size prefix block that covers all the individual address sections in this section.
-// The resulting block will have a larger count than this, unless this section is already a prefix block.
+// The resulting block will have a larger count than this,
+// unless this section is already a prefix block.
 func (section WrappedIPAddressSection) CoverWithPrefixBlock() ExtendedIPSegmentSeries {
 	return section.IPAddressSection.coverSeriesWithPrefixBlock()
 }
@@ -978,6 +980,22 @@ func (section WrappedIPAddressSection) CoverWithPrefixBlock() ExtendedIPSegmentS
 // and changing the following segments to be full-range.
 func (section WrappedIPAddressSection) ToBlock(segmentIndex int, lower, upper SegInt) ExtendedIPSegmentSeries {
 	return wrapIPSection(section.IPAddressSection.ToBlock(segmentIndex, lower, upper))
+}
+
+// ToPrefixBlockLen returns the series with the same prefix of the given length as
+// this series while the remaining bits span all values.
+// The returned series will be the block of all series with the same prefix.
+func (section WrappedIPAddressSection) ToPrefixBlockLen(bitCount BitCount) ExtendedIPSegmentSeries {
+	return wrapIPSection(section.IPAddressSection.ToPrefixBlockLen(bitCount))
+}
+
+// ToPrefixBlock returns the series with the same prefix as
+// this series while the remaining bits span all values.
+// The series will be the block of all series with the same prefix.
+//
+// If this series has no prefix, this series is returned.
+func (section WrappedIPAddressSection) ToPrefixBlock() ExtendedIPSegmentSeries {
+	return wrapIPSection(section.IPAddressSection.ToPrefixBlock())
 }
 
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
