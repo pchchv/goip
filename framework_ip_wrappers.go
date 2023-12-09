@@ -922,6 +922,20 @@ func (section WrappedIPAddressSection) ReverseBits(perByte bool) (ExtendedIPSegm
 	return wrapIPSectWithErr(section.IPAddressSection.ReverseBits(perByte))
 }
 
+// GetLower returns the series in the range with the lowest numeric value,
+// which will be the same series if it represents a single value.
+// For example, for "1.2-3.4.5-6", the series "1.2.4.5" is returned.
+func (section WrappedIPAddressSection) GetLower() ExtendedIPSegmentSeries {
+	return wrapIPSection(section.IPAddressSection.GetLower())
+}
+
+// GetUpper returns the series in the range with the highest numeric value,
+// which will be the same series if it represents a single value.
+// For example, for the subnet "1.2-3.4.5-6", the address "1.3.4.6" is returned.
+func (section WrappedIPAddressSection) GetUpper() ExtendedIPSegmentSeries {
+	return wrapIPSection(section.IPAddressSection.GetUpper())
+}
+
 func wrapIPAddress(addr *IPAddress) WrappedIPAddress {
 	return WrappedIPAddress{addr}
 }
