@@ -1964,6 +1964,42 @@ func (addr *Address) PrefixContains(other AddressType) bool {
 	return addr.init().prefixContains(other)
 }
 
+// String implements the [fmt.Stringer] interface,
+// returning the canonical string provided by ToCanonicalString,
+// or "<nil>" if the receiver is a nil pointer.
+func (addr *Address) String() string {
+	if addr == nil {
+		return nilString()
+	}
+	return addr.init().toString()
+}
+
+// TrieIncrement returns the next address or block according to address trie ordering.
+//
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *Address) TrieIncrement() *Address {
+	if res, ok := trieIncrement(addr); ok {
+		return res
+	}
+	return nil
+}
+
+// TrieDecrement returns the previous or block address according to address trie ordering.
+//
+// If an address is neither an individual address nor a prefix block, it is treated like one:
+//
+//   - ranges that occur inside the prefix length are ignored, only the lower value is used.
+//   - ranges beyond the prefix length are assumed to be the full range across all hosts for that prefix length.
+func (addr *Address) TrieDecrement() *Address {
+	if res, ok := trieDecrement(addr); ok {
+		return res
+	}
+	return nil
+}
+
 // AddrsMatchOrdered checks if the two slices share the same ordered list of addresses,
 // subnets, or address collections, using address equality.
 // Duplicates and nil addresses are allowed.
