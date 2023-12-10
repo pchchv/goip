@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
 
 	"github.com/pchchv/goip"
 )
@@ -54,4 +56,103 @@ func NewIPv4AddressTrie() goip.IPv4AddressTrie {
 
 func NewAddressTrieNode() goip.TrieNode[*goip.Address] {
 	return goip.TrieNode[*goip.Address]{}
+}
+
+func zeros() {
+	strip := func(s string) string {
+		return strings.ReplaceAll(strings.ReplaceAll(s, "goip.", ""),
+			"github.com/seancfoley/ipaddress-go/", "")
+	}
+
+	typeName := func(i any) string {
+		return strip(reflect.ValueOf(i).Elem().Type().Name())
+	}
+
+	interfaceTypeName := func(i any) string {
+		return strip(reflect.TypeOf(i).String())
+	}
+
+	truncateIndent := func(s, indent string) string {
+		if boundary := len(indent) - (len(s) >> 3); boundary >= 0 {
+			return indent[:boundary] + "\t" // every 8 chars eliminates a tab
+		}
+		return ""
+	}
+
+	baseIndent := "\t\t\t"
+	title := "Address item zero values"
+	fmt.Printf("%s%sint\tbits\tcount\tstring\n", title, truncateIndent(title, baseIndent))
+	vars := []goip.AddressItem{
+		&goip.Address{}, &goip.IPAddress{},
+		&goip.IPv4Address{}, &goip.IPv6Address{}, &goip.MACAddress{},
+		&goip.AddressSection{}, &goip.IPAddressSection{},
+		&goip.IPv4AddressSection{}, &goip.IPv6AddressSection{}, &goip.MACAddressSection{},
+		&goip.EmbeddedIPv6AddressSection{},
+		&goip.AddressDivisionGrouping{}, &goip.IPAddressLargeDivisionGrouping{},
+		&goip.IPv6v4MixedAddressGrouping{},
+		&goip.AddressSegment{}, &goip.IPAddressSegment{},
+		&goip.IPv4AddressSegment{}, &goip.IPv6AddressSegment{}, &goip.MACAddressSegment{},
+		&goip.AddressDivision{}, &goip.IPAddressLargeDivision{},
+		&goip.IPAddressSeqRange{}, &goip.IPv4AddressSeqRange{}, &goip.IPv6AddressSeqRange{},
+	}
+	for _, v := range vars {
+		name := typeName(v) + "{}"
+		indent := truncateIndent(name, baseIndent)
+		fmt.Printf("%s%s%v\t%v\t%v\t\"%v\"\n", name, indent, v.GetValue(), v.GetBitCount(), v.GetCount(), v)
+	}
+
+	title = "Address item nil pointers"
+	fmt.Printf("\n%s%scount\tstring\n", title, truncateIndent(title, baseIndent+"\t\t"))
+	nilPtrItems := []goip.AddressItem{
+		(*goip.Address)(nil), (*goip.IPAddress)(nil),
+		(*goip.IPv4Address)(nil), (*goip.IPv6Address)(nil), (*goip.MACAddress)(nil),
+
+		(*goip.AddressSection)(nil), (*goip.IPAddressSection)(nil),
+		(*goip.IPv4AddressSection)(nil), (*goip.IPv6AddressSection)(nil), (*goip.MACAddressSection)(nil),
+
+		(*goip.AddressSegment)(nil), (*goip.IPAddressSegment)(nil),
+		(*goip.IPv4AddressSegment)(nil), (*goip.IPv6AddressSegment)(nil), (*goip.MACAddressSegment)(nil),
+
+		(*goip.IPAddressSeqRange)(nil), (*goip.IPv4AddressSeqRange)(nil), (*goip.IPv6AddressSeqRange)(nil),
+	}
+	for _, v := range nilPtrItems {
+		name := "(" + interfaceTypeName(v) + ")(nil)"
+		indent := truncateIndent(name, baseIndent+"\t\t")
+		fmt.Printf("%s%s%v\t\"%v\"\n", name, indent, v.GetCount(), v)
+	}
+
+	title = "Address key zero values"
+	fmt.Printf("\n%s%sstring\n", title, truncateIndent(title, baseIndent+"\t\t\t"))
+	keys := []fmt.Stringer{
+		&goip.AddressKey{}, &goip.IPAddressKey{},
+		&goip.IPv4AddressKey{}, &goip.IPv6AddressKey{}, &goip.MACAddressKey{},
+		&goip.IPAddressSeqRangeKey{}, &goip.IPv4AddressSeqRangeKey{}, &goip.IPv6AddressSeqRangeKey{},
+	}
+	for _, k := range keys {
+		name := typeName(k) + "{}"
+		indent := truncateIndent(name, baseIndent+"\t\t\t")
+		fmt.Printf("%s%s\"%v\"\n", name, indent, k)
+	}
+
+	title = "Host id zero values"
+	fmt.Printf("\n%s%sstring\n", title, truncateIndent(title, baseIndent+"\t\t\t"))
+	hostids := []goip.HostIdentifierString{
+		&goip.HostName{}, &goip.IPAddressString{}, &goip.MACAddressString{},
+	}
+	for _, k := range hostids {
+		name := typeName(k) + "{}"
+		indent := truncateIndent(name, baseIndent+"\t\t\t")
+		fmt.Printf("%s%s\"%v\"\n", name, indent, k)
+	}
+
+	title = "Host id nil pointers"
+	fmt.Printf("\n%s%sstring\n", title, truncateIndent(title, baseIndent+"\t\t\t"))
+	nilPtrIds := []goip.HostIdentifierString{
+		(*goip.HostName)(nil), (*goip.IPAddressString)(nil), (*goip.MACAddressString)(nil),
+	}
+	for _, v := range nilPtrIds {
+		name := "(" + interfaceTypeName(v) + ")(nil)"
+		indent := truncateIndent(name, baseIndent+"\t\t\t")
+		fmt.Printf("%s%s\"%v\"\n", name, indent, v)
+	}
 }
