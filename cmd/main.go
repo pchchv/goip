@@ -47,3 +47,11 @@ func merge(strs ...string) []*goip.IPAddress {
 	}
 	return first.MergeToPrefixBlocks(remaining...)
 }
+
+func NewIPv4AddressTrie() goip.IPv4AddressTrie {
+	return goip.IPv4AddressTrie{}
+}
+
+func NewAddressTrieNode() goip.TrieNode[*goip.Address] {
+	return goip.TrieNode[*goip.Address]{}
+}
