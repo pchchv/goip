@@ -1,8 +1,9 @@
 package goip
 
 var (
-	_ DivisionType         = &IPAddressLargeDivision{}
-	_ StandardDivisionType = &AddressDivision{}
+	_             StandardDivisionType = &AddressDivision{}
+	_             DivisionType         = &IPAddressLargeDivision{}
+	_, _, _, _, _ AddressSegmentType   = &AddressSegment{}, &IPAddressSegment{}, &IPv6AddressSegment{}, &IPv4AddressSegment{}, &MACAddressSegment{}
 )
 
 // DivisionType serves as a common interface to all divisions

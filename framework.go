@@ -10,14 +10,15 @@ import (
 )
 
 var (
-	_                AddressSegmentSeries     = &AddressSection{}
 	_                AddressDivisionSeries    = &IPAddressLargeDivisionGrouping{}
-	_                MACAddressSegmentSeries  = &MACAddressSection{}
-	_, _             HostIdentifierString     = &IPAddressString{}, &HostName{}
+	_, _             AddressType              = &Address{}, &MACAddress{}
+	_, _             AddressSegmentSeries     = &AddressSection{}, &Address{}
 	_, _             IPAddressSegmentSeries   = &IPAddress{}, &IPAddressSection{}
+	_, _             MACAddressSegmentSeries  = &MACAddressSection{}, &MACAddress{}
 	_, _             StandardDivGroupingType  = &IPv6v4MixedAddressGrouping{}, &AddressDivisionGrouping{}
 	_, _             IPv4AddressSegmentSeries = &IPv4Address{}, &IPv4AddressSection{}
 	_, _, _          IPAddressType            = &IPAddress{}, &IPv4Address{}, &IPv6Address{}
+	_, _, _          HostIdentifierString     = &IPAddressString{}, &HostName{}, &MACAddressString{}
 	_, _, _          IPAddressSeqRangeType    = &SequentialRange[*IPAddress]{}, &SequentialRange[*IPv4Address]{}, &SequentialRange[*IPv6Address]{}
 	_, _, _          IPv6AddressSegmentSeries = &IPv6Address{}, &IPv6AddressSection{}, &EmbeddedIPv6AddressSection{}
 	_, _, _, _, _    AddressSectionType       = &AddressSection{}, &IPAddressSection{}, &IPv4AddressSection{}, &IPv6AddressSection{}, &MACAddressSection{}
