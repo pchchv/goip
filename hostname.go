@@ -3,6 +3,7 @@ package goip
 import (
 	"fmt"
 	"net"
+	"net/netip"
 	"strings"
 	"unsafe"
 
@@ -440,12 +441,12 @@ func (host *HostName) toNormalizedString(wildcard, addTrailingDot bool) string {
 			if addTrailingDot {
 				builder.WriteByte(LabelSeparator)
 			}
-			/ *
+			/*
 			 * If prefix or mask is supplied and there is an address, it is applied directly to the address provider, so
 			 * we need only check for those things here
 			 *
 			 * Also note that ports and prefix/mask cannot appear at the same time, so this does not interfere with the port code below.
-			 * /
+			 */
 			networkPrefixLength := host.parsedHost.getEquivalentPrefixLen()
 			if networkPrefixLength != nil {
 				builder.WriteByte(PrefixLenSeparator)
@@ -987,7 +988,7 @@ func NewHostNameFromPrefixedNetIP(bytes net.IP, prefixLen PrefixLen) (hostName *
 		err = &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
 		return
 	}
-	
+
 	hostName = NewHostNameFromAddr(addr)
 	return
 }
