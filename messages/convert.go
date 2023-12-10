@@ -2,10 +2,21 @@ package main
 
 import (
 	"bufio"
+	"log"
 	"os"
 	"strconv"
 	"strings"
 )
+
+func main() {
+	path := "goip/"
+	mappings, err := readPropertiesFile(path + "IPAddressResources.properties")
+	if err != nil {
+		log.Fatal(err)
+	}
+	source := writeSourceFile(mappings)
+	_ = os.WriteFile(path+"ipaddressresources.go", source, 0644)
+}
 
 func readPropertiesFile(filename string) (map[string]string, error) {
 	config := make(map[string]string)
