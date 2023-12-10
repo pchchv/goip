@@ -16,3 +16,14 @@ func splitIntoBlocks(one, two string) {
 	blocks := split(one, two)
 	fmt.Printf("%v from splitting %v and %v: %v\n", len(blocks), one, two, blocks)
 }
+
+func splitIntoBlocksSeq(one, two string) {
+	blocks := splitSeq(one, two)
+	fmt.Printf("%v from splitting %v and %v: %v\n", len(blocks), one, two, blocks)
+}
+
+func splitSeq(oneStr, twoStr string) []*goip.IPv4Address {
+	one := goip.NewIPAddressString(oneStr)
+	two := goip.NewIPAddressString(twoStr)
+	return one.GetAddress().ToIPv4().SpanWithSequentialBlocksTo(two.GetAddress().ToIPv4())
+}
