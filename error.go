@@ -19,7 +19,7 @@ func (a *addressError) Error() string {
 }
 
 // GetKey can be used to internationalize error strings in the goip library.
-// The list of keys and their English translations are listed in the goipResources.properties file.
+// The list of keys and their English translations are listed in the ipAddrResources.properties file.
 // Use your own method to map keys to your translations.
 // One such method is golang.org/x/text, which provides language tags
 // (https://pkg.go.dev/golang.org/x/text/language?utm_source=godoc#Tag)

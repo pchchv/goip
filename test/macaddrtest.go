@@ -461,7 +461,6 @@ func (t macAddressTester) run() {
 	t.testLongShort("0A0B0C-0D0E0F0A0B", "0A0B0C-0D0E0F")
 	t.testLongShort("ee:ff:aa:bb:cc:dd:ee:ff", "ee:ff:aa:bb:cc:dd")
 	t.testLongShort("e:f:a:b:c:d:e:f", "e:f:a:b:c:d")
-
 	t.testSections("00:21:2f:b5:6e:10")
 	t.testSections("39-A7-94-07-CB-D0")
 	t.testSections("0012.7feb.6b40")
@@ -472,7 +471,6 @@ func (t macAddressTester) run() {
 	zerosPref := [9]goip.PrefixLen{}
 	t.testInsertAndAppendPrefs("a:b:c:d:e:f:aa:bb", "1:2:3:4:5:6:7:8", zerosPref[:])
 	t.testReplace("a:b:c:d:e:f:aa:bb", "1:2:3:4:5:6:7:8")
-
 	t.testInvalidMACValues()
 
 	var sixZeros [6]int
@@ -488,13 +486,11 @@ func (t macAddressTester) run() {
 	//BigInteger thirtyTwo = BigInteger.valueOf(0xffffffffL);
 	//BigInteger sixty4 = thirtyTwo.shiftLeft(32).or(thirtyTwo);
 	t.testMACValuesBig([]int{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}, sixty4.String(), "-1")
-
 	t.testMACIPv6("aaaa:bbbb:cccc:dddd:0221:2fff:feb5:6e10", "00:21:2f:b5:6e:10")
 	t.testMACIPv6("fe80::0e3a:bbff:fe2a:cd23", "0c:3a:bb:2a:cd:23")
 	t.testMACIPv6("ffff:ffff:ffff:ffff:3BA7:94FF:FE07:CBD0", "39-A7-94-07-CB-D0")
 	t.testMACIPv6("FE80::212:7FFF:FEEB:6B40", "0012.7feb.6b40")
 	t.testMACIPv6("2001:DB8::212:7FFF:FEEB:6B40", "0012.7feb.6b40")
-
 	t.testStrings()
 }
 
@@ -518,6 +514,7 @@ func (t macAddressTester) testMACValuesBig(segs []int, decimal, negativeDecimal 
 		longval = (longval << uint(bitsPerSegment)) | uint64(seg)
 		bigInteger = bigInteger.Add(bigInteger.Lsh(bigInteger, uint(bitsPerSegment)), new(big.Int).SetInt64(int64(seg)))
 	}
+
 	addr := [3]*goip.MACAddress{}
 	i := 0
 	addr[i] = t.createMACAddressFromBytes(vals)
@@ -525,7 +522,6 @@ func (t macAddressTester) testMACValuesBig(segs []int, decimal, negativeDecimal 
 	addr[i] = t.createMACAddress(strb.String()).GetAddress()
 	i++
 	addr[i] = t.createMACAddressFromUint64(longval, len(segs) == 8)
-	//i++
 	for j := 0; j < len(addr); j++ {
 		for k := j; k < len(addr); k++ {
 			if !addr[k].Equal(addr[j]) || !addr[j].Equal(addr[k]) {
@@ -533,6 +529,7 @@ func (t macAddressTester) testMACValuesBig(segs []int, decimal, negativeDecimal 
 			}
 		}
 	}
+
 	if decimal != "" {
 		for i = 0; i < len(addr); i++ {
 			if decimal != (addr[i].GetValue().String()) {
