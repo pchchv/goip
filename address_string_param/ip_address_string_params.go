@@ -3,9 +3,9 @@ package address_string_param
 const (
 	NoAddressOption        EmptyStrOption = "none"      // indicates that empty strings are not translated to addresses
 	ZeroAddressOption      EmptyStrOption = ""          // is used by default, empty strings are translated to null addresses
-	LoopbackOption         EmptyStrOption = "loopback"  // indicates that empty strings are translated to loopback addresses
-	AllAddresses           AllStrOption   = ""          // default value, indicating that the all address string refers to all addresses of all IP versions
-	AllPreferredIPVersion  AllStrOption   = "preferred" // indicates that the all address string refers to all addresses of the preferred IP version
+	LoopbackOption         EmptyStrOption = "loopback"  // indicates empty strings are translated to loopback addresses
+	AllAddresses           AllStrOption   = ""          // default value, indicating all address string refers to all addresses of all IP versions
+	AllPreferredIPVersion  AllStrOption   = "preferred" // indicates the all address string refers to all addresses of the preferred IP version
 	IPv4                   IPVersion      = 4           // represents Internet Protocol version 4
 	IPv6                   IPVersion      = 6           // represents Internet Protocol version 6
 	IndeterminateIPVersion IPVersion      = 0           // represents an unspecified IP address version
@@ -58,41 +58,41 @@ func (params *ipAddressStringFormatParameters) AllowsBinary() bool {
 
 type ipv4AddressStringParameters struct {
 	ipAddressStringFormatParameters
-	no_inet_aton_hex,
-	no_inet_aton_octal,
-	no_inet_aton_joinedSegments,
-	inet_aton_single_segment_mask,
-	no_inet_aton_leading_zeros bool
+	noInetAtonHex             bool
+	noInetAtonOctal           bool
+	noInetAtonLeadingZeros    bool
+	noInetAtonJoinedSegments  bool
+	inetAtonSingleSegmentMask bool
 }
 
-// AllowsInetAtonHex allows IPv4 inet_aton hexadecimal format "0xa.0xb.0xc.0cd".
+// AllowsInetAtonHex allows IPv4 inetAton hexadecimal format "0xa.0xb.0xc.0cd".
 func (params *ipv4AddressStringParameters) AllowsInetAtonHex() bool {
-	return !params.no_inet_aton_hex
+	return !params.noInetAtonHex
 }
 
-// AllowsInetAtonOctal allows octal IPv4 inet_aton format, an example would be "04.05.06.07".
+// AllowsInetAtonOctal allows octal IPv4 inetAton format, an example would be "04.05.06.07".
 // Can be overridden by the AllowLeadingZeros.
 func (params *ipv4AddressStringParameters) AllowsInetAtonOctal() bool {
-	return !params.no_inet_aton_octal
+	return !params.noInetAtonOctal
 }
 
 // AllowsInetAtonJoinedSegments allows IPv4 joined segments like "1.2.3", "1.2', or just "1".
 // For the case of just 1 segment, the behaviour is controlled by allowSingleSegment
 func (params *ipv4AddressStringParameters) AllowsInetAtonJoinedSegments() bool {
-	return !params.no_inet_aton_joinedSegments
+	return !params.noInetAtonJoinedSegments
 }
 
 // AllowsInetAtonSingleSegmentMask specifies whether to allow
 // a mask that looks like the prefix length: "1.2.3.5/255" when resolving merged IPv4 segments.
 func (params *ipv4AddressStringParameters) AllowsInetAtonSingleSegmentMask() bool {
-	return params.inet_aton_single_segment_mask
+	return params.inetAtonSingleSegmentMask
 }
 
-// AllowsInetAtonLeadingZeros allows a hexadecimal or octal IPv4 inet_aton to have leading zeros, such as in the first two segments "0x0a.00b.c.d".
+// AllowsInetAtonLeadingZeros allows a hexadecimal or octal IPv4 inetAton to have leading zeros, such as in the first two segments "0x0a.00b.c.d".
 // The first 0 is not considered a leading zero, it denotes either an octal or hexadecimal number depending on whether it is followed by an 'x'.
-// Zeros that appear afterwards are inet_aton leading zeros.
+// Zeros that appear afterwards are inetAton leading zeros.
 func (params *ipv4AddressStringParameters) AllowsInetAtonLeadingZeros() bool {
-	return !params.no_inet_aton_leading_zeros
+	return !params.noInetAtonLeadingZeros
 }
 
 // EmptyStrOption - an option specifying how to convert an empty address string to an address.
@@ -116,9 +116,9 @@ type IPAddressStringFormatParams interface {
 // IPv4AddressStringParams provides parameters specific to IPv4 addresses and subnets
 type IPv4AddressStringParams interface {
 	IPAddressStringFormatParams
-	// AllowsInetAtonHex allows IPv4 inet_aton hexadecimal format "0xa.0xb.0xc.0cd".
+	// AllowsInetAtonHex allows IPv4 inetAton hexadecimal format "0xa.0xb.0xc.0cd".
 	AllowsInetAtonHex() bool
-	// AllowsInetAtonOctal allows IPv4 inet_aton octal format, "04.05.06.07" being an example.
+	// AllowsInetAtonOctal allows IPv4 inetAton octal format, "04.05.06.07" being an example.
 	// Can be overridden by allowLeadingZeros
 	AllowsInetAtonOctal() bool
 	// AllowsInetAtonJoinedSegments allows IPv4 joined segments like "1.2.3", "1.2", or just "1".
@@ -126,9 +126,9 @@ type IPv4AddressStringParams interface {
 	AllowsInetAtonJoinedSegments() bool
 	// AllowsInetAtonSingleSegmentMask indicates whether you allow a mask that looks like a prefix length when you allow IPv4 joined segments: "1.2.3.5/255".
 	AllowsInetAtonSingleSegmentMask() bool
-	// AllowsInetAtonLeadingZeros allows IPv4 inet_aton hexadecimal or octal to have leading zeros, such as in the first two segments of "0x0a.00b.c.d".
+	// AllowsInetAtonLeadingZeros allows IPv4 inetAton hexadecimal or octal to have leading zeros, such as in the first two segments of "0x0a.00b.c.d".
 	// The first 0 is not considered a leading zero, it either denotes octal or hex depending on whether it is followed by an 'x'.
-	// Zeros that appear afterwards are inet_aton leading zeros.
+	// Zeros that appear afterwards are inetAton leading zeros.
 	AllowsInetAtonLeadingZeros() bool
 }
 
@@ -340,7 +340,7 @@ func (builder *IPv6AddressStringParamsBuilder) GetEmbeddedIPv4AddressParamsBuild
 }
 
 // AllowLeadingZeros dictates whether to allow addresses with segments that have leasing zeros like "001.2.3.004" or "1:000a::".
-// For IPV4, this option overrides inet_aton octal.
+// For IPV4, this option overrides inetAton octal.
 // Single segment addresses that must have the requisite length to be parsed are not affected by this flag.
 func (builder *IPv6AddressStringParamsBuilder) AllowLeadingZeros(allow bool) *IPv6AddressStringParamsBuilder {
 	builder.GetEmbeddedIPv4AddressParamsBuilder().allowLeadingZeros(allow)
@@ -377,6 +377,7 @@ func (builder *IPv6AddressStringParamsBuilder) set(params IPv6AddressStringParam
 			noBase85:    !params.AllowsBase85(),
 		}
 	}
+
 	builder.IPAddressStringFormatParamsBuilder.set(params)
 	if !isMixed {
 		builder.getEmbeddedIPv4ParametersBuilder().ipv4Builder.Set(params.GetEmbeddedIPv4AddressParams())
@@ -409,11 +410,11 @@ func (builder *IPv6AddressStringParamsBuilder) AllowEmptyZone(allow bool) *IPv6A
 	return builder
 }
 
-// AllowMixedInetAton dictates whether to allow inet_aton style formats, whether hex, octal,
+// AllowMixedInetAton dictates whether to allow inetAton style formats, whether hex, octal,
 // or joined segments, in the embedded IPv4 section of a mixed IPv6/v4 address.
 func (builder *IPv6AddressStringParamsBuilder) AllowMixedInetAton(allow bool) *IPv6AddressStringParamsBuilder {
 	builder.getEmbeddedIPv4ParametersBuilder().GetIPv4AddressParamsBuilder().AllowInetAton(allow)
-	if allow { // if we allow inet_aton in the mixed part, then of course that insinuates that we allow the mixed part
+	if allow { // if we allow inetAton in the mixed part, then of course that insinuates that we allow the mixed part
 		builder.AllowMixed(allow)
 	}
 	return builder
@@ -468,11 +469,11 @@ func (builder *IPv4AddressStringParamsBuilder) Set(params IPv4AddressStringParam
 		builder.params = *p
 	} else {
 		builder.params = ipv4AddressStringParameters{
-			no_inet_aton_hex:              !params.AllowsInetAtonHex(),
-			no_inet_aton_octal:            !params.AllowsInetAtonOctal(),
-			no_inet_aton_joinedSegments:   !params.AllowsInetAtonJoinedSegments(),
-			inet_aton_single_segment_mask: params.AllowsInetAtonSingleSegmentMask(),
-			no_inet_aton_leading_zeros:    !params.AllowsInetAtonLeadingZeros(),
+			noInetAtonHex:             !params.AllowsInetAtonHex(),
+			noInetAtonOctal:           !params.AllowsInetAtonOctal(),
+			noInetAtonJoinedSegments:  !params.AllowsInetAtonJoinedSegments(),
+			inetAtonSingleSegmentMask: params.AllowsInetAtonSingleSegmentMask(),
+			noInetAtonLeadingZeros:    !params.AllowsInetAtonLeadingZeros(),
 		}
 	}
 
@@ -480,47 +481,47 @@ func (builder *IPv4AddressStringParamsBuilder) Set(params IPv4AddressStringParam
 	return builder
 }
 
-// AllowInetAton dictates whether to allow any IPv4 inet_aton format, whether hex, octal, or joined segments.
+// AllowInetAton dictates whether to allow any IPv4 inetAton format, whether hex, octal, or joined segments.
 func (builder *IPv4AddressStringParamsBuilder) AllowInetAton(allow bool) *IPv4AddressStringParamsBuilder {
-	builder.params.no_inet_aton_joinedSegments = !allow
-	builder.params.no_inet_aton_octal = !allow
-	builder.params.no_inet_aton_hex = !allow
+	builder.params.noInetAtonJoinedSegments = !allow
+	builder.params.noInetAtonOctal = !allow
+	builder.params.noInetAtonHex = !allow
 	builder.allowUnlimitedLeadingZeros(allow)
 	return builder
 }
 
-// AllowInetAtonHex dictates whether to allow IPv4 inet_aton hexadecimal format "0xa.0xb.0xc.0cd".
+// AllowInetAtonHex dictates whether to allow IPv4 inetAton hexadecimal format "0xa.0xb.0xc.0cd".
 func (builder *IPv4AddressStringParamsBuilder) AllowInetAtonHex(allow bool) *IPv4AddressStringParamsBuilder {
-	builder.params.no_inet_aton_hex = !allow
+	builder.params.noInetAtonHex = !allow
 	return builder
 }
 
-// AllowInetAtonOctal dictates whether to allow IPv4 inet_aton octal format, "04.05.06.07" being an example.
+// AllowInetAtonOctal dictates whether to allow IPv4 inetAton octal format, "04.05.06.07" being an example.
 func (builder *IPv4AddressStringParamsBuilder) AllowInetAtonOctal(allow bool) *IPv4AddressStringParamsBuilder {
-	builder.params.no_inet_aton_octal = !allow
+	builder.params.noInetAtonOctal = !allow
 	return builder
 }
 
-// AllowInetAtonLeadingZeros dictates whether to allow a hexadecimal or octal IPv4 inet_aton to have leading zeros,
+// AllowInetAtonLeadingZeros dictates whether to allow a hexadecimal or octal IPv4 inetAton to have leading zeros,
 // such as in the first two segments "0x0a.00b.c.d".
 // The first 0 is not considered a leading zero,
 // it denotes either an octal or hexadecimal number depending on whether it is followed by an 'x'.
-// Zeros appearing after it are inet_aton master zeros.
+// Zeros appearing after it are inetAton master zeros.
 func (builder *IPv4AddressStringParamsBuilder) AllowInetAtonLeadingZeros(allow bool) *IPv4AddressStringParamsBuilder {
-	builder.params.no_inet_aton_leading_zeros = !allow
+	builder.params.noInetAtonLeadingZeros = !allow
 	return builder
 }
 
 // AllowInetAtonJoinedSegments dictates whether to allow IPv4 joined segments like "1.2.3", "1.2", or just "1".
 // For the case of just 1 segment, the behaviour is controlled by AllowSingleSegment.
 func (builder *IPv4AddressStringParamsBuilder) AllowInetAtonJoinedSegments(allow bool) *IPv4AddressStringParamsBuilder {
-	builder.params.no_inet_aton_joinedSegments = !allow
+	builder.params.noInetAtonJoinedSegments = !allow
 	return builder
 }
 
 // AllowInetAtonSingleSegmentMask dictates whether to allow a mask that looks like a prefix length when you allow IPv4 joined segments: "1.2.3.5/255".
 func (builder *IPv4AddressStringParamsBuilder) AllowInetAtonSingleSegmentMask(allow bool) *IPv4AddressStringParamsBuilder {
-	builder.params.inet_aton_single_segment_mask = allow
+	builder.params.inetAtonSingleSegmentMask = allow
 	return builder
 }
 
@@ -533,7 +534,7 @@ func (builder *IPv4AddressStringParamsBuilder) AllowWildcardedSeparator(allow bo
 }
 
 // AllowLeadingZeros dictates whether to allow addresses with segments that have leasing zeros like "001.2.3.004" or "1:000a::".
-// For IPV4, this option overrides inet_aton octal.
+// For IPV4, this option overrides inetAton octal.
 // Single segment addresses that must have the requisite length to be parsed are not affected by this flag.
 func (builder *IPv4AddressStringParamsBuilder) AllowLeadingZeros(allow bool) *IPv4AddressStringParamsBuilder {
 	builder.allowLeadingZeros(allow)
@@ -577,7 +578,7 @@ func (builder *IPv4AddressStringParamsBuilder) AllowBinary(allow bool) *IPv4Addr
 }
 
 // IPVersion is the version type used by IP string parameters.
-// It is interchangeable with ipaddr.Version,
+// It is interchangeable with goip.Version,
 // a more generic version type used by the library as a whole.
 type IPVersion int
 
@@ -631,7 +632,7 @@ func (params *ipv6AddressStringParameters) AllowsEmptyZone() bool {
 	return !params.noEmptyZone
 }
 
-// AllowsBase85 allows IPv6 single-segment base 85 addresses
+// AllowsBase85 allows IPv6 single-segment base 85 addresses'
 func (params *ipv6AddressStringParameters) AllowsBase85() bool {
 	return !params.noBase85
 }
@@ -876,7 +877,7 @@ func (builder *IPAddressStringParamsBuilder) SetRangeParams(rangeParams RangePar
 	return builder
 }
 
-// AllowInetAton dictates whether to allow any IPv4 inet_aton format, whether hex, octal, or joined segments.
+// AllowInetAton dictates whether to allow any IPv4 inetAton format, whether hex, octal, or joined segments.
 func (builder *IPAddressStringParamsBuilder) AllowInetAton(allow bool) *IPAddressStringParamsBuilder {
 	builder.GetIPv4AddressParamsBuilder().AllowInetAton(allow)
 	builder.GetIPv6AddressParamsBuilder().AllowMixedInetAton(allow)

@@ -1,5 +1,25 @@
 package address_error
 
+/*
+Error hierarchy:
+
+AddressError
+	-IncompatibleAddressError
+		- SizeMismatchError
+	- HostIdentifierError
+		- HostNameError
+		- AddressStringError
+	- AddressValueError
+
+unused, but present in Java:
+NetworkMismatchException
+InconsistentPrefixException
+AddressPositionException
+AddressConversionException
+PrefixLenException
+PositionMismatchException
+*/
+
 // AddressError is a type used by all library errors in order to be able to provide internationalized error messages.
 type AddressError interface {
 	error

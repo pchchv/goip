@@ -155,18 +155,16 @@ type StringOptions interface {
 
 type stringOptions struct {
 	wildcards Wildcards
-	// default is hex
-	base int
-	// segment separator, and in the case of separated digits the default digit separator is ' ',
+	base      int // default is hex
+	// segment separator, and in the case of separated digits, the default digit separator is ' ',
 	// but usually it is either '.' or ':'
-	separator byte
-	segmentStrPrefix,
-	addrLabel string
-	expandSegments,
-	reverse,
-	uppercase bool
-	// if not set, defaults to false, no delimiter
-	hasSeparator *bool
+	separator        byte
+	segmentStrPrefix string
+	addrLabel        string
+	expandSegments   bool
+	reverse          bool
+	uppercase        bool
+	hasSeparator     *bool // if not set, default is false, no separator
 }
 
 // GetWildcards returns wildcards specified for use in the string.
@@ -539,7 +537,6 @@ func (builder *IPStringOptionsBuilder) ToOptions() IPStringOptions {
 	builder.ipStringOptions.zoneSeparator = getIPDefaults(builder.ipStringOptions.zoneSeparator)
 	res := builder.ipStringOptions
 	res.stringOptions = *builder.StringOptionsBuilder.ToOptions().(*stringOptions)
-
 	return &res
 }
 
@@ -910,13 +907,14 @@ func getDefaults(radix int, wildcards Wildcards, separator byte) (int, Wildcards
 	if radix == 0 {
 		radix = 16
 	}
+
 	if wildcards == nil {
 		wildcards = DefaultWildcards
 	}
+
 	if separator == 0 {
 		separator = ' '
 	}
-
 	return radix, wildcards, separator
 }
 
@@ -928,7 +926,6 @@ func getMACDefaults(hasSeparator *bool, separator byte) (*bool, byte) {
 	if separator == 0 {
 		separator = macColonSegmentSeparator
 	}
-
 	return hasSeparator, separator
 }
 
@@ -951,7 +948,6 @@ func getIPv4Defaults(hasSeparator *bool, separator byte, radix int) (*bool, byte
 	if separator == 0 {
 		separator = ipv4SegmentSeparator
 	}
-
 	return hasSeparator, separator, radix
 }
 
@@ -963,6 +959,5 @@ func getIPv6Defaults(hasSeparator *bool, separator byte) (*bool, byte) {
 	if separator == 0 {
 		separator = ipv6SegmentSeparator
 	}
-
 	return hasSeparator, separator
 }
