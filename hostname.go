@@ -259,7 +259,7 @@ func (host *HostName) ToAddresses() (addrs []*IPAddress, err address_error.Addre
 		if err != nil {
 			return
 		}
-		// http://networkbit.ch/golang-dns-lookup/
+
 		parsedHost := host.parsedHost
 		if parsedHost.isAddressString() {
 			addr, address_Error := parsedHost.asAddress()
@@ -280,9 +280,10 @@ func (host *HostName) ToAddresses() (addrs []*IPAddress, err address_error.Addre
 						hostNameError: hostNameError{addressError{str: strHost, key: "ipaddress.host.error.host.resolve"}}}
 					return
 				}
+
+				var errs []address_error.AddressError
 				count := len(ips)
 				addrs = make([]*IPAddress, 0, count)
-				var errs []address_error.AddressError
 				for j := 0; j < count; j++ {
 					ip := ips[j]
 					if ipv4 := ip.To4(); ipv4 != nil {
@@ -302,6 +303,7 @@ func (host *HostName) ToAddresses() (addrs []*IPAddress, err address_error.Addre
 							}
 						}
 					}
+
 					ipAddr, address_Error := NewIPAddressFromPrefixedNetIP(ip, networkPrefixLength)
 					if address_Error != nil {
 						errs = append(errs, address_Error)
@@ -313,9 +315,11 @@ func (host *HostName) ToAddresses() (addrs []*IPAddress, err address_error.Addre
 						addrs = append(addrs, ipAddr)
 					}
 				}
+
 				if len(errs) > 0 {
 					err = &mergedError{AddressError: &hostNameError{addressError{str: strHost, key: "ipaddress.host.error.host.resolve"}}, merged: errs}
 				}
+
 				count = len(addrs)
 				if count > 0 {
 					// sort by preferred version
@@ -459,6 +463,7 @@ func (host *HostName) toNormalizedString(wildcard, addTrailingDot bool) string {
 				}
 			}
 		}
+
 		port := host.parsedHost.getPort()
 		if port != nil {
 			toNormalizedPortString(port.portNum(), &builder)
@@ -732,6 +737,7 @@ func (host *HostName) ToNetTCPAddrService(serviceMapper func(string) Port) *net.
 				port = serviceMapper(service)
 			}
 		}
+
 		if port != nil {
 			if addr := host.GetAddress(); addr != nil {
 				return &net.TCPAddr{
@@ -783,6 +789,7 @@ func parseHostName(str string, params address_string_param.HostNameParams) *Host
 		str:       str,
 		hostCache: &hostCache{},
 	}
+
 	res.validate(params)
 	return res
 }
