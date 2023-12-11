@@ -1154,3 +1154,31 @@ func checkDivisionType(genericDiv DivisionType) (isNil, isStandard bool, divType
 	}
 	return
 }
+
+// compareSegmentValues called only when it is known
+// the sections have same segment count and segment bit size
+func compareSegmentValues(compareUpper bool, one, two *AddressSection) (result int) {
+	segCount := one.GetSegmentCount()
+	for i := 0; i < segCount; i++ {
+		var s1, s2 SegInt
+		segOne := one.GetSegment(i)
+		segTwo := two.GetSegment(i)
+		if compareUpper {
+			s1 = segOne.GetUpperSegmentValue()
+			s2 = segTwo.GetUpperSegmentValue()
+		} else {
+			s1 = segOne.GetSegmentValue()
+			s2 = segTwo.GetSegmentValue()
+		}
+
+		if s1 != s2 {
+			if s1 > s2 {
+				result = 1
+			} else {
+				result = -1
+			}
+			return
+		}
+	}
+	return
+}
