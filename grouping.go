@@ -800,6 +800,15 @@ func (grouping *addressDivisionGroupingInternal) toString() string {
 	return fmt.Sprint(grouping.initDivs().getDivArray())
 }
 
+// copyDivisions copies the existing segments from the given start index until but not including the segment at the given end index,
+// into the given slice, as much as can be fit into the slice, returning the number of segments copied.
+func (grouping *addressDivisionGroupingInternal) copyDivisions(divs []*AddressDivision) (count int) {
+	if divArray := grouping.getDivArray(); divArray != nil {
+		return divArray.copyDivisions(divs)
+	}
+	return
+}
+
 // AddressDivisionGrouping objects consist of a series of AddressDivision objects,
 // each containing a consistent range of values.
 //
