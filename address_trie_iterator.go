@@ -9,11 +9,11 @@ type addressKeyIterator[T TrieKeyConstraint[T]] struct {
 	tree.TrieKeyIterator[trieKey[T]]
 }
 
-func (iter addressKeyIterator[T]) Next() (t T) {
+func (iter addressKeyIterator[T]) Next() T {
 	return iter.TrieKeyIterator.Next().address
 }
 
-func (iter addressKeyIterator[T]) Remove() (t T) {
+func (iter addressKeyIterator[T]) Remove() T {
 	return iter.TrieKeyIterator.Remove().address
 }
 

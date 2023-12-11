@@ -522,7 +522,7 @@ func (node *trieNode[T, V]) elementsContainedBy(addr T) *tree.BinTrieNode[trieKe
 	return node.toBinTrieNode().ElementsContainedBy(createKey(addr))
 }
 
-func (node *trieNode[T, V]) longestPrefixMatch(addr T) (t T) {
+func (node *trieNode[T, V]) longestPrefixMatch(addr T) T {
 	addr = mustBeBlockOrAddress(addr)
 	key, _ := node.toBinTrieNode().LongestPrefixMatch(createKey(addr))
 	return key.address
@@ -1136,7 +1136,7 @@ func (node *containmentPathNode[T, V]) string() string {
 
 // ListString returns a visual representation of
 // the containing subnets starting from
-// / this node and moving downwards to sub-nodes.
+// this node and moving downwards to sub-nodes.
 func (node *containmentPathNode[T, V]) listString() string {
 	return node.pathNode.ListString(true, true)
 }
