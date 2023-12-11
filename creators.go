@@ -69,7 +69,6 @@ func (creator *ipv6AddressCreator) createAddressInternalFromBytes(bytes []byte, 
 
 func (creator *ipv6AddressCreator) createAddressInternalFromSection(section *IPAddressSection, zone Zone, originator HostIdentifierString) *IPAddress {
 	res := newIPv6AddressZoned(section.ToIPv6(), string(zone)).ToIP()
-
 	if originator != nil {
 		// the originator is assigned to a parsedIPAddress struct in validateHostName or validateIPAddressStr
 		cache := res.cache
@@ -77,7 +76,6 @@ func (creator *ipv6AddressCreator) createAddressInternalFromSection(section *IPA
 			cache.identifierStr = &identifierStr{originator}
 		}
 	}
-
 	return res
 }
 

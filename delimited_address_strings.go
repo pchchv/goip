@@ -28,6 +28,7 @@ func (str DelimitedAddressString) CountDelimitedAddresses() int {
 			segDelimitedCount++
 		}
 	}
+
 	if segDelimitedCount > 0 {
 		result *= segDelimitedCount + 1
 	}
@@ -209,6 +210,7 @@ func addParts(str string, parts [][]string, lastSegmentStartIndex, lastPartIndex
 	if lastPartIndex != lastSegmentStartIndex {
 		parts = append(parts, []string{str[lastPartIndex:lastSegmentStartIndex]})
 	}
+
 	parts = append(parts, delimitedList)
 	return parts, delimitedList
 }
