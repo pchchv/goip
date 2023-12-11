@@ -10,17 +10,15 @@ var (
 type DivisionType interface {
 	AddressItem
 	getAddrType() addrType
-	// getStringAsLower caches the string from getDefaultLowerString
+	// getStringAsLower caches the string from getDefaultLowerString.
 	getStringAsLower() string
-	// GetString produces a string that avoids wildcards when a prefix length is part of the string.
-	// Equivalent to GetWildcardString when the prefix length is not part of the string.
+	// GetString produces a string that avoids wildcards when a prefix length is part of the string.  Equivalent to GetWildcardString when the prefix length is not part of the string.
 	GetString() string
-	// GetWildcardString produces a string that uses wildcards and avoids prefix length
+	// GetWildcardString produces a string that uses wildcards and avoids prefix length.
 	GetWildcardString() string
-	// IsSinglePrefix determines if the division has a single prefix for the given prefix length.
-	// You can call GetPrefixCountLen to get the count of prefixes.
+	// IsSinglePrefix determines if the division has a single prefix for the given prefix length.  You can call GetPrefixCountLen to get the count of prefixes.
 	IsSinglePrefix(BitCount) bool
-	// methods for string generation used by the string params and string writer
+	// methods for string generation used by the string params and string writer.
 	divStringProvider
 }
 
@@ -29,28 +27,31 @@ type DivisionType interface {
 type AddressSegmentType interface {
 	AddressComponent
 	StandardDivisionType
-	// Equal returns whether the given segment is equal to the given segment. Two segments are equal if they are the same:
+	// Equal returns whether the given segment is equal to this segment.
+	// Two segments are equal if they match:
 	// - type/version (IPv4, IPv6, MAC)
 	// - range of values
-	// Prefix length is ignored.
+	// Prefix lengths are ignored.
 	Equal(AddressSegmentType) bool
-	// Contains returns whether the given segment is the same type and version as the given segment, and whether it contains all the values in the given segment.
+	// Contains returns whether this segment is same type and version as the given segment and whether it contains all values in the given segment.
 	Contains(AddressSegmentType) bool
 	// GetSegmentValue returns the lower value of the segment value range as a SegInt.
 	GetSegmentValue() SegInt
 	// GetUpperSegmentValue returns the upper value of the segment value range as a SegInt.
 	GetUpperSegmentValue() SegInt
-	// ToSegmentBase converts to AddressSegment, a polymorphic type used with all address segments.
+	// ToSegmentBase converts to an AddressSegment, a polymorphic type used with all address segments.
+	//
 	// Implementations of ToSegmentBase can be called with a nil receiver,
 	// allowing this method to be used in a chain with methods that can return a nil pointer.
 	ToSegmentBase() *AddressSegment
 }
 
-// StandardDivisionType represents any standard address division that is a division of 64 bits or less.
-// They can all be converted to/from [AddressDivision].
+// StandardDivisionType represents any standard address division, which is a division of size 64 bits or less.
+// All can be converted to/from [AddressDivision].
 type StandardDivisionType interface {
 	DivisionType
-	// ToDiv converts to AddressDivision, a polymorphic type used with all address segments and divisions.
-	// ToDiv implementations can be called with a nil receiver, allowing this method to be used in a chain with methods that can return a nil pointer.
+	// ToDiv converts to an AddressDivision, a polymorphic type usable with all address segments and divisions.
+	//
+	// ToDiv implementations can be called with a nil receiver, enabling you to chain this method with methods that might return a nil pointer.
 	ToDiv() *AddressDivision
 }
