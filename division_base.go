@@ -8,12 +8,12 @@ import (
 )
 
 type divCache struct {
-	cachedString,
-	cachedWildcardString,
-	cached0xHexString,
-	cachedHexString,
+	cachedString           *string
+	cachedHexString        *string
+	cached0xHexString      *string
+	cachedWildcardString   *string
 	cachedNormalizedString *string
-	isSinglePrefBlock *bool
+	isSinglePrefBlock      *bool
 }
 
 // divisionValuesBase provides an interface for divisions of any size.
@@ -56,10 +56,17 @@ type divisionValues interface {
 	segmentValues
 }
 
-// addressDivisionBase is a division of any bit size.
-// It is common for standard and large division types.
-// Large divisions should not use divisionValues methods and only use methods in divisionValuesBase.
+// addressDivisionBase is a division of any bit-size.
+// It is shared by standard and large divisions types.
+// Large divisions must not use the methods of divisionValues and use only the methods in divisionValuesBase.
 type addressDivisionBase struct {
+	// If you do that, then to get access to the methods in divisionValues,
+	// you can either do type assertions like divisionValuesBase.(divisionValiues),
+	// or you can add a method getDivisionValues to divisionValuesBase.
+	// But in the end, either way you are assuming you know that divisionValuesBase is a divisionValues.
+	// So no point.
+	// Instead, each division type like
+	// IPAddressSegment and LargeDivision will know which value methods apply to that type.
 	divisionValues
 }
 
@@ -165,11 +172,11 @@ func (div *addressDivisionBase) GetPrefixCountLen(prefixLength BitCount) *big.In
 	upper.Rsh(upper, ushiftAdjustment)
 	lower.Rsh(lower, ushiftAdjustment)
 	upper.Sub(upper, lower).Add(upper, bigOneConst())
-
 	return upper
 }
 
 // CopyBytes copies the lowest value in the address division range to a byte slice.
+//
 // If the value can fit in a given slice, it is copied to that slice and a length-adjusted sub-slice is returned.
 // Otherwise, a new slice is created and returned with the value.
 func (div *addressDivisionBase) CopyBytes(bytes []byte) []byte {
@@ -181,11 +188,11 @@ func (div *addressDivisionBase) CopyBytes(bytes []byte) []byte {
 	}
 
 	cached := div.getBytes()
-
 	return getBytesCopy(bytes, cached)
 }
 
 // CopyUpperBytes copies the highest value in the address division range to a byte slice.
+//
 // If the value can fit in a given slice, it is copied to that slice and a length-adjusted sub-slice is returned.
 // Otherwise, a new slice is created and returned with the value.
 func (div *addressDivisionBase) CopyUpperBytes(bytes []byte) []byte {
@@ -197,7 +204,6 @@ func (div *addressDivisionBase) CopyUpperBytes(bytes []byte) []byte {
 	}
 
 	cached := div.getUpperBytes()
-
 	return getBytesCopy(bytes, cached)
 }
 
@@ -238,6 +244,7 @@ func (div *addressDivisionBase) IncludesZero() bool {
 }
 
 // IsFullRange returns whether the division range includes all possible values for its bit length.
+//
 // This is true if and only if both IncludesZero and IncludesMax return true.
 func (div *addressDivisionBase) IsFullRange() bool {
 	return div.includesZero() && div.includesMax()
