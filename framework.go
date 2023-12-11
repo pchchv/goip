@@ -154,9 +154,9 @@ type Prefixed interface {
 
 // HostIdentifierString represents a string that is used to identify a host.
 type HostIdentifierString interface {
-	ToNormalizedString() string     // ToNormalizedString provides a normalized String representation for the host identified by this HostIdentifierString instance
-	IsValid() bool                  // IsValid returns whether the wrapped string is a valid identifier for the host
-	Wrap() ExtendedIdentifierString // Wrap wraps an identifier string into an extended type that is polymorphic to other identifier strings
+	ToNormalizedString() string     // provides a normalized String representation for the host identified by this HostIdentifierString instance
+	IsValid() bool                  // returns whether the wrapped string is a valid identifier for a host
+	Wrap() ExtendedIdentifierString // wraps an identifier string into an extended type that is polymorphic to other identifier strings
 	fmt.Stringer
 	fmt.Formatter
 }
@@ -164,10 +164,9 @@ type HostIdentifierString interface {
 // AddressDivisionSeries serves as a common interface for all division groups, address sections and addresses.
 type AddressDivisionSeries interface {
 	AddressItem
-	GetDivisionCount() int                    // GetDivisionCount returns the number of divisions
-	GetBlockCount(divisionCount int) *big.Int // GetBlockCount returns the count of distinct values in the given number of initial (more significant) segments
-	// GetPrefixCount returns the count of prefixes in this series for its prefix length, or the total count if it has no prefix length
-	GetPrefixCount() *big.Int
+	GetDivisionCount() int                    // returns the number of divisions
+	GetPrefixCount() *big.Int                 // returns the count of prefixes in this series for its prefix length, or the total count if it has no prefix length
+	GetBlockCount(divisionCount int) *big.Int // returns the count of distinct values in the given number of initial (more significant) segments
 	// GetSequentialBlockCount provides a count of elements from the sequential block iterator,
 	// the minimum number of sequential address division series that constitute a given division series.
 	GetSequentialBlockCount() *big.Int
@@ -267,7 +266,7 @@ type IPAddressRange interface {
 	// Consecutive IP address ranges are sequential by definition.
 	// Generally, for a subnet, this means that any segment covering a range of values must be followed by segments that are a complete range covering all values.
 	// Individual addresses are sequential and CIDR prefix blocks are sequential.
-	// The "1.2.3-4.5" subnet is not sequential because the two addresses it represents, "1.2.3.5" and "1.2.4.5", are not sequential ("1.2.3.6" is in between, but not part of the subnet).
+	// The subnet "1.2.3-4.5" is not sequential, since the two addresses it represents, "1.2.3.5" and "1.2.4.5", are not ("1.2.3.6" is in-between the two but not in the subnet).
 	IsSequential() bool
 }
 
@@ -286,11 +285,10 @@ type AddressSegmentSeries interface {
 	// GetBytesPerSegment returns the number of bytes comprising each segment in this series.  Segments in the same series are equal length.
 	GetBytesPerSegment() int
 	// ToCanonicalString produces a canonical string for the address series.
-	// For IPv4, the dotted octet format, also known as the dotted decimal format, is used.
+	// For IPv4, dotted octet format, also known as dotted decimal format, is used.
 	// For IPv6, RFC 5952 describes a canonical string representation.
-	// For MAC, the canonical standardized representation of IEEE 802 MAC addresses in the form xx-xx-xx-xx-xx-xx is used.
-	// An example is "01-23-45-67-89-ab."
-	// The '|' character is used for range segments: '11-22-33|44-55-66'.
+	// For MAC, the canonical standardized IEEE 802 MAC address representation of xx-xx-xx-xx-xx-xx.  An example is "01-23-45-67-89-ab".
+	// For range segments, '|' is used: "11-22-33|44-55-66".
 	// Each address has a unique canonical string, not counting the prefix length.
 	// In the case of IP addresses and sections, the prefix length is included in the string,
 	// and the prefix length can cause two equal addresses to have different strings, such as "1.2.3.4/16" and "1.2.3.4".

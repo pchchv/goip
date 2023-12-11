@@ -15,14 +15,14 @@ type addressError struct {
 }
 
 func (a *addressError) Error() string {
-	return getStr(a.str) + lookupStr("goip.address.error") + " " + lookupStr(a.key)
+	return getStr(a.str) + lookupStr("ipaddress.address.error") + " " + lookupStr(a.key)
 }
 
 // GetKey can be used to internationalize error strings in the goip library.
-// The list of keys and their English translations are listed in the ipAddrResources.properties file.
+// The list of keys and their English translations are listed in IPAddressResources.properties.
 // Use your own method to map keys to your translations.
-// One such method is golang.org/x/text, which provides language tags
-// (https://pkg.go.dev/golang.org/x/text/language?utm_source=godoc#Tag)
+// One such method is golang.org/x/text which provides language tags
+// (https://pkg.go.dev/golang.org/x/text/language#Tag),
 // that can then be mapped to catalogs, each catalog being a translation list for the set of keys presented here.
 // In the code, you specify the language key to use the right catalog.
 // You can use the gotext tool to integrate these translations into your application.
@@ -78,7 +78,7 @@ type addressStringIndexError struct {
 }
 
 func (a *addressStringIndexError) Error() string {
-	return lookupStr("goip.address.error") + " " + lookupStr(a.key) + " " + strconv.Itoa(a.index)
+	return lookupStr("ipaddress.address.error") + " " + lookupStr(a.key) + " " + strconv.Itoa(a.index)
 }
 
 type hostNameError struct {
@@ -91,7 +91,7 @@ func (a *hostNameError) GetAddress_Erroror() address_error.AddressError {
 }
 
 func (a *hostNameError) Error() string {
-	return getStr(a.str) + lookupStr("goip.host.error") + " " + lookupStr(a.key)
+	return getStr(a.str) + lookupStr("ipaddress.host.error") + " " + lookupStr(a.key)
 }
 
 type hostNameNestedError struct {
@@ -105,7 +105,7 @@ type hostNameIndexError struct {
 }
 
 func (a *hostNameIndexError) Error() string {
-	return getStr(a.str) + lookupStr("goip.host.error") + " " + lookupStr(a.key) + " " + strconv.Itoa(a.index)
+	return getStr(a.str) + lookupStr("ipaddress.host.error") + " " + lookupStr(a.key) + " " + strconv.Itoa(a.index)
 }
 
 type hostAddressNestedError struct {
@@ -120,9 +120,9 @@ func (a *hostAddressNestedError) GetAddress_Erroror() address_error.AddressError
 
 func (a *hostAddressNestedError) Error() string {
 	if a.hostNameIndexError.key != "" {
-		return getStr(a.str) + lookupStr("goip.host.error") + " " + a.hostNameIndexError.Error() + " " + a.nested.Error()
+		return getStr(a.str) + lookupStr("ipaddress.host.error") + " " + a.hostNameIndexError.Error() + " " + a.nested.Error()
 	}
-	return getStr(a.str) + lookupStr("goip.host.error") + " " + a.nested.Error()
+	return getStr(a.str) + lookupStr("ipaddress.host.error") + " " + a.nested.Error()
 }
 
 type wrappedErr struct {
@@ -139,7 +139,6 @@ func (wrappedErr *wrappedErr) Error() string {
 
 	str = wrappedErr.err.Error() + ": " + wrappedErr.cause.Error()
 	wrappedErr.str = str
-
 	return str
 }
 
@@ -158,7 +157,6 @@ func (merged *mergedErr) Error() (str string) {
 	errLen := len(mergedErrs)
 	strs := make([]string, errLen)
 	totalLen := 0
-
 	for i, err := range mergedErrs {
 		str := err.Error()
 		strs[i] = str
@@ -168,7 +166,6 @@ func (merged *mergedErr) Error() (str string) {
 	format := strings.Builder{}
 	format.Grow(totalLen + errLen*2)
 	format.WriteString(strs[0])
-
 	for _, str := range strs[1:] {
 		format.WriteString(", ")
 		format.WriteString(str)
@@ -214,19 +211,16 @@ func wrapToErrf(err error, format string, a ...interface{}) error {
 // mergeErrs merges an existing error with a new one
 func mergeErrs(err error, format string, a ...interface{}) error {
 	newErr := errorF(format, a...)
-
 	if err == nil {
 		return newErr
 	}
 
 	var merged []error
-
 	if merge, isMergedErr := err.(*mergedErr); isMergedErr {
 		merged = append(append([]error(nil), merge.mergedErrs...), newErr)
 	} else {
 		merged = []error{err, newErr}
 	}
-
 	return &mergedErr{mergedErrs: merged}
 }
 
@@ -258,6 +252,5 @@ func mergeAllErrs(errs ...error) error {
 		}
 		return all[0]
 	}
-
 	return &mergedErr{mergedErrs: all}
 }
