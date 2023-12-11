@@ -7,12 +7,11 @@ import (
 )
 
 var (
+	_, _                 divArray = standardDivArray{}, largeDivArray{}
 	zeroDivs                      = make([]*AddressDivision, 0)
 	zeroStandardDivArray          = standardDivArray(zeroDivs)
 	zeroLargeDivs                 = make([]*IPAddressLargeDivision, 0)
 	zeroLargeDivArray             = largeDivArray(zeroLargeDivs)
-	_                    divArray = standardDivArray{}
-	_                    divArray = largeDivArray{}
 	zeroStringCache               = stringCache{
 		ipv6StringCache: &ipv6StringCache{},
 		ipv4StringCache: &ipv4StringCache{},
@@ -22,11 +21,11 @@ var (
 )
 
 type ipStringCache struct {
-	normalizedWildcardString,
-	fullString,
-	sqlWildcardString,
-	reverseDNSString,
-	segmentedBinaryString *string
+	fullString               *string
+	reverseDNSString         *string
+	sqlWildcardString        *string
+	segmentedBinaryString    *string
+	normalizedWildcardString *string
 }
 
 type ipv4StringCache struct {
@@ -53,13 +52,13 @@ type macStringCache struct {
 }
 
 type stringCache struct {
-	canonicalString,
-	octalString,
-	octalStringPrefixed,
-	binaryString,
-	binaryStringPrefixed,
-	hexString,
-	hexStringPrefixed *string
+	hexString            *string
+	octalString          *string
+	binaryString         *string
+	canonicalString      *string
+	hexStringPrefixed    *string
+	octalStringPrefixed  *string
+	binaryStringPrefixed *string
 	*ipv6StringCache
 	*ipv4StringCache
 	*ipStringCache
@@ -260,7 +259,6 @@ func (grouping *addressDivisionGroupingBase) cachedCount(counter func() *big.Int
 		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.cachedCount))
 		atomicStorePointer(dataLoc, unsafe.Pointer(count))
 	}
-
 	return count
 }
 
@@ -276,7 +274,6 @@ func (grouping *addressDivisionGroupingBase) cacheCount(counter func() *big.Int)
 		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.cachedCount))
 		atomicStorePointer(dataLoc, unsafe.Pointer(count))
 	}
-
 	return new(big.Int).Set(count)
 }
 
@@ -481,7 +478,6 @@ func (grouping *addressDivisionGroupingBase) getPrefixCountLenBig(prefixLen BitC
 	}
 
 	res := bigOne()
-
 	if grouping.isMultiple() {
 		divisionCount := grouping.GetDivisionCount()
 		divPrefixLength := prefixLen
@@ -503,7 +499,6 @@ func (grouping *addressDivisionGroupingBase) getPrefixCountLenBig(prefixLen BitC
 			divPrefixLength -= divBitCount
 		}
 	}
-
 	return res
 }
 
@@ -513,13 +508,11 @@ func (grouping *addressDivisionGroupingBase) getBlockCountBig(segmentCount int) 
 	}
 
 	divCount := grouping.GetDivisionCount()
-
 	if segmentCount >= divCount {
 		return grouping.getCountBig()
 	}
 
 	res := bigOne()
-
 	if grouping.isMultiple() {
 		for i := 0; i < segmentCount; i++ {
 			division := grouping.getDivision(i)
@@ -528,7 +521,6 @@ func (grouping *addressDivisionGroupingBase) getBlockCountBig(segmentCount int) 
 			}
 		}
 	}
-
 	return res
 }
 
@@ -551,7 +543,6 @@ func (grouping *addressDivisionGroupingBase) calcPrefixCount(counter func() *big
 	if prefixLen == nil || prefixLen.bitCount() >= grouping.GetBitCount() {
 		return grouping.getCount()
 	}
-
 	return counter()
 }
 
@@ -591,7 +582,6 @@ func (grouping *addressDivisionGroupingBase) GetSequentialBlockCount() *big.Int 
 	for i := 0; i < sequentialSegCount; i++ {
 		prefixLen += grouping.getDivision(i).GetBitCount()
 	}
-
 	return grouping.GetPrefixCountLen(prefixLen) // 0-1.0-1.*.* gives 1 as seq block index, and then you count only previous segments
 }
 
@@ -617,7 +607,6 @@ func (grouping *addressDivisionGroupingBase) cacheUint64PrefixCount(counter func
 		atomicStorePointer(dataLoc, unsafe.Pointer(count))
 		return count64
 	}
-
 	return count.Uint64()
 }
 
@@ -633,7 +622,6 @@ func (grouping *addressDivisionGroupingBase) cachePrefixCount(counter func() *bi
 		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.cachedPrefixCount))
 		atomicStorePointer(dataLoc, unsafe.Pointer(count))
 	}
-
 	return new(big.Int).Set(count)
 }
 
