@@ -224,16 +224,16 @@ func (comp AddressComparator) Compare(one, two AddressItem) int {
 		}
 		return 1
 	}
-	// we've covered all known address items for 'one', so check 'two'
+
+	// have covered all known address items for 'one', so check 'two'
 	if _, ok := two.(AddressDivisionSeries); ok {
 		return -1
 	} else if _, ok := two.(DivisionType); ok {
 		return 1
-		//} else if _, ok := two.(IPAddressSeqRangeType); ok {
-		//	return -1
 	} else if _, ok := two.(IPAddressSeqRangeType); ok {
 		return -1
 	}
+
 	// neither are a known AddressItem type
 	res := int(one.GetBitCount() - two.GetBitCount())
 	if res == 0 {
@@ -276,7 +276,6 @@ func (comp AddressComparator) CompareDivisions(one, two DivisionType) int {
 			return compComp.compareValues(div1.GetUpperDivisionValue(), div1.GetDivisionValue(), div2.GetUpperDivisionValue(), div2.GetDivisionValue())
 		}
 	}
-
 	return compComp.compareLargeValues(one.GetUpperValue(), one.GetValue(), two.GetUpperValue(), two.GetValue())
 }
 
@@ -286,8 +285,8 @@ func (comp AddressComparator) CompareDivisions(one, two DivisionType) int {
 // or a positive integer if address item one is less than, equal,
 // or greater than address item two.
 func (comp AddressComparator) CompareRanges(one, two IPAddressSeqRangeType) int {
-	oneIsNil, r1Type, r1 := checkRangeTypeX(one)
-	twoIsNil, r2Type, r2 := checkRangeTypeX(two)
+	oneIsNil, r1Type, r1 := checkRangeType(one)
+	twoIsNil, r2Type, r2 := checkRangeType(two)
 	if oneIsNil {
 		if twoIsNil {
 			return 0
@@ -336,13 +335,11 @@ func (countComparator) compareValues(oneUpper, oneLower, twoUpper, twoLower uint
 	} else if size1 > size2 {
 		return 1
 	}
-
 	return -1
 }
 
 func (comp countComparator) compareDivisionGroupings(oneSeries, twoSeries AddressDivisionSeries) int {
 	var one, two *AddressDivisionGrouping
-
 	if o, ok := oneSeries.(StandardDivGroupingType); ok {
 		if t, ok := twoSeries.(StandardDivGroupingType); ok {
 			one = o.ToDivGrouping()
@@ -362,12 +359,9 @@ func (comp countComparator) compareDivisionGroupings(oneSeries, twoSeries Addres
 	twoUpperBytes := make([]byte, twoSeriesByteCount)
 	twoLowerBytes := make([]byte, twoSeriesByteCount)
 
-	var (
-		oneByteCount, twoByteCount, oneByteIndex, twoByteIndex, oneIndex, twoIndex int
-		oneBitCount, twoBitCount, oneTotalBitCount, twoTotalBitCount               BitCount
-		oneUpper, oneLower, twoUpper, twoLower                                     uint64
-	)
-
+	var oneByteCount, twoByteCount, oneByteIndex, twoByteIndex, oneIndex, twoIndex int
+	var oneBitCount, twoBitCount, oneTotalBitCount, twoTotalBitCount BitCount
+	var oneUpper, oneLower, twoUpper, twoLower uint64
 	for oneIndex < oneSeries.GetDivisionCount() || twoIndex < twoSeries.GetDivisionCount() {
 		if one != nil {
 			if oneBitCount == 0 {
@@ -486,7 +480,6 @@ func (comp countComparator) compareDivisionGroupings(oneSeries, twoSeries Addres
 		oneResultLower := oneLower
 		twoResultUpper := twoUpper
 		twoResultLower := twoLower
-
 		if twoBitCount == oneBitCount {
 			// no adjustment required, compare the values straight up
 			oneBitCount = 0
@@ -494,7 +487,7 @@ func (comp countComparator) compareDivisionGroupings(oneSeries, twoSeries Addres
 		} else {
 			diffBits := twoBitCount - oneBitCount
 			if diffBits > 0 {
-				twoResultUpper >>= uint(diffBits) //look at the high bits only (we are comparing left to right, high to low)
+				twoResultUpper >>= uint(diffBits) // look at the high bits only (we are comparing left to right, high to low)
 				twoResultLower >>= uint(diffBits)
 				mask := ^(^uint64(0) << uint(diffBits))
 				twoUpper &= mask
@@ -517,7 +510,6 @@ func (comp countComparator) compareDivisionGroupings(oneSeries, twoSeries Addres
 			return result
 		}
 	}
-
 	return 0
 }
 
@@ -611,7 +603,6 @@ func (comp valueComparator) compareSectionParts(one, two *AddressSection) int {
 			break
 		}
 	}
-
 	return 0
 }
 
@@ -724,7 +715,6 @@ func (comp valueComparator) compareParts(oneSeries, twoSeries AddressDivisionSer
 
 	var one, two *AddressDivisionGrouping
 	compareHigh := comp.compareHighValue
-
 	if o, ok := oneSeries.(StandardDivGroupingType); ok {
 		if t, ok := twoSeries.(StandardDivGroupingType); ok {
 			one = o.ToDivGrouping()
@@ -736,7 +726,6 @@ func (comp valueComparator) compareParts(oneSeries, twoSeries AddressDivisionSer
 	twoSeriesByteCount := twoSeries.GetByteCount()
 	oneBytes := make([]byte, oneSeriesByteCount)
 	twoBytes := make([]byte, twoSeriesByteCount)
-
 	for {
 		var oneByteCount, twoByteCount, oneByteIndex, twoByteIndex, oneIndex, twoIndex int
 		var oneBitCount, twoBitCount, oneTotalBitCount, twoTotalBitCount BitCount
@@ -853,9 +842,8 @@ func (comp valueComparator) compareParts(oneSeries, twoSeries AddressDivisionSer
 
 			oneResultValue := oneValue
 			twoResultValue := twoValue
-
 			if twoBitCount == oneBitCount {
-				//no adjustment required, compare the values straight up
+				// no adjustment required, compare the values straight up
 				oneBitCount = 0
 				twoBitCount = 0
 			} else {
@@ -971,7 +959,6 @@ func compareCount(one, two AddressItem) int {
 
 	b1, u1 := getCount(one)
 	b2, u2 := getCount(two)
-
 	if b1 == nil {
 		if b2 != nil {
 			if b2.IsUint64() {
@@ -997,7 +984,6 @@ func compareCount(one, two AddressItem) int {
 		}
 		return 1
 	}
-
 	return b1.CmpAbs(b2)
 }
 
@@ -1041,7 +1027,7 @@ func checkSectionType(sect AddressSectionType) (isNil bool, groupingType groupin
 	return
 }
 
-func checkRangeTypeX(r IPAddressSeqRangeType) (isNil bool, rngType rangeType, rng *SequentialRange[*IPAddress]) {
+func checkRangeType(r IPAddressSeqRangeType) (isNil bool, rngType rangeType, rng *SequentialRange[*IPAddress]) {
 	if isNil = r == nil; isNil {
 		rngType = unknownrangetype
 	} else {
