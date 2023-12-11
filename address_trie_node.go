@@ -553,6 +553,17 @@ func (node *trieNode[T, V]) elementsContaining(addr T) *containmentPath[T, V] {
 	return toContainmentPath[T, V](node.toBinTrieNode().ElementsContaining(createKey(addr)))
 }
 
+func (node *trieNode[T, V]) shortestPrefixMatchNode(addr T) *tree.BinTrieNode[trieKey[T], V] {
+	addr = mustBeBlockOrAddress(addr)
+	return node.toBinTrieNode().ShortestPrefixMatchNode(createKey(addr))
+}
+
+func (node *trieNode[T, V]) shortestPrefixMatch(addr T) T {
+	addr = mustBeBlockOrAddress(addr)
+	key, _ := node.toBinTrieNode().ShortestPrefixMatch(createKey(addr))
+	return key.address
+}
+
 // ContainmentPath represents a path through the trie of containing subnets,
 // each node in the path contained by the previous node,
 // the first node corresponding to the shortest prefix match,
