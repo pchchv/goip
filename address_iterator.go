@@ -166,7 +166,6 @@ func rangeAddrIterator(single bool, original *Address, prefixLen PrefixLen, vals
 
 func prefixAddrIterator(single bool, original *Address, prefixLen PrefixLen, iterator Iterator[[]*AddressDivision]) Iterator[*Address] {
 	var zone Zone
-
 	if single {
 		return &singleIterator[*Address]{original: original}
 	}
@@ -174,7 +173,6 @@ func prefixAddrIterator(single bool, original *Address, prefixLen PrefixLen, ite
 	if original != nil {
 		zone = original.zone
 	}
-
 	return multiAddrIterator{
 		Iterator: &prefixSectionIterator{
 			original:  original.section,
