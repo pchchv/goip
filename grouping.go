@@ -114,7 +114,6 @@ func (grouping *addressDivisionGroupingInternal) calcBytes() (bytes, upperBytes 
 	addrType := grouping.getAddrType()
 	divisionCount := grouping.GetDivisionCount()
 	isMultiple := grouping.isMultiple()
-
 	if addrType.isIPv4() || addrType.isMAC() {
 		bytes = make([]byte, divisionCount)
 		if isMultiple {
@@ -122,6 +121,7 @@ func (grouping *addressDivisionGroupingInternal) calcBytes() (bytes, upperBytes 
 		} else {
 			upperBytes = bytes
 		}
+
 		for i := 0; i < divisionCount; i++ {
 			seg := grouping.getDivision(i).ToSegmentBase()
 			bytes[i] = byte(seg.GetSegmentValue())
@@ -137,16 +137,18 @@ func (grouping *addressDivisionGroupingInternal) calcBytes() (bytes, upperBytes 
 		} else {
 			upperBytes = bytes
 		}
+
 		for i := 0; i < divisionCount; i++ {
-			seg := grouping.getDivision(i).ToSegmentBase()
+			var upperVal SegInt
 			byteIndex := i << 1
+			seg := grouping.getDivision(i).ToSegmentBase()
 			val := seg.GetSegmentValue()
 			bytes[byteIndex] = byte(val >> 8)
-			var upperVal SegInt
 			if isMultiple {
 				upperVal = seg.GetUpperSegmentValue()
 				upperBytes[byteIndex] = byte(upperVal >> 8)
 			}
+
 			nextByteIndex := byteIndex + 1
 			bytes[nextByteIndex] = byte(val)
 			if isMultiple {
@@ -161,6 +163,7 @@ func (grouping *addressDivisionGroupingInternal) calcBytes() (bytes, upperBytes 
 		} else {
 			upperBytes = bytes
 		}
+
 		for k, byteIndex, bitIndex := divisionCount-1, byteCount-1, BitCount(8); k >= 0; k-- {
 			div := grouping.getDivision(k)
 			val := div.GetDivisionValue()
@@ -168,6 +171,7 @@ func (grouping *addressDivisionGroupingInternal) calcBytes() (bytes, upperBytes 
 			if isMultiple {
 				upperVal = div.GetUpperDivisionValue()
 			}
+
 			divBits := div.GetBitCount()
 			for divBits > 0 {
 				rbi := 8 - bitIndex
@@ -177,6 +181,7 @@ func (grouping *addressDivisionGroupingInternal) calcBytes() (bytes, upperBytes 
 					upperBytes[byteIndex] |= byte(upperVal << uint(rbi))
 					upperVal >>= uint(bitIndex)
 				}
+
 				if divBits < bitIndex {
 					bitIndex -= divBits
 					break
@@ -297,11 +302,9 @@ func (grouping *addressDivisionGroupingInternal) getSegmentStrings() []string {
 	}
 
 	result := make([]string, grouping.GetDivisionCount())
-
 	for i := range result {
 		result[i] = grouping.getDivision(i).GetWildcardString()
 	}
-
 	return result
 }
 
@@ -349,7 +352,6 @@ func (grouping *addressDivisionGroupingInternal) ContainsPrefixBlock(prefixLen B
 		}
 		prevBitCount = totalBitCount
 	}
-
 	return true
 }
 
@@ -534,7 +536,6 @@ func (grouping *addressDivisionGroupingInternal) createNewPrefixedDivisions(bits
 
 	largestBitCount := BitCount(64)                   // uint64, size of DivInt
 	largestBitCount -= largestBitCount % bitsPerDigit // round off to a multiple of 3 bits
-
 	for {
 		if bitCount <= largestBitCount {
 			mod := bitCount % bitsPerDigit
@@ -553,7 +554,6 @@ func (grouping *addressDivisionGroupingInternal) createNewPrefixedDivisions(bits
 	}
 
 	// at this point bitDivs has our division sizes
-
 	divCount := len(bitDivs)
 	divs := make([]*AddressDivision, divCount)
 	if divCount > 0 {
@@ -573,7 +573,6 @@ func (grouping *addressDivisionGroupingInternal) createNewPrefixedDivisions(bits
 			var divLowerValue, divUpperValue uint64
 			divBitSize := bitDivs[i]
 			originalDivBitSize := divBitSize
-
 			for {
 				if segBits >= divBitSize { // this segment fills the remainder of this division
 					diff := uint(segBits - divBitSize)
@@ -604,14 +603,12 @@ func (grouping *addressDivisionGroupingInternal) createNewPrefixedDivisions(bits
 					}
 
 					var segPrefixBits PrefixLen
-
 					if networkPrefixLength != nil {
 						segPrefixBits = getDivisionPrefixLength(originalDivBitSize, networkPrefixLength.bitCount()-bitsSoFar)
 					}
 
 					div := newRangePrefixDivision(divLowerValue, divUpperValue, segPrefixBits, originalDivBitSize)
 					divs[divCount-i-1] = div
-
 					if segBits == 0 && i > 0 {
 						//get next seg
 						currentSegmentIndex++
@@ -633,7 +630,7 @@ func (grouping *addressDivisionGroupingInternal) createNewPrefixedDivisions(bits
 					divUpperValue |= segUpperVal << diff
 					divBitSize = BitCount(diff)
 
-					//get next seg
+					// get next seg
 					currentSegmentIndex++
 					seg = grouping.getDivision(currentSegmentIndex)
 					segLowerVal = seg.getDivisionValue()
@@ -770,7 +767,8 @@ func (grouping *addressDivisionGroupingInternal) ContainsSinglePrefixBlock(prefi
 // or a prefix length that differs from the prefix length for which ContainsSinglePrefixBlock returns true.
 //
 // It is similar to IsPrefixBlock but returns false when there are multiple prefixes.
-func (grouping *addressDivisionGroupingInternal) IsSinglePrefixBlock() bool { // Note for any given prefix length you can compare with GetPrefixLenForSingleBlock
+// Note for any given prefix length you can compare with GetPrefixLenForSingleBlock.
+func (grouping *addressDivisionGroupingInternal) IsSinglePrefixBlock() bool {
 	calc := func() bool {
 		prefLen := grouping.getPrefixLen()
 		return prefLen != nil && grouping.ContainsSinglePrefixBlock(prefLen.bitCount())
@@ -1070,7 +1068,6 @@ func cachePrefLenSingleBlock(cache *valueCache, prefLen PrefixLen, calc func() *
 		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.equivalentPrefix))
 		atomicStorePointer(dataLoc, unsafe.Pointer(res))
 	}
-
 	return *res
 }
 
@@ -1132,7 +1129,6 @@ func adjustIndices(startIndex, endIndex, sourceCount, replacementStartIndex, rep
 	} else if replacementEndIndex > replacementSegmentCount {
 		replacementEndIndex = replacementSegmentCount
 	}
-
 	return startIndex, endIndex, replacementStartIndex, replacementEndIndex
 }
 
@@ -1163,7 +1159,6 @@ func normalizeDivisions(divs []*AddressDivision) (newDivs []*AddressDivision, ne
 	var previousDivPrefixed bool
 	divCount := len(divs)
 	newDivs = make([]*AddressDivision, 0, divCount)
-
 	for _, div := range divs {
 		if div == nil || div.GetBitCount() == 0 {
 			// nil divisions are divisions with zero bit-length, which we ignore
@@ -1174,7 +1169,6 @@ func normalizeDivisions(divs []*AddressDivision) (newDivs []*AddressDivision, ne
 		// The final prefix length is the minimum amongst the divisions' own prefixes
 		divPrefix := div.getDivisionPrefixLength()
 		divIsPrefixed := divPrefix != nil
-
 		if previousDivPrefixed {
 			if !divIsPrefixed || divPrefix.bitCount() != 0 {
 				newDiv = createAddressDivision(
@@ -1235,7 +1229,6 @@ func cacheMinPrefix(cache *valueCache, calc func() BitCount) BitCount {
 		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.minPrefix))
 		atomicStorePointer(dataLoc, unsafe.Pointer(res))
 	}
-
 	return res.bitCount()
 }
 
@@ -1262,6 +1255,5 @@ func cacheIsSinglePrefixBlock(cache *valueCache, prefLen PrefixLen, calc func() 
 		dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&cache.isSinglePrefixBlock))
 		atomicStorePointer(dataLoc, unsafe.Pointer(res))
 	}
-
 	return *res
 }
