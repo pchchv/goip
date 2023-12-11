@@ -671,6 +671,16 @@ func (trie Trie[T]) Format(state fmt.State, verb rune) {
 	trie.trieBase.trie.Format(state, verb)
 }
 
+// ShortestPrefixMatch returns the address added to the trie with the shortest matching prefix compared to the provided address, or nil if no matching address.
+func (trie *Trie[T]) ShortestPrefixMatch(addr T) T {
+	return trie.shortestPrefixMatch(addr)
+}
+
+// ShortestPrefixMatchNode returns the node of the address added to the trie with the shortest matching prefix compared to the provided address, or nil if no matching address.
+func (trie *Trie[T]) ShortestPrefixMatchNode(addr T) *TrieNode[T] {
+	return toAddressTrieNode[T](trie.shortestPrefixMatchNode(addr))
+}
+
 // AssociativeTrie represents a binary address trie in which each added node can be associated with a value.
 // It is an instance of [Trie] that can also function as a key-value map. The keys are addresses or prefix blocks.
 // Each can be mapped to a value with type specified by the generic type V.
