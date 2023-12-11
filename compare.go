@@ -574,10 +574,10 @@ func (comp valueComparator) compareSectionParts(one, two *AddressSection) int {
 	for {
 		result := compareSegmentValues(compareHigh, one, two)
 		if result != 0 {
-				if comp.flipSecond && compareHigh != comp.compareHighValue {
-					result = -result
-				}
-				return result
+			if comp.flipSecond && compareHigh != comp.compareHighValue {
+				result = -result
+			}
+			return result
 		}
 		compareHigh = !compareHigh
 		if compareHigh == comp.compareHighValue {
@@ -1168,4 +1168,17 @@ func checkSectionGroupingType(section *AddressSection) (groupingType groupingTyp
 		groupingType = sectype
 	}
 	return
+}
+
+// compareAddressLowerValues compares any two individual addresses
+// (including different versions or address types)
+// It returns a negative integer, zero,
+// or a positive integer if address item one is less than, equal,
+// or greater than address item two.
+// It ignores IPv6 zone and panics on nil AddressType or nil addresses.
+// If an address is not a single address, then the lower values are used.
+func compareAddressLowerValues(one, two AddressType) int {
+	oneAddr := one.ToAddressBase()
+	twoAddr := two.ToAddressBase()
+	return compareSegmentValues(false, oneAddr.GetSection(), twoAddr.GetSection())
 }
