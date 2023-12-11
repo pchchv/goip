@@ -26,10 +26,8 @@ var (
 type DivInt = uint64
 
 type divIntVals interface {
-	// getDivisionValue gets the lower value for a division
-	getDivisionValue() DivInt
-	// getUpperDivisionValue gets the upper value for a division
-	getUpperDivisionValue() DivInt
+	getDivisionValue() DivInt      // gets the lower value for a division.
+	getUpperDivisionValue() DivInt // gets the upper value for a division.
 }
 
 type divderiver interface {
@@ -103,7 +101,7 @@ func (div *addressDivisionInternal) matchesMACSegment() bool {
 	return div.divisionValues != nil && div.getAddrType().isMAC()
 }
 
-// getDefaultRangeSeparatorString() is a wildcard string that will be used when producing default strings with getString() or getWildcardString().
+// getDefaultRangeSeparatorString is a wildcard string that will be used when producing default strings with getString() or getWildcardString().
 // Since no parameters are provided for the string, default settings are used, but they must match the address.
 // For example, generally '-' is used as a range separator, but in some cases this character is used to segment separator.
 // Note that this only applies to the 'default' settings, there are additional string methods that allow to specify these delimiter characters.
@@ -162,7 +160,6 @@ func (div *addressDivisionInternal) toNetworkDivision(divPrefixLength PrefixLen,
 	}
 
 	newVals := div.deriveNew(newLower, newUpper, divPrefixLength)
-
 	return createAddressDivision(newVals)
 }
 
@@ -183,12 +180,12 @@ func (div *addressDivisionInternal) isPrefixBlock() bool {
 }
 
 func (div *addressDivisionInternal) toHostDivision(divPrefixLength PrefixLen, withPrefixLength bool) *AddressDivision {
-	var mask SegInt
 	vals := div.divisionValues
 	if vals == nil {
 		return div.toAddressDivision()
 	}
 
+	var mask SegInt
 	lower := div.getDivisionValue()
 	upper := div.getUpperDivisionValue()
 	hasPrefLen := divPrefixLength != nil
@@ -203,7 +200,6 @@ func (div *addressDivisionInternal) toHostDivision(divPrefixLength PrefixLen, wi
 	maxVal := uint64(^SegInt(0))
 	masker := MaskRange(lower, upper, divMask, maxVal)
 	newLower, newUpper := masker.GetMaskedLower(lower, divMask), masker.GetMaskedUpper(upper, divMask)
-
 	if !withPrefixLength {
 		divPrefixLength = nil
 	}
@@ -213,7 +209,6 @@ func (div *addressDivisionInternal) toHostDivision(divPrefixLength PrefixLen, wi
 	}
 
 	newVals := div.deriveNew(newLower, newUpper, divPrefixLength)
-
 	return createAddressDivision(newVals)
 }
 
@@ -221,7 +216,7 @@ func (div *addressDivisionInternal) toPrefixedHostDivision(divPrefixLength Prefi
 	return div.toHostDivision(divPrefixLength, true)
 }
 
-// getDefaultTextualRadix returns the default radix for text address representations (10 for IPv4, 16 for IPv6, MAC and others)
+// getDefaultTextualRadix returns the default radix for textual representations of addresses (10 for IPv4, 16 for IPv6, MAC and other).
 func (div *addressDivisionInternal) getDefaultTextualRadix() int {
 	addrType := div.getAddrType()
 	if addrType.isIPv4() {
@@ -289,7 +284,6 @@ func (div *addressDivisionInternal) isSinglePrefixBlock(divisionValue, upperValu
 	divisionBitMask := ^(ones << uint(bitCount))
 	divisionPrefixMask := ones << uint(bitCount-divisionPrefixLen)
 	divisionHostMask := ^divisionPrefixMask
-
 	return testRange(divisionValue, divisionValue, upperValue, divisionPrefixMask&divisionBitMask, divisionHostMask)
 }
 
@@ -311,14 +305,12 @@ func (div *addressDivisionInternal) matchesValsWithMask(lowerValue, upperValue, 
 	if !masker.IsSequential() {
 		return false
 	}
-
 	return lowerValue == masker.GetMaskedLower(thisValue, mask) && upperValue == masker.GetMaskedUpper(thisUpperValue, mask)
 }
 
 func (div *addressDivisionInternal) toPrefixedDivision(divPrefixLength PrefixLen) *AddressDivision {
 	hasPrefLen := divPrefixLength != nil
 	bitCount := div.GetBitCount()
-
 	if hasPrefLen {
 		prefBits := divPrefixLength.bitCount()
 		prefBits = checkBitCount(prefBits, bitCount)
@@ -344,7 +336,6 @@ func (div *addressDivisionInternal) getCount() *big.Int {
 		res := bigZero()
 		return res.SetUint64(0xffffffffffffffff).Add(res, bigOneConst())
 	}
-
 	return bigZero().SetUint64((div.getUpperDivisionValue() - div.getDivisionValue()) + 1)
 }
 
@@ -1164,7 +1155,6 @@ func calcBytesInternal(byteCount int, val, upperVal DivInt) (bytes, upperBytes [
 func calcSingleBytes(byteCount int, val DivInt) (bytes []byte) {
 	byteIndex := byteCount - 1
 	bytes = make([]byte, byteCount)
-
 	for {
 		bytes[byteIndex] |= byte(val)
 		val >>= 8
@@ -1199,7 +1189,6 @@ func newDivValues(value, upperValue DivInt, prefLen PrefixLen, bitCount BitCount
 	}
 
 	prefLen = checkPrefLen(prefLen, bitCount)
-
 	return newDivValuesUnchecked(value, upperValue, prefLen, bitCount)
 }
 
@@ -1230,8 +1219,6 @@ func NewDivision(val DivInt, bitCount BitCount) *AddressDivision {
 func NewRangeDivision(val, upperVal DivInt, bitCount BitCount) *AddressDivision {
 	return NewRangePrefixDivision(val, upperVal, nil, bitCount)
 }
-
-// The following avoid the prefix length checks, value to BitCount checks, and low to high check inside newDivValues
 
 func newPrefixDivision(val DivInt, prefixLen PrefixLen, bitCount BitCount) *AddressDivision {
 	return newRangePrefixDivision(val, val, prefixLen, bitCount)
