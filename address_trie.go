@@ -1219,22 +1219,21 @@ type AddedTreeNode[T TrieKeyConstraint[T]] struct {
 // Instead, these are all the  direct or indirect added sub-nodes of the node in the originating trie.
 // If you can traverse from this node to another node in the originating trie,
 // using a sequence of sub-nodes, without any intervening sub-node being an added node,
-// / then that other node will appear as a sub-node here.
+// then that other node will appear as a sub-node here.
 func (node AddedTreeNode[T]) GetSubNodes() []AddedTreeNode[T] {
 	val := node.wrapped.GetValue()
 	if val == nil {
 		return nil
 	}
 
-	subnodeMapping := val.(tree.SubNodesMapping[trieKey[T], emptyValue])
 	var subNodes []*tree.BinTrieNode[trieKey[T], tree.AddedSubnodeMapping]
+	subnodeMapping := val.(tree.SubNodesMapping[trieKey[T], emptyValue])
 	subNodes = subnodeMapping.SubNodes
 	if len(subNodes) == 0 {
 		return nil
 	}
 
 	res := make([]AddedTreeNode[T], len(subNodes))
-
 	for i, subNode := range subNodes {
 		res[i] = AddedTreeNode[T]{subNode}
 	}
@@ -1309,7 +1308,6 @@ func (node AssociativeAddedTreeNode[T, V]) GetSubNodes() []AssociativeAddedTreeN
 	}
 
 	res := make([]AssociativeAddedTreeNode[T, V], len(subNodes))
-
 	for i, subNode := range subNodes {
 		res[i] = AssociativeAddedTreeNode[T, V]{subNode}
 	}
@@ -1324,7 +1322,7 @@ func (node AssociativeAddedTreeNode[T, V]) IsAdded() bool {
 }
 
 // GetKey returns the key of this node,
-// / which is the same as the key of the corresponding node in the originating trie.
+// which is the same as the key of the corresponding node in the originating trie.
 func (node AssociativeAddedTreeNode[T, V]) GetKey() T {
 	return node.wrapped.GetKey().address
 }
