@@ -1163,3 +1163,28 @@ func compareSegmentValues(compareUpper bool, one, two *AddressSection) (result i
 	}
 	return
 }
+
+func checkSectionGroupingType(section *AddressSection) (groupingType groupingType) {
+	if section.IsIPv4() {
+		groupingType = ipv4sectype
+	} else if section.IsIPv6() {
+		groupingType = ipv6sectype
+	} else if section.IsIP() {
+		groupingType = ipsectype
+	} else if section.IsMAC() {
+		groupingType = macsectype
+	} else if section.IsAdaptiveZero() {
+		// The zero grouping can represent a zero-length section of any address type.
+		// This is necessary because sections and groupings have no init() method to ensure zero-sections are always assigned an address type.
+		// We would need the zero grouping to be less than everything else or more than everything else for comparison consistency.
+		// Empty sections or groupings that have an address type are not considered equal.
+		// They can represent only one address type.
+		// This is similar to the fact that a MAC section and an IPv4 section can be structurally identical but not equal due to the type.
+		//
+		// See IsAdaptiveZero() method for more details.
+		groupingType = adaptivezerotype
+	} else {
+		groupingType = sectype
+	}
+	return
+}
