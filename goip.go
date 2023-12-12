@@ -12,14 +12,11 @@ import (
 )
 
 const (
-	// IndeterminateIPVersion represents an unspecified IP address version
-	IndeterminateIPVersion IPVersion = 0
-	// IPv4 represents Internet Protocol version 4
-	IPv4 IPVersion = 4
-	// IPv6 represents Internet Protocol version 6
-	IPv6                  IPVersion = 6
-	PrefixLenSeparator              = '/'
-	PrefixLenSeparatorStr           = "/"
+	IPv4                   IPVersion = 4 // represents Internet Protocol version 4
+	IPv6                   IPVersion = 6 // represents Internet Protocol version 6
+	IndeterminateIPVersion IPVersion = 0 // represents an unspecified IP address version
+	PrefixLenSeparator               = '/'
+	PrefixLenSeparatorStr            = "/"
 )
 
 var zeroIPAddr = createIPAddress(zeroSection, NoZone)
@@ -843,7 +840,6 @@ func (addr *IPAddress) toSinglePrefixBlockOrAddress() (*IPAddress, address_error
 	if res == nil {
 		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.address.not.block"}}
 	}
-
 	return res, nil
 }
 
@@ -997,7 +993,7 @@ func (addr *IPAddress) ToKey() Key[*IPAddress] {
 	} else if thisAddr := addr.ToIPv6(); thisAddr != nil {
 		key.scheme = ipv6Scheme
 		thisAddr.toIPv6Key(contents)
-	} // else key.scheme == anySchemeX
+	}
 	return key
 }
 
@@ -1015,6 +1011,7 @@ func (addr *IPAddress) fromKey(scheme addressScheme, key *keyContents) *IPAddres
 		ipv6Addr := fromIPv6IPKey(key)
 		return ipv6Addr.ToIP()
 	}
+
 	zeroAddr := IPAddress{}
 	return zeroAddr.init()
 }
@@ -1072,7 +1069,8 @@ func (addr *IPAddress) GetGenericSegment(index int) AddressSegmentType {
 }
 
 // Compare returns a negative integer, zero, or a positive integer if this address or subnet is less than, equal, or greater than the given item.
-// Any address item is comparable to any other.  All address items use CountComparator to compare.
+// Any address item is comparable to any other.
+// All address items use CountComparator to compare.
 func (addr *IPAddress) Compare(item AddressItem) int {
 	return CountComparator.Compare(addr, item)
 }
@@ -1254,11 +1252,12 @@ func (addr *IPAddress) Intersect(other *IPAddress) *IPAddress {
 // This is set subtraction, not subtraction of address values (use Increment for the latter).  We have a subnet of addresses and we are removing those addresses found in the argument subnet.
 // If there are no remaining addresses, nil is returned.
 func (addr *IPAddress) Subtract(other *IPAddress) []*IPAddress {
+	addr = addr.init()
+	other = other.init()
 	if !versionsMatch(addr, other) {
 		return []*IPAddress{addr}
 	}
 
-	addr = addr.init()
 	sects, _ := addr.GetSection().subtract(other.GetSection())
 	sectLen := len(sects)
 	if sectLen == 0 {
@@ -1281,10 +1280,12 @@ func (addr *IPAddress) Subtract(other *IPAddress) []*IPAddress {
 //
 // If the argument is not the same IP version as the receiver, the argument is ignored, and the result is the same as CoverWithPrefixBlock.
 func (addr *IPAddress) CoverWithPrefixBlockTo(other *IPAddress) *IPAddress {
+	addr = addr.init()
+	other = other.init()
 	if !versionsMatch(addr, other) {
 		return addr.CoverWithPrefixBlock()
 	}
-	return addr.init().coverWithPrefixBlockTo(other)
+	return addr.coverWithPrefixBlockTo(other)
 }
 
 // CoverWithPrefixBlock returns the minimal-size prefix block that covers all the addresses in this subnet.
@@ -1306,6 +1307,7 @@ func (addr *IPAddress) SpanWithPrefixBlocks() []*IPAddress {
 		spanning := getSpanningPrefixBlocks(wrapped, wrapped)
 		return cloneToIPAddrs(spanning)
 	}
+
 	wrapped := addr.Wrap()
 	return cloneToIPAddrs(spanWithPrefixBlocks(wrapped))
 }
@@ -1319,15 +1321,13 @@ func (addr *IPAddress) SpanWithPrefixBlocks() []*IPAddress {
 // From the list of returned subnets you can recover the original range (this to other) by converting each to IPAddressRange with ToSequentialRange
 // and them joining them into a single range with the Join method of IPAddressSeqRange.
 func (addr *IPAddress) SpanWithPrefixBlocksTo(other *IPAddress) []*IPAddress {
+	addr = addr.init()
+	other = other.init()
 	if !versionsMatch(addr, other) {
 		return addr.SpanWithPrefixBlocks()
 	}
 	return cloneToIPAddrs(
-		getSpanningPrefixBlocks(
-			addr.init().Wrap(),
-			other.init().Wrap(),
-		),
-	)
+		getSpanningPrefixBlocks(addr.Wrap(), other.Wrap()))
 }
 
 // SpanWithSequentialBlocks produces the smallest slice of sequential blocks that cover the same set of addresses as this subnet.
@@ -1357,10 +1357,12 @@ func (addr *IPAddress) SpanWithSequentialBlocks() []*IPAddress {
 // The resulting slice is sorted from lowest address value to highest,
 // regardless of the size of each prefix block.
 func (addr *IPAddress) SpanWithSequentialBlocksTo(other *IPAddress) []*IPAddress {
+	addr = addr.init()
+	other = other.init()
 	if !versionsMatch(addr, other) {
 		return addr.SpanWithSequentialBlocks()
 	}
-	return cloneToIPAddrs(getSpanningSequentialBlocks(addr.init().Wrap(), other.init().Wrap()))
+	return cloneToIPAddrs(getSpanningSequentialBlocks(addr.Wrap(), other.Wrap()))
 }
 
 // MergeToSequentialBlocks merges this with the list of addresses to produce the smallest array of sequential blocks.
@@ -1369,7 +1371,7 @@ func (addr *IPAddress) SpanWithSequentialBlocksTo(other *IPAddress) []*IPAddress
 // regardless of the size of each prefix block.
 // Arguments that are not the same IP version are ignored.
 func (addr *IPAddress) MergeToSequentialBlocks(addrs ...*IPAddress) []*IPAddress {
-	series := filterCloneIPAddrs(addr, addrs)
+	series := filterCloneIPAddrs(addr.init(), addrs)
 	blocks := getMergedSequentialBlocks(series)
 	return cloneToIPAddrs(blocks)
 }
@@ -1380,7 +1382,7 @@ func (addr *IPAddress) MergeToSequentialBlocks(addrs ...*IPAddress) []*IPAddress
 // regardless of the size of each prefix block.
 // Arguments that are not the same IP version are ignored.
 func (addr *IPAddress) MergeToPrefixBlocks(addrs ...*IPAddress) []*IPAddress {
-	series := filterCloneIPAddrs(addr, addrs)
+	series := filterCloneIPAddrs(addr.init(), addrs)
 	blocks := getMergedPrefixBlocks(series)
 	return cloneToIPAddrs(blocks)
 }
@@ -1983,6 +1985,7 @@ func (addr *ipAddressInternal) checkIdentity(section *IPAddressSection) *IPAddre
 	if section == nil {
 		return nil
 	}
+
 	sect := section.ToSectionBase()
 	if sect == addr.section {
 		return addr.toIPAddress()
@@ -2218,6 +2221,7 @@ func (addr *ipAddressInternal) rangeIterator(
 				finalValue: finalValue,
 				indexi:     indexi,
 			}
+
 			if allSegShared == nil {
 				allSegShared = createAddressDivision(lowerSeg.deriveNewMultiSeg(0, lower.GetMaxSegmentValue(), nil)).ToIP()
 			}
@@ -2236,6 +2240,7 @@ func (addr *ipAddressInternal) rangeIterator(
 			}
 		}
 	}
+
 	iteratorProducer := func(iteratorIndex int) Iterator[*AddressSegment] {
 		iter := segIteratorProducerList[iteratorIndex]()
 		return wrappedSegmentIterator[*IPAddressSegment]{iter}
@@ -2637,7 +2642,6 @@ func addrFromZonedIP(addr *net.IPAddr) (*IPAddress, address_error.AddressValueEr
 			return res, err
 		}
 	}
-
 	return nil, &addressValueError{addressError: addressError{key: "ipaddress.error.exceeds.size"}}
 }
 
@@ -2702,7 +2706,6 @@ func NewIPAddressFromNetIPNet(ipnet *net.IPNet) (*IPAddress, address_error.Addre
 	if prefLen == nil {
 		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.notNetworkMask"}}
 	}
-
 	return addr.ToPrefixBlockLen(prefLen.bitCount()), nil
 }
 
