@@ -673,7 +673,6 @@ func (addr *IPv4Address) Contains(other AddressType) bool {
 	if addr.ToAddressBase() == otherAddr {
 		return true
 	}
-
 	return otherAddr.getAddrType() == ipv4Type && addr.section.sameCountTypeContains(otherAddr.GetSection())
 }
 
@@ -1106,7 +1105,6 @@ func (addr *IPv4Address) toSinglePrefixBlockOrAddress() (*IPv4Address, address_e
 	if res == nil {
 		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.address.not.block"}}
 	}
-
 	return res, nil
 }
 
@@ -1153,11 +1151,11 @@ func (addr *IPv4Address) ReverseBits(perByte bool) (*IPv4Address, address_error.
 // they are not comparable with Go operators.
 // However, AddressKey instances are comparable with Go operators, and thus can be used as map keys.
 func (addr *IPv4Address) ToKey() IPv4AddressKey {
+	var newVal uint64
 	addr = addr.init()
 	key := IPv4AddressKey{}
 	section := addr.GetSection()
 	divs := section.getDivArray()
-	var newVal uint64
 	if addr.IsMultiple() {
 		for _, div := range divs {
 			seg := div.ToIPv4()
@@ -1170,6 +1168,7 @@ func (addr *IPv4Address) ToKey() IPv4AddressKey {
 		}
 		newVal |= newVal << IPv4BitCount
 	}
+
 	key.vals = newVal
 	return key
 }
@@ -1804,6 +1803,7 @@ func NewIPv4AddressFromBytes(bytes []byte) (addr *IPv4Address, err address_error
 	if ipv4 := net.IP(bytes).To4(); ipv4 != nil {
 		bytes = ipv4
 	}
+
 	section, err := NewIPv4SectionFromSegmentedBytes(bytes, IPv4SegmentCount)
 	if err == nil {
 		addr = newIPv4Address(section)
@@ -1817,6 +1817,7 @@ func NewIPv4Address(section *IPv4AddressSection) (*IPv4Address, address_error.Ad
 	if section == nil {
 		return zeroIPv4, nil
 	}
+
 	segCount := section.GetSegmentCount()
 	if segCount != IPv4SegmentCount {
 		return nil, &addressValueError{
@@ -1837,6 +1838,7 @@ func NewIPv4AddressFromSegs(segments []*IPv4AddressSegment) (*IPv4Address, addre
 			val:          segCount,
 		}
 	}
+
 	section := NewIPv4Section(segments)
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4(), nil
 }
@@ -1852,6 +1854,7 @@ func NewIPv4AddressFromPrefixedSegs(segments []*IPv4AddressSegment, prefixLength
 			val:          segCount,
 		}
 	}
+
 	section := NewIPv4PrefixedSection(segments, prefixLength)
 	return createAddress(section.ToSectionBase(), NoZone).ToIPv4(), nil
 }
@@ -1869,7 +1872,6 @@ func NewIPv4AddressFromPrefixedBytes(bytes []byte, prefixLength PrefixLen) (addr
 	if err == nil {
 		addr = newIPv4Address(section)
 	}
-
 	return
 }
 
