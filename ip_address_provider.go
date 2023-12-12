@@ -210,7 +210,7 @@ func (p *nullProvider) providerEquals(other ipAddressProvider) (bool, address_er
 type addressResult struct {
 	address       *IPAddress
 	hostAddress   *IPAddress
-	address_Error address_error.IncompatibleAddressError
+	address_Error address_error.IncompatibleAddressError // address_Error applies to address, hostErr to hostAddress
 	hostErr       address_error.IncompatibleAddressError
 	rng           *SequentialRange[*IPAddress] // only used when no address can be obtained
 }
@@ -569,22 +569,18 @@ func newMaskCreator(options address_string_param.IPAddressStringParams, adjusted
 		}
 		return nil
 	}
-
 	versionedAddressCreatorFunc := func(version IPVersion) (*IPAddress, address_error.IncompatibleAddressError) {
 		return createVersionedMask(version, networkPrefixLength, true), nil
 	}
-
 	maskCreatorFunc := func() (address, hostAddress *IPAddress) {
 		prefLen := networkPrefixLength
 		return createVersionedMask(adjustedVersion, prefLen, true),
 			createVersionedMask(adjustedVersion, prefLen, false)
 	}
-
 	addrCreator := func() (address, hostAddress *IPAddress, address_Error, hosterr address_error.IncompatibleAddressError) {
 		address, hostAddress = maskCreatorFunc()
 		return
 	}
-
 	cached := cachedAddressProvider{addressCreator: addrCreator}
 	return &maskCreator{
 		adjustedAddressCreator{
