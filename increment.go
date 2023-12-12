@@ -27,7 +27,7 @@ func checkOverflow(increment int64, lowerValue, upperValue, countMinus1 uint64, 
 	return false
 }
 
-// Used by MAC and IPv6.
+// checkOverflowBig used by MAC and IPv6.
 func checkOverflowBig(increment int64, bigIncrement, lowerValue, upperValue, count *big.Int, maxValue func() *big.Int) bool {
 	isMultiple := count.CmpAbs(bigOneConst()) > 0
 	if increment < 0 {
@@ -81,18 +81,25 @@ func incrementRange(section *AddressSection, increment int64, lowerProducer func
 }
 
 func add(section *AddressSection, fullValue uint64, increment int64, creator addressSegmentCreator, prefixLength PrefixLen) *AddressSection {
-	var val uint64
+	var highBytes, lowBytes uint64
 	segCount := section.GetSegmentCount()
 	if increment < 0 {
-		val = fullValue - uint64(-increment)
+		lowBytes = fullValue - uint64(-increment)
 	} else {
-		val = fullValue + uint64(increment)
+		space := math.MaxUint64 - fullValue
+		uIncrement := uint64(increment)
+		if uIncrement > space {
+			highBytes = 1
+			lowBytes = fullValue - (math.MaxUint64 - (uIncrement - 1))
+		} else {
+			lowBytes = fullValue + uint64(increment)
+		}
 	}
 
 	newSegs := createSegmentsUint64(
 		segCount,
-		0,
-		val,
+		highBytes,
+		lowBytes,
 		section.GetBytesPerSegment(),
 		section.GetBitsPerSegment(),
 		creator,
@@ -112,7 +119,6 @@ func addBig(section *AddressSection, increment *big.Int, creator addressSegmentC
 		segCount,
 		section.GetBytesPerSegment(),
 		section.GetBitsPerSegment(),
-		//expectedByteCount,
 		creator,
 		prefixLength)
 	res := createSection(segments, prefixLength, section.getAddrType())
@@ -127,8 +133,17 @@ func addBig(section *AddressSection, increment *big.Int, creator addressSegmentC
 
 // increment does not handle overflow,
 // overflow should be checked before calling this.
-// Used by IPv4 and MAC.
-func increment(section *AddressSection, increment int64, creator addressSegmentCreator, countMinus1 uint64, lowerValue, upperValue uint64, lowerProducer, upperProducer func() *AddressSection, prefixLength PrefixLen) *AddressSection {
+// Used by IPv4 and MAC, but also IPv6 addresses with prefix ::/64.
+func increment(
+	section *AddressSection,
+	increment int64,
+	creator addressSegmentCreator,
+	countMinus1 uint64,
+	lowerValue,
+	upperValue uint64,
+	lowerProducer,
+	upperProducer func() *AddressSection,
+	prefixLength PrefixLen) *AddressSection {
 	if !section.isMultiple() {
 		return add(section, lowerValue, increment, creator, prefixLength)
 	}
@@ -150,7 +165,6 @@ func increment(section *AddressSection, increment int64, creator addressSegmentC
 	if uIncrement <= math.MaxUint64-upperValue {
 		return add(upperProducer(), upperValue, int64(uIncrement-countMinus1), creator, prefixLength)
 	}
-
 	return addBig(upperProducer(), new(big.Int).SetUint64(uIncrement-countMinus1), creator, prefixLength)
 }
 
@@ -171,6 +185,7 @@ func fastIncrement(section *AddressSection, inc int64, creator addressSegmentCre
 				}
 				return incrementRange(section, inc, lowerProducer, prefixLength)
 			}
+
 			upperValue := section.GetUpperValue()
 			if upperValue.CmpAbs(&maxUint64) <= 0 {
 				value := section.GetValue()
@@ -199,8 +214,15 @@ func fastIncrement(section *AddressSection, inc int64, creator addressSegmentCre
 
 // incrementBig does not handle overflow,
 // overflow should be checked before calling this.
-// Used by MAC and IPv6
-func incrementBig(section *AddressSection, increment int64, bigIncrement *big.Int, creator addressSegmentCreator, lowerProducer, upperProducer func() *AddressSection, prefixLength PrefixLen) *AddressSection {
+// Used by MAC and IPv6.
+func incrementBig(
+	section *AddressSection,
+	increment int64,
+	bigIncrement *big.Int,
+	creator addressSegmentCreator,
+	lowerProducer,
+	upperProducer func() *AddressSection,
+	prefixLength PrefixLen) *AddressSection {
 	if !section.isMultiple() {
 		return addBig(section, bigIncrement, creator, prefixLength)
 	}
@@ -219,6 +241,5 @@ func incrementBig(section *AddressSection, increment int64, bigIncrement *big.In
 		}
 		return addBig(upperProducer(), incrementPlus1.Sub(incrementPlus1, count), creator, prefixLength)
 	}
-
 	return incrementRange(section, increment, lowerProducer, prefixLength)
 }
