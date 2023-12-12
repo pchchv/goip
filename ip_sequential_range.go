@@ -20,11 +20,11 @@ var (
 	_ SequentialRange[*IPv6Address]
 )
 
-type IPAddressSeqRange = SequentialRange[*IPAddress]
-
-type IPv4AddressSeqRange = SequentialRange[*IPv4Address]
-
-type IPv6AddressSeqRange = SequentialRange[*IPv6Address]
+type (
+	IPAddressSeqRange   = SequentialRange[*IPAddress]
+	IPv4AddressSeqRange = SequentialRange[*IPv4Address]
+	IPv6AddressSeqRange = SequentialRange[*IPv6Address]
+)
 
 type rangeCache struct {
 	cachedCount *big.Int
@@ -64,6 +64,8 @@ type SequentialRangeConstraint[T any] interface {
 		hostSegmentIndex int,
 		prefixedSegIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
 	) Iterator[T]
+	// returns whether two addresses,
+	// already known to be the same version and address type, are equal
 	equalsSameVersion(AddressType) bool
 	getLowestHighestAddrs() (lower, upper T)
 	getAddrType() addrType
@@ -119,7 +121,6 @@ func (rng *SequentialRange[T]) GetMinPrefixLenForBlock() BitCount {
 	count := lower.GetSegmentCount()
 	totalPrefix := lower.GetBitCount()
 	segBitCount := lower.GetBitsPerSegment()
-
 	for i := count - 1; i >= 0; i-- {
 		lowerSeg := lower.GetGenericSegment(i)
 		upperSeg := upper.GetGenericSegment(i)
@@ -478,7 +479,6 @@ func (rng *SequentialRange[T]) Iterator() Iterator[T] {
 	}
 
 	divCount := lower.GetSegmentCount()
-
 	return lower.rangeIterator(
 		rng.upper,
 		false,
@@ -516,7 +516,6 @@ func (rng *SequentialRange[T]) PrefixBlockIterator(prefLength BitCount) Iterator
 	}
 
 	hostSegIndex := getHostSegmentIndex(prefLength, bytesPerSegment, bitsPerSegment)
-
 	return lower.rangeIterator(
 		rng.upper,
 		true,
@@ -550,6 +549,10 @@ func (rng *SequentialRange[T]) PrefixBlockIterator(prefLength BitCount) Iterator
 // Overlaps returns true if this sequential range overlaps with the given sequential range.
 func (rng *SequentialRange[T]) Overlaps(other *SequentialRange[T]) bool {
 	rng = rng.init()
+	other = other.init()
+	if rng.lower.getAddrType() != other.lower.getAddrType() {
+		return false
+	}
 	return compareLowIPAddressValues(other.GetLower(), rng.upper) <= 0 &&
 		compareLowIPAddressValues(other.GetUpper(), rng.lower) >= 0
 }
@@ -558,9 +561,12 @@ func (rng *SequentialRange[T]) Overlaps(other *SequentialRange[T]) bool {
 func (rng *SequentialRange[T]) Intersect(other *SequentialRange[T]) *SequentialRange[T] {
 	rng = rng.init()
 	other = other.init()
+	if rng.lower.getAddrType() != other.lower.getAddrType() {
+		return nil
+	}
+
 	otherLower, otherUpper := other.GetLower(), other.GetUpper()
 	lower, upper := rng.lower, rng.upper
-
 	if compareLowIPAddressValues(lower, otherLower) <= 0 {
 		if compareLowIPAddressValues(upper, otherUpper) >= 0 { // l, ol, ou, u
 			return other
@@ -578,7 +584,6 @@ func (rng *SequentialRange[T]) Intersect(other *SequentialRange[T]) *SequentialR
 	if comp < 0 {
 		return nil
 	}
-
 	return newSequRangeUnchecked(lower, otherUpper, comp != 0)
 }
 
@@ -609,6 +614,10 @@ func (rng *SequentialRange[T]) SpanWithSequentialBlocks() []T {
 func (rng *SequentialRange[T]) JoinTo(other *SequentialRange[T]) *SequentialRange[T] {
 	rng = rng.init()
 	other = other.init()
+	if rng.lower.getAddrType() != other.lower.getAddrType() {
+		return nil
+	}
+
 	otherLower, otherUpper := other.GetLower(), other.GetUpper()
 	lower, upper := rng.lower, rng.upper
 	lowerComp := compareLowIPAddressValues(lower, otherLower)
@@ -627,7 +636,6 @@ func (rng *SequentialRange[T]) JoinTo(other *SequentialRange[T]) *SequentialRang
 
 	var lowestLower, highestUpper T
 	upperComp := compareLowIPAddressValues(upper, otherUpper)
-
 	if lowerComp >= 0 {
 		if lowerComp == 0 && upperComp == 0 {
 			return rng
@@ -642,13 +650,13 @@ func (rng *SequentialRange[T]) JoinTo(other *SequentialRange[T]) *SequentialRang
 	} else {
 		highestUpper = otherUpper
 	}
-
 	return newSequRangeUnchecked(lowestLower, highestUpper, true)
 }
 
 // IsIPv4 returns true if this sequential address range is an IPv4 sequential address range.
 // If so, use ToIPv4 to convert to the IPv4-specific type.
-func (rng *SequentialRange[T]) IsIPv4() bool { // returns false when lower is nil
+// Returns false when lower is nil.
+func (rng *SequentialRange[T]) IsIPv4() bool {
 	if rng != nil {
 		t := any(rng.GetLower())
 		if _, ok := t.(*IPv4Address); ok {
@@ -662,7 +670,8 @@ func (rng *SequentialRange[T]) IsIPv4() bool { // returns false when lower is ni
 
 // IsIPv6 returns true if this sequential address range is an IPv6 sequential address range.
 // If so, use ToIPv6 to convert to the IPv6-specific type.
-func (rng *SequentialRange[T]) IsIPv6() bool { // returns false when lower is nil
+// Returns false when lower is nil.
+func (rng *SequentialRange[T]) IsIPv6() bool {
 	if rng != nil {
 		t := any(rng.GetLower())
 		if _, ok := t.(*IPv6Address); ok {
@@ -680,7 +689,7 @@ func (rng *SequentialRange[T]) IsIPv6() bool { // returns false when lower is ni
 func (rng *SequentialRange[T]) Extend(other *SequentialRange[T]) *SequentialRange[T] {
 	rng = rng.init()
 	other = other.init()
-	if !rng.lower.GetIPVersion().Equal(other.lower.GetIPVersion()) {
+	if rng.lower.getAddrType() != other.lower.getAddrType() {
 		return nil
 	}
 
@@ -699,7 +708,6 @@ func (rng *SequentialRange[T]) Extend(other *SequentialRange[T]) *SequentialRang
 	if upperComp >= 0 { // l ol ou u
 		return rng
 	}
-
 	return newSequRangeUnchecked(lower, otherUpper, true) // l ol u ou or l u ol ou
 }
 
@@ -709,6 +717,10 @@ func (rng *SequentialRange[T]) Extend(other *SequentialRange[T]) *SequentialRang
 func (rng *SequentialRange[T]) Subtract(other *SequentialRange[T]) []*SequentialRange[T] {
 	rng = rng.init()
 	other = other.init()
+	if rng.lower.getAddrType() != other.lower.getAddrType() {
+		return []*SequentialRange[T]{rng}
+	}
+
 	otherLower, otherUpper := other.GetLower(), other.GetUpper()
 	lower, upper := rng.lower, rng.upper
 	if compareLowIPAddressValues(lower, otherLower) < 0 {
@@ -775,7 +787,6 @@ func (rng *SequentialRange[T]) getCachedCount(copy bool) (res *big.Int) {
 			res = count
 		}
 	}
-
 	return
 }
 
@@ -897,11 +908,16 @@ func (rng *SequentialRange[T]) Contains(other IPAddressType) bool {
 	} else if other == nil {
 		return true
 	}
+
 	otherAddr := other.ToIP()
 	if otherAddr == nil {
 		return true
 	}
+
 	rng = rng.init()
+	if !rng.GetIPVersion().Equal(other.GetIPVersion()) {
+		return false
+	}
 	return compareLowIPAddressValues(otherAddr.GetLower(), rng.lower) >= 0 &&
 		compareLowIPAddressValues(otherAddr.GetUpper(), rng.upper) <= 0
 }
@@ -914,12 +930,15 @@ func (rng *SequentialRange[T]) ContainsRange(other IPAddressSeqRangeType) bool {
 		return true
 	}
 
-	rng = rng.init()
 	otherRange := other.ToIP()
 	if otherRange == nil {
 		return true
 	}
 
+	rng = rng.init()
+	if rng.lower.getAddrType() != otherRange.lower.getAddrType() {
+		return false
+	}
 	return compareLowIPAddressValues(otherRange.GetLower(), rng.lower) >= 0 &&
 		compareLowIPAddressValues(otherRange.GetUpper(), rng.upper) <= 0
 }
@@ -938,7 +957,6 @@ func (rng *SequentialRange[T]) Equal(other IPAddressSeqRangeType) bool {
 	if otherRange == nil {
 		return false
 	}
-
 	return rng.lower.Equal(otherRange.GetLower()) && rng.upper.Equal(otherRange.GetUpper())
 }
 
@@ -1007,7 +1025,6 @@ func (rng *SequentialRange[T]) Join(ranges ...*SequentialRange[T]) []*Sequential
 
 func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	anyt := any(t)
-
 	if _, ok := anyt.(*IPv6Address); ok {
 		t = any(zeroIPv6).(T)
 	} else if _, ok := anyt.(*IPv4Address); ok {
@@ -1015,7 +1032,6 @@ func nilConvert[T SequentialRangeConstraint[T]]() (t T) {
 	} else if _, ok := anyt.(*IPAddress); ok {
 		t = any(zeroIPAddr).(T)
 	}
-
 	return
 }
 
@@ -1033,7 +1049,7 @@ func newSequRangeCheckSize[T SequentialRangeConstraint[T]](lower, upper T) *Sequ
 }
 
 func compareLowIPAddressValues(one, two AddressType) int {
-	return LowValueComparator.CompareAddresses(one, two)
+	return compareAddressLowerValues(one, two)
 }
 
 func newSequRange[T SequentialRangeConstraint[T]](first, other T) *SequentialRange[T] {
@@ -1100,7 +1116,9 @@ func NewSequentialRange[T SequentialRangeConstraint[T]](lower, upper T) *Sequent
 		lower = nilConvert[T]()
 	} else if lower != t && upper != t {
 		// this check only matters when T is *IPAddress
-		if lower.getAddrType() != upper.getAddrType() {
+		// Using getAddrType is NOT safe here because T may be *IPv4Address or *IPv6Address, and so we need to ensure init() is called before calling getAddrType
+		//if lower.getAddrType() != upper.getAddrType() {
+		if !lower.GetIPVersion().Equal(upper.GetIPVersion()) {
 			// when both are zero-type, we do not go in here
 			// but if only one is, we return nil.  zero-type is "indeterminate", so we cannot "infer" a different version for it
 			// However, nil is the absence of a version/type so we can and do
@@ -1142,7 +1160,6 @@ func getMinPrefixLenForBlock(lower, upper DivInt, bitCount BitCount) BitCount {
 			result -= BitCount(prefixedBitCount)
 		}
 	}
-
 	return result
 }
 
@@ -1203,11 +1220,16 @@ func joinRanges[T SequentialRangeConstraint[T]](ranges []*SequentialRange[T]) []
 		for ; j < rangesLen; j++ {
 			rng2 := ranges[j]
 			nextLower := rng2.GetLower()
+			if nextLower.getAddrType() != currentUpper.getAddrType() {
+				break
+			}
+
 			doJoin := compareLowIPAddressValues(currentUpper, nextLower) >= 0
-			if !doJoin && nextLower.GetIPVersion().Equal(currentUpper.GetIPVersion()) {
+			if !doJoin {
 				doJoin = currentUpper.Increment(1).Equal(nextLower)
 				isMultiJoin = true
 			}
+
 			if doJoin {
 				//Join them
 				joinedCount++
@@ -1222,6 +1244,7 @@ func joinRanges[T SequentialRangeConstraint[T]](ranges []*SequentialRange[T]) []
 				break
 			}
 		}
+
 		if didJoin {
 			ranges[i] = newSequRangeUnchecked(currentLower, currentUpper, isMultiJoin)
 		}
@@ -1255,10 +1278,11 @@ func NewIPSeqRange(lower, upper *IPAddress) *SequentialRange[*IPAddress] { // fo
 	if lower == nil && upper == nil {
 		lower = zeroIPAddr
 	} else if lower != nil && upper != nil {
+		// Using getAddrType is safe here because we use IPAddress so if it is zeroType that is accurate
 		if lower.getAddrType() != upper.getAddrType() {
 			// when both are zero-type, we do not go in here
-			// but if only one is, we return nil.  zero-type is "indeterminate", so we cannot "infer" a different version for it
-			// However, nil is the absence of a version/type so we can and do
+			// but if only one is, we do go in here and return nil.  zero-type is "indeterminate", chosen to be neither IPv4 or IPv6, so we cannot "infer" a different version for it
+			// However, nil is the absence of a version/type so we can infer the version, and we do
 			return nil
 		}
 	}
