@@ -21,6 +21,664 @@ const (
 
 var zeroIPAddr = createIPAddress(zeroSection, NoZone)
 
+// IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
+type IPAddressValueProvider interface {
+	AddressValueProvider
+	GetPrefixLen() PrefixLen // return nil if none
+	GetIPVersion() IPVersion // should not return IndeterminateVersion
+	GetZone() string         // return "" or NoZone if none
+}
+
+// necessary to avoid direct access to IPAddress
+type ipAddressInternal struct {
+	addressInternal
+}
+
+func (addr *ipAddressInternal) toIPAddress() *IPAddress {
+	return (*IPAddress)(unsafe.Pointer(addr))
+}
+
+// GetPrefixCount returns the count of prefixes in this address or subnet.
+//
+// The prefix length is given by GetPrefixLen.
+//
+// If this has a non-nil prefix length, returns the count of the range of values in the prefix.
+//
+// If this has a nil prefix length, returns the same value as GetCount.
+func (addr *ipAddressInternal) GetPrefixCount() *big.Int {
+	return addr.addressInternal.GetPrefixCount()
+}
+
+// GetPrefixCountLen returns the count of prefixes in this address or subnet for the given prefix length.
+//
+// If not a subnet of multiple addresses, or a subnet with just single prefix of the given length, returns 1.
+func (addr *ipAddressInternal) GetPrefixCountLen(prefixLen BitCount) *big.Int {
+	return addr.addressInternal.GetPrefixCountLen(prefixLen)
+}
+
+// GetBlockCount returns the count of distinct values in the given number of initial (more significant) segments.
+func (addr *ipAddressInternal) GetBlockCount(segments int) *big.Int {
+	return addr.addressInternal.GetBlockCount(segments)
+}
+
+// GetPrefixLen returns the prefix length, or nil if there is no prefix length.
+//
+// A prefix length indicates the number of bits in the initial part of the address that comprise the prefix.
+//
+// A prefix is a part of the address that is not specific to that address but common amongst a group of addresses,
+// such as a CIDR prefix block subnet.
+//
+// For IP addresses, the prefix is explicitly defined when the address is created.
+// For example, "1.2.0.0/16" has a prefix length of 16, while "1.2.*.*" has no prefix length,
+// even though they both represent the same set of addresses and are considered equal.
+// Prefixes can be considered variable for a given IP address and can depend on routing.
+//
+// The methods GetMinPrefixLenForBlock and GetPrefixLenForSingleBlock can help you
+// to obtain or define a prefix length if one does not exist already.
+// The method ToPrefixBlockLen allows you to create the subnet consisting of
+// the block of addresses for any given prefix length.
+func (addr *ipAddressInternal) GetPrefixLen() PrefixLen {
+	return addr.addressInternal.GetPrefixLen()
+}
+
+// GetBlockMaskPrefixLen returns the prefix length if this address is equivalent to the mask for a CIDR prefix block.
+// Otherwise, it returns nil.
+// A CIDR network mask is an address with all ones in the network section and then all zeros in the host section.
+// A CIDR host mask is an address with all zeros in the network section and then all ones in the host section.
+// The prefix length is the bit-length of the network section.
+//
+// Also, keep in mind that the prefix length returned by this method is not equivalent to the prefix length of this instance,
+// indicating the network and host section of this address.
+// The prefix length returned here indicates the whether the value of this address can be used as a mask for the network and host
+// section of any other address.  Therefore, the two values can be different values, or one can be nil while the other is not.
+//
+// This method applies only to the lower value of the range if this address represents multiple values.
+func (addr *ipAddressInternal) GetBlockMaskPrefixLen(network bool) PrefixLen {
+	section := addr.section
+	if section == nil {
+		return nil
+	}
+	return section.ToIP().GetBlockMaskPrefixLen(network)
+}
+
+func (addr *ipAddressInternal) getIPVersion() IPVersion {
+	if addr.isIPv4() {
+		return IPv4
+	} else if addr.isIPv6() {
+		return IPv6
+	}
+	return IndeterminateIPVersion
+}
+
+func (addr *ipAddressInternal) getNetworkPrefixLen() PrefixLen {
+	section := addr.section
+	if section == nil {
+		return nil
+	}
+	return section.ToIP().getNetworkPrefixLen()
+}
+
+// GetNetworkPrefixLen returns the prefix length, or nil if there is no prefix length.
+// GetNetworkPrefixLen is equivalent to the method GetPrefixLen.
+func (addr *ipAddressInternal) GetNetworkPrefixLen() PrefixLen {
+	return addr.getNetworkPrefixLen().copy()
+}
+
+func (addr *ipAddressInternal) getNetNetIPAddr() netip.Addr {
+	netAddr, _ := netip.AddrFromSlice(addr.getBytes())
+	return netAddr
+}
+
+func (addr *ipAddressInternal) getUpperNetNetIPAddr() netip.Addr {
+	netAddr, _ := netip.AddrFromSlice(addr.getUpperBytes())
+	return netAddr
+}
+
+func (addr *ipAddressInternal) getSection() *IPAddressSection {
+	return addr.section.ToIP()
+}
+
+// IncludesZeroHost returns whether the subnet contains an individual address with a host of zero.
+// If the subnet has no prefix length it returns false.
+// If the prefix length matches the bit count, then it returns true.
+//
+// Otherwise, it checks whether it contains an individual address for which all bits past the prefix are zero.
+func (addr *ipAddressInternal) IncludesZeroHost() bool {
+	section := addr.section
+	if section == nil {
+		return false
+	}
+	return section.ToIP().IncludesZeroHost()
+}
+
+// IncludesMaxHost returns whether the subnet contains an individual address with a host of all one-bits.
+// If the subnet has no prefix length it returns false.
+// If the prefix length matches the bit count, then it returns true.
+//
+// Otherwise, it checks whether it contains an individual address for which all bits past the prefix are one.
+func (addr *ipAddressInternal) IncludesMaxHost() bool {
+	section := addr.section
+	if section == nil {
+		return false
+	}
+	return section.ToIP().IncludesMaxHost()
+}
+
+func (addr *ipAddressInternal) includesZeroHostLen(networkPrefixLength BitCount) bool {
+	return addr.getSection().IncludesZeroHostLen(networkPrefixLength)
+}
+
+func (addr *ipAddressInternal) includesMaxHostLen(networkPrefixLength BitCount) bool {
+	return addr.getSection().IncludesMaxHostLen(networkPrefixLength)
+}
+
+// IsSingleNetwork returns whether the network section of the address, the prefix, consists of a single value.
+//
+// If it has no prefix length, it returns true if not multiple,
+// if it contains only a single individual address.
+func (addr *ipAddressInternal) IsSingleNetwork() bool {
+	section := addr.section
+	return section == nil || section.ToIP().IsSingleNetwork()
+}
+
+// IsMaxHost returns whether this section has a prefix length and if so,
+// whether the host section is always all one-bits, the max value,
+// for all individual addresses in this subnet.
+//
+// If the host section is zero length (there are zero host bits), IsMaxHost returns true.
+func (addr *ipAddressInternal) IsMaxHost() bool {
+	section := addr.section
+	return section != nil && section.ToIP().IsMaxHost()
+}
+
+// IsMaxHostLen returns whether the host section is always one-bits,
+// the max value, for all individual addresses in this subnet,
+// for the given prefix length.
+//
+// If the host section is zero length (there are zero host bits), IsMaxHostLen returns true.
+func (addr *ipAddressInternal) isMaxHostLen(prefLen BitCount) bool {
+	return addr.getSection().IsMaxHostLen(prefLen)
+}
+
+// IsZeroHost returns whether this subnet has a prefix length and if so,
+// whether the host section is always zero for all individual addresses in this subnet.
+//
+// If the host section is zero length (there are zero host bits), IsZeroHost returns true.
+func (addr *ipAddressInternal) IsZeroHost() bool {
+	section := addr.section
+	return section != nil && section.ToIP().IsZeroHost()
+}
+
+// IsZeroHostLen returns whether the host section is always zero for all individual sections in this address section,
+// for the given prefix length.
+//
+// If the host section is zero length (there are zero host bits), IsZeroHostLen returns true.
+func (addr *ipAddressInternal) isZeroHostLen(prefLen BitCount) bool {
+	return addr.getSection().IsZeroHostLen(prefLen)
+}
+
+func (addr *ipAddressInternal) checkIdentity(section *IPAddressSection) *IPAddress {
+	if section == nil {
+		return nil
+	}
+
+	sect := section.ToSectionBase()
+	if sect == addr.section {
+		return addr.toIPAddress()
+	}
+	return createIPAddress(sect, addr.zone)
+}
+
+func (addr *ipAddressInternal) adjustPrefixLen(prefixLen BitCount) *IPAddress {
+	return addr.checkIdentity(addr.getSection().adjustPrefixLen(prefixLen))
+}
+
+func (addr *ipAddressInternal) adjustPrefixLenZeroed(prefixLen BitCount) (res *IPAddress, err address_error.IncompatibleAddressError) {
+	section, err := addr.getSection().adjustPrefixLenZeroed(prefixLen)
+	if err == nil {
+		res = addr.checkIdentity(section)
+	}
+	return
+}
+
+func (addr *ipAddressInternal) getNetworkMask(network IPAddressNetwork) *IPAddress {
+	var prefLen BitCount
+	if pref := addr.getPrefixLen(); pref != nil {
+		prefLen = pref.bitCount()
+	} else {
+		prefLen = addr.GetBitCount()
+	}
+	return network.GetNetworkMask(prefLen)
+}
+
+func (addr *ipAddressInternal) getHostMask(network IPAddressNetwork) *IPAddress {
+	var prefLen BitCount
+	if addr.isPrefixed() {
+		prefLen = addr.getNetworkPrefixLen().bitCount()
+	}
+	return network.GetHostMask(prefLen)
+}
+
+func (addr *ipAddressInternal) getNetwork() IPAddressNetwork {
+	return addr.getSection().getNetwork()
+}
+
+// IsPrefixBlock returns whether the address has a prefix length and
+// the address range includes the block of values for that prefix length.
+// If the prefix length matches the bit count, this returns true.
+//
+// To create a prefix block from any address, use ToPrefixBlock.
+//
+// This is different from ContainsPrefixBlock in that this method returns
+// false if the series has no prefix length, or a prefix length that differs from
+// a prefix length for which ContainsPrefixBlock returns true.
+func (addr *ipAddressInternal) IsPrefixBlock() bool {
+	return addr.addressInternal.IsPrefixBlock()
+}
+
+// ContainsPrefixBlock returns whether the range of this address or subnet contains
+// the block of addresses for the given prefix length.
+//
+// Unlike ContainsSinglePrefixBlock, whether there are multiple prefix values in
+// this item for the given prefix length makes no difference.
+//
+// Use GetMinPrefixLenForBlock to determine the smallest prefix length
+// for which this method returns true.
+func (addr *ipAddressInternal) ContainsPrefixBlock(prefixLen BitCount) bool {
+	return addr.addressInternal.ContainsPrefixBlock(prefixLen)
+}
+
+// GetMinPrefixLenForBlock returns the smallest prefix length such that
+// this includes the block of addresses for that prefix length.
+//
+// If the entire range can be described this way,
+// then this method returns the same value as GetPrefixLenForSingleBlock.
+//
+// There may be a single prefix, or multiple possible prefix values in
+// this item for the returned prefix length.
+// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values.
+//
+// If this represents just a single address,
+// returns the bit length of this address.
+//
+// See AssignMinPrefixForBlock for some examples.
+func (addr *ipAddressInternal) GetMinPrefixLenForBlock() BitCount {
+	return addr.addressInternal.GetMinPrefixLenForBlock()
+}
+
+// When boundariesOnly is true, there will be no error.
+func (addr *ipAddressInternal) toZeroHost(boundariesOnly bool) (res *IPAddress, err address_error.IncompatibleAddressError) {
+	section, err := addr.section.toIPAddressSection().toZeroHost(boundariesOnly)
+	if err == nil {
+		res = addr.checkIdentity(section)
+	}
+	return
+}
+
+func (addr *ipAddressInternal) toZeroHostLen(prefixLength BitCount) (res *IPAddress, err address_error.IncompatibleAddressError) {
+	section, err := addr.getSection().toZeroHostLen(prefixLength)
+	if err == nil {
+		res = addr.checkIdentity(section)
+	}
+	return
+}
+
+func (addr *ipAddressInternal) toZeroNetwork() *IPAddress {
+	return addr.checkIdentity(addr.getSection().toZeroNetwork())
+}
+
+func (addr *ipAddressInternal) toMaxHost() (res *IPAddress, err address_error.IncompatibleAddressError) {
+	section, err := addr.section.toIPAddressSection().toMaxHost()
+	if err == nil {
+		res = addr.checkIdentity(section)
+	}
+	return
+}
+
+func (addr *ipAddressInternal) toMaxHostLen(prefixLength BitCount) (res *IPAddress, err address_error.IncompatibleAddressError) {
+	section, err := addr.getSection().toMaxHostLen(prefixLength)
+	if err == nil {
+		res = addr.checkIdentity(section)
+	}
+	return
+}
+
+// GetPrefixLenForSingleBlock returns a prefix length for which the range of this address subnet matches exactly the block of addresses for that prefix.
+//
+// If the range can be described this way, then this method returns the same value as GetMinPrefixLenForBlock.
+//
+// If no such prefix exists, returns nil.
+//
+// If this segment grouping represents a single value, returns the bit length of this address division series.
+//
+// IP address examples:
+//   - 1.2.3.4 returns 32
+//   - 1.2.3.4/16 returns 32
+//   - 1.2.*.* returns 16
+//   - 1.2.*.0/24 returns 16
+//   - 1.2.0.0/16 returns 16
+//   - 1.2.*.4 returns nil
+//   - 1.2.252-255.* returns 22
+func (addr *ipAddressInternal) GetPrefixLenForSingleBlock() PrefixLen {
+	return addr.addressInternal.GetPrefixLenForSingleBlock()
+}
+
+func (addr *ipAddressInternal) rangeIterator(
+	upper *IPAddress,
+	valsAreMultiple bool,
+	prefixLen PrefixLen,
+	segProducer func(addr *IPAddress, index int) *IPAddressSegment,
+	segmentIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
+	segValueComparator func(seg1, seg2 *IPAddress, index int) bool,
+	networkSegmentIndex,
+	hostSegmentIndex int,
+	prefixedSegIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
+) Iterator[*Address] {
+	lower := addr.toIPAddress()
+	divCount := lower.GetSegmentCount()
+
+	// at any given point in time, this list provides an iterator for the segment at each index
+	segIteratorProducerList := make([]func() Iterator[*IPAddressSegment], divCount)
+
+	// at any given point in time, finalValue[i] is true if and only if we have reached the very last value for segment i - 1
+	// when that happens, the next iterator for the segment at index i will be the last
+	finalValue := make([]bool, divCount+1)
+
+	// here is how the segment iterators will work:
+	// the low and high values of the range at each segment are low, high
+	// the maximum possible values for any segment are min, max
+	// first find the first k >= 0 such that low != high for the segment at index k
+
+	//	the initial set of iterators at each index are as follows:
+	//    for i < k finalValue[i] is set to true right away.
+	//		create an iterator from seg = new Seg(low)
+	//    for i == k we create a wrapped iterator from Seg(low, high), wrapper will set finalValue[i] once we reach the final value of the iterator
+	//    for i > k we create an iterator from Seg(low, max)
+	//
+	// after the initial iterator has been supplied, any further iterator supplied for the same segment is as follows:
+	//    for i <= k, there was only one iterator, there will be no further iterator
+	//    for i > k,
+	//	  	if i == 0 or of if flagged[i - 1] is true, we create a wrapped iterator from Seg(low, high), wrapper will set finalValue[i] once we reach the final value of the iterator
+	//      otherwise we create an iterator from Seg(min, max)
+	//
+	// By following these rules, we iterate through all possible addresses
+
+	var allSegShared *IPAddressSegment
+	notDiffering := true
+	finalValue[0] = true
+	for i := 0; i < divCount; i++ {
+		var segIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment]
+		if prefixedSegIteratorProducer != nil && i >= networkSegmentIndex {
+			segIteratorProducer = prefixedSegIteratorProducer
+		} else {
+			segIteratorProducer = segmentIteratorProducer
+		}
+		lowerSeg := segProducer(lower, i)
+		indexi := i
+		if notDiffering {
+			notDiffering = segValueComparator(lower, upper, i)
+			if notDiffering {
+				// there is only one iterator and it produces only one value
+				finalValue[i+1] = true
+				iterator := segIteratorProducer(lowerSeg, i)
+				segIteratorProducerList[i] = func() Iterator[*IPAddressSegment] { return iterator }
+			} else {
+				// in the first differing segment the only iterator will go from segment value of lower address to segment value of upper address
+				iterator := segIteratorProducer(
+					createAddressDivision(lowerSeg.deriveNewMultiSeg(lowerSeg.getSegmentValue(), upper.GetGenericSegment(i).GetSegmentValue(), nil)).ToIP(),
+					i)
+				wrappedFinalIterator := &wrappedIterator{
+					iterator:   iterator,
+					finalValue: finalValue,
+					indexi:     indexi,
+				}
+				segIteratorProducerList[i] = func() Iterator[*IPAddressSegment] { return wrappedFinalIterator }
+			}
+		} else {
+			// in the second and all following differing segments, rather than go from segment value of lower address to segment value of upper address
+			// we go from segment value of lower address to the max seg value the first time through
+			// then we go from the min value of the seg to the max seg value each time until the final time,
+			// the final time we go from the min value to the segment value of upper address
+			// we know it is the final time through when the previous iterator has reached its final value, which we track
+
+			// the first iterator goes from the segment value of lower address to the max value of the segment
+			firstIterator := segIteratorProducer(
+				createAddressDivision(lowerSeg.deriveNewMultiSeg(lowerSeg.getSegmentValue(), lower.GetMaxSegmentValue(), nil)).ToIP(),
+				i)
+
+			// the final iterator goes from 0 to the segment value of our upper address
+			finalIterator := segIteratorProducer(
+				createAddressDivision(lowerSeg.deriveNewMultiSeg(0, upper.GetGenericSegment(i).GetSegmentValue(), nil)).ToIP(),
+				i)
+
+			// the wrapper iterator detects when the final iterator has reached its final value
+			wrappedFinalIterator := &wrappedIterator{
+				iterator:   finalIterator,
+				finalValue: finalValue,
+				indexi:     indexi,
+			}
+
+			if allSegShared == nil {
+				allSegShared = createAddressDivision(lowerSeg.deriveNewMultiSeg(0, lower.GetMaxSegmentValue(), nil)).ToIP()
+			}
+			// all iterators after the first iterator and before the final iterator go from 0 the max segment value,
+			// and there will be many such iterators
+			finalIteratorProducer := func() Iterator[*IPAddressSegment] {
+				if finalValue[indexi] {
+					return wrappedFinalIterator
+				}
+				return segIteratorProducer(allSegShared, indexi)
+			}
+			segIteratorProducerList[i] = func() Iterator[*IPAddressSegment] {
+				//the first time through, we replace the iterator producer so the first iterator used only once (ie we remove this function from the list)
+				segIteratorProducerList[indexi] = finalIteratorProducer
+				return firstIterator
+			}
+		}
+	}
+
+	iteratorProducer := func(iteratorIndex int) Iterator[*AddressSegment] {
+		iter := segIteratorProducerList[iteratorIndex]()
+		return wrappedSegmentIterator[*IPAddressSegment]{iter}
+	}
+	return rangeAddrIterator(
+		false,
+		lower.ToAddressBase(),
+		prefixLen,
+		valsAreMultiple,
+		rangeSegmentsIterator(
+			divCount,
+			iteratorProducer,
+			networkSegmentIndex,
+			hostSegmentIndex,
+			iteratorProducer,
+		),
+	)
+}
+
+// IsSinglePrefixBlock returns whether the address range matches the block of values for a single prefix identified by the prefix length of this address.
+// This is similar to IsPrefixBlock except that it returns false when the subnet has multiple prefixes.
+//
+// What distinguishes this method from ContainsSinglePrefixBlock is that this method returns
+// false if the series does not have a prefix length assigned to it,
+// or a prefix length that differs from the prefix length for which ContainsSinglePrefixBlock returns true.
+//
+// It is similar to IsPrefixBlock but returns false when there are multiple prefixes.
+//
+// For instance, "1.*.*.* /16" returns false from this method and returns true from IsPrefixBlock.
+func (addr *ipAddressInternal) IsSinglePrefixBlock() bool {
+	return addr.addressInternal.IsSinglePrefixBlock()
+}
+
+func (addr *ipAddressInternal) spanWithPrefixBlocks() []ExtendedIPSegmentSeries {
+	wrapped := addr.toIPAddress().Wrap()
+	if addr.IsSequential() {
+		if addr.IsSinglePrefixBlock() {
+			return []ExtendedIPSegmentSeries{wrapped}
+		}
+		return getSpanningPrefixBlocks(wrapped, wrapped)
+	}
+	return spanWithPrefixBlocks(wrapped)
+}
+
+func (addr *ipAddressInternal) spanWithSequentialBlocks() []ExtendedIPSegmentSeries {
+	wrapped := addr.toIPAddress().Wrap()
+	if addr.IsSequential() {
+		return []ExtendedIPSegmentSeries{wrapped}
+	}
+	return spanWithSequentialBlocks(wrapped)
+}
+
+func (addr *ipAddressInternal) coverSeriesWithPrefixBlock() ExtendedIPSegmentSeries {
+	// call from wrapper
+	if addr.IsSinglePrefixBlock() {
+		return addr.toIPAddress().Wrap()
+	}
+	return coverWithPrefixBlock(
+		addr.getLower().ToIP().Wrap(),
+		addr.getUpper().ToIP().Wrap(),
+	)
+}
+
+func (addr *ipAddressInternal) coverWithPrefixBlock() *IPAddress {
+	// call from ip ipv4 ipv6
+	if addr.IsSinglePrefixBlock() {
+		return addr.toIPAddress()
+	}
+	res := coverWithPrefixBlock(
+		addr.getLower().ToIP().Wrap(),
+		addr.getUpper().ToIP().Wrap(),
+	)
+	return res.(WrappedIPAddress).IPAddress
+}
+
+func (addr *ipAddressInternal) coverWithPrefixBlockTo(other *IPAddress) *IPAddress {
+	res := getCoveringPrefixBlock(
+		addr.toIPAddress().Wrap(),
+		other.Wrap(),
+	)
+	return res.(WrappedIPAddress).IPAddress
+}
+
+func (addr *ipAddressInternal) toCanonicalWildcardString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toCanonicalWildcardStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.canonicalWildcardString,
+			func() string {
+				return addr.section.ToIPv6().toCanonicalWildcardStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToCanonicalWildcardString()
+}
+
+func (addr *ipAddressInternal) toNormalizedWildcardString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toNormalizedWildcardStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.normalizedWildcardString,
+			func() string {
+				return addr.section.ToIPv6().toNormalizedWildcardStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToNormalizedWildcardString()
+}
+
+func (addr *ipAddressInternal) toSegmentedBinaryString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toSegmentedBinaryStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.segmentedBinaryString,
+			func() string {
+				return addr.section.ToIPv6().toSegmentedBinaryStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToSegmentedBinaryString()
+}
+
+func (addr *ipAddressInternal) toSQLWildcardString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toSQLWildcardStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.sqlWildcardString,
+			func() string {
+				return addr.section.ToIPv6().toSQLWildcardStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToSQLWildcardString()
+}
+
+func (addr *ipAddressInternal) toFullString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toFullStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.fullString,
+			func() string {
+				return addr.section.ToIPv6().toFullStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToFullString()
+}
+
+func (addr *ipAddressInternal) toReverseDNSString() (string, address_error.IncompatibleAddressError) {
+	return addr.getSection().ToReverseDNSString()
+}
+
+func (addr *ipAddressInternal) toPrefixLenString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toPrefixLenStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.networkPrefixLengthString,
+			func() string {
+				return addr.section.ToIPv6().toPrefixLenStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToPrefixLenString()
+}
+
+func (addr *ipAddressInternal) toSubnetString() string {
+	if addr.hasZone() {
+		return addr.toPrefixLenString()
+	}
+	return addr.getSection().ToSubnetString()
+}
+
+func (addr *ipAddressInternal) toCompressedWildcardString() string {
+	if addr.hasZone() {
+		cache := addr.getStringCache()
+		if cache == nil {
+			return addr.section.ToIPv6().toCompressedWildcardStringZoned(addr.zone)
+		}
+		return cacheStr(&cache.compressedWildcardString,
+			func() string {
+				return addr.section.ToIPv6().toCompressedWildcardStringZoned(addr.zone)
+			})
+	}
+	return addr.getSection().ToCompressedWildcardString()
+}
+
+// ContainsSinglePrefixBlock returns whether this address contains a single prefix block for the given prefix length.
+//
+// This means there is only one prefix value for the given prefix length, and it also contains the full prefix block for that prefix,
+// all addresses with that prefix.
+//
+// Use GetPrefixLenForSingleBlock to determine whether there is a prefix length for which this method returns true.
+func (addr *ipAddressInternal) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
+	return addr.addressInternal.ContainsSinglePrefixBlock(prefixLen)
+}
+
 // IPAddress represents an IP address or subnet, either IPv4 or IPv6 (except zero IPAddress, which is neither).
 // An IP address consists of segments that have a range of values and may additionally have an associated prefix length.
 // An IPAddress with a null value has no segments, neither IPv4 nor IPv6,
@@ -1791,664 +2449,6 @@ func (version IPVersion) GetNetwork() (network IPAddressNetwork) {
 		network = ipv4Network
 	}
 	return
-}
-
-// necessary to avoid direct access to IPAddress
-type ipAddressInternal struct {
-	addressInternal
-}
-
-func (addr *ipAddressInternal) toIPAddress() *IPAddress {
-	return (*IPAddress)(unsafe.Pointer(addr))
-}
-
-// GetPrefixCount returns the count of prefixes in this address or subnet.
-//
-// The prefix length is given by GetPrefixLen.
-//
-// If this has a non-nil prefix length, returns the count of the range of values in the prefix.
-//
-// If this has a nil prefix length, returns the same value as GetCount.
-func (addr *ipAddressInternal) GetPrefixCount() *big.Int {
-	return addr.addressInternal.GetPrefixCount()
-}
-
-// GetPrefixCountLen returns the count of prefixes in this address or subnet for the given prefix length.
-//
-// If not a subnet of multiple addresses, or a subnet with just single prefix of the given length, returns 1.
-func (addr *ipAddressInternal) GetPrefixCountLen(prefixLen BitCount) *big.Int {
-	return addr.addressInternal.GetPrefixCountLen(prefixLen)
-}
-
-// GetBlockCount returns the count of distinct values in the given number of initial (more significant) segments.
-func (addr *ipAddressInternal) GetBlockCount(segments int) *big.Int {
-	return addr.addressInternal.GetBlockCount(segments)
-}
-
-// GetPrefixLen returns the prefix length, or nil if there is no prefix length.
-//
-// A prefix length indicates the number of bits in the initial part of the address that comprise the prefix.
-//
-// A prefix is a part of the address that is not specific to that address but common amongst a group of addresses,
-// such as a CIDR prefix block subnet.
-//
-// For IP addresses, the prefix is explicitly defined when the address is created.
-// For example, "1.2.0.0/16" has a prefix length of 16, while "1.2.*.*" has no prefix length,
-// even though they both represent the same set of addresses and are considered equal.
-// Prefixes can be considered variable for a given IP address and can depend on routing.
-//
-// The methods GetMinPrefixLenForBlock and GetPrefixLenForSingleBlock can help you
-// to obtain or define a prefix length if one does not exist already.
-// The method ToPrefixBlockLen allows you to create the subnet consisting of
-// the block of addresses for any given prefix length.
-func (addr *ipAddressInternal) GetPrefixLen() PrefixLen {
-	return addr.addressInternal.GetPrefixLen()
-}
-
-// GetBlockMaskPrefixLen returns the prefix length if this address is equivalent to the mask for a CIDR prefix block.
-// Otherwise, it returns nil.
-// A CIDR network mask is an address with all ones in the network section and then all zeros in the host section.
-// A CIDR host mask is an address with all zeros in the network section and then all ones in the host section.
-// The prefix length is the bit-length of the network section.
-//
-// Also, keep in mind that the prefix length returned by this method is not equivalent to the prefix length of this instance,
-// indicating the network and host section of this address.
-// The prefix length returned here indicates the whether the value of this address can be used as a mask for the network and host
-// section of any other address.  Therefore, the two values can be different values, or one can be nil while the other is not.
-//
-// This method applies only to the lower value of the range if this address represents multiple values.
-func (addr *ipAddressInternal) GetBlockMaskPrefixLen(network bool) PrefixLen {
-	section := addr.section
-	if section == nil {
-		return nil
-	}
-	return section.ToIP().GetBlockMaskPrefixLen(network)
-}
-
-func (addr *ipAddressInternal) getIPVersion() IPVersion {
-	if addr.isIPv4() {
-		return IPv4
-	} else if addr.isIPv6() {
-		return IPv6
-	}
-	return IndeterminateIPVersion
-}
-
-func (addr *ipAddressInternal) getNetworkPrefixLen() PrefixLen {
-	section := addr.section
-	if section == nil {
-		return nil
-	}
-	return section.ToIP().getNetworkPrefixLen()
-}
-
-// GetNetworkPrefixLen returns the prefix length, or nil if there is no prefix length.
-// GetNetworkPrefixLen is equivalent to the method GetPrefixLen.
-func (addr *ipAddressInternal) GetNetworkPrefixLen() PrefixLen {
-	return addr.getNetworkPrefixLen().copy()
-}
-
-func (addr *ipAddressInternal) getNetNetIPAddr() netip.Addr {
-	netAddr, _ := netip.AddrFromSlice(addr.getBytes())
-	return netAddr
-}
-
-func (addr *ipAddressInternal) getUpperNetNetIPAddr() netip.Addr {
-	netAddr, _ := netip.AddrFromSlice(addr.getUpperBytes())
-	return netAddr
-}
-
-func (addr *ipAddressInternal) getSection() *IPAddressSection {
-	return addr.section.ToIP()
-}
-
-// IncludesZeroHost returns whether the subnet contains an individual address with a host of zero.
-// If the subnet has no prefix length it returns false.
-// If the prefix length matches the bit count, then it returns true.
-//
-// Otherwise, it checks whether it contains an individual address for which all bits past the prefix are zero.
-func (addr *ipAddressInternal) IncludesZeroHost() bool {
-	section := addr.section
-	if section == nil {
-		return false
-	}
-	return section.ToIP().IncludesZeroHost()
-}
-
-// IncludesMaxHost returns whether the subnet contains an individual address with a host of all one-bits.
-// If the subnet has no prefix length it returns false.
-// If the prefix length matches the bit count, then it returns true.
-//
-// Otherwise, it checks whether it contains an individual address for which all bits past the prefix are one.
-func (addr *ipAddressInternal) IncludesMaxHost() bool {
-	section := addr.section
-	if section == nil {
-		return false
-	}
-	return section.ToIP().IncludesMaxHost()
-}
-
-func (addr *ipAddressInternal) includesZeroHostLen(networkPrefixLength BitCount) bool {
-	return addr.getSection().IncludesZeroHostLen(networkPrefixLength)
-}
-
-func (addr *ipAddressInternal) includesMaxHostLen(networkPrefixLength BitCount) bool {
-	return addr.getSection().IncludesMaxHostLen(networkPrefixLength)
-}
-
-// IsSingleNetwork returns whether the network section of the address, the prefix, consists of a single value.
-//
-// If it has no prefix length, it returns true if not multiple,
-// if it contains only a single individual address.
-func (addr *ipAddressInternal) IsSingleNetwork() bool {
-	section := addr.section
-	return section == nil || section.ToIP().IsSingleNetwork()
-}
-
-// IsMaxHost returns whether this section has a prefix length and if so,
-// whether the host section is always all one-bits, the max value,
-// for all individual addresses in this subnet.
-//
-// If the host section is zero length (there are zero host bits), IsMaxHost returns true.
-func (addr *ipAddressInternal) IsMaxHost() bool {
-	section := addr.section
-	return section != nil && section.ToIP().IsMaxHost()
-}
-
-// IsMaxHostLen returns whether the host section is always one-bits,
-// the max value, for all individual addresses in this subnet,
-// for the given prefix length.
-//
-// If the host section is zero length (there are zero host bits), IsMaxHostLen returns true.
-func (addr *ipAddressInternal) isMaxHostLen(prefLen BitCount) bool {
-	return addr.getSection().IsMaxHostLen(prefLen)
-}
-
-// IsZeroHost returns whether this subnet has a prefix length and if so,
-// whether the host section is always zero for all individual addresses in this subnet.
-//
-// If the host section is zero length (there are zero host bits), IsZeroHost returns true.
-func (addr *ipAddressInternal) IsZeroHost() bool {
-	section := addr.section
-	return section != nil && section.ToIP().IsZeroHost()
-}
-
-// IsZeroHostLen returns whether the host section is always zero for all individual sections in this address section,
-// for the given prefix length.
-//
-// If the host section is zero length (there are zero host bits), IsZeroHostLen returns true.
-func (addr *ipAddressInternal) isZeroHostLen(prefLen BitCount) bool {
-	return addr.getSection().IsZeroHostLen(prefLen)
-}
-
-func (addr *ipAddressInternal) checkIdentity(section *IPAddressSection) *IPAddress {
-	if section == nil {
-		return nil
-	}
-
-	sect := section.ToSectionBase()
-	if sect == addr.section {
-		return addr.toIPAddress()
-	}
-	return createIPAddress(sect, addr.zone)
-}
-
-func (addr *ipAddressInternal) adjustPrefixLen(prefixLen BitCount) *IPAddress {
-	return addr.checkIdentity(addr.getSection().adjustPrefixLen(prefixLen))
-}
-
-func (addr *ipAddressInternal) adjustPrefixLenZeroed(prefixLen BitCount) (res *IPAddress, err address_error.IncompatibleAddressError) {
-	section, err := addr.getSection().adjustPrefixLenZeroed(prefixLen)
-	if err == nil {
-		res = addr.checkIdentity(section)
-	}
-	return
-}
-
-func (addr *ipAddressInternal) getNetworkMask(network IPAddressNetwork) *IPAddress {
-	var prefLen BitCount
-	if pref := addr.getPrefixLen(); pref != nil {
-		prefLen = pref.bitCount()
-	} else {
-		prefLen = addr.GetBitCount()
-	}
-	return network.GetNetworkMask(prefLen)
-}
-
-func (addr *ipAddressInternal) getHostMask(network IPAddressNetwork) *IPAddress {
-	var prefLen BitCount
-	if addr.isPrefixed() {
-		prefLen = addr.getNetworkPrefixLen().bitCount()
-	}
-	return network.GetHostMask(prefLen)
-}
-
-func (addr *ipAddressInternal) getNetwork() IPAddressNetwork {
-	return addr.getSection().getNetwork()
-}
-
-// IsPrefixBlock returns whether the address has a prefix length and
-// the address range includes the block of values for that prefix length.
-// If the prefix length matches the bit count, this returns true.
-//
-// To create a prefix block from any address, use ToPrefixBlock.
-//
-// This is different from ContainsPrefixBlock in that this method returns
-// false if the series has no prefix length, or a prefix length that differs from
-// a prefix length for which ContainsPrefixBlock returns true.
-func (addr *ipAddressInternal) IsPrefixBlock() bool {
-	return addr.addressInternal.IsPrefixBlock()
-}
-
-// ContainsPrefixBlock returns whether the range of this address or subnet contains
-// the block of addresses for the given prefix length.
-//
-// Unlike ContainsSinglePrefixBlock, whether there are multiple prefix values in
-// this item for the given prefix length makes no difference.
-//
-// Use GetMinPrefixLenForBlock to determine the smallest prefix length
-// for which this method returns true.
-func (addr *ipAddressInternal) ContainsPrefixBlock(prefixLen BitCount) bool {
-	return addr.addressInternal.ContainsPrefixBlock(prefixLen)
-}
-
-// GetMinPrefixLenForBlock returns the smallest prefix length such that
-// this includes the block of addresses for that prefix length.
-//
-// If the entire range can be described this way,
-// then this method returns the same value as GetPrefixLenForSingleBlock.
-//
-// There may be a single prefix, or multiple possible prefix values in
-// this item for the returned prefix length.
-// Use GetPrefixLenForSingleBlock to avoid the case of multiple prefix values.
-//
-// If this represents just a single address,
-// returns the bit length of this address.
-//
-// See AssignMinPrefixForBlock for some examples.
-func (addr *ipAddressInternal) GetMinPrefixLenForBlock() BitCount {
-	return addr.addressInternal.GetMinPrefixLenForBlock()
-}
-
-// When boundariesOnly is true, there will be no error.
-func (addr *ipAddressInternal) toZeroHost(boundariesOnly bool) (res *IPAddress, err address_error.IncompatibleAddressError) {
-	section, err := addr.section.toIPAddressSection().toZeroHost(boundariesOnly)
-	if err == nil {
-		res = addr.checkIdentity(section)
-	}
-	return
-}
-
-func (addr *ipAddressInternal) toZeroHostLen(prefixLength BitCount) (res *IPAddress, err address_error.IncompatibleAddressError) {
-	section, err := addr.getSection().toZeroHostLen(prefixLength)
-	if err == nil {
-		res = addr.checkIdentity(section)
-	}
-	return
-}
-
-func (addr *ipAddressInternal) toZeroNetwork() *IPAddress {
-	return addr.checkIdentity(addr.getSection().toZeroNetwork())
-}
-
-func (addr *ipAddressInternal) toMaxHost() (res *IPAddress, err address_error.IncompatibleAddressError) {
-	section, err := addr.section.toIPAddressSection().toMaxHost()
-	if err == nil {
-		res = addr.checkIdentity(section)
-	}
-	return
-}
-
-func (addr *ipAddressInternal) toMaxHostLen(prefixLength BitCount) (res *IPAddress, err address_error.IncompatibleAddressError) {
-	section, err := addr.getSection().toMaxHostLen(prefixLength)
-	if err == nil {
-		res = addr.checkIdentity(section)
-	}
-	return
-}
-
-// GetPrefixLenForSingleBlock returns a prefix length for which the range of this address subnet matches exactly the block of addresses for that prefix.
-//
-// If the range can be described this way, then this method returns the same value as GetMinPrefixLenForBlock.
-//
-// If no such prefix exists, returns nil.
-//
-// If this segment grouping represents a single value, returns the bit length of this address division series.
-//
-// IP address examples:
-//   - 1.2.3.4 returns 32
-//   - 1.2.3.4/16 returns 32
-//   - 1.2.*.* returns 16
-//   - 1.2.*.0/24 returns 16
-//   - 1.2.0.0/16 returns 16
-//   - 1.2.*.4 returns nil
-//   - 1.2.252-255.* returns 22
-func (addr *ipAddressInternal) GetPrefixLenForSingleBlock() PrefixLen {
-	return addr.addressInternal.GetPrefixLenForSingleBlock()
-}
-
-func (addr *ipAddressInternal) rangeIterator(
-	upper *IPAddress,
-	valsAreMultiple bool,
-	prefixLen PrefixLen,
-	segProducer func(addr *IPAddress, index int) *IPAddressSegment,
-	segmentIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
-	segValueComparator func(seg1, seg2 *IPAddress, index int) bool,
-	networkSegmentIndex,
-	hostSegmentIndex int,
-	prefixedSegIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment],
-) Iterator[*Address] {
-	lower := addr.toIPAddress()
-	divCount := lower.GetSegmentCount()
-
-	// at any given point in time, this list provides an iterator for the segment at each index
-	segIteratorProducerList := make([]func() Iterator[*IPAddressSegment], divCount)
-
-	// at any given point in time, finalValue[i] is true if and only if we have reached the very last value for segment i - 1
-	// when that happens, the next iterator for the segment at index i will be the last
-	finalValue := make([]bool, divCount+1)
-
-	// here is how the segment iterators will work:
-	// the low and high values of the range at each segment are low, high
-	// the maximum possible values for any segment are min, max
-	// first find the first k >= 0 such that low != high for the segment at index k
-
-	//	the initial set of iterators at each index are as follows:
-	//    for i < k finalValue[i] is set to true right away.
-	//		create an iterator from seg = new Seg(low)
-	//    for i == k we create a wrapped iterator from Seg(low, high), wrapper will set finalValue[i] once we reach the final value of the iterator
-	//    for i > k we create an iterator from Seg(low, max)
-	//
-	// after the initial iterator has been supplied, any further iterator supplied for the same segment is as follows:
-	//    for i <= k, there was only one iterator, there will be no further iterator
-	//    for i > k,
-	//	  	if i == 0 or of if flagged[i - 1] is true, we create a wrapped iterator from Seg(low, high), wrapper will set finalValue[i] once we reach the final value of the iterator
-	//      otherwise we create an iterator from Seg(min, max)
-	//
-	// By following these rules, we iterate through all possible addresses
-
-	var allSegShared *IPAddressSegment
-	notDiffering := true
-	finalValue[0] = true
-	for i := 0; i < divCount; i++ {
-		var segIteratorProducer func(seg *IPAddressSegment, index int) Iterator[*IPAddressSegment]
-		if prefixedSegIteratorProducer != nil && i >= networkSegmentIndex {
-			segIteratorProducer = prefixedSegIteratorProducer
-		} else {
-			segIteratorProducer = segmentIteratorProducer
-		}
-		lowerSeg := segProducer(lower, i)
-		indexi := i
-		if notDiffering {
-			notDiffering = segValueComparator(lower, upper, i)
-			if notDiffering {
-				// there is only one iterator and it produces only one value
-				finalValue[i+1] = true
-				iterator := segIteratorProducer(lowerSeg, i)
-				segIteratorProducerList[i] = func() Iterator[*IPAddressSegment] { return iterator }
-			} else {
-				// in the first differing segment the only iterator will go from segment value of lower address to segment value of upper address
-				iterator := segIteratorProducer(
-					createAddressDivision(lowerSeg.deriveNewMultiSeg(lowerSeg.getSegmentValue(), upper.GetGenericSegment(i).GetSegmentValue(), nil)).ToIP(),
-					i)
-				wrappedFinalIterator := &wrappedIterator{
-					iterator:   iterator,
-					finalValue: finalValue,
-					indexi:     indexi,
-				}
-				segIteratorProducerList[i] = func() Iterator[*IPAddressSegment] { return wrappedFinalIterator }
-			}
-		} else {
-			// in the second and all following differing segments, rather than go from segment value of lower address to segment value of upper address
-			// we go from segment value of lower address to the max seg value the first time through
-			// then we go from the min value of the seg to the max seg value each time until the final time,
-			// the final time we go from the min value to the segment value of upper address
-			// we know it is the final time through when the previous iterator has reached its final value, which we track
-
-			// the first iterator goes from the segment value of lower address to the max value of the segment
-			firstIterator := segIteratorProducer(
-				createAddressDivision(lowerSeg.deriveNewMultiSeg(lowerSeg.getSegmentValue(), lower.GetMaxSegmentValue(), nil)).ToIP(),
-				i)
-
-			// the final iterator goes from 0 to the segment value of our upper address
-			finalIterator := segIteratorProducer(
-				createAddressDivision(lowerSeg.deriveNewMultiSeg(0, upper.GetGenericSegment(i).GetSegmentValue(), nil)).ToIP(),
-				i)
-
-			// the wrapper iterator detects when the final iterator has reached its final value
-			wrappedFinalIterator := &wrappedIterator{
-				iterator:   finalIterator,
-				finalValue: finalValue,
-				indexi:     indexi,
-			}
-
-			if allSegShared == nil {
-				allSegShared = createAddressDivision(lowerSeg.deriveNewMultiSeg(0, lower.GetMaxSegmentValue(), nil)).ToIP()
-			}
-			// all iterators after the first iterator and before the final iterator go from 0 the max segment value,
-			// and there will be many such iterators
-			finalIteratorProducer := func() Iterator[*IPAddressSegment] {
-				if finalValue[indexi] {
-					return wrappedFinalIterator
-				}
-				return segIteratorProducer(allSegShared, indexi)
-			}
-			segIteratorProducerList[i] = func() Iterator[*IPAddressSegment] {
-				//the first time through, we replace the iterator producer so the first iterator used only once (ie we remove this function from the list)
-				segIteratorProducerList[indexi] = finalIteratorProducer
-				return firstIterator
-			}
-		}
-	}
-
-	iteratorProducer := func(iteratorIndex int) Iterator[*AddressSegment] {
-		iter := segIteratorProducerList[iteratorIndex]()
-		return wrappedSegmentIterator[*IPAddressSegment]{iter}
-	}
-	return rangeAddrIterator(
-		false,
-		lower.ToAddressBase(),
-		prefixLen,
-		valsAreMultiple,
-		rangeSegmentsIterator(
-			divCount,
-			iteratorProducer,
-			networkSegmentIndex,
-			hostSegmentIndex,
-			iteratorProducer,
-		),
-	)
-}
-
-// IsSinglePrefixBlock returns whether the address range matches the block of values for a single prefix identified by the prefix length of this address.
-// This is similar to IsPrefixBlock except that it returns false when the subnet has multiple prefixes.
-//
-// What distinguishes this method from ContainsSinglePrefixBlock is that this method returns
-// false if the series does not have a prefix length assigned to it,
-// or a prefix length that differs from the prefix length for which ContainsSinglePrefixBlock returns true.
-//
-// It is similar to IsPrefixBlock but returns false when there are multiple prefixes.
-//
-// For instance, "1.*.*.* /16" returns false from this method and returns true from IsPrefixBlock.
-func (addr *ipAddressInternal) IsSinglePrefixBlock() bool {
-	return addr.addressInternal.IsSinglePrefixBlock()
-}
-
-func (addr *ipAddressInternal) spanWithPrefixBlocks() []ExtendedIPSegmentSeries {
-	wrapped := addr.toIPAddress().Wrap()
-	if addr.IsSequential() {
-		if addr.IsSinglePrefixBlock() {
-			return []ExtendedIPSegmentSeries{wrapped}
-		}
-		return getSpanningPrefixBlocks(wrapped, wrapped)
-	}
-	return spanWithPrefixBlocks(wrapped)
-}
-
-func (addr *ipAddressInternal) spanWithSequentialBlocks() []ExtendedIPSegmentSeries {
-	wrapped := addr.toIPAddress().Wrap()
-	if addr.IsSequential() {
-		return []ExtendedIPSegmentSeries{wrapped}
-	}
-	return spanWithSequentialBlocks(wrapped)
-}
-
-func (addr *ipAddressInternal) coverSeriesWithPrefixBlock() ExtendedIPSegmentSeries {
-	// call from wrapper
-	if addr.IsSinglePrefixBlock() {
-		return addr.toIPAddress().Wrap()
-	}
-	return coverWithPrefixBlock(
-		addr.getLower().ToIP().Wrap(),
-		addr.getUpper().ToIP().Wrap(),
-	)
-}
-
-func (addr *ipAddressInternal) coverWithPrefixBlock() *IPAddress {
-	// call from ip ipv4 ipv6
-	if addr.IsSinglePrefixBlock() {
-		return addr.toIPAddress()
-	}
-	res := coverWithPrefixBlock(
-		addr.getLower().ToIP().Wrap(),
-		addr.getUpper().ToIP().Wrap(),
-	)
-	return res.(WrappedIPAddress).IPAddress
-}
-
-func (addr *ipAddressInternal) coverWithPrefixBlockTo(other *IPAddress) *IPAddress {
-	res := getCoveringPrefixBlock(
-		addr.toIPAddress().Wrap(),
-		other.Wrap(),
-	)
-	return res.(WrappedIPAddress).IPAddress
-}
-
-func (addr *ipAddressInternal) toCanonicalWildcardString() string {
-	if addr.hasZone() {
-		cache := addr.getStringCache()
-		if cache == nil {
-			return addr.section.ToIPv6().toCanonicalWildcardStringZoned(addr.zone)
-		}
-		return cacheStr(&cache.canonicalWildcardString,
-			func() string {
-				return addr.section.ToIPv6().toCanonicalWildcardStringZoned(addr.zone)
-			})
-	}
-	return addr.getSection().ToCanonicalWildcardString()
-}
-
-func (addr *ipAddressInternal) toNormalizedWildcardString() string {
-	if addr.hasZone() {
-		cache := addr.getStringCache()
-		if cache == nil {
-			return addr.section.ToIPv6().toNormalizedWildcardStringZoned(addr.zone)
-		}
-		return cacheStr(&cache.normalizedWildcardString,
-			func() string {
-				return addr.section.ToIPv6().toNormalizedWildcardStringZoned(addr.zone)
-			})
-	}
-	return addr.getSection().ToNormalizedWildcardString()
-}
-
-func (addr *ipAddressInternal) toSegmentedBinaryString() string {
-	if addr.hasZone() {
-		cache := addr.getStringCache()
-		if cache == nil {
-			return addr.section.ToIPv6().toSegmentedBinaryStringZoned(addr.zone)
-		}
-		return cacheStr(&cache.segmentedBinaryString,
-			func() string {
-				return addr.section.ToIPv6().toSegmentedBinaryStringZoned(addr.zone)
-			})
-	}
-	return addr.getSection().ToSegmentedBinaryString()
-}
-
-func (addr *ipAddressInternal) toSQLWildcardString() string {
-	if addr.hasZone() {
-		cache := addr.getStringCache()
-		if cache == nil {
-			return addr.section.ToIPv6().toSQLWildcardStringZoned(addr.zone)
-		}
-		return cacheStr(&cache.sqlWildcardString,
-			func() string {
-				return addr.section.ToIPv6().toSQLWildcardStringZoned(addr.zone)
-			})
-	}
-	return addr.getSection().ToSQLWildcardString()
-}
-
-func (addr *ipAddressInternal) toFullString() string {
-	if addr.hasZone() {
-		cache := addr.getStringCache()
-		if cache == nil {
-			return addr.section.ToIPv6().toFullStringZoned(addr.zone)
-		}
-		return cacheStr(&cache.fullString,
-			func() string {
-				return addr.section.ToIPv6().toFullStringZoned(addr.zone)
-			})
-	}
-	return addr.getSection().ToFullString()
-}
-
-func (addr *ipAddressInternal) toReverseDNSString() (string, address_error.IncompatibleAddressError) {
-	return addr.getSection().ToReverseDNSString()
-}
-
-func (addr *ipAddressInternal) toPrefixLenString() string {
-	if addr.hasZone() {
-		cache := addr.getStringCache()
-		if cache == nil {
-			return addr.section.ToIPv6().toPrefixLenStringZoned(addr.zone)
-		}
-		return cacheStr(&cache.networkPrefixLengthString,
-			func() string {
-				return addr.section.ToIPv6().toPrefixLenStringZoned(addr.zone)
-			})
-	}
-	return addr.getSection().ToPrefixLenString()
-}
-
-func (addr *ipAddressInternal) toSubnetString() string {
-	if addr.hasZone() {
-		return addr.toPrefixLenString()
-	}
-	return addr.getSection().ToSubnetString()
-}
-
-func (addr *ipAddressInternal) toCompressedWildcardString() string {
-	if addr.hasZone() {
-		cache := addr.getStringCache()
-		if cache == nil {
-			return addr.section.ToIPv6().toCompressedWildcardStringZoned(addr.zone)
-		}
-		return cacheStr(&cache.compressedWildcardString,
-			func() string {
-				return addr.section.ToIPv6().toCompressedWildcardStringZoned(addr.zone)
-			})
-	}
-	return addr.getSection().ToCompressedWildcardString()
-}
-
-// ContainsSinglePrefixBlock returns whether this address contains a single prefix block for the given prefix length.
-//
-// This means there is only one prefix value for the given prefix length, and it also contains the full prefix block for that prefix,
-// all addresses with that prefix.
-//
-// Use GetPrefixLenForSingleBlock to determine whether there is a prefix length for which this method returns true.
-func (addr *ipAddressInternal) ContainsSinglePrefixBlock(prefixLen BitCount) bool {
-	return addr.addressInternal.ContainsSinglePrefixBlock(prefixLen)
-}
-
-// IPAddressValueProvider supplies all the values that incorporate an IPAddress instance.
-type IPAddressValueProvider interface {
-	AddressValueProvider
-	GetPrefixLen() PrefixLen // return nil if none
-	GetIPVersion() IPVersion // should not return IndeterminateVersion
-	GetZone() string         // return "" or NoZone if none
 }
 
 // IPAddressCreator is a polymporphic type providing constructor methods to
