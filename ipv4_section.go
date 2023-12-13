@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	InetAtonRadixHex     InetAtonRadix = 16
-	InetAtonRadixOctal   InetAtonRadix = 8
-	InetAtonRadixDecimal InetAtonRadix = 10
+	InetAtonRadixHex      InetAtonRadix = 16
+	InetAtonRadixOctal    InetAtonRadix = 8
+	InetAtonRadix_decimal InetAtonRadix = 10
 )
 
 var (
@@ -56,11 +56,9 @@ func (section *IPv4AddressSection) uint32Value() uint32 {
 	arr := section.getDivArray()
 	val := uint32(arr[0].getDivisionValue())
 	bitsPerSegment := section.GetBitsPerSegment()
-
 	for i := 1; i < segCount; i++ {
 		val = (val << uint(bitsPerSegment)) | uint32(arr[i].getDivisionValue())
 	}
-
 	return val
 }
 
@@ -74,11 +72,9 @@ func (section *IPv4AddressSection) UpperUint32Value() uint32 {
 	arr := section.getDivArray()
 	val := uint32(arr[0].getUpperDivisionValue())
 	bitsPerSegment := section.GetBitsPerSegment()
-
 	for i := 1; i < segCount; i++ {
 		val = (val << uint(bitsPerSegment)) | uint32(arr[i].getUpperDivisionValue())
 	}
-
 	return val
 }
 
@@ -665,7 +661,6 @@ func (section *IPv4AddressSection) joinSegments(joinCount int) (*AddressDivision
 	var firstRange *IPv4AddressSegment
 	bitsPerSeg := section.GetBitsPerSegment()
 	firstJoinedIndex := section.GetSegmentCount() - 1 - joinCount
-
 	for j := 0; j <= joinCount; j++ {
 		thisSeg := section.GetSegment(firstJoinedIndex + j)
 		if firstRange != nil {
@@ -1462,13 +1457,11 @@ func NewIPv4SectionFromPrefixedUint32(value uint32, segmentCount int, prefixLeng
 		ipv4Network.getIPAddressCreator(),
 		prefixLength)
 	res = createIPv4Section(segments)
-
 	if prefixLength != nil {
 		assignPrefix(prefixLength, segments, res.ToIP(), false, false, BitCount(segmentCount<<ipv4BitsToSegmentBitshift))
 	} else {
 		res.cache.uint32Cache = &value
 	}
-
 	return
 }
 
@@ -1498,11 +1491,9 @@ func newIPv4SectionFromPrefixedSingle(vals, upperVals IPv4SegmentValueProvider, 
 		prefixLength)
 	res = createIPv4Section(segments)
 	res.isMult = isMultiple
-
 	if prefixLength != nil {
 		assignPrefix(prefixLength, segments, res.ToIP(), singleOnly, false, BitCount(segmentCount<<ipv4BitsToSegmentBitshift))
 	}
-
 	return
 }
 
