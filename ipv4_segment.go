@@ -248,11 +248,9 @@ func (seg *IPv4AddressSegment) isJoinableTo(low *IPv4AddressSegment) bool {
 // Join joins this segment with another IPv4 segment to produce an IPv6 segment.
 func (seg *IPv4AddressSegment) Join(low *IPv4AddressSegment) (*IPv6AddressSegment, address_error.IncompatibleAddressError) {
 	prefixLength := seg.getJoinedSegmentPrefixLen(low.GetSegmentPrefixLen())
-
 	if !seg.isJoinableTo(low) {
 		return nil, &incompatibleAddressError{addressError: addressError{key: "ipaddress.error.invalidMixedRange"}}
 	}
-
 	return NewIPv6RangePrefixedSegment(
 		IPv6SegInt((seg.GetSegmentValue()<<8)|low.getSegmentValue()),
 		IPv6SegInt((seg.GetUpperSegmentValue()<<8)|low.getUpperSegmentValue()),
@@ -261,7 +259,6 @@ func (seg *IPv4AddressSegment) Join(low *IPv4AddressSegment) (*IPv6AddressSegmen
 
 func (seg *IPv4AddressSegment) getJoinedSegmentPrefixLen(lowBits PrefixLen) PrefixLen {
 	highBits := seg.GetSegmentPrefixLen()
-
 	if lowBits == nil {
 		return nil
 	}
@@ -270,7 +267,6 @@ func (seg *IPv4AddressSegment) getJoinedSegmentPrefixLen(lowBits PrefixLen) Pref
 	if lowBitCount == 0 {
 		return highBits
 	}
-
 	return cacheBitCount(lowBitCount + IPv4BitsPerSegment)
 }
 
@@ -419,7 +415,6 @@ func (seg *IPv4AddressSegment) ReverseBits(_ bool) (res *IPv4AddressSegment, err
 	} else {
 		res = NewIPv4Segment(val)
 	}
-
 	return
 }
 
@@ -677,8 +672,6 @@ func newIPv4SegmentVal(value IPv4SegInt) *ipv4SegmentValues {
 }
 
 func newIPv4SegmentPrefixedVal(value IPv4SegInt, prefLen PrefixLen) (result *ipv4SegmentValues) {
-	var isSinglePrefBlock *bool
-
 	if prefLen == nil {
 		return newIPv4SegmentVal(value)
 	}
@@ -691,7 +684,6 @@ func newIPv4SegmentPrefixedVal(value IPv4SegInt, prefLen PrefixLen) (result *ipv
 	}
 
 	prefLen = cacheBitCount(segmentPrefixLength) // this ensures we use the prefix length cache for all segments
-
 	if useIPv4SegmentCache {
 		prefixIndex := segmentPrefixLength
 		cache := segmentPrefixCacheIPv4
@@ -720,12 +712,12 @@ func newIPv4SegmentPrefixedVal(value IPv4SegInt, prefLen PrefixLen) (result *ipv
 		return result
 	}
 
+	var isSinglePrefBlock *bool
 	if segmentPrefixLength == IPv4BitsPerSegment {
 		isSinglePrefBlock = &trueVal
 	} else {
 		isSinglePrefBlock = &falseVal
 	}
-
 	return &ipv4SegmentValues{
 		value:      value,
 		upperValue: value,
@@ -748,13 +740,13 @@ func NewIPv4PrefixedSegment(val IPv4SegInt, prefixLen PrefixLen) *IPv4AddressSeg
 
 func newIPv4SegmentPrefixedValues(value, upperValue IPv4SegInt, prefLen PrefixLen) *ipv4SegmentValues {
 	var isSinglePrefBlock *bool
-
 	if prefLen == nil {
 		if value == upperValue {
 			return newIPv4SegmentVal(value)
 		} else if value > upperValue {
 			value, upperValue = upperValue, value
 		}
+
 		if useIPv4SegmentCache && value == 0 && upperValue == IPv4MaxValuePerSegment {
 			return allRangeValsIPv4
 		}
@@ -765,12 +757,14 @@ func newIPv4SegmentPrefixedValues(value, upperValue IPv4SegInt, prefLen PrefixLe
 		} else if value > upperValue {
 			value, upperValue = upperValue, value
 		}
+
 		segmentPrefixLength := prefLen.bitCount()
 		if segmentPrefixLength < 0 {
 			segmentPrefixLength = 0
 		} else if segmentPrefixLength > IPv4BitsPerSegment {
 			segmentPrefixLength = IPv4BitsPerSegment
 		}
+
 		prefLen = cacheBitCount(segmentPrefixLength) // this ensures we use the prefix length cache for all segments
 		if useIPv4SegmentCache {
 			// cache is the prefix block for any prefix length
@@ -802,6 +796,7 @@ func newIPv4SegmentPrefixedValues(value, upperValue IPv4SegInt, prefLen PrefixLe
 				result = &block.block[valueIndex]
 				return result
 			}
+
 			if value == 0 {
 				// cache is 0-255 for any prefix length
 				if upperValue == IPv4MaxValuePerSegment {
@@ -812,7 +807,6 @@ func newIPv4SegmentPrefixedValues(value, upperValue IPv4SegInt, prefLen PrefixLe
 			isSinglePrefBlock = &falseVal
 		}
 	}
-
 	return &ipv4SegmentValues{
 		value:      value,
 		upperValue: upperValue,
