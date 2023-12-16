@@ -256,7 +256,6 @@ func (addr *IPv6Address) checkIdentity(section *IPv6AddressSection) *IPv6Address
 	if sec == addr.section {
 		return addr
 	}
-
 	return newIPv6AddressZoned(section, string(addr.zone))
 }
 
@@ -416,7 +415,8 @@ func (addr *IPv6Address) getLowestHighestAddrs() (lower, upper *IPv6Address) {
 	return l.ToIPv6(), u.ToIPv6()
 }
 
-// IsUniqueLocal returns true if the address is unique-local, or all addresses in the subnet are unique-local, see RFC 4193.
+// IsUniqueLocal returns true if the address is unique-local,
+// or all addresses in the subnet are unique-local, see RFC 4193.
 func (addr *IPv6Address) IsUniqueLocal() bool {
 	// RFC 4193
 	return addr.GetSegment(0).MatchesWithPrefixMask(0xfc00, 7)
@@ -748,7 +748,6 @@ func (addr *IPv6Address) Contains(other AddressType) bool {
 	if addr.ToAddressBase() == otherAddr {
 		return true
 	}
-
 	return otherAddr.getAddrType() == ipv6Type && addr.section.sameCountTypeContains(otherAddr.GetSection()) &&
 		addr.isSameZone(other.ToAddressBase())
 }
@@ -761,7 +760,6 @@ func (addr *IPv6Address) Equal(other AddressType) bool {
 	} else if other.ToAddressBase() == nil {
 		return false
 	}
-
 	return other.ToAddressBase().getAddrType() == ipv6Type && addr.init().section.sameCountTypeEquals(other.ToAddressBase().GetSection()) &&
 		addr.isSameZone(other.ToAddressBase())
 }
@@ -816,8 +814,8 @@ func (addr *IPv6Address) IsAnyLocal() bool {
 func (addr *IPv6Address) IsLocal() bool {
 	if addr.IsMulticast() {
 		/*
-				[RFC4291][RFC7346]
-				11111111|flgs|scop
+				 [RFC4291][RFC7346]
+				 11111111|flgs|scop
 					scope 4 bits
 					 1  Interface-Local scope
 			         2  Link-Local scope
@@ -975,7 +973,6 @@ func (addr *IPv6Address) toEUISegments(extended bool) ([]*AddressDivision, addre
 	if err := seg3.splitIntoMACSegments(newSegs, macStartIndex); err != nil {
 		return nil, err
 	}
-
 	return newSegs, nil
 }
 
@@ -1085,7 +1082,6 @@ func (addr *IPv6Address) GetEmbeddedIPv4AddressAt(byteIndex int) (*IPv4Address, 
 	if err != nil {
 		return nil, err
 	}
-
 	return newIPv4Address(section), nil
 }
 
@@ -1328,7 +1324,6 @@ func (addr *IPv6Address) ToBase85String() (string, address_error.IncompatibleAdd
 				return addr.GetSection().toBase85String(addr.zone)
 			})
 	}
-
 	return addr.GetSection().ToBase85String()
 }
 
@@ -2055,7 +2050,6 @@ func NewIPv6AddressZoned(section *IPv6AddressSection, zone string) (*IPv6Address
 			val:          segCount,
 		}
 	}
-
 	return newIPv6AddressZoned(section, zone), nil
 }
 
@@ -2084,6 +2078,7 @@ func NewIPv6AddressFromZonedSegs(segments []*IPv6AddressSegment, zone string) (a
 			val:          segCount,
 		}
 	}
+
 	section := NewIPv6Section(segments)
 	return NewIPv6AddressZoned(section, zone)
 }
@@ -2099,6 +2094,7 @@ func NewIPv6AddressFromPrefixedSegs(segments []*IPv6AddressSegment, prefixLength
 			val:          segCount,
 		}
 	}
+
 	section := NewIPv6PrefixedSection(segments, prefixLength)
 	return NewIPv6Address(section)
 }
@@ -2114,6 +2110,7 @@ func NewIPv6AddressFromPrefixedZonedSegs(segments []*IPv6AddressSegment, prefixL
 			val:          segCount,
 		}
 	}
+
 	section := NewIPv6PrefixedSection(segments, prefixLength)
 	return NewIPv6AddressZoned(section, zone)
 }
