@@ -219,7 +219,6 @@ func (section *IPv6AddressSection) GetPrefixCountLen(prefixLen BitCount) *big.In
 
 	networkSegmentIndex := getNetworkSegmentIndex(prefixLen, section.GetBytesPerSegment(), section.GetBitsPerSegment())
 	hostSegmentIndex := getHostSegmentIndex(prefixLen, section.GetBytesPerSegment(), section.GetBitsPerSegment())
-
 	return section.calcCount(func() *big.Int {
 		return count(func(index int) uint64 {
 			if (networkSegmentIndex == hostSegmentIndex) && index == networkSegmentIndex {
@@ -327,7 +326,6 @@ func (section *IPv6AddressSection) uint64Values() (high, low uint64) {
 
 	arr := section.getDivArray()
 	bitsPerSegment := section.GetBitsPerSegment()
-
 	if segCount <= 4 {
 		low = uint64(arr[0].getDivisionValue())
 		for i := 1; i < segCount; i++ {
@@ -345,7 +343,6 @@ func (section *IPv6AddressSection) uint64Values() (high, low uint64) {
 			low = (low << uint(bitsPerSegment)) | uint64(arr[i].getDivisionValue())
 		}
 	}
-
 	return
 }
 
@@ -358,7 +355,6 @@ func (section *IPv6AddressSection) UpperUint64Values() (high, low uint64) {
 
 	arr := section.getDivArray()
 	bitsPerSegment := section.GetBitsPerSegment()
-
 	if segCount <= 4 {
 		low = uint64(arr[0].getUpperDivisionValue())
 		for i := 1; i < segCount; i++ {
@@ -376,7 +372,6 @@ func (section *IPv6AddressSection) UpperUint64Values() (high, low uint64) {
 			low = (low << uint(bitsPerSegment)) | uint64(arr[i].getUpperDivisionValue())
 		}
 	}
-
 	return
 }
 
@@ -402,7 +397,6 @@ func (section *IPv6AddressSection) Uint64Values() (high, low uint64) {
 		atomicStorePointer(dataLoc, unsafe.Pointer(&val))
 		return val.high, val.low
 	}
-
 	return res.high, res.low
 }
 
@@ -566,11 +560,12 @@ func (section *IPv6AddressSection) getCompressIndexAndCount(options address_stri
 			}
 			if preferHost && section.IsPrefixed() &&
 				(BitCount(index+count)*section.GetBitsPerSegment()) > section.getNetworkPrefixLen().bitCount() { // this range contains the host
-				// since we are going backwards, this means we select as the maximum any zero-segment that includes the host
+				// Since we are going backwards,
+				// this means we select as the maximum any zero-segment that includes the host
 				break
 			}
 			if preferMixed && index+count >= segmentCount { //this range contains the mixed section
-				// since we are going backwards, this means we select to compress the mixed segment
+				// Since we are going backwards, this means we select to compress the mixed segment
 				break
 			}
 		}
@@ -629,7 +624,6 @@ func (section *IPv6AddressSection) createNonMixedSection() *EmbeddedIPv6AddressS
 		result = createIPv6Section(nonMixed)
 		result.initMultAndPrefLen()
 	}
-
 	return &EmbeddedIPv6AddressSection{
 		embeddedIPv6AddressSection: embeddedIPv6AddressSection{*result},
 		encompassingSection:        section,
@@ -783,11 +777,11 @@ func (section *IPv6AddressSection) Insert(index int, other *IPv6AddressSection) 
 }
 
 func (section *IPv6AddressSection) createEmbeddedIPv4AddressSection() (sect *IPv4AddressSection, err address_error.IncompatibleAddressError) {
+	var mixed []*AddressDivision
 	nonMixedCount := IPv6MixedOriginalSegmentCount
 	segCount := section.GetSegmentCount()
 	mixedCount := segCount - nonMixedCount
 	lastIndex := segCount - 1
-	var mixed []*AddressDivision
 	if mixedCount == 0 {
 		mixed = []*AddressDivision{}
 	} else if mixedCount == 1 {
@@ -814,9 +808,9 @@ func (section *IPv6AddressSection) createEmbeddedIPv4AddressSection() (sect *IPv
 }
 
 func (section *IPv6AddressSection) getMixedAddressGrouping() (*IPv6v4MixedAddressGrouping, address_error.IncompatibleAddressError) {
-	cache := section.cache
-	var sect *IPv6v4MixedAddressGrouping
 	var mCache *mixedCache
+	var sect *IPv6v4MixedAddressGrouping
+	cache := section.cache
 	if cache != nil {
 		mCache = (*mixedCache)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache.mixed))))
 		if mCache != nil {
@@ -998,9 +992,9 @@ func (section *IPv6AddressSection) ToMaxHostLen(prefixLength BitCount) (*IPv6Add
 
 // ToBase85String creates a base 85 string,
 // which is described in [RFC 1924](https://www.rfc-editor.org/rfc/rfc1924.html).
-// It may be written as a range of two values if a range is not a prefix block.
+// It may be written as a range of two values if a range is not a prefixed block.
 //
-// If a multi-valued section cannot be written as a single prefix block or a range of two values,
+// If a multiple-valued section cannot be written as a single prefix block or a range of two values,
 // an error is returned.
 func (section *IPv6AddressSection) ToBase85String() (string, address_error.IncompatibleAddressError) {
 	if section == nil {
@@ -1726,7 +1720,6 @@ func (grouping *IPv6v4MixedAddressGrouping) GetIPv6AddressSection() *EmbeddedIPv
 	if cache == nil { // zero-valued
 		return zeroEmbeddedIPv6AddressSection
 	}
-
 	return cache.mixed.embeddedIPv6Section
 }
 
@@ -1740,7 +1733,6 @@ func (grouping *IPv6v4MixedAddressGrouping) GetIPv4AddressSection() *IPv4Address
 	if cache == nil { // zero-valued
 		return zeroIPv4AddressSection
 	}
-
 	return cache.mixed.embeddedIPv4Section
 }
 
@@ -1756,7 +1748,6 @@ func (grouping *IPv6v4MixedAddressGrouping) GetCount() *big.Int {
 	}
 
 	cnt := grouping.GetIPv6AddressSection().GetCount()
-
 	return cnt.Mul(cnt, grouping.GetIPv4AddressSection().GetCount())
 }
 
@@ -2052,13 +2043,11 @@ func NewIPv6SectionFromPrefixedUint64(highBytes, lowBytes uint64, segmentCount i
 		ipv6Network.getIPAddressCreator(),
 		prefixLength)
 	res = createIPv6Section(segments)
-
 	if prefixLength != nil {
 		assignPrefix(prefixLength, segments, res.ToIP(), false, false, BitCount(segmentCount<<ipv6BitsToSegmentBitshift))
 	} else {
 		res.cache.uint128Cache = &uint128Cache{high: highBytes, low: lowBytes}
 	}
-
 	return
 }
 
@@ -2190,11 +2179,9 @@ func newIPv6SectionFromPrefixedSingle(vals, upperVals IPv6SegmentValueProvider, 
 		prefixLength)
 	res = createIPv6Section(segments)
 	res.isMult = isMultiple
-
 	if prefixLength != nil {
 		assignPrefix(prefixLength, segments, res.ToIP(), singleOnly, false, BitCount(segmentCount<<ipv6BitsToSegmentBitshift))
 	}
-
 	return
 }
 
