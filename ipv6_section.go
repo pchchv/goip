@@ -2084,7 +2084,6 @@ func toSegmentsFromWords(words []big.Word, segmentCount int, prefixLength Prefix
 		segmentPrefixLength := getSegmentPrefixLength(IPv6BitsPerSegment, prefixLength, segmentIndex)
 		seg := NewIPv6PrefixedSegment(value, segmentPrefixLength)
 		segments[segmentIndex] = seg.ToDiv()
-
 		if wordSegmentIndex == segmentsPerWord {
 			wordSegmentIndex = 0
 			wordIndex++
@@ -2095,18 +2094,18 @@ func toSegmentsFromWords(words []big.Word, segmentCount int, prefixLength Prefix
 
 		if segmentIndex == 0 {
 			// any remaining words should be zero
-			isErr := currentWord != 0
-			switch isErr {
-			case true:
-				err = &addressValueError{
-					addressError: addressError{key: "ipaddress.error.exceeds.size"},
-					val:          int(words[wordIndex]),
-				}
-			case false:
+			var isErr bool
+			if isErr = currentWord != 0; !isErr {
 				for wordIndex++; wordIndex < wordLen; wordIndex++ {
 					if isErr = words[wordIndex] != 0; isErr {
 						break
 					}
+				}
+			}
+			if isErr {
+				err = &addressValueError{
+					addressError: addressError{key: "ipaddress.error.exceeds.size"},
+					val:          int(words[wordIndex]),
 				}
 			}
 			break
