@@ -116,25 +116,21 @@ func (seg *ipv6SegmentValues) getUpperSegmentValue() SegInt {
 
 func (seg *ipv6SegmentValues) calcBytesInternal() (bytes, upperBytes []byte) {
 	bytes = []byte{byte(seg.value >> 8), byte(seg.value)}
-
 	if seg.isMultiple() {
 		upperBytes = []byte{byte(seg.upperValue >> 8), byte(seg.upperValue)}
 	} else {
 		upperBytes = bytes
 	}
-
 	return
 }
 
 func (seg *ipv6SegmentValues) bytesInternal(upper bool) []byte {
 	var val IPv6SegInt
-
 	if upper {
 		val = seg.upperValue
 	} else {
 		val = seg.value
 	}
-
 	return []byte{byte(val >> 8), byte(val)}
 }
 
@@ -445,10 +441,8 @@ func (seg *IPv6AddressSegment) visitSplitSegmentsMultiple(creator func(index int
 
 	highPrefixBits := getSegmentPrefixLength(bitSizeSplit, myPrefix, 0)
 	lowPrefixBits := getSegmentPrefixLength(bitSizeSplit, myPrefix, 1)
-
 	creator(0, highLower, highUpper, highPrefixBits)
 	creator(1, lowLower, lowUpper, lowPrefixBits)
-
 	return nil
 }
 
@@ -607,7 +601,6 @@ func (seg *IPv6AddressSegment) ReverseBits(perByte bool) (res *IPv6AddressSegmen
 	} else {
 		res = NewIPv6Segment(val)
 	}
-
 	return
 }
 
@@ -637,7 +630,6 @@ func (seg *IPv6AddressSegment) ReverseBytes() (res *IPv6AddressSegment, err addr
 	} else {
 		res = NewIPv6Segment(val)
 	}
-
 	return
 }
 
@@ -757,7 +749,6 @@ func newIPv6SegmentVal(value IPv6SegInt) *ipv6SegmentValues {
 		result := &block.block[resultIndex]
 		return result
 	}
-
 	return &ipv6SegmentValues{
 		value:      value,
 		upperValue: value,
@@ -768,8 +759,6 @@ func newIPv6SegmentVal(value IPv6SegInt) *ipv6SegmentValues {
 }
 
 func newIPv6SegmentPrefixedVal(value IPv6SegInt, prefLen PrefixLen) (result *ipv6SegmentValues) {
-	var isSinglePrefBlock *bool
-
 	if prefLen == nil {
 		return newIPv6SegmentVal(value)
 	}
@@ -781,8 +770,7 @@ func newIPv6SegmentPrefixedVal(value IPv6SegInt, prefLen PrefixLen) (result *ipv
 		prefixIndex = IPv6BitsPerSegment
 	}
 
-	prefLen = cacheBitCount(prefixIndex) // use the prefix length cache for all segments
-
+	prefLen = cacheBitCount(prefixIndex) // this ensures we use the prefix length cache for all segments
 	if useIPv6SegmentCache {
 		cache := segmentPrefixCacheIPv6
 		prefixCache := (*ipv6DivsPartition)(atomicLoadPointer((*unsafe.Pointer)(unsafe.Pointer(&cache[prefixIndex]))))
@@ -819,12 +807,12 @@ func newIPv6SegmentPrefixedVal(value IPv6SegInt, prefLen PrefixLen) (result *ipv
 		return result
 	}
 
+	var isSinglePrefBlock *bool
 	if prefixIndex == IPv6BitsPerSegment {
 		isSinglePrefBlock = &trueVal
 	} else {
 		isSinglePrefBlock = &falseVal
 	}
-
 	return &ipv6SegmentValues{
 		value:      value,
 		upperValue: value,
@@ -851,7 +839,6 @@ func makePrefixCacheIPv6() (allPrefixedCacheIPv6 []ipv6SegmentValues) {
 
 func newIPv6SegmentPrefixedValues(value, upperValue IPv6SegInt, prefLen PrefixLen) *ipv6SegmentValues {
 	var isSinglePrefBlock *bool
-
 	if prefLen == nil {
 		if value == upperValue {
 			return newIPv6SegmentVal(value)
@@ -877,7 +864,6 @@ func newIPv6SegmentPrefixedValues(value, upperValue IPv6SegInt, prefLen PrefixLe
 		}
 
 		prefLen = cacheBitCount(prefixIndex) // this ensures we use the prefix length cache for all segments
-
 		if useIPv6SegmentCache {
 			shiftBits := uint(IPv6BitsPerSegment - prefixIndex)
 			nmask := ^IPv6SegInt(0) << shiftBits
@@ -920,7 +906,6 @@ func newIPv6SegmentPrefixedValues(value, upperValue IPv6SegInt, prefLen PrefixLe
 					dataLoc := (*unsafe.Pointer)(unsafe.Pointer(&prefixCache.block[blockIndex]))
 					atomicStorePointer(dataLoc, unsafe.Pointer(blockCache))
 				}
-
 				return &blockCache.block[resultIndex]
 			}
 
@@ -930,11 +915,9 @@ func newIPv6SegmentPrefixedValues(value, upperValue IPv6SegInt, prefLen PrefixLe
 					return &allPrefixedCacheIPv6[prefixIndex]
 				}
 			}
-
 			isSinglePrefBlock = &falseVal
 		}
 	}
-
 	return &ipv6SegmentValues{
 		value:      value,
 		upperValue: upperValue,
