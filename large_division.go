@@ -12,6 +12,7 @@ import (
 
 var _ divisionValues = &largeDivValues{}
 
+// BigDivInt is an unsigned integer type for unlimited size division values.
 type BigDivInt = big.Int
 
 type addressLargeDivInternal struct {
@@ -171,11 +172,10 @@ func (div *IPAddressLargeDivision) getRangeDigitCount(radix int) int {
 	}
 
 	var quotient, upperQuotient, remainder big.Int
-	val, upperVal := div.getValue(), div.getUpperValue()
 	count := 1
 	bigRadix := big.NewInt(int64(radix))
 	bigUpperDigit := big.NewInt(int64(radix - 1))
-
+	val, upperVal := div.getValue(), div.getUpperValue()
 	for {
 		quotient.QuoRem(val, bigRadix, &remainder)
 		if bigIsZero(&remainder) {
@@ -234,7 +234,6 @@ func (div *IPAddressLargeDivision) GetCount() *big.Int {
 // the block of values for the given prefix length.
 func (div *IPAddressLargeDivision) ContainsPrefixBlock(prefixLen BitCount) bool {
 	bitCount := div.GetBitCount()
-
 	if prefixLen <= 0 {
 		return div.IsFullRange()
 	} else if prefixLen >= bitCount {
@@ -296,7 +295,6 @@ func (div *IPAddressLargeDivision) GetMinPrefixLenForBlock() BitCount {
 func (div *IPAddressLargeDivision) GetPrefixLenForSingleBlock() PrefixLen {
 	prefLen := div.GetMinPrefixLenForBlock()
 	bitCount := div.GetBitCount()
-
 	if prefLen == bitCount {
 		if !div.IsMultiple() {
 			result := PrefixBitCount(prefLen)
@@ -319,13 +317,11 @@ func (div *IPAddressLargeDivision) getMaxDigitCount() int {
 	rad := div.getDefaultTextualRadix()
 	bc := div.GetBitCount()
 	vals := div.getLargeDivValues()
-
 	if vals == nil {
 		maxValue = bigZeroConst()
 	} else {
 		maxValue = vals.maxValue
 	}
-
 	return getBigMaxDigitCount(rad, bc, maxValue)
 }
 
@@ -394,13 +390,11 @@ func (div *IPAddressLargeDivision) GetString() string {
 			return div.getDefaultRangeString()
 		}
 	}
-
 	if div.divisionValues != nil {
 		if cache := div.getCache(); cache != nil {
 			return cacheStr(&cache.cachedString, stringer)
 		}
 	}
-
 	return stringer()
 }
 
@@ -418,13 +412,11 @@ func (div *IPAddressLargeDivision) GetWildcardString() string {
 		}
 		return div.getDefaultRangeString()
 	}
-
 	if div.divisionValues != nil {
 		if cache := div.getCache(); cache != nil {
 			return cacheStr(&cache.cachedWildcardString, stringer)
 		}
 	}
-
 	return stringer()
 }
 
@@ -462,7 +454,6 @@ func (div *IPAddressLargeDivision) getSplitLowerString(radix int, choppedDigits 
 	str := builder.String()
 	length := len(str)
 	prefLen := len(stringPrefix)
-
 	for i := 0; i < length; i++ {
 		if i > 0 {
 			appendable.WriteByte(splitDigitSeparator)
@@ -500,7 +491,6 @@ func (div *IPAddressLargeDivision) getSplitRangeString(rangeSeparator string, wi
 	upperStr := upperBuilder.String()
 	length := len(lowerStr)
 	prefLen := len(stringPrefix)
-
 	for i := 0; i < length; i++ {
 		var index int
 		if reverseSplitDigits {
@@ -568,7 +558,6 @@ func (div *IPAddressLargeDivision) getSplitRangeStringLength(rangeSeparator stri
 	upperStr := upperBuilder.String()
 	upperLength := len(upperStr)
 	lowerLength := len(lowerStr)
-
 	for i := 1; i < upperLength; i++ {
 		var lower byte
 		if i <= lowerLength {
@@ -580,9 +569,9 @@ func (div *IPAddressLargeDivision) getSplitRangeStringLength(rangeSeparator stri
 		if isFullRange {
 			digitsLength += len(wildcard) + 1
 		} else if lower != upper {
-			digitsLength += (stringPrefixLength << 1) + 4 //1 for each digit, 1 for range separator, 1 for split digit separator
+			digitsLength += (stringPrefixLength << 1) + 4 // 1 for each digit, 1 for range separator, 1 for split digit separator
 		} else {
-			//this and any remaining must be singles
+			// this and any remaining must be singles
 			remainingAfterLoop += upperIndex + 1
 			break
 		}
@@ -591,7 +580,6 @@ func (div *IPAddressLargeDivision) getSplitRangeStringLength(rangeSeparator stri
 	if remainingAfterLoop > 0 {
 		digitsLength += remainingAfterLoop * (stringPrefixLength + 2) // one for each splitDigitSeparator, 1 for each digit
 	}
-
 	return digitsLength
 }
 
@@ -602,13 +590,11 @@ func (div *IPAddressLargeDivision) getDigitCount(val *BigDivInt, radix int) int 
 	}
 
 	var bigRadix *big.Int
-
 	if div.getDefaultTextualRadix() == radix {
 		bigRadix = div.getBigDefaultTextualRadix()
 	} else {
 		bigRadix = big.NewInt(int64(radix))
 	}
-
 	return getBigDigitCount(val, bigRadix)
 }
 
@@ -616,13 +602,11 @@ func (div *IPAddressLargeDivision) getMaxDigitCountRadix(radix int) int {
 	var maxValue *BigDivInt
 	bc := div.GetBitCount()
 	vals := div.getLargeDivValues()
-
 	if vals == nil {
 		maxValue = bigZeroConst()
 	} else {
 		maxValue = vals.maxValue
 	}
-
 	return getBigMaxDigitCount(radix, bc, maxValue)
 }
 
@@ -801,13 +785,11 @@ func newLargeDivValuesUnchecked(value, upperValue, maxValue *BigDivInt, isMult b
 	}
 	result.isPrefixBlock, isSinglePrefBlock, result.upperValueMasked =
 		setCachedPrefixValues(result.value, result.upperValue, result.maxValue, prefLen, bitCount)
-
 	if isSinglePrefBlock {
 		result.cache.isSinglePrefBlock = &trueVal
 	} else {
 		result.cache.isSinglePrefBlock = &falseVal
 	}
-
 	return result
 }
 
@@ -817,7 +799,6 @@ func newLargeDivValuesDivIntUnchecked(value, upperValue DivInt, prefLen PrefixLe
 		bitCount: bitCount,
 	}
 	val := new(big.Int).SetUint64(uint64(value))
-
 	if value == upperValue {
 		result.value, result.upperValue = val, val
 	} else {
@@ -829,13 +810,11 @@ func newLargeDivValuesDivIntUnchecked(value, upperValue DivInt, prefLen PrefixLe
 	result.maxValue = setMax(result.upperValue, bitCount)
 	result.isPrefixBlock, isSinglePrefBlock, result.upperValueMasked =
 		setCachedPrefixValues(result.value, result.upperValue, result.maxValue, prefLen, bitCount)
-
 	if isSinglePrefBlock {
 		result.cache.isSinglePrefBlock = &trueVal
 	} else {
 		result.cache.isSinglePrefBlock = &falseVal
 	}
-
 	return result
 }
 
@@ -870,13 +849,11 @@ func setCachedPrefixValues(value, upperValue, maxValue *BigDivInt, prefLen Prefi
 func setUpperValueMasked(value, upperValue *BigDivInt, prefLen PrefixLen, bitCount BitCount) *BigDivInt {
 	var networkMask big.Int
 	networkMask.Lsh(bigMinusOneConst(), uint(bitCount-prefLen.Len())).And(upperValue, &networkMask)
-
 	if networkMask.Cmp(upperValue) == 0 {
 		return upperValue
 	} else if networkMask.Cmp(value) == 0 {
 		return value
 	}
-
 	return &networkMask
 }
 
@@ -888,21 +865,17 @@ func testBigRangeMasks(lowerValue, upperValue, finalUpperValue, networkMask, hos
 
 func testBigRange(lowerValue, upperValue, finalUpperValue *BigDivInt, bitCount, divisionPrefixLen BitCount) bool {
 	var networkMask, hostMask big.Int
-
 	networkMask.Lsh(bigMinusOneConst(), uint(bitCount-divisionPrefixLen))
 	hostMask.Not(&networkMask)
-
 	return testBigRangeMasks(lowerValue, upperValue, finalUpperValue, &networkMask, &hostMask)
 }
 
 func setMax(assignedUpper *BigDivInt, bitCount BitCount) (max *BigDivInt) {
 	var maxVal big.Int
 	max = maxVal.Lsh(bigOneConst(), uint(bitCount)).Sub(&maxVal, bigOneConst())
-
 	if max.CmpAbs(assignedUpper) == 0 {
 		max = assignedUpper
 	}
-
 	return
 }
 
@@ -913,7 +886,6 @@ func setVal(valueBytes []byte, bitCount BitCount) (assignedValue *BigDivInt, ass
 
 	assignedBitCount = bitCount
 	maxLen := (bitCount + 7) >> 3
-
 	if len(valueBytes) >= maxLen {
 		valueBytes = valueBytes[:maxLen]
 	}
@@ -930,7 +902,6 @@ func setVals(valueBytes []byte, upperBytes []byte, bitCount BitCount) (assignedV
 
 	assignedBitCount = bitCount
 	maxLen := (bitCount + 7) >> 3
-
 	if len(valueBytes) >= maxLen || len(upperBytes) >= maxLen {
 		extraBits := bitCount & 7
 		mask := byte(0xff)
@@ -956,7 +927,6 @@ func setVals(valueBytes []byte, upperBytes []byte, bitCount BitCount) (assignedV
 	}
 
 	assignedValue = new(big.Int).SetBytes(valueBytes)
-
 	if upperBytes == nil || bytes.Compare(valueBytes, upperBytes) == 0 {
 		assignedUpper = assignedValue
 	} else {
@@ -980,11 +950,9 @@ func createLargeAddressDiv(vals divisionValues, defaultRadix int) *IPAddressLarg
 			addressDivisionBase: addressDivisionBase{vals},
 		},
 	}
-
 	if defaultRadix >= 2 {
 		res.defaultRadix = new(big.Int).SetInt64(int64(defaultRadix))
 	}
-
 	return res
 }
 
@@ -1051,7 +1019,6 @@ func newLargeDivPrefixedValues(value, upperValue []byte, prefLen PrefixLen, bitC
 	result.isMult = result.value != result.upperValue
 
 	var isSinglePrefBlock bool
-
 	result.isPrefixBlock, isSinglePrefBlock, result.upperValueMasked =
 		setCachedPrefixValues(result.value, result.upperValue, result.maxValue, prefLen, bitCount)
 	if isSinglePrefBlock {
