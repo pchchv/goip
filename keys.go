@@ -11,26 +11,23 @@ const (
 )
 
 var (
-	_ IPv4AddressKey
-	_ IPv6AddressKey
-	_ MACAddressKey
-
+	_ Key[*MACAddress]
+	_ Key[*IPv4Address]
+	_ Key[*IPv6Address]
 	_ AddressKey
 	_ IPAddressKey
+	_ MACAddressKey
+	_ IPv4AddressKey
+	_ IPv6AddressKey
 	_ IPAddressSeqRangeKey
 	_ IPv4AddressSeqRangeKey
 	_ IPv6AddressSeqRangeKey
-
-	_ Key[*IPv4Address]
-	_ Key[*IPv6Address]
-	_ Key[*MACAddress]
-
 	// ensure our 5 key types are indeed comparable
+	_ testComparableConstraint[MACAddressKey]
+	_ testComparableConstraint[Key[*Address]]
 	_ testComparableConstraint[IPv4AddressKey]
 	_ testComparableConstraint[IPv6AddressKey]
-	_ testComparableConstraint[MACAddressKey]
 	_ testComparableConstraint[Key[*IPAddress]]
-	_ testComparableConstraint[Key[*Address]]
 )
 
 // SequentialRangeKey is a representation of SequentialRange that is comparable as defined by the language specification.
@@ -106,7 +103,6 @@ func (key SequentialRangeKey[T]) ToSeqRange() *SequentialRange[T] {
 			upper = any(upper4).(T)
 		}
 	}
-
 	return newSequRangeUnchecked(lower, upper, isMult)
 }
 
