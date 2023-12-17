@@ -16,7 +16,6 @@ func (grouping *largeDivisionGroupingInternal) calcBytes() (bytes, upperBytes []
 	isMultiple := grouping.isMultiple()
 	byteCount := grouping.GetByteCount()
 	bytes = make([]byte, byteCount)
-
 	if isMultiple {
 		upperBytes = make([]byte, byteCount)
 	} else {
@@ -27,17 +26,16 @@ func (grouping *largeDivisionGroupingInternal) calcBytes() (bytes, upperBytes []
 		div := grouping.getDivision(k)
 		bigBytes := div.getValue().Bytes()
 		var bigUpperBytes []byte
-
 		if isMultiple {
 			bigUpperBytes = div.getUpperValue().Bytes()
 		}
 
+		// for each 64 bits of the division in reverse order
 		for totalDivBits := div.GetBitCount(); totalDivBits > 0; totalDivBits -= 64 {
 			// grab those 64 bits (from bigBytes and bigUpperBytes) and put them in val and upperVal
 			divBits := min(totalDivBits, 64)
 			var divBytes []byte
 			var val, upperVal uint64
-
 			if len(bigBytes) > 8 {
 				byteLen := len(bigBytes) - 8
 				divBytes = bigBytes[byteLen:]
@@ -72,7 +70,6 @@ func (grouping *largeDivisionGroupingInternal) calcBytes() (bytes, upperBytes []
 				rbi := 8 - bitIndex
 				bytes[byteIndex] |= byte(val << uint(rbi))
 				val >>= uint(bitIndex)
-
 				if isMultiple {
 					upperBytes[byteIndex] |= byte(upperVal << uint(rbi))
 					upperVal >>= uint(bitIndex)
@@ -189,7 +186,7 @@ func (grouping *largeDivisionGroupingInternal) initDivs() *largeDivisionGrouping
 
 // divisions are printed like slices of *IPAddressLargeDivision (which are Stringers)
 // with division separated by spaces and enclosed in square brackets,
-// sections are printed like addresses with segments separated by segment separators
+// sections are printed like addresses with segments separated by segment separators.
 func (grouping largeDivisionGroupingInternal) Format(state fmt.State, verb rune) {
 	arr := grouping.initDivs().getDivArray()
 	if len(arr) == 0 {
@@ -518,7 +515,6 @@ func normalizeLargeDivisions(divs []*IPAddressLargeDivision) (newDivs []*IPAddre
 	var bits BitCount
 	divCount := len(divs)
 	newDivs = make([]*IPAddressLargeDivision, 0, divCount)
-
 	for _, div := range divs {
 		if div == nil || div.GetBitCount() == 0 {
 			continue
@@ -528,7 +524,6 @@ func normalizeLargeDivisions(divs []*IPAddressLargeDivision) (newDivs []*IPAddre
 		// The final prefix length is the minimum amongst the divisions' own prefixes
 		divPrefix := div.getDivisionPrefixLength()
 		divIsPrefixed := divPrefix != nil
-
 		if previousDivPrefixed {
 			if !divIsPrefixed || divPrefix.bitCount() != 0 {
 				newDiv = createLargeAddressDiv(div.derivePrefixed(cacheBitCount(0)), div.getDefaultRadix()) // change prefix to 0
@@ -550,7 +545,6 @@ func normalizeLargeDivisions(divs []*IPAddressLargeDivision) (newDivs []*IPAddre
 			}
 			newDiv = div
 		}
-
 		newDivs = append(newDivs, newDiv)
 		bits += newDiv.GetBitCount()
 		isMultiple = isMultiple || newDiv.isMultiple()
