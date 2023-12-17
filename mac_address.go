@@ -166,7 +166,6 @@ func (addr *MACAddress) checkIdentity(section *MACAddressSection) *MACAddress {
 	if sec == addr.section {
 		return addr
 	}
-
 	return newMACAddress(section)
 }
 
@@ -344,7 +343,8 @@ func (addr *MACAddress) IsLocal() bool {
 
 // ToOUIPrefixBlock returns a section in which the range of values match the full block for the OUI (organizationally unique identifier) bytes
 func (addr *MACAddress) ToOUIPrefixBlock() *MACAddress {
-	segmentCount := addr.GetSegmentCount()
+	addr = addr.init()
+	segmentCount := addr.getDivisionCount()
 	currentPref := addr.getPrefixLen()
 	newPref := BitCount(MACOrganizationalUniqueIdentifierSegmentCount) << 3 //ouiSegmentCount * MACAddress.BITS_PER_SEGMENT
 	createNew := currentPref == nil || currentPref.bitCount() > newPref
@@ -367,7 +367,6 @@ func (addr *MACAddress) ToOUIPrefixBlock() *MACAddress {
 	newSegs := createSegmentArray(segmentCount)
 	addr.GetSection().copySubDivisions(0, segmentIndex, newSegs)
 	allRangeSegment := allRangeMACSeg.ToDiv()
-
 	for i := segmentIndex; i < segmentCount; i++ {
 		newSegs[i] = allRangeSegment
 	}
@@ -538,6 +537,7 @@ func (addr *MACAddress) GetSegmentStrings() []string {
 // If asMAC if true, this address is considered MAC and the EUI-64 is extended using ff-ff, otherwise this address is considered EUI-48 and extended using ff-fe
 // Note that IPv6 treats MAC as EUI-48 and extends MAC to IPv6 addresses using ff-fe
 func (addr *MACAddress) ToEUI64(asMAC bool) (*MACAddress, address_error.IncompatibleAddressError) {
+	addr = addr.init()
 	section := addr.GetSection()
 	if addr.GetSegmentCount() == ExtendedUniqueIdentifier48SegmentCount {
 		segs := createSegmentArray(ExtendedUniqueIdentifier64SegmentCount)
@@ -713,7 +713,6 @@ func (addr *MACAddress) toSinglePrefixBlockOrAddress() (*MACAddress, address_err
 	if res == nil {
 		return nil, &incompatibleAddressError{addressError{key: "ipaddress.error.address.not.block"}}
 	}
-
 	return res, nil
 }
 
