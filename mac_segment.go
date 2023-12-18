@@ -215,7 +215,6 @@ func (seg *MACAddressSegment) ReverseBits(_ bool) (res *MACAddressSegment, err a
 	} else {
 		res = NewMACSegment(val)
 	}
-
 	return
 }
 
@@ -230,7 +229,6 @@ func (seg *MACAddressSegment) joinSegs(macSegment1 *MACAddressSegment, flip bool
 
 	lower0 := seg.GetSegmentValue()
 	upper0 := seg.GetUpperSegmentValue()
-
 	if flip {
 		mask2ndBit := SegInt(0x2)
 		if !seg.MatchesWithMask(mask2ndBit&lower0, mask2ndBit) { // ensures that bit remains constant
@@ -239,7 +237,6 @@ func (seg *MACAddressSegment) joinSegs(macSegment1 *MACAddressSegment, flip bool
 		lower0 ^= mask2ndBit
 		upper0 ^= mask2ndBit
 	}
-
 	return NewIPv6RangePrefixedSegment(
 		IPv6SegInt((lower0<<8)|macSegment1.getSegmentValue()),
 		IPv6SegInt((upper0<<8)|macSegment1.getUpperSegmentValue()),
@@ -446,13 +443,11 @@ func (seg *macSegmentValues) getCache() *divCache {
 
 func (seg *macSegmentValues) calcBytesInternal() (bytes, upperBytes []byte) {
 	bytes = []byte{byte(seg.value)}
-
 	if seg.isMultiple() {
 		upperBytes = []byte{byte(seg.upperValue)}
 	} else {
 		upperBytes = bytes
 	}
-
 	return
 }
 
@@ -511,7 +506,6 @@ func newMACSegmentValues(value, upperValue MACSegInt) *macSegmentValues {
 	if useMACSegmentCache && value == 0 && upperValue == MACMaxValuePerSegment {
 		return allRangeValsMAC
 	}
-
 	return &macSegmentValues{value: value, upperValue: upperValue}
 }
 
