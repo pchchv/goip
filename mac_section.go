@@ -79,7 +79,6 @@ func (section *MACAddressSection) getLongValue(lower bool) (result uint64) {
 	}
 
 	bitsPerSegment := section.GetBitsPerSegment()
-
 	for i := 1; i < segCount; i++ {
 		result = result << uint(bitsPerSegment)
 		seg = section.GetSegment(i)
@@ -89,7 +88,6 @@ func (section *MACAddressSection) getLongValue(lower bool) (result uint64) {
 			result |= uint64(seg.GetUpperSegmentValue())
 		}
 	}
-
 	return
 }
 
@@ -460,20 +458,18 @@ func (section *MACAddressSection) GetSegments() (res []*MACAddressSegment) {
 	return
 }
 
-// GetDottedGrouping returns an AddressDivisionGrouping which organizes the address section into segments of bit-length 16,
-// rather than the more typical 8 bits per segment.
+// GetDottedGrouping returns an AddressDivisionGrouping which organizes the address section into segments of bit-length 16, rather than the more typical 8 bits per segment.
 //
 // If this represents a collection of MAC addresses, this returns an error when unable to join two address segments,
 // the first with a range of values, into a division of the larger bit-length that represents the same set of values.
 func (section *MACAddressSection) GetDottedGrouping() (*AddressDivisionGrouping, address_error.IncompatibleAddressError) {
-	var newSegs []*AddressDivision
 	var segIndex, newSegIndex int
+	var newSegs []*AddressDivision
 	segmentCount := section.GetSegmentCount()
 	bitsPerSeg := section.GetBitsPerSegment()
 	newSegmentCount := (segmentCount + 1) >> 1
 	newSegmentBitCount := section.GetBitsPerSegment() << 1
 	newSegs = make([]*AddressDivision, newSegmentCount)
-
 	for segIndex+1 < segmentCount {
 		segment1 := section.GetSegment(segIndex)
 		segIndex++
@@ -546,7 +542,6 @@ func (section *MACAddressSection) Increment(incrementVal int64) *MACAddressSecti
 	if checkOverflow(incrementVal, lowerValue, upperValue, countMinus1, getMacMaxValueLong(segCount)) {
 		return nil
 	}
-
 	return increment(
 		section.ToSectionBase(),
 		incrementVal,
@@ -786,8 +781,6 @@ func (section *MACAddressSection) String() string {
 	return section.toString()
 }
 
-
-
 func createMACSection(segments []*AddressDivision) *MACAddressSection {
 	return &MACAddressSection{
 		addressSectionInternal{
@@ -818,7 +811,6 @@ func createMACSectionFromSegs(orig []*MACAddressSegment) *MACAddressSection {
 	segCount := len(orig)
 	newSegs := make([]*AddressDivision, segCount)
 	isMultiple := false
-
 	if segCount != 0 {
 		isBlock := true
 		for i := segCount - 1; i >= 0; i-- {
@@ -895,7 +887,6 @@ func NewMACSectionFromBytes(bytes []byte, segmentCount int) (res *MACAddressSect
 			}
 		}
 	}
-
 	return
 }
 
@@ -938,11 +929,9 @@ func NewMACSectionFromRange(vals, upperVals MACSegmentValueProvider, segmentCoun
 		macNetwork.getAddressCreator(),
 		nil)
 	res = createMACSection(segments)
-
 	if isMultiple {
 		res.initImplicitPrefLen(MACBitsPerSegment)
 		res.isMult = true
 	}
-
 	return
 }
