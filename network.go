@@ -179,8 +179,6 @@ func createIPv6Loopback() *IPv6Address {
 }
 
 func createMask(version IPVersion, zeroSeg *AddressDivision, networkPrefixLength BitCount, cache []*IPAddress, network, withPrefixLength bool) *IPAddress {
-	var onesSubnetIndex, zerosSubnetIndex int
-	var prefLen PrefixLen
 	bits := networkPrefixLength
 	addressBitLength := version.GetBitCount()
 	bits = adjustBits(version, bits)
@@ -190,6 +188,7 @@ func createMask(version IPVersion, zeroSeg *AddressDivision, networkPrefixLength
 		return subnet
 	}
 
+	var onesSubnetIndex, zerosSubnetIndex int
 	if network {
 		onesSubnetIndex = int(addressBitLength)
 		zerosSubnetIndex = 0
@@ -307,6 +306,7 @@ func createMask(version IPVersion, zeroSeg *AddressDivision, networkPrefixLength
 		}
 	}
 
+	var prefLen PrefixLen
 	if withPrefixLength {
 		prefLen = cacheBitCount(prefix)
 	}
@@ -348,13 +348,11 @@ func createIPv6AddressNetwork() *ipv6AddressNetwork {
 		},
 	}
 	populateNetwork(IPv6, &network.ipAddressNetwork, zeroIPv6Seg.ToDiv())
-
 	for i := 0; i <= IPv6BitCount; i++ {
 		addr := network.subnetMasks[i].ToIPv6()
 		high, low := addr.Uint64Values()
 		ipv6NetworkMasks[i] = [2]uint64{high, low}
 	}
-
 	return network
 }
 
@@ -368,11 +366,9 @@ func createIPv4AddressNetwork() *ipv4AddressNetwork {
 		},
 	}
 	populateNetwork(IPv4, &network.ipAddressNetwork, zeroIPv4Seg.ToDiv())
-
 	for i := 0; i <= IPv4BitCount; i++ {
 		addr := network.subnetMasks[i].ToIPv4()
 		ipv4NetworkMasks[i] = addr.Uint32Value()
 	}
-
 	return network
 }

@@ -59,13 +59,14 @@ func getMergedPrefixBlocks(sections []ExtendedIPSegmentSeries) []ExtendedIPSegme
 	if singleElement {
 		return list
 	}
-
-	removedCount := 0
-	listLen := len(list)
 	first := sections[0]
 	bitCount := first.GetBitCount()
 	bitsPerSegment := first.GetBitsPerSegment()
 	bytesPerSegment := first.GetBytesPerSegment()
+
+	// Now we see if we can match blocks or join them into larger blocks
+	removedCount := 0
+	listLen := len(list)
 	j := listLen - 1
 	i := j - 1
 top:
@@ -296,7 +297,7 @@ top:
 			continue
 		}
 
-		//check for overlap
+		// check for overlap
 
 		if ithRangeSegmentIndex < 0 {
 			ithRangeSegmentIndex = item.GetSequentialBlockIndex()
@@ -324,7 +325,7 @@ top:
 		otherRangeItemValue := otherRangeSegment.GetSegmentValue()
 		rangeItemUpperValue := rangeSegment.GetUpperSegmentValue()
 
-		//check for overlapping range in the range segment
+		// check for overlapping range in the range segment
 		if rangeItemUpperValue < otherRangeItemValue && rangeItemUpperValue+1 != otherRangeItemValue {
 			j = i
 			i--
