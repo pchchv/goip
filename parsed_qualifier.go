@@ -35,7 +35,7 @@ func (parsedQual *parsedHostIdentifierStringQualifier) getNetworkPrefixLen() Pre
 	return parsedQual.networkPrefixLength
 }
 
-// setZone distinguishes callers with empty zones vs callers in which there was no zone indicator
+// setZone distinguishes callers with empty zones vs callers in which there was no zone indicator.
 func (parsedQual *parsedHostIdentifierStringQualifier) setZone(zone *Zone) {
 	if zone != nil {
 		parsedQual.zone = *zone
@@ -72,7 +72,6 @@ func (parsedQual *parsedHostIdentifierStringQualifier) inferVersion(validationOp
 	if parsedQual.isZoned {
 		return IPv6
 	}
-
 	return IndeterminateIPVersion
 }
 
@@ -84,7 +83,6 @@ func (parsedQual *parsedHostIdentifierStringQualifier) getMaskLower() *IPAddress
 	if mask := parsedQual.mask; mask != nil {
 		return mask.getValForMask()
 	}
-
 	return nil
 }
 

@@ -170,6 +170,7 @@ func (parseData *parsedMACAddress) createSection() (*MACAddressSection, address_
 				creator)
 			isMultiple = isMultiple || segIsMult
 		}
+
 		if !expandedSegments {
 			// check for any missing segments that we should account for here
 			if addressParseData.isWildcard(i) {
@@ -180,6 +181,7 @@ func (parseData *parsedMACAddress) createSection() (*MACAddressSection, address_
 						break
 					}
 				}
+
 				if expandSegments {
 					expandedSegments = true
 					count := missingCount
