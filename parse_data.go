@@ -1,10 +1,14 @@
 package goip
 
 const (
-	dot                             = '.'
-	dash                            = '-'
-	colon                           = ':'
-	space                           = ' '
+	dot             = '.'
+	dash            = '-'
+	colon           = ':'
+	space           = ' '
+	upperAdjustment = 8
+	// These are for the flags.
+	// A standard string is a string showing only the lower value of a segment, in lowercase.
+	// A standard range string shows both values, low to high, with the standard separator.
 	keyRadix                 uint32 = 0x00ff
 	keyBitSize               uint32 = 0xff00
 	keyWildcard              uint32 = 0x10000
@@ -15,26 +19,29 @@ const (
 	keyStandardRangeStr      uint32 = 0x80000
 	keyInferredLowerBoundary uint32 = 0x200000
 	keyInferredUpperBoundary uint32 = 0x400000
-	keyLower                        = 2
-	keyUpper                        = keyLower + upperAdjustment
-	keyBitSizeIndex                 = keyLowerRadixIndex
-	keyExtendedUpper                = keyExtendedLower + upperAdjustment
-	keyExtendedLower                = 4
-	keyUpperRadixIndex              = keyLowerRadixIndex + upperAdjustment
-	keyLowerRadixIndex              = 0
-	keyLowerStrEndIndex             = 7
-	keyUpperStrEndIndex             = keyLowerStrEndIndex + upperAdjustment
-	keyUpperStrStartIndex           = keyLowerStrStartIndex + upperAdjustment
-	keyLowerStrStartIndex           = 6
-	keyLowerStrDigitsIndex          = 1
-	keyUpperStrDigitsIndex          = keyLowerStrDigitsIndex + upperAdjustment
-	flagsIndex                      = keyLowerRadixIndex
 	bitSizeShift                    = 8
-	upperAdjustment                 = 8
-	segmentDataSize                 = 16
-	segmentIndexShift               = 4
-	ipv4SegmentDataSize             = segmentDataSize * 4
-	ipv6SegmentDataSize             = segmentDataSize * 8
+	// the flags, radix and bit size are stored in the same int, the radix takes the low byte,
+	// the bit size the next byte, the remaining 16 bits are available for flags.
+	flagsIndex         = keyLowerRadixIndex
+	keyBitSizeIndex    = keyLowerRadixIndex
+	keyLowerRadixIndex = 0
+	keyUpperRadixIndex = keyLowerRadixIndex + upperAdjustment
+	// these are for the segment values - they must be even-numbered
+	keyLower         = 2
+	keyUpper         = keyLower + upperAdjustment
+	keyExtendedLower = 4
+	keyExtendedUpper = keyExtendedLower + upperAdjustment
+	// these are for the indices
+	segmentDataSize        = 16
+	segmentIndexShift      = 4
+	keyLowerStrEndIndex    = 7
+	keyUpperStrEndIndex    = keyLowerStrEndIndex + upperAdjustment
+	keyLowerStrStartIndex  = 6
+	keyUpperStrStartIndex  = keyLowerStrStartIndex + upperAdjustment
+	keyLowerStrDigitsIndex = 1
+	keyUpperStrDigitsIndex = keyLowerStrDigitsIndex + upperAdjustment
+	ipv4SegmentDataSize    = segmentDataSize * 4
+	ipv6SegmentDataSize    = segmentDataSize * 8
 )
 
 var (
@@ -58,7 +65,7 @@ type addressParseData struct {
 	isEmpty                    bool
 	isAllVal                   bool
 	isSingleSegmentVal         bool
-	consecutiveSepIndex        int
+	consecutiveSepIndex        int // indices into the original string used while parsing
 	consecutiveSepSegmentIndex int
 	addressEndIndex            int
 	str                        string
@@ -76,7 +83,6 @@ func (parseData *addressParseData) getString() string {
 
 func (parseData *addressParseData) initSegmentData(segmentCapacity int) {
 	dataSize := 0
-
 	if segmentCapacity == 4 {
 		dataSize = ipv4SegmentDataSize
 	} else if segmentCapacity == 8 {
@@ -86,7 +92,6 @@ func (parseData *addressParseData) initSegmentData(segmentCapacity int) {
 	} else {
 		dataSize = segmentCapacity * segmentDataSize
 	}
-
 	parseData.segmentData = make([]uint32, dataSize)
 }
 
