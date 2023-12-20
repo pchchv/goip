@@ -49,7 +49,6 @@ func getDivisionPrefixLength(divisionBits, divisionPrefixedBits BitCount) Prefix
 
 func getPrefixedSegmentPrefixLength(bitsPerSegment BitCount, prefixLength BitCount, segmentIndex int) PrefixLen {
 	var decrement int
-
 	if bitsPerSegment == 8 {
 		decrement = segmentIndex << ipv4BitsToSegmentBitshift
 	} else if bitsPerSegment == 16 {
@@ -57,7 +56,6 @@ func getPrefixedSegmentPrefixLength(bitsPerSegment BitCount, prefixLength BitCou
 	} else {
 		decrement = segmentIndex * int(bitsPerSegment)
 	}
-
 	return getDivisionPrefixLength(bitsPerSegment, prefixLength-BitCount(decrement))
 }
 
@@ -73,7 +71,6 @@ func getSegmentPrefixLength(bitsPerSegment BitCount, prefixLength PrefixLen, seg
 
 func getAdjustedPrefixLength(bitsPerSegment BitCount, prefixLength BitCount, fromIndex, endIndex int) PrefixLen {
 	var decrement, totalBits int
-
 	if bitsPerSegment == 8 {
 		decrement = fromIndex << ipv4BitsToSegmentBitshift
 		totalBits = endIndex << ipv4BitsToSegmentBitshift
@@ -84,7 +81,6 @@ func getAdjustedPrefixLength(bitsPerSegment BitCount, prefixLength BitCount, fro
 		decrement = fromIndex * int(bitsPerSegment)
 		totalBits = endIndex * int(bitsPerSegment)
 	}
-
 	return getDivisionPrefixLength(BitCount(totalBits), prefixLength-BitCount(decrement))
 }
 
@@ -96,7 +92,6 @@ func getAdjustedPrefixLength(bitsPerSegment BitCount, prefixLength BitCount, fro
 // or IPv4: ...(nil).(1 to 8).(0)...
 func getNetworkPrefixLen(bitsPerSegment, segmentPrefixLength BitCount, segmentIndex int) PrefixLen {
 	var increment BitCount
-
 	if bitsPerSegment == 8 {
 		increment = BitCount(segmentIndex) << ipv4BitsToSegmentBitshift
 	} else if bitsPerSegment == 16 {
@@ -104,7 +99,6 @@ func getNetworkPrefixLen(bitsPerSegment, segmentPrefixLength BitCount, segmentIn
 	} else {
 		increment = BitCount(segmentIndex) * bitsPerSegment
 	}
-
 	return cacheBitCount(increment + segmentPrefixLength)
 }
 
@@ -151,18 +145,19 @@ func isPrefixSubnet(
 		zero := PrefixBitCount(0)
 		segmentPrefixLength := getPrefixedSegmentPrefixLength(bitsPerSegment, prefLen, i)
 		for {
-			//we want to see if there is a sequence of zeros followed by a sequence of full-range bits from the prefix onwards
-			//once we start seeing full range bits, the remained of the section must be full range
-			//for instance x marks the start of zeros and y marks the start of full range:
-			//segment 1 segment 2 ...
-			//upper: 10101010  10100111 11111111 11111111
-			//lower: 00111010  00100000 00000000 00000000
-			//                    x y
-			//upper: 10101010  10100000 00000000 00111111
-			//lower: 00111010  00100000 10000000 00000000
-			//                           x         y
+			// we want to see if there is a sequence of zeros followed by a sequence of full-range bits from the prefix onwards
+			// once we start seeing full range bits, the remained of the section must be full range
+			// for instance x marks the start of zeros and y marks the start of full range:
+			// segment 1 segment 2 ...
+			// upper: 10101010  10100111 11111111 11111111
+			// lower: 00111010  00100000 00000000 00000000
+			//                     x y
+			// upper: 10101010  10100000 00000000 00111111
+			// lower: 00111010  00100000 10000000 00000000
+			//                            x         y
 			//
-			//the bit marked x in each set of 4 segment of 8 bits is a sequence of zeros, followed by full range bits starting at bit y
+			// the bit marked x in each set of 4 segment of 8 bits is a sequence of zeros,
+			// followed by full range bits starting at bit y
 			lower := lowerValueProvider(i)
 			prefLen := segmentPrefixLength.bitCount()
 			if prefLen == 0 {
@@ -225,7 +220,6 @@ func isPrefixSubnet(
 					}
 				}
 			}
-
 			segmentPrefixLength = &zero
 			i++
 			if i >= segmentCount {
