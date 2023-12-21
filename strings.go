@@ -1009,8 +1009,8 @@ func appendRangeDigits(lower, upper uint64, rangeSeparator, wildcard string, rad
 		dig = uppercaseDigits
 	}
 
-	upperInt := lowerInt
 	lowerInt := uint(radix)
+	upperInt := lowerInt
 	previousWasFullRange := true
 	useInts := upper <= uint64(maxUint)
 	if useInts {
