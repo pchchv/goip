@@ -131,7 +131,7 @@ func (seg *addressSegmentInternal) GetMaxValue() SegInt {
 // TestBit panics if n < 0, or if it matches or exceeds the number of bits of this item.
 func (seg *addressSegmentInternal) TestBit(n BitCount) bool {
 	value := seg.GetSegmentValue()
-	if n < 0 || n > seg.GetBitCount() {
+	if n < 0 || n >= seg.GetBitCount() {
 		panic("invalid bit index")
 	}
 	return (value & (1 << uint(n))) != 0
@@ -144,7 +144,7 @@ func (seg *addressSegmentInternal) TestBit(n BitCount) bool {
 func (seg *addressSegmentInternal) IsOneBit(segmentBitIndex BitCount) bool {
 	value := seg.GetSegmentValue()
 	bitCount := seg.GetBitCount()
-	if segmentBitIndex < 0 || segmentBitIndex > seg.GetBitCount() {
+	if segmentBitIndex < 0 || segmentBitIndex >= seg.GetBitCount() {
 		panic("invalid bit index")
 	}
 	return (value & (1 << uint(bitCount-(segmentBitIndex+1)))) != 0
