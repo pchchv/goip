@@ -94,12 +94,12 @@ func (t ipAddressAllTester) run() {
 	t.testAllContains("*", "1:2:3:4:1:2:3:4", true)
 	t.testAllContains("*", "1.2.3.4.5", false)
 	t.testAllContains("*", "1.2.3.4", true)
-	t.testAllContains("* /64", "1.2.3.4", false)
+	t.testAllContains("*/64", "1.2.3.4", false)
 	t.testAllContains("*.*", "1::", false)
 	t.testAllContains("*:*", "1::", true)
 	t.testAllContains("*:*", "1.2.3.4", false)
 	t.testAllContains("*.*", "1.2.3.4", true)
-	t.testAllContains("* /64", "::", true)
+	t.testAllContains("*/64", "::", true)
 
 	t.testNormalized("aaaabbbbcccccddd0000000000000000-aaaabbbbccccddddffffffffffffffff", "aaaa:bbbb:cccc:cddd-dddd:*:*:*:*")
 	t.testCanonical("aaaabbbbcccccddd0000000000000000-aaaabbbbccccddddffffffffffffffff", "aaaa:bbbb:cccc:cddd-dddd:*:*:*:*")
@@ -126,11 +126,11 @@ func (t ipAddressAllTester) run() {
 	t.testSubnetStringRange2("0000000000000000000000000000abcd-0000000000000000000000000000bbcd", "::abcd", "::bbcd",
 		[]interface{}{[]uint{0xabcd, 0xbbcd}})
 
-	t.testMaskedIncompatibleAddress("* /f0ff::", "::", "f0ff::")
-	t.testMaskedIncompatibleAddress("* /129.0.0.0", "0.0.0.0", "129.0.0.0")
+	t.testMaskedIncompatibleAddress("*/f0ff::", "::", "f0ff::")
+	t.testMaskedIncompatibleAddress("*/129.0.0.0", "0.0.0.0", "129.0.0.0")
 
-	t.testMaskedIncompatibleAddress("*:* /f0ff::", "::", "f0ff::")
-	t.testMaskedIncompatibleAddress("*.* /129.0.0.0", "0.0.0.0", "129.0.0.0")
+	t.testMaskedIncompatibleAddress("*:*/f0ff::", "::", "f0ff::")
+	t.testMaskedIncompatibleAddress("*.*/129.0.0.0", "0.0.0.0", "129.0.0.0")
 
 	t.testIncompatibleAddress2("*.257-65535", "0.0.1.1", "255.0.255.255", []interface{}{[2]uint{0, 255}, [2]uint{257, 65535}})                                                                                                                                                                                     //[0-255, 257-65535]
 	t.testIncompatibleAddress2("1-1000", "1", "1000", []interface{}{[2]uint{1, 1000}})                                                                                                                                                                                                                             //[1-1000]
@@ -150,7 +150,7 @@ func (t ipAddressAllTester) run() {
 
 	// with prefix lengths
 
-	// inet_aton *.0.*.* /15
+	// inet_aton *.0.*.*/15
 	t.testSubnetStringRange("*.0-65535/15", "0.0.0.0", "255.0.255.255", []interface{}{[2]uint{0, 255}, [2]uint{0, 65535}}, p15)   // only valid with inet_aton allowed, and inet_aton takes precedence over wildcard
 	t.testSubnetStringRange("*.0-131071/15", "0.0.0.0", "255.1.255.255", []interface{}{[2]uint{0, 255}, [2]uint{0, 131071}}, p15) // only valid with inet_aton allowed, and inet_aton takes precedence over wildcard
 	t.testSubnetStringRange("*.0.0-65535/15", "0.0.0.0", "255.0.255.255", []interface{}{[2]uint{0, 255}, 0, [2]uint{0, 65535}}, p15)
