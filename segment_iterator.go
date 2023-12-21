@@ -85,7 +85,6 @@ func (it *segmentPrefIterator) Next() (res *AddressSegment) {
 		blockHigh := blockLow | it.upperShiftMask
 		cur++
 		it.current = cur
-
 		if it.notFirst {
 			low = blockLow
 		} else {
@@ -99,13 +98,11 @@ func (it *segmentPrefIterator) Next() (res *AddressSegment) {
 			high = it.originalUpper
 			it.done = true
 		}
-
 		res = createAddressSegment(
 			it.creator.deriveNewMultiSeg(
 				low,
 				high,
 				it.segmentPrefixLength))
-
 	}
 	return
 }
@@ -161,7 +158,6 @@ func segIterator(
 	isPrefixIterator, isBlockIterator bool) Iterator[*AddressSegment] {
 	var shiftAdjustment BitCount
 	var shiftMask, upperShiftMask SegInt
-
 	if segmentPrefixLength == nil {
 		isPrefixIterator = false // prefixBlockIterator() in which seg has no prefix
 		isBlockIterator = false
@@ -205,7 +201,6 @@ func segIterator(
 		if isBlockIterator {
 			return &prefBlockIterator
 		}
-
 		return &segmentPrefIterator{
 			segmentPrefBlockIterator: prefBlockIterator,
 			originalLower:            originalLower,

@@ -161,9 +161,8 @@ func (seg *addressSegmentInternal) getDefaultSegmentWildcardString() string {
 func (seg *addressSegmentInternal) GetLeadingBitCount(ones bool) BitCount {
 	extraLeading := 32 - seg.GetBitCount()
 	val := seg.GetSegmentValue()
-
 	if ones {
-		//leading ones
+		// leading ones
 		return BitCount(bits.LeadingZeros32(uint32(^val&seg.GetMaxValue()))) - extraLeading
 	}
 	// leading zeros
@@ -176,13 +175,12 @@ func (seg *addressSegmentInternal) GetLeadingBitCount(ones bool) BitCount {
 // This method applies only to the lowest value of the range if that segment represents multiple values.
 func (seg *addressSegmentInternal) GetTrailingBitCount(ones bool) BitCount {
 	val := seg.GetSegmentValue()
-
 	if ones {
 		// trailing ones
 		return BitCount(bits.TrailingZeros32(uint32(^val)))
 	}
 
-	//trailing zeros
+	// trailing zeros
 	bitCount := uint(seg.GetBitCount())
 	return BitCount(bits.TrailingZeros32(uint32(val | (1 << bitCount))))
 }
@@ -424,7 +422,6 @@ func (seg *addressSegmentInternal) contains(other AddressSegmentType) bool {
 	} else if matchesStructure, _ := seg.matchesStructure(other); matchesStructure {
 		return seg.sameTypeContains(otherSeg)
 	}
-
 	return false
 }
 
@@ -472,7 +469,6 @@ func (seg *addressSegmentInternal) getLower() *AddressSegment {
 	if vals != nil {
 		newVals = seg.deriveNewMultiSeg(seg.GetSegmentValue(), seg.GetSegmentValue(), seg.getDivisionPrefixLength())
 	}
-
 	return createAddressSegment(newVals)
 }
 
@@ -486,7 +482,6 @@ func (seg *addressSegmentInternal) getUpper() *AddressSegment {
 	if vals != nil {
 		newVals = seg.deriveNewMultiSeg(seg.GetUpperSegmentValue(), seg.GetUpperSegmentValue(), seg.getDivisionPrefixLength())
 	}
-
 	return createAddressSegment(newVals)
 }
 
@@ -603,7 +598,6 @@ func (seg *addressSegmentInternal) ReverseBits(perByte bool) (res *AddressSegmen
 	} else {
 		res = createAddressSegment(seg.deriveNewSeg(val, nil))
 	}
-
 	return
 }
 
@@ -626,7 +620,6 @@ func (seg *addressSegmentInternal) ReverseBytes() (res *AddressSegment, err addr
 
 	var val SegInt
 	oldVal := seg.GetSegmentValue()
-
 	switch byteCount {
 	case 2:
 		val = ((oldVal & 0xff) << 8) | (oldVal >> 8)
@@ -644,7 +637,6 @@ func (seg *addressSegmentInternal) ReverseBytes() (res *AddressSegment, err addr
 	} else {
 		res = createAddressSegment(seg.deriveNewSeg(val, nil))
 	}
-
 	return
 }
 
@@ -1032,7 +1024,6 @@ func getMatchingBits(segment1, segment2 *AddressSegment, maxBits, bitsPerSegment
 	val1 := segment1.getSegmentValue()
 	val2 := segment2.getSegmentValue()
 	xor := val1 ^ val2
-
 	switch bitsPerSegment {
 	case IPv4BitsPerSegment:
 		return BitCount(bits.LeadingZeros8(uint8(xor)))
