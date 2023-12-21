@@ -18,24 +18,22 @@ type ipAddressRangeTester struct {
 }
 
 func (t ipAddressRangeTester) run() {
-
 	t.testIPv4Mapped("::0-1:ffff:c0a8:0a14", false)
 	t.testIPv4Mapped("0:0:0:0:0-1:ffff:c0a8:0a14", false)
 	t.testIPv4Mapped("::0-1:ffff:1.2.3.4", false)
 	t.testIPv4Mapped("0:0:0:0:0-1:ffff:1.2.3.4", false)
-
 	t.testEquivalentPrefix("*.*.*.*", 0)
 	t.testEquivalentPrefix("0-127.*.*.*", 1)
 	t.testEquivalentPrefix("128-255.*.*.*", 1)
-	t.testEquivalentPrefix("*.*.*.* /1", 0)
-	t.testEquivalentPrefix("0.*.*.* /1", 8)
-	t.testEquivalentPrefix("128-255.*.*.* /1", 1)
+	t.testEquivalentPrefix("*.*.*.*/1", 0)
+	t.testEquivalentPrefix("0.*.*.*/1", 8)
+	t.testEquivalentPrefix("128-255.*.*.*/1", 1)
 	t.testEquivalentPrefix("1.2.*.*", 16)
-	t.testEquivalentPrefix("1.2.*.* /24", 16)
+	t.testEquivalentPrefix("1.2.*.*/24", 16)
 	t.testEquivalentMinPrefix("1.2.*.0/24", cacheTestBits(16), 16)
 	t.testEquivalentMinPrefix("1.2.0-255.0/24", cacheTestBits(16), 16)
 	t.testEquivalentPrefix("1.2.1.0/24", 24)
-	t.testEquivalentPrefix("1.2.1.* /24", 24)
+	t.testEquivalentPrefix("1.2.1.*/24", 24)
 	t.testEquivalentPrefix("1.2.1.*", 24)
 	t.testEquivalentMinPrefix("1.2.*.4", nil, 32)
 	t.testEquivalentPrefix("1.2.252-255.*", 22)
@@ -58,13 +56,13 @@ func (t ipAddressRangeTester) run() {
 	t.testEquivalentMinPrefix("8000-ffff::/1", nil, 128)
 	t.testEquivalentPrefix("8000-ffff:*", 1)
 	t.testEquivalentMinPrefix("7fff-ffff:*", nil, 16)
-	t.testEquivalentMinPrefix("7fff-ffff:* /1", nil, 16)
-	t.testEquivalentPrefix("11:8000-ffff:* /1", 17)
+	t.testEquivalentMinPrefix("7fff-ffff:*/1", nil, 16)
+	t.testEquivalentPrefix("11:8000-ffff:*/1", 17)
 	t.testEquivalentPrefix("11:8000-ffff:*", 17)
 	t.testEquivalentPrefix("1:2:*", 32)
 	t.testEquivalentMinPrefix("1:2:*:*::/64", cacheTestBits(32), 32)
-	t.testEquivalentPrefix("1:2:*:* /64", 32)
-	t.testEquivalentPrefix("1:2:3:4:5:*:* /64", 80)
+	t.testEquivalentPrefix("1:2:*:*/64", 32)
+	t.testEquivalentPrefix("1:2:3:4:5:*:*/64", 80)
 	t.testEquivalentMinPrefix("1:2:*::/64", nil, 64)
 	t.testEquivalentMinPrefix("1:2:*::", nil, 128)
 	t.testEquivalentPrefix("1:2:8000-ffff:*", 33)
@@ -100,7 +98,7 @@ func (t ipAddressRangeTester) run() {
 		16, -5,
 		"255.127.0.0/24",
 		"255.0.0.0/8",
-		"255.96.*.* /11",
+		"255.96.*.*/11",
 		"255.127.0.0/16",
 		"255.127.0.0/16")
 
@@ -108,16 +106,16 @@ func (t ipAddressRangeTester) run() {
 		16, -17,
 		"255.127.0.0/24",
 		"255.127.0.0/16",
-		"0.0.0-127.* /0",
-		"255.127.0-127.* /16",
+		"0.0.0-127.*/0",
+		"255.127.0-127.*/16",
 		"255.127.0.0/16")
 
 	t.testPrefixes("ffff:ffff:1:ffff::/64",
 		16, -5,
 		"ffff:ffff:1:ffff::/80",
 		"ffff:ffff:1::/48",
-		"ffff:ffff:1:ffe0:*:*:*:* /59",
-		"ffff::*:*:*:* /16",
+		"ffff:ffff:1:ffe0:*:*:*:*/59",
+		"ffff::*:*:*:*/16",
 		"ffff::/16")
 
 	t.testPrefixes("ffff:ffff:1:ffff::/64",
@@ -125,7 +123,7 @@ func (t ipAddressRangeTester) run() {
 		"ffff:ffff:1:ffff::/80",
 		"ffff:ffff:1::/48",
 		"ffff:ffff:1:ffff::/65",
-		"ffff::*:*:*:* /16",
+		"ffff::*:*:*:*/16",
 		"ffff::/16")
 
 	var bc0, bc7, bc8, bc15, bc16, bc32 goip.BitCount
@@ -147,7 +145,7 @@ func (t ipAddressRangeTester) run() {
 	t.testPrefixBitwiseOr("1.2.0.0/24", 24, "0.0.3.248", "1.2.3.0/24", "1.2.3.248-255/24")
 	t.testPrefixBitwiseOr("1.2.0.0/22", 23, "0.0.3.0", "1.2.2.0/23", "1.2.3.0-255/22")
 	t.testPrefixBitwiseOr("1.2.0.0/24", 23, "0.0.3.0", "1.2.2.*", "1.2.3.0-255/24")
-	t.testPrefixBitwiseOr("1:2::/46", 47, "0:0:3::", "1:2:2::/47", "1:2:3:*:*:*:*:* /46")
+	t.testPrefixBitwiseOr("1:2::/46", 47, "0:0:3::", "1:2:2::/47", "1:2:3:*:*:*:*:*/46")
 
 	t.testPrefixBitwiseOr("0.0.0.0/16", 18, "0.0.2.8", "0.0.0-192.0/18", "")
 
@@ -188,16 +186,16 @@ func (t ipAddressRangeTester) run() {
 	t.testMatches(true, "1.4.0.0/14", "1.4-7.*")
 	t.testMatches(true, "1.4.0.0/14", "1.4-7.*.*")
 
-	t.testMatches(false, "1.2.3.4/16", "1.2.* /255.255.0.0")
-	t.testMatches(false, "1.2.3.4/15", "1.2.3.* /255.254.0.0")
-	t.testMatches(false, "1.2.3.4/17", "1.2.3.* /255.255.128.0")
+	t.testMatches(false, "1.2.3.4/16", "1.2.*/255.255.0.0")
+	t.testMatches(false, "1.2.3.4/15", "1.2.3.*/255.254.0.0")
+	t.testMatches(false, "1.2.3.4/17", "1.2.3.*/255.255.128.0")
 
-	t.testMatches(true, "1.2.0.0/16", "1.2.* /255.255.0.0")
-	t.testMatches(true, "1.2.3.* /15", "1.2.3.* /255.254.0.0")
-	t.testMatches(true, "1.2.3.* /17", "1.2.3.* /255.255.128.0")
+	t.testMatches(true, "1.2.0.0/16", "1.2.*/255.255.0.0")
+	t.testMatches(true, "1.2.3.*/15", "1.2.3.*/255.254.0.0")
+	t.testMatches(true, "1.2.3.*/17", "1.2.3.*/255.255.128.0")
 
-	t.testMatches(false, "1.1.3.4/15", "1.2.3.* /255.254.0.0")
-	t.testMatches(false, "1.1.3.4/17", "1.2.3.* /255.255.128.0")
+	t.testMatches(false, "1.1.3.4/15", "1.2.3.*/255.254.0.0")
+	t.testMatches(false, "1.1.3.4/17", "1.2.3.*/255.255.128.0")
 
 	t.testMatches(true, "1:2::/32", "1:2:*:*:*:*:*:*")
 	t.testMatches(true, "1:2::/32", "1:2:*:*:*:*:*.*.*.*")
@@ -207,9 +205,9 @@ func (t ipAddressRangeTester) run() {
 	t.testMatches(false, "1:2::/31", "1:2:*")
 	t.testMatches(false, "1:2::/33", "1:2::*")
 
-	t.testMatches(true, "1:2::/32", "1:2:*:*:*:*:*:* /ffff:ffff::")
-	t.testMatches(true, "1:2::/31", "1:2-3:*:*:*:*:*:* /ffff:fffe::")
-	t.testMatches(true, "1:2::/33", "1:2:0-7fff:*:*:*:*:* /ffff:ffff:8000::")
+	t.testMatches(true, "1:2::/32", "1:2:*:*:*:*:*:*/ffff:ffff::")
+	t.testMatches(true, "1:2::/31", "1:2-3:*:*:*:*:*:*/ffff:fffe::")
+	t.testMatches(true, "1:2::/33", "1:2:0-7fff:*:*:*:*:*/ffff:ffff:8000::")
 
 	t.testMatches(false, "1:2::/24", "1:__:*")
 	t.testMatches(false, "1:2::/28", "1:_::/32")
@@ -285,8 +283,8 @@ func (t ipAddressRangeTester) run() {
 
 	t.testMatchesInetAton(true, "11.11.0-11.*", "11.11.0-0xbff", true)
 	t.testMatchesInetAton(true, "11.0.0.11-11", "11.0x00000000000000000b-0000000000000000000013", true)
-	t.testMatchesInetAton(true, "11.1-11.* /16", "11.0x10000-786431/16", true)
-	t.testMatchesInetAton(true, "11.1-11.* /16", "11.0x10000-0xbffff/16", true)
+	t.testMatchesInetAton(true, "11.1-11.*/16", "11.0x10000-786431/16", true)
+	t.testMatchesInetAton(true, "11.1-11.*/16", "11.0x10000-0xbffff/16", true)
 
 	t.testMatches(true, "1:2:3:4:5:6:1.2.3.4/128", "1:2:3:4:5:6:102:304")
 
@@ -388,33 +386,33 @@ func (t ipAddressRangeTester) run() {
 	t.ipv6test(allowsIPv6PrefixBeyondAddressSize, "1:*::1/129")
 
 	//masks that have wildcards in them
-	t.ipv4test(false, "1.2.3.4/ *")
-	t.ipv4test(false, "1.2.*.4/ *")
+	t.ipv4test(false, "1.2.3.4/*")
+	t.ipv4test(false, "1.2.*.4/*")
 	t.ipv4test(false, "1.2.3.4/1-2.2.3.4")
 	t.ipv4test(false, "1.2.*.4/1-2.2.3.4")
-	t.ipv4test(false, "1.2.3.4/ **")
-	t.ipv4test(false, "1.2.*.4/ **")
-	t.ipv4test(false, "1.2.3.4/ *.*")
-	t.ipv4test(false, "1.2.*.4/ *.*")
-	t.ipv4test(false, "1.2.3.4/ *:*")
-	t.ipv4test(false, "1.2.*.4/ *:*")
-	t.ipv4test(false, "1.2.3.4/ *:*:*:*:*:*:*:*")
-	t.ipv4test(false, "1.2.*.4/ *:*:*:*:*:*:*:*")
+	t.ipv4test(false, "1.2.3.4/**")
+	t.ipv4test(false, "1.2.*.4/**")
+	t.ipv4test(false, "1.2.3.4/*.*")
+	t.ipv4test(false, "1.2.*.4/*.*")
+	t.ipv4test(false, "1.2.3.4/*:*")
+	t.ipv4test(false, "1.2.*.4/*:*")
+	t.ipv4test(false, "1.2.3.4/*:*:*:*:*:*:*:*")
+	t.ipv4test(false, "1.2.*.4/*:*:*:*:*:*:*:*")
 	t.ipv4test(false, "1.2.3.4/1.2.*.4")
 	t.ipv4test(false, "1.2.*.4/1.2.*.4")
 	t.ipv4test(true, "1.2.*.4/1.2.3.4")
-	t.ipv6test(false, "1:2::1/ *")
-	t.ipv6test(false, "1:*::1/ *")
+	t.ipv6test(false, "1:2::1/*")
+	t.ipv6test(false, "1:*::1/*")
 	t.ipv6test(false, "1:2::1/1:1-2:3:4:5:6:7:8")
 	t.ipv6test(false, "1:*::1/1:1-2:3:4:5:6:7:8")
-	t.ipv6test(false, "1:2::1/ **")
-	t.ipv6test(false, "1:*::1/ **")
-	t.ipv6test(false, "1:2::1/ *:*")
-	t.ipv6test(false, "1:*::1/ *:*")
-	t.ipv6test(false, "1:2::1/ *.*")
-	t.ipv6test(false, "1:*::1/ *.*")
-	t.ipv6test(false, "1:2::1/ *.*.*.*")
-	t.ipv6test(false, "1:*::1/ *.*.*.*")
+	t.ipv6test(false, "1:2::1/**")
+	t.ipv6test(false, "1:*::1/**")
+	t.ipv6test(false, "1:2::1/*:*")
+	t.ipv6test(false, "1:*::1/*:*")
+	t.ipv6test(false, "1:2::1/*.*")
+	t.ipv6test(false, "1:*::1/*.*")
+	t.ipv6test(false, "1:2::1/*.*.*.*")
+	t.ipv6test(false, "1:*::1/*.*.*.*")
 	t.ipv6test(false, "1:2::1/1:*::2")
 	t.ipv6test(false, "1:*::1/1:*::2")
 	t.ipv6test(true, "1:*::1/1::2")
@@ -438,37 +436,37 @@ func (t ipAddressRangeTester) run() {
 
 	// octal, hex, dec overflow
 	// do it with 1, 2, 3, 4 segments
-	t.ipv4_inet_aton_test(true, "0.0.0.1-255")
-	t.ipv4_inet_aton_test(false, "0.0.0.1-256")
-	t.ipv4_inet_aton_test(true, "0.0.512-65535")
-	t.ipv4_inet_aton_test(false, "0.0.512-65536")
-	t.ipv4_inet_aton_test(true, "0.65536-16777215")
-	t.ipv4_inet_aton_test(false, "0.65536-16777216")
-	t.ipv4_inet_aton_test(true, "16777216-4294967295")
-	t.ipv4_inet_aton_test(true, "0b00000001000000000000000000000000-4294967295")
-	t.ipv4_inet_aton_test(false, "16777216-4294967296")
-	t.ipv4_inet_aton_test(false, "0.0.0.0x1x")
-	t.ipv4_inet_aton_test(false, "0.0.0.1x")
-	t.ipv4_inet_aton_test(true, "0.0.0.0x1-0xff")
-	t.ipv4_inet_aton_test(false, "0.0.0.0x1-0x100")
-	t.ipv4_inet_aton_test(true, "0.0.0xfffe-0xffff")
-	t.ipv4_inet_aton_test(false, "0.0.0xfffe-0x10000")
-	t.ipv4_inet_aton_test(false, "0.0.0x10000-0x10001")
-	t.ipv4_inet_aton_test(true, "0.0-0xffffff")
-	t.ipv4_inet_aton_test(false, "0.0-0x1000000")
-	t.ipv4_inet_aton_test(true, "0x11000000-0xffffffff")
-	t.ipv4_inet_aton_test(false, "0x11000000-0x100000000")
-	t.ipv4_inet_aton_test(false, "0x100000000-0x100ffffff")
-	t.ipv4_inet_aton_test(true, "0.0.0.00-0377")
-	t.ipv4_inet_aton_test(false, "0.0.0.00-0400")
-	t.ipv4_inet_aton_test(true, "0.0.0x100-017777")
-	t.ipv4_inet_aton_test(false, "0.0.0x100-0200000")
-	t.ipv4_inet_aton_test(true, "0.0x10000-077777777")
-	t.ipv4_inet_aton_test(false, "0.0x10000-0100000000")
-	t.ipv4_inet_aton_test(true, "0x1000000-03777777777")
-	t.ipv4_inet_aton_test(true, "0x1000000-037777777777")
-	t.ipv4_inet_aton_test(true, "0x1000000-0b11111111111111111111111111111111") //[0-1, 0, 0-255, 0-255]
-	t.ipv4_inet_aton_test(false, "0x1000000-040000000000")
+	t.ipv4_inetAton_test(true, "0.0.0.1-255")
+	t.ipv4_inetAton_test(false, "0.0.0.1-256")
+	t.ipv4_inetAton_test(true, "0.0.512-65535")
+	t.ipv4_inetAton_test(false, "0.0.512-65536")
+	t.ipv4_inetAton_test(true, "0.65536-16777215")
+	t.ipv4_inetAton_test(false, "0.65536-16777216")
+	t.ipv4_inetAton_test(true, "16777216-4294967295")
+	t.ipv4_inetAton_test(true, "0b00000001000000000000000000000000-4294967295")
+	t.ipv4_inetAton_test(false, "16777216-4294967296")
+	t.ipv4_inetAton_test(false, "0.0.0.0x1x")
+	t.ipv4_inetAton_test(false, "0.0.0.1x")
+	t.ipv4_inetAton_test(true, "0.0.0.0x1-0xff")
+	t.ipv4_inetAton_test(false, "0.0.0.0x1-0x100")
+	t.ipv4_inetAton_test(true, "0.0.0xfffe-0xffff")
+	t.ipv4_inetAton_test(false, "0.0.0xfffe-0x10000")
+	t.ipv4_inetAton_test(false, "0.0.0x10000-0x10001")
+	t.ipv4_inetAton_test(true, "0.0-0xffffff")
+	t.ipv4_inetAton_test(false, "0.0-0x1000000")
+	t.ipv4_inetAton_test(true, "0x11000000-0xffffffff")
+	t.ipv4_inetAton_test(false, "0x11000000-0x100000000")
+	t.ipv4_inetAton_test(false, "0x100000000-0x100ffffff")
+	t.ipv4_inetAton_test(true, "0.0.0.00-0377")
+	t.ipv4_inetAton_test(false, "0.0.0.00-0400")
+	t.ipv4_inetAton_test(true, "0.0.0x100-017777")
+	t.ipv4_inetAton_test(false, "0.0.0x100-0200000")
+	t.ipv4_inetAton_test(true, "0.0x10000-077777777")
+	t.ipv4_inetAton_test(false, "0.0x10000-0100000000")
+	t.ipv4_inetAton_test(true, "0x1000000-03777777777")
+	t.ipv4_inetAton_test(true, "0x1000000-037777777777")
+	t.ipv4_inetAton_test(true, "0x1000000-0b11111111111111111111111111111111") //[0-1, 0, 0-255, 0-255]
+	t.ipv4_inetAton_test(false, "0x1000000-040000000000")
 
 	t.ipv4test(true, "*") //toAddress() should not work on this, toAddress(Version) should.
 
@@ -1116,14 +1114,14 @@ func (t ipAddressRangeTester) run() {
 
 	t.testContains("0-127.0.0.0/8", "127-127.*.3.*", false)
 	t.testContains("0.0.0.0/4", "13-15.*.3.*", false)
-	t.testContains("0-15.*.*.* /4", "13-15.*.3.*", false)
-	t.testContains("0.0.0.0/4", "9.*.237.* /16", false)
-	t.testContains("0.0.0.0/4", "8-9.*.237.* /16", false)
+	t.testContains("0-15.*.*.*/4", "13-15.*.3.*", false)
+	t.testContains("0.0.0.0/4", "9.*.237.*/16", false)
+	t.testContains("0.0.0.0/4", "8-9.*.237.*/16", false)
 
-	t.testNotContains("1-2.0.0.0/4", "9.*.237.* /16")
-	t.testNotContains("1-2.0.0.0/4", "8-9.*.237.* /16")
+	t.testNotContains("1-2.0.0.0/4", "9.*.237.*/16")
+	t.testNotContains("1-2.0.0.0/4", "8-9.*.237.*/16")
 
-	t.testNotContains("1-2.0.0.0/4", "9-17.*.237.* /16")
+	t.testNotContains("1-2.0.0.0/4", "9-17.*.237.*/16")
 	t.testContains("8.0.0.0/5", "15.2.3.4", false)
 	t.testContains("8.0.0.0/7", "8-9.*.3.*", false)
 	t.testContains("9.0.0.0/8", "9.*.3.*", false)
@@ -1136,37 +1134,37 @@ func (t ipAddressRangeTester) run() {
 	t.testContains("9.129.237.24/30", "9.129.237.24-27/31", true)
 	t.testContains("9.129.237.24-27/30", "9.129.237.24-27/31", true)
 
-	t.testContains("*.*.*.* /0", "9.129.237.26/0", false)
-	t.testContains("0.0.0.0/0", "*.*.*.* /0", true)
-	t.testContains("0.0.0.0/4", "0-15.0.0.* /4", false)
-	t.testNotContains("192.0.0.0/4", "0-15.0.0.* /4")
+	t.testContains("*.*.*.*/0", "9.129.237.26/0", false)
+	t.testContains("0.0.0.0/0", "*.*.*.*/0", true)
+	t.testContains("0.0.0.0/4", "0-15.0.0.*/4", false)
+	t.testNotContains("192.0.0.0/4", "0-15.0.0.*/4")
 
 	t.testNotContains("0-127.129.237.26/1", "0-127.0.*.0/1")
 	t.testNotContains("9.129.237.26/0", "*.*.*.1/0")
-	t.testNotContains("9.129.237.26/4", "0-15.0.1.* /4")
-	t.testNotContains("1-16.0.0.* /4", "9.129.237.26/4")
+	t.testNotContains("9.129.237.26/4", "0-15.0.1.*/4")
+	t.testNotContains("1-16.0.0.*/4", "9.129.237.26/4")
 	t.testNotContains("9.129.237.26/5", "8-15.0.0.0/5")
 	t.testNotContains("9.129.237.26/7", "8-9.0.0.1-3/7")
 	t.testNotContains("7-9.0.0.1-3/7", "9.129.237.26/7")
 	t.testNotContains("9.129.237.26/8", "9.*.0.0/8")
 	t.testNotContains("9.129.237.26/9", "9.128-255.0.0/9")
-	t.testNotContains("9.129.237.26/15", "9.128-129.0.* /15")
+	t.testNotContains("9.129.237.26/15", "9.128-129.0.*/15")
 	t.testNotContains("9.129.237.26/16", "9.129.*.1/16")
 	t.testNotContains("9.129.237.26/30", "9.129.237.27/30")
 
 	t.testContains("0.0.0.0/4", "9.129.237.26/4", false)
 	t.testContains("8.0.0.0/5", "8-15.0.0.0/5", false)
 	t.testContains("8.0.0.0/7", "8-9.0.0.1-3/7", false)
-	t.testContains("7-9.*.*.* /7", "9.129.237.26/7", false)
+	t.testContains("7-9.*.*.*/7", "9.129.237.26/7", false)
 	t.testContains("9.0.0.0/8", "9.*.0.0/8", false)
 	t.testContains("9.128.0.0/9", "9.128-255.0.0/9", false)
-	t.testContains("9.128.0.0/15", "9.128-129.0.* /15", false)
+	t.testContains("9.128.0.0/15", "9.128-129.0.*/15", false)
 	t.testContains("9.128.0.0/15", "9.128.0.0/15", true)
-	t.testContains("9.129.0.0/16", "9.129.*.* /16", true)
-	t.testContains("9.128-129.*.* /15", "9.128.0.0/15", true)
-	t.testContains("9.128.*.* /16", "9.128.0.0/16", true)
-	t.testContains("9.129.*.* /16", "9.129.*.* /16", true)
-	t.testContains("9.129.*.* /16", "9.129.*.0/16", false)
+	t.testContains("9.129.0.0/16", "9.129.*.*/16", true)
+	t.testContains("9.128-129.*.*/15", "9.128.0.0/15", true)
+	t.testContains("9.128.*.*/16", "9.128.0.0/16", true)
+	t.testContains("9.129.*.*/16", "9.129.*.*/16", true)
+	t.testContains("9.129.*.*/16", "9.129.*.0/16", false)
 	t.testContains("9.129.237.24/30", "9.129.237.24-27/30", true)
 	t.testContains("9.128-129.*.26/32", "9.128-129.*.26/32", true)
 
@@ -1176,25 +1174,25 @@ func (t ipAddressRangeTester) run() {
 	t.testNotContains("7-9.0.0.1-3/7", "9.129.237.26/7")
 	t.testNotContains("9.129.237.26/8", "9.*.0.0/8")
 	t.testNotContains("9.129.237.26/9", "9.128-255.0.0/9")
-	t.testNotContains("9.129.237.26/15", "9.128-129.0.* /15")
+	t.testNotContains("9.129.237.26/15", "9.128-129.0.*/15")
 	t.testNotContains("9.129.237.26/16", "9.129.*.1/16")
-	t.testNotContains("9.129.237.26/16", "9.129.1.* /16")
+	t.testNotContains("9.129.237.26/16", "9.129.1.*/16")
 	t.testNotContains("9.129.237.25/30", "9.129.237.26/30")
 
-	t.testContains("1-16.0.0.* /4", "9.0.0.* /4", false)
-	t.testNotContains("1-16.0.0.0-254/4", "9.0.0.* /4")
-	t.testContains("0-16.0.0.0/4", "9.0.0.* /4", false)
+	t.testContains("1-16.0.0.*/4", "9.0.0.*/4", false)
+	t.testNotContains("1-16.0.0.0-254/4", "9.0.0.*/4")
+	t.testContains("0-16.0.0.0/4", "9.0.0.*/4", false)
 	t.testContains("8-15.129.237.26/5", "9.129.237.26/5", false)
 	t.testContains("8-9.129.237.26/7", "9.129.237.26/7", false)
 	t.testContains("7-9.0.0.1-3/7", "9.0.0.2/7", false)
 	t.testContains("9.*.237.26/8", "9.*.237.26/8", true)
 	t.testContains("9.128-255.237.26/9", "9.129.237.26/9", false)
 	t.testContains("9.128-129.237.26/15", "9.129.237.26/15", false)
-	t.testContains("9.129.*.* /16", "9.129.237.26/16", false)
+	t.testContains("9.129.*.*/16", "9.129.237.26/16", false)
 	t.testContains("9.129.237.24-27/30", "9.129.237.26/30", false)
 	t.testContains("9.128-129.*.26/32", "9.128-129.*.26/32", true)
 
-	t.testNotContains("9.129.237.26/4", "16-17.0.0.* /4")
+	t.testNotContains("9.129.237.26/4", "16-17.0.0.*/4")
 	t.testNotContains("9.129.237.26/7", "2.0.0.1-3/7")
 
 	t.testContains("::ffff:1.*.3.4", "1.2.3.4", false) //ipv4 mapped
@@ -1300,7 +1298,7 @@ func (t ipAddressRangeTester) run() {
 	t.testSubnet("0-ff::", "fff0::", 12, "0-ff:0:0:0:0:0:0:0/12", "", "0-ff:0:0:0:0:0:0:0/12")
 	t.testSubnet("0-f0::", "fff0::", 12, "0-f0:0:0:0:0:0:0:0/12", "", "0-f0:0:0:0:0:0:0:0/12")
 	t.testSubnet("0-f::", "fff0::", 12, "0-f:0:0:0:0:0:0:0/12", "0:0:0:0:0:0:0:0", "0-f:0:0:0:0:0:0:0/12")
-	t.testSubnet("0-f::*", "fff0::ffff", 12, "0-f:0:0:0:0:0:0:* /12", "0:0:0:0:0:0:0:*", "0-f:0:0:0:0:0:0:* /12")
+	t.testSubnet("0-f::*", "fff0::ffff", 12, "0-f:0:0:0:0:0:0:*/12", "0:0:0:0:0:0:0:*", "0-f:0:0:0:0:0:0:*/12")
 
 	t.testSubnet("::1:__", "::1:ffff", 128, "0:0:0:0:0:0:1:0-ff/128", "0:0:0:0:0:0:1:0-ff", "0:0:0:0:0:0:1:0-ff/128")
 	t.testSubnet("::1:__", "::1:ffff", 126, "0:0:0:0:0:0:1:0-fc/126", "0:0:0:0:0:0:1:0-ff", "0:0:0:0:0:0:1:0-fc/126")
@@ -1451,70 +1449,70 @@ func (t ipAddressRangeTester) run() {
 
 	t.testToPrefixBlock("1.3.*.*", "1.3.*.*")
 	t.testToPrefixBlock("1.2-3.*.*", "1.2-3.*.*")
-	t.testToPrefixBlock("1.3.3.4/15", "1.2-3.*.* /15")
-	t.testToPrefixBlock("*.3.3.4/15", "*.2-3.*.* /15")
-	t.testToPrefixBlock("1.3.3.4/16", "1.3.*.* /16")
+	t.testToPrefixBlock("1.3.3.4/15", "1.2-3.*.*/15")
+	t.testToPrefixBlock("*.3.3.4/15", "*.2-3.*.*/15")
+	t.testToPrefixBlock("1.3.3.4/16", "1.3.*.*/16")
 
-	t.testToPrefixBlock("1:3:3:4::/15", "0-1:* /15")
+	t.testToPrefixBlock("1:3:3:4::/15", "0-1:*/15")
 	t.testToPrefixBlock("*:3:3:4::/15", "0-fffe::/15")
-	t.testToPrefixBlock("1:3:3:4::/16", "1:* /16")
+	t.testToPrefixBlock("1:3:3:4::/16", "1:*/16")
 
 	t.testMaxHost("1.*.255.255/16", "1.*.255.255/16")
-	t.testMaxHost("1.2.*.* /16", "1.2.255.255/16")
-	t.testMaxHost("1.*.*.* /16", "1.*.255.255/16")
+	t.testMaxHost("1.2.*.*/16", "1.2.255.255/16")
+	t.testMaxHost("1.*.*.*/16", "1.*.255.255/16")
 	t.testMaxHost("1.2.*.1/16", "1.2.255.255/16")
 	t.testMaxHost("1.*.*.1/16", "1.*.255.255/16")
 
 	t.testZeroHost("1.*.0.0/16", "1.*.0.0/16")
-	t.testZeroHost("1.2.*.* /16", "1.2.0.0/16")
-	t.testZeroHost("1.*.*.* /16", "1.*.0.0/16")
+	t.testZeroHost("1.2.*.*/16", "1.2.0.0/16")
+	t.testZeroHost("1.*.*.*/16", "1.*.0.0/16")
 	t.testZeroHost("1.2.*.1/16", "1.2.0.0/16")
 	t.testZeroHost("1.*.*.1/16", "1.*.0.0/16")
 
 	t.testZeroNetwork("1.*.0.0/16", "0.0.0.0/16")
-	t.testZeroNetwork("1.2.*.* /16", "0.0.*.* /16")
-	t.testZeroNetwork("1.*.*.* /16", "0.0.*.* /16")
+	t.testZeroNetwork("1.2.*.*/16", "0.0.*.*/16")
+	t.testZeroNetwork("1.*.*.*/16", "0.0.*.*/16")
 	t.testZeroNetwork("1.2.*.1/16", "0.0.*.1/16")
 	t.testZeroNetwork("1.*.*.1/16", "0.0.*.1/16")
 
 	t.testMaxHost("1:*::ffff:ffff:ffff:ffff/64", "1:*::ffff:ffff:ffff:ffff/64")
 	t.testMaxHost("1:2::ffff:ffff:ffff:ffff/64", "1:2::ffff:ffff:ffff:ffff/64")
-	t.testMaxHost("1:*::*:*:*:* /64", "1:*::ffff:ffff:ffff:ffff/64")
-	t.testMaxHost("1:2::*:*:*:* /64", "1:2::ffff:ffff:ffff:ffff/64")
+	t.testMaxHost("1:*::*:*:*:*/64", "1:*::ffff:ffff:ffff:ffff/64")
+	t.testMaxHost("1:2::*:*:*:*/64", "1:2::ffff:ffff:ffff:ffff/64")
 	t.testMaxHost("1:2::*:*:*:1/64", "1:2::ffff:ffff:ffff:ffff/64")
 	t.testMaxHost("1:*:1/64", "1:*:ffff:ffff:ffff:ffff/64")
 	t.testMaxHost("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/0", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/0")
-	t.testMaxHost("*:* /0", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/0")
+	t.testMaxHost("*:*/0", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/0")
 	t.testMaxHost("::/128", "::/128")
 
 	t.testZeroHost("1:*::/64", "1:*::/64")
 	t.testZeroHost("1:2::/64", "1:2::/64")
-	t.testZeroHost("1:*::*:*:*:* /64", "1:*::/64")
-	t.testZeroHost("1:2::*:*:*:* /64", "1:2::/64")
+	t.testZeroHost("1:*::*:*:*:*/64", "1:*::/64")
+	t.testZeroHost("1:2::*:*:*:*/64", "1:2::/64")
 	t.testZeroHost("1:2::*:*:*:1/64", "1:2::/64")
 	t.testZeroHost("1:*:1/64", "1:*:*:*::/64")
 	t.testZeroHost("::/0", "::/0")
-	t.testZeroHost("*:* /0", "::/0")
+	t.testZeroHost("*:*/0", "::/0")
 	t.testZeroHost("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/128", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/128")
 
 	t.testZeroHost("1:2:3:4::/64", "1:2:3:4::/64")
-	t.testZeroHost("1:2:* /64", "1:2:*:*::/64")
+	t.testZeroHost("1:2:*/64", "1:2:*:*::/64")
 	t.testZeroHost("1:2:3:4:*:1/64", "1:2:3:4::/64")
 	t.testZeroHost("1:*:1/64", "1:*:*:*::/64")
 
 	t.testZeroNetwork("1:*::/64", "::/64")
 	t.testZeroNetwork("1:2::/64", "::/64")
-	t.testZeroNetwork("1:*::*:*:*:* /64", "::*:*:*:* /64")
-	t.testZeroNetwork("1:2::*:*:*:* /64", "::*:*:*:* /64")
+	t.testZeroNetwork("1:*::*:*:*:*/64", "::*:*:*:*/64")
+	t.testZeroNetwork("1:2::*:*:*:*/64", "::*:*:*:*/64")
 	t.testZeroNetwork("1:2::*:*:*:1/64", "::*:*:*:1/64")
 	t.testZeroNetwork("1:*:1/64", "::*:*:*:1/64")
 	t.testZeroNetwork("::/0", "::/0")
-	t.testZeroNetwork("*:* /0", "*:* /0")
+	t.testZeroNetwork("*:*/0", "*:*/0")
 	t.testZeroNetwork("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/128", "::/128")
 
 	t.testZeroNetwork("1:2:3:4::/64", "::/64")
-	t.testZeroNetwork("1:2:3:4:* /64", "0:0:0:0:* /64")
-	t.testZeroNetwork("1:2:* /64", "0:0:0:0:* /64")
+	t.testZeroNetwork("1:2:3:4:*/64", "0:0:0:0:*/64")
+	t.testZeroNetwork("1:2:*/64", "0:0:0:0:*/64")
 	t.testZeroNetwork("1:2:3:4:*:1/64", "0:0:0:0:*:1/64")
 	t.testZeroNetwork("1:*:1/64", "0:0:0:0:*:1/64")
 
@@ -1523,96 +1521,96 @@ func (t ipAddressRangeTester) run() {
 	t.testIsPrefixBlock("1.*.*.*", false, false)
 	t.testIsPrefixBlock("1.2-3.*.*", false, false)
 	t.testIsPrefixBlock("1.2.128-255.*", false, false)
-	t.testIsPrefixBlock("*.* /0", true, true)
-	t.testIsPrefixBlock("1.2.*.* /16", true, true)
-	t.testIsPrefixBlock("1.2.3.* /16", false, false)
-	t.testIsPrefixBlock("1.*.*.* /16", true, false)
-	t.testIsPrefixBlock("1.2-3.*.* /16", true, false)
-	t.testIsPrefixBlock("1.2.128-255.* /16", false, false)
+	t.testIsPrefixBlock("*.*/0", true, true)
+	t.testIsPrefixBlock("1.2.*.*/16", true, true)
+	t.testIsPrefixBlock("1.2.3.*/16", false, false)
+	t.testIsPrefixBlock("1.*.*.*/16", true, false)
+	t.testIsPrefixBlock("1.2-3.*.*/16", true, false)
+	t.testIsPrefixBlock("1.2.128-255.*/16", false, false)
 
 	t.testPrefixBlocks("1.2.*.*", 8, false, false)
 	t.testPrefixBlocks("1.2.3.*", 8, false, false)
 	t.testPrefixBlocks("1.*.*.*", 8, true, true)
 	t.testPrefixBlocks("1.2-3.*.*", 8, false, false)
 	t.testPrefixBlocks("1.2.128-255.*", 8, false, false)
-	t.testPrefixBlocks("*.* /0", 8, true, false)
-	t.testPrefixBlocks("1.2.*.* /16", 8, false, false)
-	t.testPrefixBlocks("1.2.3.* /16", 8, false, false)
-	t.testPrefixBlocks("1.*.*.* /16", 8, true, true)
-	t.testPrefixBlocks("1.2-3.*.* /16", 8, false, false)
-	t.testPrefixBlocks("1.2.128-255.* /16", 8, false, false)
+	t.testPrefixBlocks("*.*/0", 8, true, false)
+	t.testPrefixBlocks("1.2.*.*/16", 8, false, false)
+	t.testPrefixBlocks("1.2.3.*/16", 8, false, false)
+	t.testPrefixBlocks("1.*.*.*/16", 8, true, true)
+	t.testPrefixBlocks("1.2-3.*.*/16", 8, false, false)
+	t.testPrefixBlocks("1.2.128-255.*/16", 8, false, false)
 
 	t.testPrefixBlocks("1.2.*.*", 24, true, false)
 	t.testPrefixBlocks("1.2.3.*", 24, true, true)
 	t.testPrefixBlocks("1.*.*.*", 24, true, false)
 	t.testPrefixBlocks("1.2-3.*.*", 24, true, false)
 	t.testPrefixBlocks("1.2.128-255.*", 24, true, false)
-	t.testPrefixBlocks("*.* /0", 24, true, false)
-	t.testPrefixBlocks("1.2.*.* /16", 24, true, false)
-	t.testPrefixBlocks("1.2.3.* /16", 24, true, true)
-	t.testPrefixBlocks("1.*.*.* /16", 24, true, false)
-	t.testPrefixBlocks("1.2-3.*.* /16", 24, true, false)
-	t.testPrefixBlocks("1.2.128-255.* /16", 24, true, false)
+	t.testPrefixBlocks("*.*/0", 24, true, false)
+	t.testPrefixBlocks("1.2.*.*/16", 24, true, false)
+	t.testPrefixBlocks("1.2.3.*/16", 24, true, true)
+	t.testPrefixBlocks("1.*.*.*/16", 24, true, false)
+	t.testPrefixBlocks("1.2-3.*.*/16", 24, true, false)
+	t.testPrefixBlocks("1.2.128-255.*/16", 24, true, false)
 
-	t.testIsPrefixBlock("a:b:c:d:* /64", true, true)
-	t.testIsPrefixBlock("a:b:c:* /64", true, false)
-	t.testIsPrefixBlock("a:b:c:d-e:* /64", true, false)
-	t.testIsPrefixBlock("a:b:c:d:e:* /64", false, false)
-	t.testIsPrefixBlock("a:b:c:d:0-ffff:* /64", true, true)
-	t.testIsPrefixBlock("a:b:c:d:8000-ffff:* /64", false, false)
+	t.testIsPrefixBlock("a:b:c:d:*/64", true, true)
+	t.testIsPrefixBlock("a:b:c:*/64", true, false)
+	t.testIsPrefixBlock("a:b:c:d-e:*/64", true, false)
+	t.testIsPrefixBlock("a:b:c:d:e:*/64", false, false)
+	t.testIsPrefixBlock("a:b:c:d:0-ffff:*/64", true, true)
+	t.testIsPrefixBlock("a:b:c:d:8000-ffff:*/64", false, false)
 
-	t.testPrefixBlocks("a:b:c:d:* /64", 0, false, false)
-	t.testPrefixBlocks("a:b:c:* /64", 0, false, false)
-	t.testPrefixBlocks("a:b:c:d-e:* /64", 0, false, false)
-	t.testPrefixBlocks("*:* /64", 0, true, true)
-	t.testPrefixBlocks("a:b:c:d:e:* /64", 0, false, false)
-	t.testPrefixBlocks("a:b:c:d:0-ffff:* /64", 0, false, false)
+	t.testPrefixBlocks("a:b:c:d:*/64", 0, false, false)
+	t.testPrefixBlocks("a:b:c:*/64", 0, false, false)
+	t.testPrefixBlocks("a:b:c:d-e:*/64", 0, false, false)
+	t.testPrefixBlocks("*:*/64", 0, true, true)
+	t.testPrefixBlocks("a:b:c:d:e:*/64", 0, false, false)
+	t.testPrefixBlocks("a:b:c:d:0-ffff:*/64", 0, false, false)
 
-	t.testPrefixBlocks("a:b:c:d:* /64", 63, false, false)
-	t.testPrefixBlocks("a:b:c:* /64", 63, true, false)
-	t.testPrefixBlocks("a:b:c:d-e:* /64", 63, false, false)
-	t.testPrefixBlocks("a:b:c:e-f:* /64", 63, true, true)
-	t.testPrefixBlocks("a:b:c:d:e:* /64", 63, false, false)
-	t.testPrefixBlocks("a:b:c:d:0-ffff:* /64", 63, false, false)
+	t.testPrefixBlocks("a:b:c:d:*/64", 63, false, false)
+	t.testPrefixBlocks("a:b:c:*/64", 63, true, false)
+	t.testPrefixBlocks("a:b:c:d-e:*/64", 63, false, false)
+	t.testPrefixBlocks("a:b:c:e-f:*/64", 63, true, true)
+	t.testPrefixBlocks("a:b:c:d:e:*/64", 63, false, false)
+	t.testPrefixBlocks("a:b:c:d:0-ffff:*/64", 63, false, false)
 
-	t.testPrefixBlocks("a:b:c:d:* /64", 64, true, true)
-	t.testPrefixBlocks("a:b:c:* /64", 64, true, false)
-	t.testPrefixBlocks("a:b:c:d-e:* /64", 64, true, false)
-	t.testPrefixBlocks("a:b:c:d:e:* /64", 64, false, false)
-	t.testPrefixBlocks("a:b:c:d:0-ffff:* /64", 64, true, true)
-	t.testPrefixBlocks("a:b:c:d:8000-ffff:* /64", 64, false, false)
+	t.testPrefixBlocks("a:b:c:d:*/64", 64, true, true)
+	t.testPrefixBlocks("a:b:c:*/64", 64, true, false)
+	t.testPrefixBlocks("a:b:c:d-e:*/64", 64, true, false)
+	t.testPrefixBlocks("a:b:c:d:e:*/64", 64, false, false)
+	t.testPrefixBlocks("a:b:c:d:0-ffff:*/64", 64, true, true)
+	t.testPrefixBlocks("a:b:c:d:8000-ffff:*/64", 64, false, false)
 
-	t.testPrefixBlocks("a:b:c:d:* /64", 65, true, false)
-	t.testPrefixBlocks("a:b:c:* /64", 65, true, false)
-	t.testPrefixBlocks("a:b:c:d-e:* /64", 65, true, false)
-	t.testPrefixBlocks("a:b:c:d:e:* /64", 65, false, false)
-	t.testPrefixBlocks("a:b:c:d:0-ffff:* /64", 65, true, false)
-	t.testPrefixBlocks("a:b:c:d:8000-ffff:* /64", 65, true, true)
-	t.testPrefixBlocks("a:b:c:d:0-ffff:* /64", 65, true, false)
+	t.testPrefixBlocks("a:b:c:d:*/64", 65, true, false)
+	t.testPrefixBlocks("a:b:c:*/64", 65, true, false)
+	t.testPrefixBlocks("a:b:c:d-e:*/64", 65, true, false)
+	t.testPrefixBlocks("a:b:c:d:e:*/64", 65, false, false)
+	t.testPrefixBlocks("a:b:c:d:0-ffff:*/64", 65, true, false)
+	t.testPrefixBlocks("a:b:c:d:8000-ffff:*/64", 65, true, true)
+	t.testPrefixBlocks("a:b:c:d:0-ffff:*/64", 65, true, false)
 
-	t.testPrefixBlocks("a:b:c:d:* /64", 128, true, false)
-	t.testPrefixBlocks("a:b:c:* /64", 128, true, false)
-	t.testPrefixBlocks("a:b:c:d-e:* /64", 128, true, false)
-	t.testPrefixBlocks("a:b:c:d:e:* /64", 128, true, false)
-	t.testPrefixBlocks("a:b:c:d:0-ffff:* /64", 128, true, false)
+	t.testPrefixBlocks("a:b:c:d:*/64", 128, true, false)
+	t.testPrefixBlocks("a:b:c:*/64", 128, true, false)
+	t.testPrefixBlocks("a:b:c:d-e:*/64", 128, true, false)
+	t.testPrefixBlocks("a:b:c:d:e:*/64", 128, true, false)
+	t.testPrefixBlocks("a:b:c:d:0-ffff:*/64", 128, true, false)
 
 	t.testSplitBytes("1.2.*.4")
 	t.testSplitBytes("1.2-4.3.4/16")
 	t.testSplitBytes("1.2.3.4-5/0")
-	t.testSplitBytes("1.2.* /32")
+	t.testSplitBytes("1.2.*/32")
 	t.testSplitBytes("ffff:2:3:4:eeee:dddd:cccc-dddd:bbbb")
 	t.testSplitBytes("ffff:2:3:4:eeee:dddd:cccc:bbbb/64")
 	t.testSplitBytes("ffff:2:3:4:*:dddd:cccc:bbbb/0")
-	t.testSplitBytes("*:* /128")
+	t.testSplitBytes("*:*/128")
 	t.testSplitBytes("*:*")
 
-	t.testIncrement("1.2.*.* /16", 0, "1.2.0.0")
-	t.testIncrement("1.2.*.* /16", 1, "1.2.0.1")
-	t.testIncrement("1.2.*.* /16", 65535, "1.2.255.255")
-	t.testIncrement("1.2.*.* /16", 65536, "1.3.0.0")
-	t.testIncrement("1.2.*.* /16", -1, "1.1.255.255")
-	t.testIncrement("1.2.*.* /16", -65536, "1.1.0.0")
-	t.testIncrement("1.2.*.* /16", -65537, "1.0.255.255")
+	t.testIncrement("1.2.*.*/16", 0, "1.2.0.0")
+	t.testIncrement("1.2.*.*/16", 1, "1.2.0.1")
+	t.testIncrement("1.2.*.*/16", 65535, "1.2.255.255")
+	t.testIncrement("1.2.*.*/16", 65536, "1.3.0.0")
+	t.testIncrement("1.2.*.*/16", -1, "1.1.255.255")
+	t.testIncrement("1.2.*.*/16", -65536, "1.1.0.0")
+	t.testIncrement("1.2.*.*/16", -65537, "1.0.255.255")
 
 	t.testIncrement("ffff:ffff:ffff:ffff:ffff:1-2:2-3:ffff", 0, "ffff:ffff:ffff:ffff:ffff:1:2:ffff")
 	t.testIncrement("ffff:ffff:ffff:ffff:ffff:1-2:2-3:ffff", 1, "ffff:ffff:ffff:ffff:ffff:1:3:ffff")
@@ -1854,14 +1852,14 @@ func (t ipAddressRangeTester) run() {
 	t.testSubnetStringRange2("*:cc:d:1.255.3.128", "::cc:d:1.255.3.128", "ffff:ffff:ffff:ffff:cc:d:1.255.3.128", []interface{}{[]*big.Int{bigZeroConst(), setBigString("ffffffffffffffff", 16)}, 0xcc, 0xd, 1, 255, 3, 128}) //[0-ffffffffffffffff, cc, d, e, f]
 
 	if t.isLenient() {
-		// inet_aton
+		// inetAton
 		t.testSubnetStringRange2("1.*.1", "1.0.0.1", "1.255.0.1", []interface{}{1, []uint{0, 0xff}, 1})                                                                                                       //[1, 0-255, 1]
 		t.testSubnetStringRange2("*.1", "0.0.0.1", "255.0.0.1", []interface{}{[]uint{0, 0xff}, 1})                                                                                                            //[0-255, 1]
 		t.testIncompatibleAddress2("a:b:cc:*.4", "a:b:cc:0:0:0:0.0.0.4", "a:b:cc:ffff:ffff:ffff:255.0.0.4", []interface{}{0xa, 0xb, 0xcc, []*big.Int{bigZeroConst(), setBigString("ffffffffffffff", 16)}, 4}) //[a, b, cc, 0-ffffffffffffff, 4]
 		t.testIncompatibleAddress2("1:2:3:4:*.3.4", "1:2:3:4::0.3.0.4", "1:2:3:4:ffff:ffff:255.3.0.4", []interface{}{1, 2, 3, 4, []uint64{0, 0xffffffffff}, 3, 4})                                            //[1, 2, 3, 4, 0-ffffffffff, 3, 4]
 		t.testIncompatibleAddress2("1:2:3:4:*.4", "1:2:3:4::0.0.0.4", "1:2:3:4:ffff:ffff:255.0.0.4", []interface{}{1, 2, 3, 4, []uint64{0, 0xffffffffff}, 4})                                                 //[1, 2, 3, 4, 0-ffffffffff, 4]
 	} else {
-		// not inet_aton
+		// not inetAton
 		t.testSubnetStringRange2("1.*.1", "1.0.0.1", "1.255.255.1", []interface{}{1, []uint{0, 0xffff}, 1})
 		t.testSubnetStringRange2("*.1", "0.0.0.1", "255.255.255.1", []interface{}{[]uint{0, 0xffffff}, 1})
 		t.testIncompatibleAddress2("a:b:cc:*.4", "a:b:cc:0:0:0:0.0.0.4", "a:b:cc:ffff:ffff:ffff:255.255.255.4", []interface{}{0xa, 0xb, 0xcc, []*big.Int{bigZeroConst(), setBigString("ffffffffffffffffff", 16)}, 4}) //[a, b, cc, 0-ffffffffffffffffff, 4]
@@ -1871,7 +1869,7 @@ func (t ipAddressRangeTester) run() {
 	t.testSubnetStringRange1("1-2.3.4-5.6", "1.3.4.6", "2.3.5.6", []interface{}{[]uint{1, 2}, 3, []uint{4, 5}, 6}, nil, false)                                                         //[1-2, 3, 4-5, 6]
 	t.testSubnetStringRange1("1-2:3:4-5:6::", "1:3:4:6::", "2:3:5:6::", []interface{}{[]uint{1, 2}, 3, []uint{4, 5}, 6, 0}, nil, false)                                                //[1-2, 3, 4-5, 6, 0]
 	t.testIncompatibleAddress1("1:2:3:4:5:6:1-3.2.0.4-5", "1:2:3:4:5:6:1.2.0.4", "1:2:3:4:5:6:3.2.0.5", []interface{}{1, 2, 3, 4, 5, 6, []uint{1, 3}, 2, 0, []uint{4, 5}}, nil, false) //[1, 2, 3, 4, 5, 6, 1-3, 2, 0, 4-5]
-	t.testMaskedIncompatibleAddress("0.0.0.* /0.0.0.128", "0.0.0.0", "0.0.0.128")                                                                                                      //iae
+	t.testMaskedIncompatibleAddress("0.0.0.*/0.0.0.128", "0.0.0.0", "0.0.0.128")                                                                                                       //iae
 
 	t.testSubnetStringRange1("1.2-3.4.5", "1.2.4.5", "1.3.4.5", []interface{}{1, []uint{2, 3}, 4, 5}, nil, false)                                                                                  //[1, 2-3, 4, 5]
 	t.testSubnetStringRange1("1:2-3:4:5::", "1:2:4:5::", "1:3:4:5::", []interface{}{1, []uint{2, 3}, 4, 5, 0}, nil, false)                                                                         //[1, 2-3, 4, 5, 0]
@@ -1883,9 +1881,9 @@ func (t ipAddressRangeTester) run() {
 	t.testSubnetStringRange1("1:2:4:5:6-9:7:8:f/ffff:0:ffff:0:ffff:0:ffff:0", "1:0:4:0:6:0:8:0", "1:0:4:0:9:0:8:0", []interface{}{1, 0, 4, 0, []uint{6, 9}, 0, 8, 0}, nil, false) //[1, 2, 4, 5, 6-9, 7, 8, f]
 	t.testSubnetStringRange1("1:2:4:5-6:6:7:8:f/ffff:0:ffff:0:ffff:0:ffff:0", "1:0:4:0:6:0:8:0", "1:0:4:0:6:0:8:0", []interface{}{1, 0, 4, 0, 6, 0, 8, 0}, nil, true)             //[1, 2, 4, 5, 6-9, 7, 8, f]
 
-	t.testSubnetStringRange1("1.*.*.* /11", "1.0.0.0", "1.255.255.255", []interface{}{1, []uint{0, 0xff}, []uint{0, 0xff}, []uint{0, 0xff}}, p11, true) //[1, 0-255, 0-255, 0-255]
-	t.testSubnetStringRange1("1.*.* /32", "1.0.0.0", "1.255.255.255", []interface{}{1, []uint{0, 0xff}, []uint{0, 0xffff}}, p32, true)                  //[1, 0-255, 0-65535]
-	t.testSubnetStringRange1("1.* /24", "1.0.0.0", "1.255.255.255", []interface{}{1, []uint{0, 0xffffff}}, p24, true)                                   //[1, 0-16777215]
+	t.testSubnetStringRange1("1.*.*.*/11", "1.0.0.0", "1.255.255.255", []interface{}{1, []uint{0, 0xff}, []uint{0, 0xff}, []uint{0, 0xff}}, p11, true) //[1, 0-255, 0-255, 0-255]
+	t.testSubnetStringRange1("1.*.*/32", "1.0.0.0", "1.255.255.255", []interface{}{1, []uint{0, 0xff}, []uint{0, 0xffff}}, p32, true)                  //[1, 0-255, 0-65535]
+	t.testSubnetStringRange1("1.*/24", "1.0.0.0", "1.255.255.255", []interface{}{1, []uint{0, 0xffffff}}, p24, true)                                   //[1, 0-16777215]
 
 	t.testSubnetStringRange("a:b:c:*:cc:d:e:f/64", "a:b:c:0:cc:d:e:f", "a:b:c:ffff:cc:d:e:f", []interface{}{0xa, 0xb, 0xc, []uint{0, 0xffff}, 0xcc, 0xd, 0xe, 0xf}, p64)                              //[a, b, c, 0-ffff, cc, d, e, f]
 	t.testSubnetStringRange("a:*:cc:d:e:f/64", "a::cc:d:e:f", "a:ffff:ffff:ffff:cc:d:e:f", []interface{}{0xa, []uint64{0, 0xffffffffffff}, 0xcc, 0xd, 0xe, 0xf}, p64)                                 //[a, 0-ffffffffffff, cc, d, e, f]
@@ -1896,7 +1894,7 @@ func (t ipAddressRangeTester) run() {
 	t.testSubnetStringRange("1.128.0.0/11", "1.128.0.0", "1.159.255.255", []interface{}{1, []uint{128, 159}, []uint{0, 0xff}, []uint{0, 0xff}}, p11)                                        //[1, 0-255, 0-255, 0-255]
 
 	if t.isLenient() {
-		// inet_aton
+		// inetAton
 
 		t.testSubnetStringRange("1.*.1/16", "1.0.0.1", "1.255.0.1", []interface{}{1, []uint{0, 0xff}, 1}, p16) //[1, 0-255, 1]
 		t.testSubnetStringRange("*.1/16", "0.0.0.1", "255.0.0.1", []interface{}{[]uint{0, 0xff}, 1}, p16)      //[0-255, 1]
@@ -1909,7 +1907,7 @@ func (t ipAddressRangeTester) run() {
 
 		t.testIncompatibleAddress("a:b:cc:*.0/112", "a:b:cc:0:0:0:0.0.0.0", "a:b:cc:ffff:ffff:ffff:255.0.255.255", []interface{}{0xa, 0xb, 0xcc, []*big.Int{bigZeroConst(), setBigString("ffffffffffffff", 16)}, []uint{0, 0xffff}}, p112) //[a, b, cc, 0-ffffffffffffff, 4]
 	} else {
-		// not inet_aton
+		// not inetAton
 
 		t.testSubnetStringRange("1.*.1/16", "1.0.0.1", "1.255.255.1", []interface{}{1, []uint{0, 0xffff}, 1}, p16)
 		t.testSubnetStringRange("*.1/16", "0.0.0.1", "255.255.255.1", []interface{}{[]uint{0, 0xffffff}, 1}, p16)
@@ -1945,32 +1943,32 @@ func (t ipAddressRangeTester) run() {
 		[]interface{}{[]int{1, 3}, 0, []int{0, 1}, []int{1, 3}},
 		nil, false)
 
-	t.testMaskedIncompatibleAddress("*.* /202.63.240.51", "0.0.0.0", "202.63.240.51") //10101010 00111111 11110000 00110011
-	t.testMaskedIncompatibleAddress("*.* /63.240.51.202", "0.0.0.0", "63.240.51.202")
-	t.testMaskedIncompatibleAddress("*.* /240.51.202.63", "0.0.0.0", "240.51.202.63")
-	t.testMaskedIncompatibleAddress("*.* /51.202.63.240", "0.0.0.0", "51.202.63.240")
+	t.testMaskedIncompatibleAddress("*.*/202.63.240.51", "0.0.0.0", "202.63.240.51") //10101010 00111111 11110000 00110011
+	t.testMaskedIncompatibleAddress("*.*/63.240.51.202", "0.0.0.0", "63.240.51.202")
+	t.testMaskedIncompatibleAddress("*.*/240.51.202.63", "0.0.0.0", "240.51.202.63")
+	t.testMaskedIncompatibleAddress("*.*/51.202.63.240", "0.0.0.0", "51.202.63.240")
 
-	t.testMaskedIncompatibleAddress("*.*.*.* /202.63.240.51", "0.0.0.0", "202.63.240.51")
-	t.testMaskedIncompatibleAddress("*.*.*.* /63.240.51.202", "0.0.0.0", "63.240.51.202")
-	t.testMaskedIncompatibleAddress("*.*.*.* /240.51.202.63", "0.0.0.0", "240.51.202.63")
-	t.testMaskedIncompatibleAddress("*.*.*.* /51.202.63.240", "0.0.0.0", "51.202.63.240")
+	t.testMaskedIncompatibleAddress("*.*.*.*/202.63.240.51", "0.0.0.0", "202.63.240.51")
+	t.testMaskedIncompatibleAddress("*.*.*.*/63.240.51.202", "0.0.0.0", "63.240.51.202")
+	t.testMaskedIncompatibleAddress("*.*.*.*/240.51.202.63", "0.0.0.0", "240.51.202.63")
+	t.testMaskedIncompatibleAddress("*.*.*.*/51.202.63.240", "0.0.0.0", "51.202.63.240")
 
 	t.testMaskedIncompatibleAddress("*:aaaa:bbbb:cccc/abcd:dcba:aaaa:bbbb:cccc::dddd",
 		"::cccc", "abcd:dcba:aaaa:bbbb:cccc::cccc")
 	t.testMaskedIncompatibleAddress("aaaa:bbbb:*:cccc/abcd:dcba:aaaa:bbbb:cccc::dddd",
 		"aa88:98ba::cccc", "aa88:98ba:aaaa:bbbb:cccc::cccc")
-	t.testMaskedIncompatibleAddress("aaaa:bbbb:* /abcd:dcba:aaaa:bbbb:cccc::dddd",
+	t.testMaskedIncompatibleAddress("aaaa:bbbb:*/abcd:dcba:aaaa:bbbb:cccc::dddd",
 		"aa88:98ba::", "aa88:98ba:aaaa:bbbb:cccc::dddd")
 
-	t.testMaskedIncompatibleAddress("*.* /63.255.15.0", "0.0.0.0", "63.255.15.0")
+	t.testMaskedIncompatibleAddress("*.*/63.255.15.0", "0.0.0.0", "63.255.15.0")
 
-	t.testSubnetStringRange1("*.* /63.15.255.255",
+	t.testSubnetStringRange1("*.*/63.15.255.255",
 		"0.0.0.0", "63.15.255.255",
 		[]interface{}{[]int{0, 63}, []int{0, 0xfffff}},
 		nil, false)
 
 	t.testPrefix("25:51:27:*:*:*:*:*", nil, 48, p48)
-	t.testPrefix("25:51:27:*:*:*:*:* /48", p48, 48, p48)
+	t.testPrefix("25:51:27:*:*:*:*:*/48", p48, 48, p48)
 	t.testPrefix("25:50-51:27::/48", p48, 48, nil)
 	t.testPrefix("25:50-51:27:*:*:*:*:*", nil, 48, nil)
 	t.testPrefix("25:51:27:12:82:55:2:2", nil, 128, p128)
@@ -2035,29 +2033,29 @@ func (t ipAddressRangeTester) run() {
 	t.testWildcarded("1:0:0:0-fff:*", 52, "1::/52", "1:0:0:0-fff:*:*:*:*", "1::0-fff:*:*:*:*", "1::0-fff:*:*:*:*", "1:0:0:0-fff:%:%:%:%")
 	t.testWildcarded("1:0:0:0-f:*", 60, "1::/60", "1:0:0:0-f:*:*:*:*", "1::0-f:*:*:*:*", "1::0-f:*:*:*:*", "1:0:0:_:%:%:%:%")
 
-	t.testPrefixCount("1.2.3.* /31", 128)
-	t.testPrefixCount("1.2.3.* /25", 2)
+	t.testPrefixCount("1.2.3.*/31", 128)
+	t.testPrefixCount("1.2.3.*/25", 2)
 	t.testPrefixCount("1.2.*.4/31", 256)
 	t.testPrefixCount("1.2.*.5/31", 256)
 	t.testPrefixCount("1.2.*.4/23", 128)
 	t.testPrefixCount("::1:2:*:4/111", 65536>>1)
 	t.testPrefixCount("::1:2:*:4/107", 2048)
 	t.testPrefixCount("*.2.*.4/23", 128*256)
-	t.testPrefixCount("*.2.3.* /7", 128)
-	t.testPrefixCount("2-3.2.3.* /8", 2)
-	t.testPrefixCount("2-3.3-4.3.* /16", 4)
-	t.testPrefixCount("2-3.3-4.3.* /12", 2)
+	t.testPrefixCount("*.2.3.*/7", 128)
+	t.testPrefixCount("2-3.2.3.*/8", 2)
+	t.testPrefixCount("2-3.3-4.3.*/16", 4)
+	t.testPrefixCount("2-3.3-4.3.*/12", 2)
 	t.testPrefixCount("2-3.3-4.3.*", 256*2*2)
-	t.testPrefixCount("2-3.3-4.3.* /32", 256*2*2)
+	t.testPrefixCount("2-3.3-4.3.*/32", 256*2*2)
 	t.testPrefixCount("192.168.0.0-8/29", 2)
 	t.testPrefixCount("192.168.0.0-15/29", 2)
-	t.testPrefixCount("1.2.3.* /0", 1)
+	t.testPrefixCount("1.2.3.*/0", 1)
 	t.testPrefixCount("1.2.3.4/0", 1)
 
-	t.testPrefixCount("*.* /0", 1)
-	t.testPrefixCount("*:* /0", 1)
-	t.testPrefixCount("*.* /1", 2)
-	t.testPrefixCount("*:* /1", 2)
+	t.testPrefixCount("*.*/0", 1)
+	t.testPrefixCount("*:*/0", 1)
+	t.testPrefixCount("*.*/1", 2)
+	t.testPrefixCount("*:*/1", 2)
 
 	t.testCountExcludeZeros("1.2.3.4", 1, 1)
 	t.testCountExcludeZeros("1.2.3.4/0", 1, 1)
@@ -2201,12 +2199,12 @@ func (t ipAddressRangeTester) run() {
 	t.testCountExcludeZeros("1::2:3/127", 1, 1)
 
 	t.testPrefixCount("1::2/128", 1)
-	t.testPrefixCount("1::2:* /127", 0x8000)
-	t.testPrefixCount("1::2:* /113", 2)
-	t.testPrefixCount("1::2:* /112", 1)
-	t.testPrefixCount("*::2:* /112", 0x10000)
-	t.testPrefixCount("*:1-3::2:* /112", 0x10000*3)
-	t.testPrefixCount("*:1-3::2:* /0", 1)
+	t.testPrefixCount("1::2:*/127", 0x8000)
+	t.testPrefixCount("1::2:*/113", 2)
+	t.testPrefixCount("1::2:*/112", 1)
+	t.testPrefixCount("*::2:*/112", 0x10000)
+	t.testPrefixCount("*:1-3::2:*/112", 0x10000*3)
+	t.testPrefixCount("*:1-3::2:*/0", 1)
 
 	t.testCountExcludeZeros("1:2::fffc:0/110", 4*0x10000, (4*0x10000)-1)
 	t.testCountExcludeZeros("1-2:2::fffc:0/110", 2*4*0x10000, 2*((4*0x10000)-1))
@@ -2227,7 +2225,7 @@ func (t ipAddressRangeTester) run() {
 	full := bi.Exp(bi, new(big.Int).SetInt64(8), nil)
 	bi, _ = new(big.Int).SetString("10000", 16)
 	half := bi.Exp(bi, new(big.Int).SetInt64(4), nil)
-	t.testCountBig("*:* /64", full, new(big.Int).Sub(full, half))
+	t.testCountBig("*:*/64", full, new(big.Int).Sub(full, half))
 
 	t.testMerge("192.168.0.0/28", "192.168.0.0/29", "192.168.0.8/29")
 	t.testMerge("1:2:3:4::/64", "1:2:3:4:8000::/65", "1:2:3:4::/66", "1:2:3:4:4000::/66")
@@ -2329,17 +2327,17 @@ func (t ipAddressRangeTester) run() {
 	t.testMerge2("1.2.3.0/24", "1.2.7.0/24", "1.2.3.0/24", "1.2.7.0/24")
 	t.testMerge2("1.2.3.128/25", "1.2.2.0/25", "1.2.3.128/25", "1.2.2.0/25")
 
-	t.testMerge("1.2.2-3.* /23", "1.2.3.*", "1.2.2.*")         //prefix at segment boundary
-	t.testMerge("1.2.3.* /24", "1.2.3.128-255", "1.2.3.0-127") //prefix just beyond segment boundary
-	t.testMerge("1.2.2-3.* /23", "1.2.2-3.*", "1.2.3.* /24")
-	t.testMerge("1.2.*.* /16", "1.2.*.* /16", "1.2.3.* /24")
-	t.testMerge("1.2.3.* /24", "1.2.3.* /24", "1.2.3.* /24")
-	t.testMerge("1.2.3.* /24", "1.2.3.*", "1.2.3.*")
+	t.testMerge("1.2.2-3.*/23", "1.2.3.*", "1.2.2.*")         //prefix at segment boundary
+	t.testMerge("1.2.3.*/24", "1.2.3.128-255", "1.2.3.0-127") //prefix just beyond segment boundary
+	t.testMerge("1.2.2-3.*/23", "1.2.2-3.*", "1.2.3.*/24")
+	t.testMerge("1.2.*.*/16", "1.2.*.*/16", "1.2.3.*/24")
+	t.testMerge("1.2.3.*/24", "1.2.3.*/24", "1.2.3.*/24")
+	t.testMerge("1.2.3.*/24", "1.2.3.*", "1.2.3.*")
 	t.testMerge2("1.2.3.1/32", "1.2.3.2/32", "1.2.3.1-2")
 
-	t.testMerge2("1.2.3.* /24", "1.1.2.* /24", "1.2.3.* /24", "1.1.2.* /24")
-	t.testMerge2("1.2.3.* /24", "1.2.6.* /24", "1.2.3.* /24", "1.2.6.* /24")
-	t.testMerge2("1.2.3.* /24", "1.2.7.* /24", "1.2.3.* /24", "1.2.7.* /24")
+	t.testMerge2("1.2.3.*/24", "1.1.2.*/24", "1.2.3.*/24", "1.1.2.*/24")
+	t.testMerge2("1.2.3.*/24", "1.2.6.*/24", "1.2.3.*/24", "1.2.6.*/24")
+	t.testMerge2("1.2.3.*/24", "1.2.7.*/24", "1.2.3.*/24", "1.2.7.*/24")
 	t.testMerge2("1.2.3.128-255/25", "1.2.2.0-127/25", "1.2.3.128-255/25", "1.2.2.0-127/25")
 
 	t.testMergeRange("1.2.3-4.*", "1.2.3.*", "1.2.4.*")
@@ -2419,11 +2417,11 @@ func (t ipAddressRangeTester) run() {
 		[]string{"a:b:c:d:2::/79", "a:b:c:d:4::/78", "a:b:c:d:8::/77", "a:b:c:d:10::/76"},
 		1, []string{"a:b:c:d:2-1f:*:*:*"}) //[a:b:c:d:2::/79, a:b:c:d:4::/78, a:b:c:d:8::/77, a:b:c:d:10::/76]
 
-	t.testSpanAndMerge("1.2.3.0", "1.2.3.*", 1, []string{"1.2.3.* /24"}, 1, []string{"1.2.3.* /24"}) //rangeCount
+	t.testSpanAndMerge("1.2.3.0", "1.2.3.*", 1, []string{"1.2.3.*/24"}, 1, []string{"1.2.3.*/24"}) //rangeCount
 
 	t.testCover("1.2.3.4", "1.2.4.4", "1.2.0.0/21")
 	t.testCoverSingle("1.10-11.3.4", "1.10.0.0/15")
-	t.testCover("0.0.1.1", "128.0.0.0", "*.* /0")
+	t.testCover("0.0.1.1", "128.0.0.0", "*.*/0")
 	t.testCover("0.0.1.1", "0.0.1.1", "0.0.1.1/32")
 	t.testCover("0-1.0.1.1", "0-1.0.1.1", "0.0.0.0/7")
 	t.testCoverSingle("0.0.1.1", "0.0.1.1/32")
@@ -2432,15 +2430,15 @@ func (t ipAddressRangeTester) run() {
 	t.testCoverSingle("1.2.0.1/16", "1.2.0.1/32")
 
 	t.testCoverSingle("8000:a:b:c::/64", "8000:a:b:c::/64")
-	t.testCover("8000::", "::", "*:* /0")
-	t.testCover("*:0:*:0:*:0:*:0", "0:*:0:*:0:*:0:*", "*:* /0")
-	t.testCover("0:0:*:0:*:0:*:0", "0:*:0:*:0:*:0:*", "0:* /16")
-	t.testCover("0:0:0-63:0:*:0:*:0", "0:0:64:*:0:*:0:*", "0:0:0-7f:* /41")
-	t.testCover("8000::/1", "::", "*:* /0")
-	t.testCover("8000::/1", "::/64", "*:* /0")
+	t.testCover("8000::", "::", "*:*/0")
+	t.testCover("*:0:*:0:*:0:*:0", "0:*:0:*:0:*:0:*", "*:*/0")
+	t.testCover("0:0:*:0:*:0:*:0", "0:*:0:*:0:*:0:*", "0:*/16")
+	t.testCover("0:0:0-63:0:*:0:*:0", "0:0:64:*:0:*:0:*", "0:0:0-7f:*/41")
+	t.testCover("8000::/1", "::", "*:*/0")
+	t.testCover("8000::/1", "::/64", "*:*/0")
 	t.testCover("::1:ffff", "::1:ffff", "::1:ffff/128")
 	t.testCover("::1", "::", "::0-1/127")
-	t.testCoverSingle("ffff:ffff:ffff:ffff::/64", "ffff:ffff:ffff:ffff:* /64")
+	t.testCoverSingle("ffff:ffff:ffff:ffff::/64", "ffff:ffff:ffff:ffff:*/64")
 
 	t.ipAddressTester.run()
 }
@@ -2880,15 +2878,6 @@ func (t ipAddressRangeTester) testRangeBlocksImpl(w *goip.IPAddressString, segme
 		} else {
 			t.addFailure(newIPAddrFailure("unexpected zero count ", val))
 		}
-
-		//Function<IPAddress, AddressComponentRangeSpliterator<?,? extends AddressItem>> spliteratorFunc = addr -> addr.blockSpliterator(segmentCount);
-		//
-		//testSpliterate(t, val, 0, number, spliteratorFunc);
-		//testSpliterate(t, val, 1, number, spliteratorFunc);
-		//testSpliterate(t, val, 5, number, spliteratorFunc);
-		//testSpliterate(t, val, -1, number, spliteratorFunc);
-		//
-		//testStream(t, val, set, addr -> addr.blockStream(segmentCount));
 	}
 	t.incrementTestCount()
 }
@@ -3374,7 +3363,7 @@ func (t ipAddressRangeTester) testTree(start string, parents []string) {
 	originalPrefixed := str.IsPrefixed()
 	if !originalPrefixed {
 		address := str.GetAddress()
-		//convert 1.2.3.* to 1.2.3.* /24 which is needed by adjustPrefixBySegment
+		//convert 1.2.3.* to 1.2.3.*/24 which is needed by adjustPrefixBySegment
 		address = address.AssignPrefixForSingleBlock()
 		str = address.ToAddressString()
 	}
@@ -3467,13 +3456,13 @@ func (t ipAddressRangeTester) testInetAtonCombos(w *goip.IPAddressString, ipAddr
 					}
 				}
 				if !verifiedIllegalJoin {
-					t.addFailure(newFailure("failed expected: "+goip.String()+" actual: "+e.Error(), w))
+					t.addFailure(newFailure("failed expected: "+ipAddr.String()+" actual: "+e.Error(), w))
 				}
 			} else {
 				parsed := goip.NewIPAddressStringParams(str, inetAtonwildcardAndRangeOptions)
 				parsedValue := parsed.GetAddress()
 				if !goip.Equal(parsedValue) {
-					t.addFailure(newFailure("failed expected: "+goip.String()+" actual: "+parsedValue.String(), w))
+					t.addFailure(newFailure("failed expected: "+ipAddr.String()+" actual: "+parsedValue.String(), w))
 				} else {
 					origStr := str
 					count := 0
@@ -3566,9 +3555,9 @@ func (t ipAddressRangeTester) testStrings() {
 	t.testIPv4Strings("1.2.*.*", "1.2.*.*", "1.2.*.*", "1.2.%.%", "001.002.000-255.000-255", "01.02.*.*", "0x1.0x2.*.*", "*.*.2.1.in-addr.arpa", "0x01020000-0x0102ffff", "000100400000-000100577777") //note that wildcards are never converted to CIDR.
 	t.testIPv4Strings("1.2.*", "1.2.*.*", "1.2.*.*", "1.2.%.%", "001.002.000-255.000-255", "01.02.*.*", "0x1.0x2.*.*", "*.*.2.1.in-addr.arpa", "0x01020000-0x0102ffff", "000100400000-000100577777")
 
-	t.testIPv4Strings("1.2.*.* /16", "1.2.0.0/16", "1.2.*.*", "1.2.%.%", "001.002.000.000/16", "01.02.00.00/16", "0x1.0x2.0x0.0x0/16", "*.*.2.1.in-addr.arpa", "0x01020000-0x0102ffff", "000100400000-000100577777")
-	t.testIPv4Strings("1.2.* /16", "1.2.0.0/16", "1.2.*.*", "1.2.%.%", "001.002.000.000/16", "01.02.00.00/16", "0x1.0x2.0x0.0x0/16", "*.*.2.1.in-addr.arpa", "0x01020000-0x0102ffff", "000100400000-000100577777")
-	t.testIPv4Strings("1.*.* /16", "1.*.0.0/16", "1.*.*.*", "1.%.%.%", "001.000-255.000.000/16", "01.*.00.00/16", "0x1.*.0x0.0x0/16", "*.*.*.1.in-addr.arpa", "0x01000000-0x01ffffff", "000100000000-000177777777")
+	t.testIPv4Strings("1.2.*.*/16", "1.2.0.0/16", "1.2.*.*", "1.2.%.%", "001.002.000.000/16", "01.02.00.00/16", "0x1.0x2.0x0.0x0/16", "*.*.2.1.in-addr.arpa", "0x01020000-0x0102ffff", "000100400000-000100577777")
+	t.testIPv4Strings("1.2.*/16", "1.2.0.0/16", "1.2.*.*", "1.2.%.%", "001.002.000.000/16", "01.02.00.00/16", "0x1.0x2.0x0.0x0/16", "*.*.2.1.in-addr.arpa", "0x01020000-0x0102ffff", "000100400000-000100577777")
+	t.testIPv4Strings("1.*.*/16", "1.*.0.0/16", "1.*.*.*", "1.%.%.%", "001.000-255.000.000/16", "01.*.00.00/16", "0x1.*.0x0.0x0/16", "*.*.*.1.in-addr.arpa", "0x01000000-0x01ffffff", "000100000000-000177777777")
 
 	t.testIPv4Strings("0.0.0.0", "0.0.0.0", "0.0.0.0", "0.0.0.0", "000.000.000.000", "00.00.00.00", "0x0.0x0.0x0.0x0", "0.0.0.0.in-addr.arpa", "0x00000000", "000000000000")
 	t.testIPv4Strings("9.63.127.254", "9.63.127.254", "9.63.127.254", "9.63.127.254", "009.063.127.254", "011.077.0177.0376", "0x9.0x3f.0x7f.0xfe", "254.127.63.9.in-addr.arpa", "0x093f7ffe", "001117677776")
@@ -3578,9 +3567,9 @@ func (t ipAddressRangeTester) testStrings() {
 	t.testIPv4Strings("9.63.*.*", "9.63.*.*", "9.63.*.*", "9.63.%.%", "009.063.000-255.000-255", "011.077.*.*", "0x9.0x3f.*.*", "*.*.63.9.in-addr.arpa", "0x093f0000-0x093fffff", "001117600000-001117777777") //note that wildcards are never converted to CIDR.
 	t.testIPv4Strings("9.63.*", "9.63.*.*", "9.63.*.*", "9.63.%.%", "009.063.000-255.000-255", "011.077.*.*", "0x9.0x3f.*.*", "*.*.63.9.in-addr.arpa", "0x093f0000-0x093fffff", "001117600000-001117777777")
 
-	t.testIPv4Strings("9.63.*.* /16", "9.63.0.0/16", "9.63.*.*", "9.63.%.%", "009.063.000.000/16", "011.077.00.00/16", "0x9.0x3f.0x0.0x0/16", "*.*.63.9.in-addr.arpa", "0x093f0000-0x093fffff", "001117600000-001117777777")
-	t.testIPv4Strings("9.63.* /16", "9.63.0.0/16", "9.63.*.*", "9.63.%.%", "009.063.000.000/16", "011.077.00.00/16", "0x9.0x3f.0x0.0x0/16", "*.*.63.9.in-addr.arpa", "0x093f0000-0x093fffff", "001117600000-001117777777")
-	t.testIPv4Strings("9.*.* /16", "9.*.0.0/16", "9.*.*.*", "9.%.%.%", "009.000-255.000.000/16", "011.*.00.00/16", "0x9.*.0x0.0x0/16", "*.*.*.9.in-addr.arpa", "0x09000000-0x09ffffff", "001100000000-001177777777")
+	t.testIPv4Strings("9.63.*.*/16", "9.63.0.0/16", "9.63.*.*", "9.63.%.%", "009.063.000.000/16", "011.077.00.00/16", "0x9.0x3f.0x0.0x0/16", "*.*.63.9.in-addr.arpa", "0x093f0000-0x093fffff", "001117600000-001117777777")
+	t.testIPv4Strings("9.63.*/16", "9.63.0.0/16", "9.63.*.*", "9.63.%.%", "009.063.000.000/16", "011.077.00.00/16", "0x9.0x3f.0x0.0x0/16", "*.*.63.9.in-addr.arpa", "0x093f0000-0x093fffff", "001117600000-001117777777")
+	t.testIPv4Strings("9.*.*/16", "9.*.0.0/16", "9.*.*.*", "9.%.%.%", "009.000-255.000.000/16", "011.*.00.00/16", "0x9.*.0x0.0x0/16", "*.*.*.9.in-addr.arpa", "0x09000000-0x09ffffff", "001100000000-001177777777")
 
 	t.testIPv4Strings("1.2.3.250-255", "1.2.3.250-255", "1.2.3.250-255", "1.2.3.25_", "001.002.003.250-255", "01.02.03.0372-0377", "0x1.0x2.0x3.0xfa-0xff", "250-255.3.2.1.in-addr.arpa", "0x010203fa-0x010203ff", "000100401772-000100401777")
 	t.testIPv4Strings("1.2.3.200-255", "1.2.3.200-255", "1.2.3.200-255", "1.2.3.2__", "001.002.003.200-255", "01.02.03.0310-0377", "0x1.0x2.0x3.0xc8-0xff", "200-255.3.2.1.in-addr.arpa", "0x010203c8-0x010203ff", "000100401710-000100401777")
@@ -3594,8 +3583,8 @@ func (t ipAddressRangeTester) testStrings() {
 	t.testIPv4Strings("1.129-254.5.5/12", "1.129-254.5.5/12", "1.129-254.5.5", "1.129-254.5.5", "001.129-254.005.005/12", "01.0201-0376.05.05/12", "0x1.0x81-0xfe.0x5.0x5/12", "5.5.129-254.1.in-addr.arpa", "", "")
 	t.testIPv4Strings("1.2__.5.5/14", "1.200-255.5.5/14", "1.200-255.5.5", "1.2__.5.5", "001.200-255.005.005/14", "01.0310-0377.05.05/14", "0x1.0xc8-0xff.0x5.0x5/14", "5.5.200-255.1.in-addr.arpa", "", "")
 	t.testIPv4Strings("1.*.5.5/12", "1.*.5.5/12", "1.*.5.5", "1.%.5.5", "001.000-255.005.005/12", "01.*.05.05/12", "0x1.*.0x5.0x5/12", "5.5.*.1.in-addr.arpa", "", "")
-	//OK we are testing 01.*.02405/12 and our bounds check for inet_aton does not work because later when creating address it is not treated as inet_aton due to the *
-	//so when we do the bounds checking for inet_aton we need to check for * and only test with single segment boundaries
+	//OK we are testing 01.*.02405/12 and our bounds check for inetAton does not work because later when creating address it is not treated as inetAton due to the *
+	//so when we do the bounds checking for inetAton we need to check for * and only test with single segment boundaries
 	//also check for that setting where * extends beyond single segment
 
 	t.testIPv6Strings("::",
@@ -3837,7 +3826,7 @@ func (t ipAddressRangeTester) testStrings() {
 		"0x000a000b000c000d0000000000000000-0x000a000b000c000dffffffffffffffff",
 		"00000240001300006000032000000000000000000000-00000240001300006000033777777777777777777777")
 
-	t.testIPv6Strings("a::d:*:*:*:* /65",
+	t.testIPv6Strings("a::d:*:*:*:*/65",
 		"a:0:0:d:0-8000:0:0:0/65",
 		"a:0:0:d:*:*:*:*",
 		"a::d:*:*:*:*",
@@ -3857,7 +3846,7 @@ func (t ipAddressRangeTester) testStrings() {
 		"0x000a00000000000d0000000000000000-0x000a00000000000dffffffffffffffff",
 		"00000240000000000000032000000000000000000000-00000240000000000000033777777777777777777777")
 
-	t.testIPv6Strings("a::d:0-7fff:*:*:* /65",
+	t.testIPv6Strings("a::d:0-7fff:*:*:*/65",
 		"a:0:0:d:0:0:0:0/65",
 		"a:0:0:d:0-7fff:*:*:*",
 		"a::d:0-7fff:*:*:*",
@@ -3917,20 +3906,20 @@ func (t ipAddressRangeTester) testStrings() {
 		"",
 		"")
 
-	t.testIPv6Strings("a::d:0:*:0:* /65",
-		"a:0:0:d:0:*:0:* /65",
+	t.testIPv6Strings("a::d:0:*:0:*/65",
+		"a:0:0:d:0:*:0:*/65",
 		"a:0:0:d:0:*:0:*",
 		"a::d:0:*:0:*",
 		"a:0:0:d:0:%:0:%",
 		"000a:0000:0000:000d:0000:0000-ffff:0000:0000-ffff/65",
-		"a::d:0:*:0:* /65",
-		"a::d:0:*:0:* /65",
-		"a:0:0:d:0:*::* /65",
+		"a::d:0:*:0:*/65",
+		"a::d:0:*:0:*/65",
+		"a:0:0:d:0:*::*/65",
 		"a::d:0:*:0:*",
-		"a::d:0:*:0.0.*.* /65",
-		"a::d:0:*:0.0.*.* /65",
-		"a::d:0:*:0.0.*.* /65",
-		"a::d:0:*:0.0.*.* /65",
+		"a::d:0:*:0.0.*.*/65",
+		"a::d:0:*:0.0.*.*/65",
+		"a::d:0:*:0.0.*.*/65",
+		"a::d:0:*:0.0.*.*/65",
 		"*.*.*.*.0.0.0.0.*.*.*.*.0.0.0.0.d.0.0.0.0.0.0.0.0.0.0.0.a.0.0.0.ip6.arpa",
 		"a-0-0-d-0-*-0-*.ipv6-literal.net/65",
 		"",
@@ -4177,7 +4166,7 @@ func (t ipAddressRangeTester) testStrings() {
 		"0x000a0000000c000d0000000000000100-0x000a0000000c000d00000000000001ff",
 		"00000240000000006000032000000000000000000400-00000240000000006000032000000000000000000777") //mixed
 
-	t.testIPv6Strings("a:b:c:d:* /64",
+	t.testIPv6Strings("a:b:c:d:*/64",
 		"a:b:c:d:0:0:0:0/64",
 		"a:b:c:d:*:*:*:*",
 		"a:b:c:d:*:*:*:*",
@@ -4197,7 +4186,7 @@ func (t ipAddressRangeTester) testStrings() {
 		"0x000a000b000c000d0000000000000000-0x000a000b000c000dffffffffffffffff",
 		"00000240001300006000032000000000000000000000-00000240001300006000033777777777777777777777")
 
-	t.testIPv6Strings("a:b:c:d:*:*:*:* /64",
+	t.testIPv6Strings("a:b:c:d:*:*:*:*/64",
 		"a:b:c:d:0:0:0:0/64",
 		"a:b:c:d:*:*:*:*",
 		"a:b:c:d:*:*:*:*",
@@ -4217,7 +4206,7 @@ func (t ipAddressRangeTester) testStrings() {
 		"0x000a000b000c000d0000000000000000-0x000a000b000c000dffffffffffffffff",
 		"00000240001300006000032000000000000000000000-00000240001300006000033777777777777777777777")
 
-	t.testIPv6Strings("a::d:*:*:*:* /64",
+	t.testIPv6Strings("a::d:*:*:*:*/64",
 		"a:0:0:d:0:0:0:0/64",
 		"a:0:0:d:*:*:*:*",
 		"a::d:*:*:*:*",
@@ -4497,60 +4486,60 @@ func (t ipAddressRangeTester) testStrings() {
 		"0x000a00000000000d0000000000000000-0x000a00000000000dffffffffffffffff",
 		"00000240000000000000032000000000000000000000-00000240000000000000033777777777777777777777")
 
-	t.testIPv6Strings("a::c:d:* /64",
-		"a:0:0:0:0:c:d:* /64",
+	t.testIPv6Strings("a::c:d:*/64",
+		"a:0:0:0:0:c:d:*/64",
 		"a:0:0:0:0:c:d:*",
 		"a::c:d:*",
 		"a:0:0:0:0:c:d:%",
 		"000a:0000:0000:0000:0000:000c:000d:0000-ffff/64",
-		"a::c:d:* /64",
-		"a::c:d:* /64",
-		"a::c:d:* /64",
+		"a::c:d:*/64",
+		"a::c:d:*/64",
+		"a::c:d:*/64",
 		"a::c:d:*",
-		"a::c:0.13.*.* /64",
-		"a::c:0.13.*.* /64",
-		"a::c:0.13.*.* /64",
-		"a::c:0.13.*.* /64",
+		"a::c:0.13.*.*/64",
+		"a::c:0.13.*.*/64",
+		"a::c:0.13.*.*/64",
+		"a::c:0.13.*.*/64",
 		"*.*.*.*.d.0.0.0.c.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.a.0.0.0.ip6.arpa",
 		"a-0-0-0-0-c-d-*.ipv6-literal.net/64",
 		"00|M>t|ttwH6V6EEzblZ"+goip.IPv6AlternativeRangeSeparatorStr+"00|M>t|ttwH6V6EEzkrZ/64",
 		"0x000a0000000000000000000c000d0000-0x000a0000000000000000000c000dffff",
 		"00000240000000000000000000000000600003200000-00000240000000000000000000000000600003377777")
 
-	t.testIPv6Strings("a::c:d:* /80", //similar to above, but allows us to test the base 85 string with non-64 bit prefix
-		"a:0:0:0:0:c:d:* /80",
+	t.testIPv6Strings("a::c:d:*/80", //similar to above, but allows us to test the base 85 string with non-64 bit prefix
+		"a:0:0:0:0:c:d:*/80",
 		"a:0:0:0:0:c:d:*",
 		"a::c:d:*",
 		"a:0:0:0:0:c:d:%",
 		"000a:0000:0000:0000:0000:000c:000d:0000-ffff/80",
-		"a::c:d:* /80",
-		"a::c:d:* /80",
-		"a::c:d:* /80",
+		"a::c:d:*/80",
+		"a::c:d:*/80",
+		"a::c:d:*/80",
 		"a::c:d:*",
-		"a::c:0.13.*.* /80",
-		"a::c:0.13.*.* /80",
-		"a::c:0.13.*.* /80",
-		"a::c:0.13.*.* /80",
+		"a::c:0.13.*.*/80",
+		"a::c:0.13.*.*/80",
+		"a::c:0.13.*.*/80",
+		"a::c:0.13.*.*/80",
 		"*.*.*.*.d.0.0.0.c.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.a.0.0.0.ip6.arpa",
 		"a-0-0-0-0-c-d-*.ipv6-literal.net/80",
 		"00|M>t|ttwH6V6EEzblZ"+goip.IPv6AlternativeRangeSeparatorStr+"00|M>t|ttwH6V6EEzkrZ/80",
 		"0x000a0000000000000000000c000d0000-0x000a0000000000000000000c000dffff",
 		"00000240000000000000000000000000600003200000-00000240000000000000000000000000600003377777")
 
-	t.testIPv6Strings("a::c:d:* /48", //similar to above, but allows us to test the base 85 string with non-64 bit prefix
-		"a:0:0:0:0:c:d:* /48",
+	t.testIPv6Strings("a::c:d:*/48", //similar to above, but allows us to test the base 85 string with non-64 bit prefix
+		"a:0:0:0:0:c:d:*/48",
 		"a:0:0:0:0:c:d:*",
 		"a::c:d:*",
 		"a:0:0:0:0:c:d:%",
 		"000a:0000:0000:0000:0000:000c:000d:0000-ffff/48",
-		"a::c:d:* /48",
-		"a::c:d:* /48",
-		"a::c:d:* /48",
+		"a::c:d:*/48",
+		"a::c:d:*/48",
+		"a::c:d:*/48",
 		"a::c:d:*",
-		"a::c:0.13.*.* /48",
-		"a::c:0.13.*.* /48",
-		"a::c:0.13.*.* /48",
-		"a::c:0.13.*.* /48",
+		"a::c:0.13.*.*/48",
+		"a::c:0.13.*.*/48",
+		"a::c:0.13.*.*/48",
+		"a::c:0.13.*.*/48",
 		"*.*.*.*.d.0.0.0.c.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.a.0.0.0.ip6.arpa",
 		"a-0-0-0-0-c-d-*.ipv6-literal.net/48",
 		"00|M>t|ttwH6V6EEzblZ"+goip.IPv6AlternativeRangeSeparatorStr+"00|M>t|ttwH6V6EEzkrZ/48",
@@ -4562,8 +4551,8 @@ func (t ipAddressRangeTester) testStrings() {
 	t.testIPv4Strings("1.2.0.0/14", "1.2.0.0/14", "1.2.0.0", "1.2.0.0", "001.002.000.000/14", "01.02.00.00/14", "0x1.0x2.0x0.0x0/14", "0.0.2.1.in-addr.arpa", "0x01020000", "000100400000")
 
 	t.testIPv4Strings("1.2.*.4/16", "1.2.*.4/16", "1.2.*.4", "1.2.%.4", "001.002.000-255.004/16", "01.02.*.04/16", "0x1.0x2.*.0x4/16", "4.*.2.1.in-addr.arpa", "", "")
-	t.testIPv4Strings("1.2.3.* /16", "1.2.3.* /16", "1.2.3.*", "1.2.3.%", "001.002.003.000-255/16", "01.02.03.* /16", "0x1.0x2.0x3.* /16", "*.3.2.1.in-addr.arpa", "0x01020300-0x010203ff", "000100401400-000100401777")
-	t.testIPv4Strings("1.2.*.* /14", "1.2.*.* /14", "1.2.*.*", "1.2.%.%", "001.002.000-255.000-255/14", "01.02.*.* /14", "0x1.0x2.*.* /14", "*.*.2.1.in-addr.arpa", "0x01020000-0x0102ffff", "000100400000-000100577777") //000100400000-000100400000/14"
+	t.testIPv4Strings("1.2.3.*/16", "1.2.3.*/16", "1.2.3.*", "1.2.3.%", "001.002.003.000-255/16", "01.02.03.*/16", "0x1.0x2.0x3.*/16", "*.3.2.1.in-addr.arpa", "0x01020300-0x010203ff", "000100401400-000100401777")
+	t.testIPv4Strings("1.2.*.*/14", "1.2.*.*/14", "1.2.*.*", "1.2.%.%", "001.002.000-255.000-255/14", "01.02.*.*/14", "0x1.0x2.*.*/14", "*.*.2.1.in-addr.arpa", "0x01020000-0x0102ffff", "000100400000-000100577777") //000100400000-000100400000/14"
 
 	t.testIPv6Strings("ffff::/8",
 		"ffff:0:0:0:0:0:0:0/8",
