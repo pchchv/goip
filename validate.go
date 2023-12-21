@@ -168,15 +168,18 @@ func (strValidator) validateHostName(fromHost *HostName, validationOptions addre
 		}
 	}
 
-	var currentChar byte
-	var separatorIndices []int
-	var normalizedFlags []bool
-	var isUpper0, isUpper1, isUpper2, isUpper3, isUpper4, isUpper5 bool
 	var segmentUppercase, isNotNormalized, squareBracketed, tryIPv6, tryIPv4, isPrefixed, hasPortOrService, hostIsEmpty bool
 	isAllDigits, isPossiblyIPv6, isPossiblyIPv4 := true, true, true
 	isSpecialOnlyIndex, qualifierIndex, index, lastSeparatorIndex := -1, -1, -1, -1
 	labelCount := 0
+	maxLocalLabels := 6 //should be at least 4 to avoid the array for ipv4 addresses
+	var separatorIndices []int
+	var normalizedFlags []bool
+
 	sep0, sep1, sep2, sep3, sep4, sep5 := -1, -1, -1, -1, -1, -1
+	var isUpper0, isUpper1, isUpper2, isUpper3, isUpper4, isUpper5 bool
+
+	var currentChar byte
 	for index++; index <= addrLen; index++ {
 		// grab the character to evaluate
 		if index == addrLen {
@@ -443,7 +446,7 @@ func (strValidator) validateHostName(fromHost *HostName, validationOptions addre
 					startIndex = 6
 				} else {
 					/*
-						RFC 3986 section 3.2.2
+							RFC 3986 section 3.2.2
 							host = IP-literal / IPv4address / reg-name
 							IP-literal = "[" ( IPv6address / IPvFuture  ) "]"
 							IPvFuture  = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
