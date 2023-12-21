@@ -447,10 +447,10 @@ func (t macAddressTester) run() {
 	t.testMatches(true, "0A0B.0C0D.0E0F", "0a:0b:0c:0d:0e:0f")
 	t.testMatches(false, "0A0B.1C0D.0E0F", "0a:0b:0c:0d:0e:0f")
 	t.testMatches(false, "0A0B.1C0D.0E0F", "aa:bb:0a:0b:0c:0d:0e:0f")
-	t.testDelimitedCount("1,2-3-4,5-6-7-8", 4)            //this will iterate through 1.3.4.6 1.3.5.6 2.3.4.6 2.3.5.6
-	t.testDelimitedCount("1,2-3,6-7-8-4,5-6,8", 16)       //this will iterate through 1.3.4.6 1.3.5.6 2.3.4.6 2.3.5.6
-	t.testDelimitedCount("1:2:3:6:4:5", 1)                //this will iterate through 1.3.4.6 1.3.5.6 2.3.4.6 2.3.5.6
-	t.testDelimitedCount("1:2,3,4:3:6:4:5,ff,7,8,99", 15) //this will iterate through 1.3.4.6 1.3.5.6 2.3.4.6 2.3.5.6
+	t.testDelimitedCount("1,2-3-4,5-6-7-8", 4)            // this will iterate through 1.3.4.6 1.3.5.6 2.3.4.6 2.3.5.6
+	t.testDelimitedCount("1,2-3,6-7-8-4,5-6,8", 16)       // this will iterate through 1.3.4.6 1.3.5.6 2.3.4.6 2.3.5.6
+	t.testDelimitedCount("1:2:3:6:4:5", 1)                // this will iterate through 1.3.4.6 1.3.5.6 2.3.4.6 2.3.5.6
+	t.testDelimitedCount("1:2,3,4:3:6:4:5,ff,7,8,99", 15) // this will iterate through 1.3.4.6 1.3.5.6 2.3.4.6 2.3.5.6
 	t.testContains("1.2.3.4", "1.2.3.4", true)
 	t.testContains("1111.2222.3333", "1111.2222.3333", true)
 	t.testNotContains("1111.2222.3333", "1111.2222.3233")
@@ -626,8 +626,8 @@ func (t macAddressTester) testReplace(front, back string) {
 		goip.MACColonSegmentSeparator, true)
 }
 
-func (t macAddressTester) testSections(address_Stringing string) {
-	w := t.createMACAddress(address_Stringing)
+func (t macAddressTester) testSections(addrString string) {
+	w := t.createMACAddress(addrString)
 	v := w.GetAddress()
 	odiSection := v.GetODISection()
 	ouiSection := v.GetOUISection()
