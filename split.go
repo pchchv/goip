@@ -108,14 +108,12 @@ func applyOperatorToLowerUpper(first, other ExtendedIPSegmentSeries, removePrefi
 }
 
 func splitIntoPrefixBlocks(lower, upper ExtendedIPSegmentSeries) (blocks []ExtendedIPSegmentSeries) {
-	var popped bool
 	var stack seriesStack
 	var currentSegment int
 	var previousSegmentBits BitCount
 	blocks = make([]ExtendedIPSegmentSeries, 0, IPv6BitCount)
 	segCount := lower.GetDivisionCount()
 	bitsPerSegment := lower.GetBitsPerSegment()
-
 	for {
 		// Find first non-matching bit.
 		var differing SegInt
@@ -166,6 +164,7 @@ func splitIntoPrefixBlocks(lower, upper ExtendedIPSegmentSeries) (blocks []Exten
 			}
 		}
 
+		var popped bool
 		if popped, lower, upper, previousSegmentBits, currentSegment = stack.pop(); !popped {
 			return blocks
 		}
@@ -219,7 +218,6 @@ func splitIntoSequentialBlocks(lower, upper ExtendedIPSegmentSeries) (blocks []E
 		return []ExtendedIPSegmentSeries{lower}
 	}
 
-	var popped bool
 	var segSegment int
 	var toAdd list.List
 	var stack seriesStack
@@ -301,6 +299,7 @@ func splitIntoSequentialBlocks(lower, upper ExtendedIPSegmentSeries) (blocks []E
 			}
 		}
 
+		var popped bool
 		if popped, lower, upper, previousSegmentBits, currentSegment = stack.pop(); !popped {
 			return blocks
 		}
