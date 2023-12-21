@@ -108,10 +108,7 @@ func (prefixBitCount *PrefixBitCount) copy() PrefixLen {
 	if prefixBitCount == nil {
 		return nil
 	}
-
-	res := *prefixBitCount
-
-	return &res
+	return prefixBitCount
 }
 
 // PortNum is the port number for a non-nil Port.
@@ -294,12 +291,10 @@ func checkBitCount(prefixLength, max BitCount) BitCount {
 func initPrefLens() ([]PrefixBitCount, []PrefixLen) {
 	cachedPrefBitcounts := make([]PrefixBitCount, maxBitCountInternal)
 	cachedPrefLens := make([]PrefixLen, maxBitCountInternal)
-
 	for i := 0; i <= IPv6BitCount; i++ {
 		cachedPrefBitcounts[i] = PrefixBitCount(i)
 		cachedPrefLens[i] = &cachedPrefBitcounts[i]
 	}
-
 	return cachedPrefBitcounts, cachedPrefLens
 }
 
@@ -317,7 +312,6 @@ func cacheBitCount(i BitCount) PrefixLen {
 	}
 
 	res := PrefixBitCount(i)
-
 	return &res
 }
 
