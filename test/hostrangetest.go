@@ -12,7 +12,7 @@ type hostRangeTester struct {
 
 func (t hostRangeTester) run() {
 
-	t.testMatches(true, "1.*.*.* /255.0.0.0", "1.0.0.0/255.0.0.0")
+	t.testMatches(true, "1.*.*.*/255.0.0.0", "1.0.0.0/255.0.0.0")
 	t.testMatches(true, "1.0.0.0/8", "1.0.0.0/255.0.0.0")
 
 	t.testMatches(true, "1.2.3.4/255.0.0.0", "1.2.3.4")
@@ -61,8 +61,8 @@ func (t hostRangeTester) run() {
 	t.hostLabelsTest("**", []string{"*"})
 
 	t.hostTest(true, "1.2.3.4/1.2.3.4")
-	t.hostTest(false, "1.2.3.4/ *")
-	t.hostTest(false, "1.*.3.4/ *")
+	t.hostTest(false, "1.2.3.4/*")
+	t.hostTest(false, "1.*.3.4/*")
 	t.hostTest(true, "1.*.3.4")
 	t.hostTest(true, "1:*:3:4")
 
@@ -212,8 +212,4 @@ func (t hostRangeTester) testMasked(masked, mask string, prefixLength goip.Prefi
 		t.addFailure(newHostFailure("masked prefix length was "+maskedHostStr.GetNetworkPrefixLen().String()+" instead of expected "+prefixLength.String(), maskedHostStr))
 	}
 	t.incrementTestCount()
-}
-
-func (t hostAllTester) run() {
-	// nothing to test here
 }
