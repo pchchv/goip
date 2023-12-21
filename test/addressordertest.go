@@ -8,6 +8,7 @@ import (
 
 	"github.com/pchchv/goip"
 	"github.com/pchchv/goip/address_string_param"
+	"github.com/seancfoley/ipaddress-go/ipaddr"
 )
 
 type OrderingSupplier func(string, int) *Ordering
@@ -135,9 +136,9 @@ func (t addressOrderTest) testOrder() {
 }
 
 type Ordering struct {
-	nestedType          *goip.Address
-	nestedIPAddrString  *goip.IPAddressString
-	nestedMACAddrString *goip.MACAddressString
+	nestedType          *ipaddr.Address
+	nestedIPAddrString  *ipaddr.IPAddressString
+	nestedMACAddrString *ipaddr.MACAddressString
 
 	order int
 }
@@ -296,11 +297,11 @@ func (t addressOrderTest) testDefaultOrder(ipAddressSupplier, macAddressSupplier
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("1.002.3.*", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("1.002.3.* /31", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1.002.3.*/31", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("1.002.*.* /17", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("1.002.*.* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1.002.*.*/17", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1.002.*.*/16", orderNumber))
 
 	ordering = append(ordering, ipAddressSupplier("1.002.0.0/16", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("001.002.000.000/16", orderNumber))
@@ -340,9 +341,9 @@ func (t addressOrderTest) testDefaultOrder(ipAddressSupplier, macAddressSupplier
 	ordering = append(ordering, ipAddressSupplier("ffff::ffff:ffff:ffff", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("1::2:3:* /127", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1::2:3:*/127", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("1::2:3:*", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("1::2:3:* /111", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1::2:3:*/111", orderNumber))
 	orderNumber++
 	ordering = append(ordering, ipAddressSupplier("1::2:1-3:4:*", orderNumber))
 	orderNumber++
@@ -351,10 +352,10 @@ func (t addressOrderTest) testDefaultOrder(ipAddressSupplier, macAddressSupplier
 	ordering = append(ordering, ipAddressSupplier("*::*:%*:*", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("1:0:* /31", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1:0:*/31", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("*::*:*:*:*:* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("*::*:*:*:*:*/16", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("1::/17", orderNumber))
@@ -365,7 +366,7 @@ func (t addressOrderTest) testDefaultOrder(ipAddressSupplier, macAddressSupplier
 	orderNumber++
 	ordering = append(ordering, ipAddressSupplier("1::/16", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("0001::/16", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("1:* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1:*/16", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("*:*:a:*:*:*:*:*", orderNumber))
@@ -374,7 +375,7 @@ func (t addressOrderTest) testDefaultOrder(ipAddressSupplier, macAddressSupplier
 	ordering = append(ordering, ipAddressSupplier("2::/15", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("*:*:*:*:*:*:*:* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("*:*:*:*:*:*:*:*/16", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("*:*", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("*:*:*:*:*:*:*:*", orderNumber))
 	orderNumber++
@@ -503,7 +504,7 @@ func (t addressOrderTest) testHighValueOrder(comparator OrderingComparator, ipAd
 	ordering = append(ordering, ipAddressSupplier("1.0.0.0", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("1.002.0.* /17", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1.002.0.*/17", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("1.002.3.4", orderNumber))
@@ -513,20 +514,20 @@ func (t addressOrderTest) testHighValueOrder(comparator OrderingComparator, ipAd
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("1.002.3.*", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("1.002.3.* /31", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1.002.3.*/31", orderNumber))
 	orderNumber++
 	ordering = append(ordering, ipAddressSupplier("1.002.0.0/17", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("1.002.0-127.* /17", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1.002.0-127.*/17", orderNumber))
 	orderNumber++
 	ordering = append(ordering, ipAddressSupplier("1.002.0.0/16", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("001.002.000.000/16", orderNumber))
 
-	ordering = append(ordering, ipAddressSupplier("1.002.*.* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1.002.*.*/16", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("1.2.000.0/15", orderNumber))
 
-	ordering = append(ordering, ipAddressSupplier("1.2-3.*.* /15", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1.2-3.*.*/15", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("255.254.255.254", orderNumber))
@@ -553,49 +554,49 @@ func (t addressOrderTest) testHighValueOrder(comparator OrderingComparator, ipAd
 
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("1::* /31", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("1::* /17", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1::*/31", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1::*/17", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("1::2:2:* /111", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1::2:2:*/111", orderNumber))
 	orderNumber++
 	ordering = append(ordering, ipAddressSupplier("1::2:3:4", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("1::2:003:4", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("1::2:3:4", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("0001:0000::0002:0003:0004", orderNumber))
 	orderNumber++
-	ordering = append(ordering, ipAddressSupplier("1::2:2-3:* /111", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1::2:2-3:*/111", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("1::2:2:0/111", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("1::2:3:* /127", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1::2:3:*/127", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("1::2:3:*", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("1::2:1-3:4:*", orderNumber))
 	orderNumber++
-	ordering = append(ordering, ipAddressSupplier("1:0-1:* /31", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1:0-1:*/31", orderNumber))
 	orderNumber++
 	ordering = append(ordering, ipAddressSupplier("1::/17", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("1:0-7fff:*:* /17", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1:0-7fff:*:*/17", orderNumber))
 
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("1::/16", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("0001:0000::0000:0000:0000/16", orderNumber))
 
-	ordering = append(ordering, ipAddressSupplier("1:* /17", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("1:* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1:*/17", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1:*/16", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("1:8000::/17", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("2:* /15", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("2:*/15", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("2::/15", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("2-3:* /15", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("2-3:*/15", orderNumber))
 
 	orderNumber++
 
@@ -616,13 +617,13 @@ func (t addressOrderTest) testHighValueOrder(comparator OrderingComparator, ipAd
 	ordering = append(ordering, ipAddressSupplier("ffff::ffff:ffff:ffff", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("*::*:*:*:*:* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("*::*:*:*:*:*/16", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("*:*:a:*:*:*:*:*", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("*:*:*:*:*:*:*:* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("*:*:*:*:*:*:*:*/16", orderNumber))
 
 	ordering = append(ordering, ipAddressSupplier("*:*", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("*:*:*:*:*:*:*:*", orderNumber))
@@ -759,22 +760,22 @@ func (t addressOrderTest) testLowValueOrder(comparator OrderingComparator, ipAdd
 	ordering = append(ordering, ipAddressSupplier("1.0.0.0", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("1.000.0.* /17", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1.000.0.*/17", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("1.002.0.0/16", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("001.002.000.000/16", orderNumber))
 
-	ordering = append(ordering, ipAddressSupplier("1.002.*.* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1.002.*.*/16", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("1.2.000.0/15", orderNumber))
 
-	ordering = append(ordering, ipAddressSupplier("1.2-3.*.* /15", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1.2-3.*.*/15", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("1.002.3.*", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("1.002.3.* /31", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1.002.3.*/31", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("1.002.3.4", orderNumber))
@@ -798,10 +799,10 @@ func (t addressOrderTest) testLowValueOrder(comparator OrderingComparator, ipAdd
 	ordering = append(ordering, ipAddressSupplier("*::*:%*:*", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("*::*:*:*:*:* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("*::*:*:*:*:*/16", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("*:*:*:*:*:*:*:* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("*:*:*:*:*:*:*:*/16", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("*:*", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("*:*:*:*:*:*:*:*", orderNumber))
 	orderNumber++
@@ -813,11 +814,11 @@ func (t addressOrderTest) testLowValueOrder(comparator OrderingComparator, ipAdd
 
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("1:0::* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1:0::*/16", orderNumber))
 
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("1:0:* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1:0:*/16", orderNumber))
 
 	orderNumber++
 
@@ -832,14 +833,14 @@ func (t addressOrderTest) testLowValueOrder(comparator OrderingComparator, ipAdd
 
 	ordering = append(ordering, ipAddressSupplier("1::/16", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("0001:0000::0000:0000:0000/16", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("1:* /17", orderNumber))
-	ordering = append(ordering, ipAddressSupplier("1:* /16", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1:*/17", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1:*/16", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("1::2:2:* /111", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1::2:2:*/111", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("1::2:3:* /127", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("1::2:3:*/127", orderNumber))
 	ordering = append(ordering, ipAddressSupplier("1::2:3:*", orderNumber))
 	orderNumber++
 
@@ -855,13 +856,13 @@ func (t addressOrderTest) testLowValueOrder(comparator OrderingComparator, ipAdd
 	ordering = append(ordering, ipAddressSupplier("1:8000::/17", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("2::0:* /15", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("2::0:*/15", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("2:0:* /15", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("2:0:*/15", orderNumber))
 	orderNumber++
 
-	ordering = append(ordering, ipAddressSupplier("2:* /15", orderNumber))
+	ordering = append(ordering, ipAddressSupplier("2:*/15", orderNumber))
 	orderNumber++
 
 	ordering = append(ordering, ipAddressSupplier("2::/15", orderNumber))
