@@ -85,8 +85,8 @@ type hostNameError struct {
 	addressError
 }
 
-// GetAddress_Erroror returns the nested address error which is nil for a host name error
-func (a *hostNameError) GetAddress_Erroror() address_error.AddressError {
+// GetAddrError returns the nested address error which is nil for a host name error
+func (a *hostNameError) GetAddrError() address_error.AddressError {
 	return nil
 }
 
@@ -113,8 +113,8 @@ type hostAddressNestedError struct {
 	nested address_error.AddressError
 }
 
-// GetAddress_Erroror returns the nested address error
-func (a *hostAddressNestedError) GetAddress_Erroror() address_error.AddressError {
+// GetAddrError returns the nested address error
+func (a *hostAddressNestedError) GetAddrError() address_error.AddressError {
 	return a.nested
 }
 
