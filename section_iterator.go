@@ -36,7 +36,6 @@ func (it *multiSegmentsIterator) updateVariations(start int) {
 	nextSet := it.nextSet
 	variations := it.variations
 	segIteratorProducer := it.segIteratorProducer
-
 	for ; i < it.hostSegmentIndex; i++ {
 		variations[i] = segIteratorProducer(i)
 		nextSet[i] = variations[i].Next().ToDiv()
@@ -54,7 +53,6 @@ func (it *multiSegmentsIterator) increment() (res []*AddressDivision) {
 	// this searches for the set of segments to follow.
 	variations := it.variations
 	nextSet := it.nextSet
-
 	for j := it.networkSegmentIndex; j >= 0; j-- { // for regular iterators (not prefix block), networkSegmentIndex is last segment (count - 1)
 		for variations[j].HasNext() {
 			if previousSegs == nil {
@@ -73,7 +71,6 @@ func (it *multiSegmentsIterator) increment() (res []*AddressDivision) {
 	}
 
 	it.done = true
-
 	if previousSegs == nil {
 		// never found set of candidate segments
 		return nextSet
@@ -90,7 +87,7 @@ func (it *multiSegmentsIterator) init() {
 	variations := it.variations
 	divCount := len(variations)
 	hostSegIteratorProducer := it.hostSegIteratorProducer
-
+	// for regular iterators (not prefix block), networkSegmentIndex is last segment (count - 1)
 	for i := it.networkSegmentIndex + 1; i < divCount; i++ {
 		variations[i] = hostSegIteratorProducer(i)
 		nextSet[i] = variations[i].Next().ToDiv()
@@ -238,7 +235,7 @@ func allSegmentsIterator(
 	divCount int,
 	segSupplier func() []*AddressDivision, // only useful for a segment iterator. Address/section iterators use address/section for single valued iterator.
 	segIteratorProducer func(int) Iterator[*AddressSegment],
-	excludeFunc func([]*AddressDivision) bool, // can be nil.
+	excludeFunc func([]*AddressDivision) bool, // can be nil
 ) Iterator[[]*AddressDivision] {
 	return segmentsIterator(divCount, segSupplier, segIteratorProducer, excludeFunc, divCount-1, divCount, nil)
 }
