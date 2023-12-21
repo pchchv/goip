@@ -473,8 +473,7 @@ func (writer stringWriter) getRangeStringWithCounts(
 	return getRangeString(writer.DivisionType, rangeSeparator, lowerLeadingZerosCount, upperLeadingZerosCount, stringPrefix, radix, uppercase, maskUpper, appendable)
 }
 
-func (writer stringWriter) getRangeString(
-	segmentIndex int, params addressSegmentParams, appendable *strings.Builder) (digitCount int, err address_error.IncompatibleAddressError) {
+func (writer stringWriter) getRangeString(segmentIndex int, params addressSegmentParams, appendable *strings.Builder) (digitCount int, err address_error.IncompatibleAddressError) {
 	splitDigits := params.isSplitDigits()
 	radix := params.getRadix()
 	leadingZeroCount := params.getLeadingZeros(segmentIndex)
@@ -660,7 +659,6 @@ func (writer stringWriter) getPrefixAdjustedRangeString(segmentIndex int, params
 	if rangeDigitCount != 0 {
 		return writer.getRangeDigitString(segmentIndex, params, appendable)
 	}
-
 	return writer.getRangeStringWithCounts(segmentIndex, params, lowerLeadingZeroCount, upperLeadingZeroCount, true, appendable)
 }
 
@@ -984,7 +982,6 @@ func (params *ipv6StringParams) getTrailingSepCount(addr IPAddressSegmentSeries)
 			count++
 		}
 	}
-
 	return count
 }
 
@@ -1398,7 +1395,7 @@ func getPrefixIndicatorStringLength(addr AddressDivisionSeries) int {
 }
 
 // checkLengths is only needed during development.
-// Disable when sending to production!
+// Disable on production!
 func checkLengths(length int, builder *strings.Builder) {
 	calcMatch := length == builder.Len()
 	capMatch := length == builder.Cap()
@@ -1423,7 +1420,6 @@ func toNormalizedStringRange(params *addressStringParams, lower, upper AddressDi
 		}
 
 		checkLengths(length, &builder)
-
 		return builder.String()
 	}
 	return ""
@@ -1462,6 +1458,5 @@ func from(opts address_string.IPv6StringOptions, addr *IPv6AddressSection) (res 
 					getHostSegmentIndex(addr.getNetworkPrefixLen().bitCount(), IPv6BytesPerSegment, IPv6BitsPerSegment))
 		}
 	}
-
 	return res
 }
