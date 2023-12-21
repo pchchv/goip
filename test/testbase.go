@@ -11,6 +11,7 @@ import (
 
 	"github.com/pchchv/goip"
 	"github.com/pchchv/goip/address_string"
+	"github.com/pchchv/goip/address_string_param"
 )
 
 func Test(isLimited bool) {
@@ -808,7 +809,7 @@ func (t testBase) testIPv6OnlyStrings(w *goip.IPAddressString, ipAddr *goip.IPv6
 	mixedParams = new(address_string.IPv6StringOptionsBuilder).SetMixed(true).SetCompressOptions(compressOpts).ToOptions()
 	mixedNoCompressMixed, _ := goip.ToCustomString(mixedParams)
 
-	t.confirmAddress_Stringsing(goip.ToIP(), m, mixedCompressCoveredHost, mixedNoCompressHost, mixedNoCompressMixed, base85)
+	t.confirmAddrStrings(goip.ToIP(), m, mixedCompressCoveredHost, mixedNoCompressHost, mixedNoCompressMixed, base85)
 	t.confirmHostStrings(goip.ToIP(), false, m, mixedCompressCoveredHost, mixedNoCompressHost, mixedNoCompressMixed)
 
 	nMatch := m == (mixedString)
@@ -833,10 +834,10 @@ func (t testBase) testIPv6OnlyStrings(w *goip.IPAddressString, ipAddr *goip.IPv6
 	t.incrementTestCount()
 }
 
-func (t testBase) confirmMACAddress_Stringsing(macAddr *goip.MACAddress, strs ...string) bool {
+func (t testBase) confirmMACAddrStrings(macAddr *goip.MACAddress, strs ...string) bool {
 	for _, str := range strs {
-		address_Stringing := goip.NewMACAddressString(str)
-		addr := address_Stringing.GetAddress()
+		addrString := goip.NewMACAddressString(str)
+		addr := addrString.GetAddress()
 		if !macAddr.Equal(addr) {
 			t.addFailure(newSegmentSeriesFailure("failed produced string: "+str, macAddr))
 			return false
@@ -846,13 +847,13 @@ func (t testBase) confirmMACAddress_Stringsing(macAddr *goip.MACAddress, strs ..
 	return true
 }
 
-func (t testBase) confirmAddress_Stringsing(ipAddr *goip.IPAddress, strs ...string) bool {
+func (t testBase) confirmAddrStrings(ipAddr *goip.IPAddress, strs ...string) bool {
 	for _, str := range strs {
 		if str == "" {
 			continue
 		}
-		address_Stringing := t.createParamsAddress(str, defaultOptions)
-		addr := address_Stringing.GetAddress()
+		addrString := t.createParamsAddress(str, defaultOptions)
+		addr := addrString.GetAddress()
 		if !goip.Equal(addr) {
 			t.addFailure(newIPAddrFailure("failed produced string: "+str, ipAddr))
 			return false
@@ -862,7 +863,7 @@ func (t testBase) confirmAddress_Stringsing(ipAddr *goip.IPAddress, strs ...stri
 	return true
 }
 
-func (t testBase) confirmIPAddress_Stringsing(ipAddr *goip.IPAddress, strs ...*goip.IPAddressString) bool {
+func (t testBase) confirmIPAddrStrings(ipAddr *goip.IPAddress, strs ...*goip.IPAddressString) bool {
 	for _, str := range strs {
 		addr := str.GetAddress()
 		if !goip.Equal(addr) {
@@ -943,7 +944,7 @@ func (t testBase) testMACStrings(w *goip.MACAddressString,
 			t.addFailure(newMACFailure("failed expected: "+singleHex+" actual: "+err.Error(), w))
 		}
 	} else {
-		t.confirmMACAddress_Stringsing(ipAddr, hex)
+		t.confirmMACAddrStrings(ipAddr, hex)
 	}
 	hexNoPrefix, err = goip.ToHexString(false)
 	if err != nil {
@@ -956,10 +957,10 @@ func (t testBase) testMACStrings(w *goip.MACAddressString,
 		if !isMatch {
 			t.addFailure(newMACFailure("failed expected: "+singleHex+" actual: "+hexNoPrefix, w))
 		}
-		t.confirmMACAddress_Stringsing(ipAddr, hexNoPrefix) //For ipv4, no 0x means decimal
+		t.confirmMACAddrStrings(ipAddr, hexNoPrefix) //For ipv4, no 0x means decimal
 	}
 
-	t.confirmMACAddress_Stringsing(ipAddr, c, canonical, d, n, cd, sd)
+	t.confirmMACAddrStrings(ipAddr, c, canonical, d, n, cd, sd)
 
 	nMatch := normalizedString == (n)
 	if !nMatch {
@@ -983,7 +984,7 @@ func (t testBase) testMACStrings(w *goip.MACAddressString,
 					if err != nil {
 						sMatch = dottedString == ""
 					} else {
-						t.confirmMACAddress_Stringsing(ipAddr, dotted)
+						t.confirmMACAddrStrings(ipAddr, dotted)
 						sMatch = dotted == (dottedString)
 					}
 					if !sMatch {
@@ -1090,7 +1091,7 @@ func (t testBase) testStrings(w *goip.IPAddressString,
 		if !isMatch {
 			t.addFailure(newFailure("failed expected: "+singleHex+" actual: "+hex, w))
 		}
-		t.confirmAddress_Stringsing(ipAddr, hex)
+		t.confirmAddrStrings(ipAddr, hex)
 	}
 
 	hexNoPrefix, err = goip.ToHexString(false)
@@ -1101,7 +1102,7 @@ func (t testBase) testStrings(w *goip.IPAddressString,
 		}
 	} else {
 		if goip.IsIPv6() {
-			t.confirmAddress_Stringsing(ipAddr, hexNoPrefix) //For ipv4, no 0x means decimal
+			t.confirmAddrStrings(ipAddr, hexNoPrefix) //For ipv4, no 0x means decimal
 		}
 	}
 
@@ -1117,7 +1118,7 @@ func (t testBase) testStrings(w *goip.IPAddressString,
 			t.addFailure(newFailure("failed expected: "+singleOctal+" actual: "+octal, w))
 		}
 		if goip.IsIPv4() {
-			t.confirmAddress_Stringsing(ipAddr, octal)
+			t.confirmAddrStrings(ipAddr, octal)
 		}
 	}
 
@@ -1160,13 +1161,13 @@ func (t testBase) testStrings(w *goip.IPAddressString,
 		} else {
 			withStrPrefix = goip.BinaryPrefix + binary
 		}
-		t.confirmAddress_Stringsing(ipAddr, withStrPrefix)
+		t.confirmAddrStrings(ipAddr, withStrPrefix)
 	}
 
 	binary = goip.ToSegmentedBinaryString()
-	t.confirmAddress_Stringsing(ipAddr, c, canonical, s, cidr, n, nw, caw, cw, binary)
+	t.confirmAddrStrings(ipAddr, c, canonical, s, cidr, n, nw, caw, cw, binary)
 	if goip.IsIPv6() {
-		t.confirmAddress_Stringsing(ipAddr, full)
+		t.confirmAddrStrings(ipAddr, full)
 		t.confirmHostStrings(ipAddr, true, rDNS) // reverse-DNS are valid hosts with embedded addresses
 		skipUncParse := false
 		zone := strings.IndexByte(unc, 's')
@@ -1180,18 +1181,18 @@ func (t testBase) testStrings(w *goip.IPAddressString,
 			t.confirmHostStrings(ipAddr, false, unc) // UNCs are usually (as long as no abnormal zone) valid hosts with embedded addresses
 		}
 	} else {
-		params := new(address_strparaming.IPAddressStringParamsBuilder).Allow_inet_aton(false).ToParams()
-		fullAddress_Stringing := goip.NewIPAddressStringParams(full, params)
-		t.confirmIPAddress_Stringsing(ipAddr, fullAddress_Stringing)
+		params := new(address_string_param.IPAddressStringParamsBuilder).Allow_inet_aton(false).ToParams()
+		fullAddrString := goip.NewIPAddressStringParams(full, params)
+		t.confirmIPAddrStrings(ipAddr, fullAddrString)
 		t.confirmHostStrings(ipAddr, false, rDNS, unc) //these two are valid hosts with embedded addresses
 	}
 	t.confirmHostStrings(ipAddr, false, c, canonical, s, cidr, n, nw, caw, cw)
 	if goip.IsIPv6() {
 		t.confirmHostStrings(ipAddr, false, full)
 	} else {
-		params := new(address_strparaming.HostNameParamsBuilder).GetIPAddressParamsBuilder().Allow_inet_aton(false).GetParentBuilder().ToParams()
-		fullAddress_Stringing := goip.NewHostNameParams(full, params)
-		t.confirmHostNameStrings(ipAddr, fullAddress_Stringing)
+		params := new(address_string_param.HostNameParamsBuilder).GetIPAddressParamsBuilder().Allow_inet_aton(false).GetParentBuilder().ToParams()
+		fullAddrString := goip.NewHostNameParams(full, params)
+		t.confirmHostNameStrings(ipAddr, fullAddrString)
 	}
 
 	nMatch := normalizedString == (n)
@@ -1717,12 +1718,12 @@ func newHostFailure(str string, host *goip.HostName) failure {
 	return newHostIdFailure(str, host)
 }
 
-func newMACFailure(str string, address_String *goip.MACAddressString) failure {
-	return newHostIdFailure(str, address_String)
+func newMACFailure(str string, addrStr *goip.MACAddressString) failure {
+	return newHostIdFailure(str, addrStr)
 }
 
-func newFailure(str string, address_String *goip.IPAddressString) failure {
-	return newHostIdFailure(str, address_String)
+func newFailure(str string, addrStr *goip.IPAddressString) failure {
+	return newHostIdFailure(str, addrStr)
 }
 
 func cacheTestBits(i goip.BitCount) goip.PrefixLen {
