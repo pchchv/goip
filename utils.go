@@ -28,7 +28,6 @@ func getBytesCopy(bytes, cached []byte) []byte {
 	}
 
 	copy(bytes, cached)
-
 	return bytes[:len(cached)]
 }
 
@@ -79,7 +78,6 @@ func flagsFromState(state fmt.State, verb rune) string {
 	flags := "# +-0"
 	vals := make([]rune, 0, len(flags)+5) // %, flags, width, '.', precision, verb
 	vals = append(vals, '%')
-
 	for i := 0; i < len(flags); i++ {
 		b := flags[i]
 		if state.Flag(int(b)) {
@@ -89,7 +87,6 @@ func flagsFromState(state fmt.State, verb rune) string {
 
 	width, widthOK := state.Width()
 	precision, precisionOK := state.Precision()
-
 	if widthOK || precisionOK {
 		var wpv string
 		if widthOK && precisionOK {
@@ -103,7 +100,6 @@ func flagsFromState(state fmt.State, verb rune) string {
 	}
 
 	vals = append(vals, verb)
-
 	return string(vals)
 }
 
@@ -131,11 +127,9 @@ func getLongCount(segmentCountProvider func(index int) uint64, segCount int) uin
 	}
 
 	result := segmentCountProvider(0)
-
 	for i := 1; i < segCount; i++ {
 		result *= segmentCountProvider(i)
 	}
-
 	return result
 }
 
@@ -147,7 +141,6 @@ func mult(currentResult *big.Int, newResult uint64) *big.Int {
 	}
 
 	newBig := bigZero().SetUint64(newResult)
-
 	return currentResult.Mul(currentResult, newBig)
 }
 
@@ -158,7 +151,6 @@ func count(segmentCountProvider func(index int) uint64, segCount, safeMultiplies
 	}
 
 	var result *big.Int
-
 	i := 0
 	for {
 		curResult := segmentCountProvider(i)
