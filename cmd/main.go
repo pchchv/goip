@@ -58,6 +58,7 @@ func main() {
 	_ = addr2.String()
 	_ = addr2.GetSection()
 	fmt.Printf("zero addr is %+v\n", addr2.String())
+	fmt.Printf("%+v\n", &addr2)
 
 	ipv4Prefixed := addr4.ToPrefixBlockLen(16)
 	fmt.Printf("16 block is %+v\n", ipv4Prefixed)
@@ -89,8 +90,17 @@ func main() {
 	fmt.Printf("%+v\n", *pAddr)
 	fmt.Printf("%+v\n", pAddr)
 
+	fmt.Printf("All the formats: %v %x %X %o %O %b %d %#x %#o %#b\n",
+		pAddr, pAddr, pAddr, pAddr, pAddr, pAddr, pAddr, pAddr, pAddr, pAddr)
 	fmt.Printf("All the formats: default %v\nstring %s\nquoted %q\nquoted backtick %#q\nlowercase hex %x\nuppercase hex %X\nlower hex prefixed %#x\nupper hex prefixed %#X\noctal no prefix %o\noctal prefixed %O\noctal 0 prefix %#o\nbinary %b\nbinary prefixed %#b\ndecimal %d\n\n",
 		pAddr, pAddr, pAddr, pAddr, pAddr, pAddr, pAddr, pAddr, pAddr, pAddr, pAddr, pAddr, pAddr, pAddr)
+	fmt.Printf("All the formats: %v %x %X %o %O %b %d %#x %#o %#b\n",
+		*pAddr, *pAddr, *pAddr, *pAddr, *pAddr, *pAddr, *pAddr, *pAddr, *pAddr, *pAddr)
+	fmt.Printf("octal no prefix %o\n", *pAddr)
+	fmt.Printf("octal prefixed %O\n", *pAddr)
+	fmt.Printf("octal 0 prefix %#o\n", *pAddr)
+	fmt.Printf("binary no prefix %b\n", *pAddr)
+	fmt.Printf("binary prefixed %#b\n", *pAddr)
 
 	pAddr = addrStr.GetAddress() // test getting it a second time from the cache
 	fmt.Printf("%+v\n", *pAddr)
@@ -102,6 +112,8 @@ func main() {
 		cidr, cidr, cidr, cidr, cidr, cidr, cidr, cidr, cidr, cidr, cidr, cidr, cidr, cidr)
 
 	pZeroSec := goip.IPv4AddressSection{}
+	fmt.Printf("octal no prefix %o\noctal prefixed %O\noctal 0 prefix %#o\ndecimal %d\n\n",
+		pZeroSec, pZeroSec, pZeroSec, pZeroSec)
 
 	fmt.Printf("All the formats for zero section: default %v\nstring %s\nquoted %q\nquoted backtick %#q\nlowercase hex %x\nuppercase hex %X\nlower hex prefixed %#x\nupper hex prefixed %#X\noctal no prefix %o\noctal prefixed %O\noctal 0 prefix %#o\nbinary %b\nbinary prefixed %#b\ndecimal %d\n\n",
 		pZeroSec, pZeroSec, pZeroSec, pZeroSec, pZeroSec, pZeroSec, pZeroSec, pZeroSec, pZeroSec, pZeroSec, pZeroSec, pZeroSec, pZeroSec, pZeroSec)
@@ -140,6 +152,8 @@ func main() {
 	fmt.Printf("%+v\n", *ipv6Addr)
 	fmt.Printf("All the formats: default %v\nstring %s\nlowercase hex %x\nuppercase hex %X\nlower hex prefixed %#x\nupper hex prefixed %#X\noctal no prefix %o\noctal prefixed %O\noctal 0 prefix %#o\nbinary %b\nbinary prefixed %#b\ndecimal %d\n\n",
 		ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr)
+	fmt.Printf("All the formats: %v %x %X %o %O %b %#x %#o %#b\n",
+		ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr, ipv6Addr)
 
 	fmt.Println(ipv6Addr)
 	ipv6Addr.ForEachSegment(func(i int, seg *goip.IPv6AddressSegment) bool {
@@ -482,6 +496,12 @@ func main() {
 		trie.NodeSize(),
 		trie.BlockSizeAllNodeIterator(true).HasNext(),
 		trie.ContainedFirstAllNodeIterator(true).HasNext())
+	fmt.Printf("%v %d %d %t %v",
+		trie,
+		trie.Size(),
+		trie.NodeSize(),
+		trie.BlockSizeAllNodeIterator(true).HasNext(),
+		trie.BlockSizeAllNodeIterator(true).Next())
 	fmt.Printf("%v %d %d %v %v",
 		trie,
 		trie.Size(),
