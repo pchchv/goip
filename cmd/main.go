@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"net"
 	"reflect"
 	"strings"
@@ -15,6 +16,8 @@ import (
 	"github.com/pchchv/goip"
 	"github.com/pchchv/goip/address_string_param"
 )
+
+var faillog2, failceillog2, faillogbx, faililogbx, failBitsFor, ilogbShift, total int
 
 // this is just a test program used for trying out code
 func main() {
@@ -622,6 +625,7 @@ func main() {
 	fmt.Println("one to ipaddr is " + naddr.String())
 	faddr, _ := goip.NewIPAddressFromNetIPAddr(naddr)
 	fmt.Println("and back is " + faddr.String())
+	log2()
 
 	addedTree := goip.AddedTree[*goip.IPv4Address]{}
 	fmt.Println("\nzero tree is " + addedTree.String())
@@ -723,6 +727,132 @@ func getDoc() error {
 		}
 	}
 	return nil
+}
+
+func log2() {
+	bitsFor := func(x uint64, expected uint64) {
+		total++
+		fmt.Printf("trying %x, want %d\n", x, expected)
+		res := math.Log2(float64(x))
+		if uint64(res) != expected {
+			faillog2++
+		}
+		fmt.Println("log2", res)
+		res = math.Ceil(math.Log2(float64(x)))
+		if uint64(res) != expected {
+			failceillog2++
+		}
+		fmt.Println("ceil log2", res)
+		fmt.Println("logb", math.Logb(float64(x)))
+		fmt.Println("ilogb", math.Ilogb(float64(x)))
+		res = math.Logb(float64(2*x - 1))
+		if uint64(res) != expected {
+			faillogbx++
+		}
+		fmt.Println("logb x * 2 - 1", res)
+		resi := math.Ilogb(float64(2*x - 1))
+		if uint64(resi) != expected {
+			faililogbx++
+		}
+		fmt.Println("ilogb x * 2 - 1", resi)
+		fmt.Println("ceil logb x * 2 - 1", math.Ceil(math.Logb(float64(2*x-1))))
+
+		limit := uint(53)
+		const mask = 0xfff0000000000000
+
+		BitsFor := func(x uint64) (result int) {
+			if ((x - 1) & mask) != 0 { // conversion to float64 will fail
+				x = ((x - 1) >> limit) + 1
+				result = int(limit)
+			}
+			result += math.Ilogb(float64((x << 1) - 1))
+			return
+		}
+		resi = BitsFor(x)
+		if uint64(resi) != expected {
+			failBitsFor++
+		}
+		fmt.Println("BitsFor", resi)
+
+		var extra int
+		if ((x - 1) & mask) != 0 { // equivalent to x > (1 << 52) or (x - 1) & 0xfffffffffffff != 0
+			x = ((x - 1) >> limit) + 1
+			extra += int(limit)
+		}
+
+		resi = extra + math.Ilogb(float64((x<<1)-1))
+		if uint64(resi) != expected {
+			ilogbShift++
+		}
+
+		fmt.Println("ilogb with shift", resi)
+		fmt.Println()
+	}
+
+	// x bits holds 2 power x values, the largest being 2 power x - 1
+	bitsFor(1, 0)
+	bitsFor(2, 1)
+	bitsFor(4, 2)
+	bitsFor(5, 3)
+	bitsFor(6, 3)
+	bitsFor(7, 3)
+	bitsFor(8, 3)
+	bitsFor(9, 4)
+
+	bitsFor(0x4, 2)
+	bitsFor(0x5, 3)
+
+	bitsFor(0x8, 3)
+	bitsFor(0x9, 4)
+
+	bitsFor(0x10, 4)
+	bitsFor(0x10+1, 5)
+
+	bitsFor(0x100, 8)
+	bitsFor(0x100+1, 9)
+
+	bitsFor(0x1000000000000, 48)
+	bitsFor(0x1000000000000+1, 49)
+
+	bitsFor(0x4000000000000, 50)
+	bitsFor(0x4000000000000+1, 51)
+
+	bitsFor(0x8000000000000-1, 51)
+	bitsFor(0x8000000000000, 51)
+	bitsFor(0x8000000000000+1, 52)
+
+	bitsFor(0x10000000000000-1, 52)
+	bitsFor(0x10000000000000, 52)
+	bitsFor(0x10000000000000+1, 53)
+
+	bitsFor(0x20000000000000-1, 53)
+	bitsFor(0x20000000000000, 53)
+	bitsFor(0x20000000000000+1, 54)
+
+	bitsFor(0x40000000000000-1, 54)
+	bitsFor(0x40000000000000, 54)
+	bitsFor(0x40000000000000+1, 55)
+
+	bitsFor(0x100000000000000, 56)
+	bitsFor(0x100000000000000+1, 57)
+
+	bitsFor(0x1000000000000000, 60)
+	bitsFor(0x1000000000000000+1, 61)
+
+	bitsFor(0x8000000000000000, 63)
+	bitsFor(0x8000000000000000+1, 64)
+	bitsFor(0x8000000000000000+2, 64)
+	bitsFor(0x10000000000000000-1, 64)
+
+	fmt.Printf("fail counts %d %d %d %d %d %d total:%d\n", faillog2, failceillog2, faillogbx, faililogbx, failBitsFor, ilogbShift, total)
+
+	x := -1
+	fmt.Println(uint64(x))
+	fmt.Println(uint64(x - 1))
+
+	var y uint64 = 0xffffffffffffffff
+	var z uint = 2
+	fmt.Println(y + uint64(z))
 }
 
 func NewIPv4AddressTrie() goip.IPv4AddressTrie {
