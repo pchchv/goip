@@ -6,6 +6,12 @@ import (
 	"reflect"
 	"strings"
 
+	"go/ast"
+	"go/doc"
+	"go/parser"
+	"go/token"
+	"os"
+
 	"github.com/pchchv/goip"
 	"github.com/pchchv/goip/address_string_param"
 )
@@ -432,6 +438,7 @@ func main() {
 	fmt.Printf("%v %v\n", pr1, pr2)
 
 	fmt.Printf("\n\n")
+	_ = getDoc()
 
 	bn := NewAddressTrieNode()
 	_ = bn
@@ -688,6 +695,34 @@ func merge(strs ...string) []*goip.IPAddress {
 		remaining[i] = goip.NewIPAddressString(strs[i]).GetAddress()
 	}
 	return first.MergeToPrefixBlocks(remaining...)
+}
+
+func getDoc() error {
+	// Create the AST by parsing src.
+	fset := token.NewFileSet() // positions are relative to fset
+	pkgs, err := parser.ParseDir(
+		fset,
+		"~/Projects/pchchv/go/src/github.com/pchchv/goip",
+		func(f os.FileInfo) bool { return true },
+		parser.ParseComments)
+	if err != nil {
+		fmt.Printf("%e", err)
+		return err
+	}
+	for keystr, valuePkg := range pkgs {
+		pkage := doc.New(valuePkg, keystr, 0)
+		fmt.Printf("\n%+v", pkage)
+		ast.Print(fset, pkage)
+
+		for _, t := range pkage.Types {
+			fmt.Printf("\n%s", t.Name)
+			for _, m := range t.Methods {
+				fmt.Printf("bool %v", doc.AllMethods&doc.AllMethods != 0)
+				fmt.Printf("\n%+v", m)
+			}
+		}
+	}
+	return nil
 }
 
 func NewIPv4AddressTrie() goip.IPv4AddressTrie {
