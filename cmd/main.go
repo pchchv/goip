@@ -701,7 +701,7 @@ func NewAddressTrieNode() goip.TrieNode[*goip.Address] {
 func zeros() {
 	strip := func(s string) string {
 		return strings.ReplaceAll(strings.ReplaceAll(s, "goip.", ""),
-			"github.com/seancfoley/ipaddress-go/", "")
+			"github.com/pchchv/goip/", "")
 	}
 
 	typeName := func(i any) string {
